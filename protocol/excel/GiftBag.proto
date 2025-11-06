@@ -1,0 +1,28 @@
+// Source: GiftBag.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllGiftBagDatas {
+  GiftBagDatas GiftBag = 1;
+}
+
+message GiftBagDatas {
+  repeated GiftBagConfigure Datas = 1;
+}
+
+message GiftBagConfigure {
+  int32 ID = 1;
+  int32 PlayerLv = 2;
+  int32 UseItemID = 3;
+  int32 UseItemCount = 4;
+  string AssetPath = 5;
+  repeated GiftBagGroupInfo GiftBagGroup = 6;
+}
+
+message GiftBagGroupInfo {
+  int32 RewardPoolGroupID = 1;
+}

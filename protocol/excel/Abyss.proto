@@ -1,0 +1,77 @@
+// Source: Abyss.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllAbyssDatas {
+  AbyssSeasonDatas AbyssSeason = 1;
+  AbyssStageDatas AbyssStage = 2;
+  SeasonAchieveDatas SeasonAchieve = 3;
+}
+
+message AbyssSeasonDatas {
+  repeated AbyssSeasonConfigure Datas = 1;
+}
+
+message AbyssSeasonConfigure {
+  int32 ID = 1;
+  string StartTime = 2;
+  string EndTime = 3;
+  int32 SeasonStage = 4;
+  int32 SeasonAchieve = 5;
+  int32 NpcID = 6;
+  int32 UnlockDungeonID = 7;
+}
+
+message AbyssStageDatas {
+  repeated AbyssStageConfigure Datas = 1;
+}
+
+message AbyssStageConfigure {
+  int32 ID = 1;
+  repeated AbyssStageGroupInfo AbyssStageGroupInfo = 2;
+}
+
+message AbyssStageGroupInfo {
+  int32 TextID = 1;
+  int32 IconID = 2;
+  int32 DungeonID = 3;
+  bool IsDoubleTeam = 4;
+  bool IsChallengeDungeon = 5;
+  int32 NewElementType1 = 6;
+  int32 NewElementType2 = 7;
+  int32 NewUpTag1 = 8;
+  int32 NewUpTag2 = 9;
+  int32 NewUpTag3 = 10;
+  int32 NewUpTag4 = 11;
+  int32 NewDownTag1 = 12;
+  int32 NewDownTag2 = 13;
+  int32 NewDownTag3 = 14;
+  int32 NewDownTag4 = 15;
+  int32 NewUpDamageType1 = 16;
+  int32 NewUpDamageType2 = 17;
+  int32 NewUpDamageType3 = 18;
+  int32 NewUpDamageType4 = 19;
+  int32 NewDownDamageType1 = 20;
+  int32 NewDownDamageType2 = 21;
+  int32 NewDownDamageType3 = 22;
+  int32 NewDownDamageType4 = 23;
+}
+
+message SeasonAchieveDatas {
+  repeated SeasonAchieveConfigure Datas = 1;
+}
+
+message SeasonAchieveConfigure {
+  int32 ID = 1;
+  repeated SeasonAchieveGroupInfo SeasonAchieveGroupInfo = 2;
+}
+
+message SeasonAchieveGroupInfo {
+  int32 AchieveID = 1;
+  int32 RewardID = 2;
+  int32 IconID = 3;
+}

@@ -1,0 +1,23 @@
+// Source: GpuQuality.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllGpuQualityDatas {
+  GpuQualityInfoDatas GpuQualityInfo = 1;
+}
+
+message GpuQualityInfoDatas {
+  repeated GpuQualityInfoConfigure Datas = 1;
+}
+
+message GpuQualityInfoConfigure {
+  int32 ID = 1;
+  string Name = 2;
+  int32 Quality = 3;
+  int32 ZPrePass = 4;
+  repeated int32 UnlockQuality = 5;
+}

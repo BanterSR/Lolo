@@ -1,0 +1,27 @@
+// Source: ItemSource.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllItemSourceDatas {
+  ItemSourceDatas ItemSource = 1;
+}
+
+message ItemSourceDatas {
+  repeated ItemSourceConfigure Datas = 1;
+}
+
+message ItemSourceConfigure {
+  int32 ID = 1;
+  repeated ItemSourceInfo SourceInfo = 2;
+}
+
+message ItemSourceInfo {
+  int32 Order = 1;
+  repeated int32 Params = 2;
+  int32 TextID = 3;
+  int32 NewSourceType = 4;
+}

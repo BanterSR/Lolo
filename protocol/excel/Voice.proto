@@ -1,0 +1,284 @@
+// Source: Voice.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllVoiceDatas {
+  VoiceCollectPhotoDatas VoiceCollectPhoto = 1;
+  VoiceCollectDataDatas VoiceCollectData = 2;
+  VoiceCollectFileDatas VoiceCollectFile = 3;
+  VoiceCollectBookDatas VoiceCollectBook = 4;
+  VoiceCollectTapeDatas VoiceCollectTape = 5;
+  VoiceCollectItemDatas VoiceCollectItem = 6;
+  VoiceCollectPortalDatas VoiceCollectPortal = 7;
+  VoiceCollectPhotoItemDatas VoiceCollectPhotoItem = 8;
+  VoiceScenicDatas VoiceScenic = 9;
+  VoiceCollectCrystalDatas VoiceCollectCrystal = 10;
+  VoiceAreaDatas VoiceArea = 11;
+  VoiceQuestDatas VoiceQuest = 12;
+  VoiceAchieveDatas VoiceAchieve = 13;
+  VoiceRegionDatas VoiceRegion = 14;
+  VoiceGatherDatas VoiceGather = 15;
+  VoiceBattleDatas VoiceBattle = 16;
+  VoiceCharacterDatas VoiceCharacter = 17;
+  VoiceItemLevelDatas VoiceItemLevel = 18;
+}
+
+message VoiceCollectPhotoDatas {
+  repeated VoiceCollectPhotoConfigure Datas = 1;
+}
+
+message VoiceCollectPhotoConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}
+
+message VoiceCollectDataDatas {
+  repeated VoiceCollectDataConfigure Datas = 1;
+}
+
+message VoiceCollectDataConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}
+
+message VoiceCollectFileDatas {
+  repeated VoiceCollectFileConfigure Datas = 1;
+}
+
+message VoiceCollectFileConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}
+
+message VoiceCollectBookDatas {
+  repeated VoiceCollectBookConfigure Datas = 1;
+}
+
+message VoiceCollectBookConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}
+
+message VoiceCollectTapeDatas {
+  repeated VoiceCollectTapeConfigure Datas = 1;
+}
+
+message VoiceCollectTapeConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}
+
+message VoiceCollectItemDatas {
+  repeated VoiceCollectItemConfigure Datas = 1;
+}
+
+message VoiceCollectItemConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}
+
+message VoiceCollectPortalDatas {
+  repeated VoiceCollectPortalConfigure Datas = 1;
+}
+
+message VoiceCollectPortalConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}
+
+message VoiceCollectPhotoItemDatas {
+  repeated VoiceCollectPhotoItemConfigure Datas = 1;
+}
+
+message VoiceCollectPhotoItemConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}
+
+message VoiceScenicDatas {
+  repeated VoiceScenicConfigure Datas = 1;
+}
+
+message VoiceScenicConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}
+
+message VoiceCollectCrystalDatas {
+  repeated VoiceCollectCrystalConfigure Datas = 1;
+}
+
+message VoiceCollectCrystalConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}
+
+message VoiceAreaDatas {
+  repeated VoiceAreaConfigure Datas = 1;
+}
+
+message VoiceAreaConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}
+
+message VoiceQuestDatas {
+  repeated VoiceQuestConfigure Datas = 1;
+}
+
+message VoiceQuestConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}
+
+message VoiceAchieveDatas {
+  repeated VoiceAchieveConfigure Datas = 1;
+}
+
+message VoiceAchieveConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}
+
+message VoiceRegionDatas {
+  repeated VoiceRegionConfigure Datas = 1;
+}
+
+message VoiceRegionConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}
+
+message VoiceGatherDatas {
+  repeated VoiceGatherConfigure Datas = 1;
+}
+
+message VoiceGatherConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}
+
+message VoiceBattleDatas {
+  repeated VoiceBattleConfigure Datas = 1;
+}
+
+message VoiceBattleConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}
+
+message VoiceCharacterDatas {
+  repeated VoiceCharacterConfigure Datas = 1;
+}
+
+message VoiceCharacterConfigure {
+  int32 ID = 1;
+  repeated VoiceCharacterItem VoiceCharacterItem = 2;
+}
+
+message VoiceCharacterItem {
+  string SoundPath = 1;
+  float SoundVolume = 2;
+  int32 Level = 3;
+  int32 NewVoiceType = 4;
+  string TextValue = 5;
+  string VoiceName = 6;
+}
+
+message VoiceItemLevelDatas {
+  repeated VoiceItemLevelConfigure Datas = 1;
+}
+
+message VoiceItemLevelConfigure {
+  int32 ID = 1;
+  string SoundPath = 2;
+  float SoundVolume = 3;
+  repeated string TextSpeaker = 4;
+  repeated string TextContent = 5;
+  repeated float TextStartTime = 6;
+  repeated float TextEndTime = 7;
+}

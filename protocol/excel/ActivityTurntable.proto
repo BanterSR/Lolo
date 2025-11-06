@@ -1,0 +1,65 @@
+// Source: ActivityTurntable.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllActivityTurntableDatas {
+  ActivityTurntableDatas ActivityTurntable = 1;
+  TurntablePoolDatas TurntablePool = 2;
+  TurntableRewardDatas TurntableReward = 3;
+}
+
+message ActivityTurntableDatas {
+  repeated ActivityTurntableConfigure Datas = 1;
+}
+
+message ActivityTurntableConfigure {
+  int32 ID = 1;
+  int32 TurntablePoolID = 2;
+  int32 TextID = 3;
+  int32 CostItemID = 4;
+  int32 ShowCharacter = 5;
+  int32 FirstOneNeedItemNum = 6;
+  int32 OneNeedItemNum = 7;
+  repeated int32 ShowFashions = 8;
+  int32 NewTurntableType = 9;
+}
+
+message TurntablePoolDatas {
+  repeated TurntablePoolConfigure Datas = 1;
+}
+
+message TurntablePoolConfigure {
+  int32 ID = 1;
+  repeated TurntablePoolItems TurntablePoolItem = 2;
+}
+
+message TurntablePoolItems {
+  int32 Index = 1;
+  int32 ItemID = 2;
+  int32 ItemNum = 3;
+  int32 LimitNum = 4;
+  int32 Weight = 5;
+  bool IsSpecial = 6;
+}
+
+message TurntableRewardDatas {
+  repeated TurntableRewardConfigure Datas = 1;
+}
+
+message TurntableRewardConfigure {
+  int32 ID = 1;
+  int32 FinishItemID = 2;
+  int32 FinishItemNum = 3;
+  repeated TurntableRewardPoolItems TurntableRewardPoolItem = 4;
+}
+
+message TurntableRewardPoolItems {
+  int32 Index = 1;
+  int32 Num = 2;
+  int32 RewardItemID = 3;
+  int32 RewardItemNum = 4;
+}

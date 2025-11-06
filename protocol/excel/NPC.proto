@@ -1,0 +1,119 @@
+// Source: NPC.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllNPCDatas {
+  InfoDatas Info = 1;
+  DelegateQuestPoolDatas DelegateQuestPool = 2;
+  QuestPoolDatas QuestPool = 3;
+  RandomQuestPoolDatas RandomQuestPool = 4;
+  TalkInfoDatas TalkInfo = 5;
+  NpcShopDatas NpcShop = 6;
+}
+
+message InfoDatas {
+  repeated InfoConfigure Datas = 1;
+}
+
+message InfoConfigure {
+  int32 ID = 1;
+  int32 TextID = 2;
+  int32 TextureID = 3;
+  string OpeningTime = 4;
+  string ClosingTime = 5;
+  string Path = 6;
+  string Prefab = 7;
+  repeated NPCInfoConfigureFuncItem Funcs = 8;
+}
+
+message NPCInfoConfigureFuncItem {
+  int32 NewNPCFunction = 1;
+  int32 SubMeterID = 2;
+}
+
+message DelegateQuestPoolDatas {
+  repeated DelegateQuestPoolConfigure Datas = 1;
+}
+
+message DelegateQuestPoolConfigure {
+  int32 ID = 1;
+  repeated DelegateQuestPoolGroupInfo DelegateQuestPoolGroupInfo = 2;
+}
+
+message DelegateQuestPoolGroupInfo {
+  int32 QuestID = 1;
+  int32 LimitLevel = 2;
+  int32 UnlockSceneID = 3;
+  repeated int32 BeforeID = 4;
+  int32 QuestUnlockShow = 5;
+  int32 ReceiveTalkID = 6;
+  int32 FinishTalkID = 7;
+}
+
+message QuestPoolDatas {
+  repeated QuestPoolConfigure Datas = 1;
+}
+
+message QuestPoolConfigure {
+  int32 ID = 1;
+  repeated QuestPoolGroupInfo QuestPoolGroupInfo = 2;
+}
+
+message QuestPoolGroupInfo {
+  int32 QuestID = 1;
+  int32 LimitLevel = 2;
+  int32 BeforeID = 3;
+  int32 ReceiveTalkID = 4;
+  int32 FinishTalkID = 5;
+}
+
+message RandomQuestPoolDatas {
+  repeated RandomQuestPoolConfigure Datas = 1;
+}
+
+message RandomQuestPoolConfigure {
+  int32 ID = 1;
+  repeated RandomQuestPoolGroupInfo RandomestPoolGroupInfo = 2;
+}
+
+message RandomQuestPoolGroupInfo {
+  int32 QuestID = 1;
+  int32 Weight = 2;
+  int32 LimitLevel = 3;
+  int32 BeforeID = 4;
+  int32 ReceiveTalkID = 5;
+  int32 FinishTalkID = 6;
+}
+
+message TalkInfoDatas {
+  repeated TalkInfoConfigure Datas = 1;
+}
+
+message TalkInfoConfigure {
+  int32 ID = 1;
+  repeated TalkInfoGroupInfo TalkInfoGroupInfo = 2;
+}
+
+message TalkInfoGroupInfo {
+  int32 Priority = 1;
+  int32 NewTalkCondition = 2;
+  repeated int32 Para = 3;
+  int32 ContentID = 4;
+}
+
+message NpcShopDatas {
+  repeated NpcShopConfigure Datas = 1;
+}
+
+message NpcShopConfigure {
+  int32 ID = 1;
+  repeated NpcShopGroupInfo NpcShopGroupInfo = 2;
+}
+
+message NpcShopGroupInfo {
+  int32 ShopID = 1;
+}

@@ -1,0 +1,50 @@
+// Source: ActivityQuest.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllActivityQuestDatas {
+  ActivityQuestDatas ActivityQuest = 1;
+  ActivityQuestRewardDatas ActivityQuestReward = 2;
+}
+
+message ActivityQuestDatas {
+  repeated ActivityQuestConfigure Datas = 1;
+}
+
+message ActivityQuestConfigure {
+  int32 ID = 1;
+  int32 ActivityQuestRewardID = 2;
+  repeated ActivityQuestAchieveItem ActivityQuestAchieveItems = 3;
+}
+
+message ActivityQuestAchieveItem {
+  int32 Days = 1;
+  int32 AchieveID = 2;
+  repeated ActivityQuestItems ActivityQuestItem = 3;
+}
+
+message ActivityQuestItems {
+  int32 ItemID = 1;
+  int32 ItemNum = 2;
+}
+
+message ActivityQuestRewardDatas {
+  repeated ActivityQuestRewardConfigure Datas = 1;
+}
+
+message ActivityQuestRewardConfigure {
+  int32 ID = 1;
+  repeated ActivityQuestRewardItems ActivityQuestRewardItem = 2;
+}
+
+message ActivityQuestRewardItems {
+  int32 Index = 1;
+  int32 ConditionItemID = 2;
+  int32 ConditionItemNum = 3;
+  int32 RewardItemID = 4;
+  int32 RewardItemNum = 5;
+}

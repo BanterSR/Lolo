@@ -1,0 +1,52 @@
+// Source: Poster.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllPosterDatas {
+  PosterDatas Poster = 1;
+  PropertyDatas PosterProperty = 2;
+  PosterIllustrationDatas PosterIllustration = 3;
+}
+
+message PosterDatas {
+  repeated PosterConfigure Datas = 1;
+}
+
+message PosterConfigure {
+  int32 ID = 1;
+  int32 ItemID = 2;
+  int32 IllustrationID = 3;
+  int32 PropertyID = 4;
+}
+
+message PropertyDatas {
+  repeated PropertyConfigure Datas = 1;
+}
+
+message PropertyConfigure {
+  int32 ID = 1;
+  repeated PosterPropertyGroupInfo PosterPropertyGroupInfo = 2;
+}
+
+message PosterPropertyGroupInfo {
+  int32 Star = 1;
+  int32 SpellPassive = 2;
+  int32 NewPosterTag1 = 3;
+  int32 NewPosterTag2 = 4;
+  int32 NewPosterTag3 = 5;
+}
+
+message PosterIllustrationDatas {
+  repeated PosterIllustrationConfigure Datas = 1;
+}
+
+message PosterIllustrationConfigure {
+  int32 ID = 1;
+  int32 TextID = 2;
+  int32 TextureID = 3;
+  bool IsShow = 4;
+}

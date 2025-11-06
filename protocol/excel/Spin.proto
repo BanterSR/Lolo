@@ -1,0 +1,94 @@
+// Source: Spin.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllSpinDatas {
+  SpinLevelDatas SpinLevel = 1;
+  SpinItemDatas SpinItem = 2;
+  SpinSpellDatas SpinSpell = 3;
+}
+
+message SpinLevelDatas {
+  repeated SpinLevelConfigure Datas = 1;
+}
+
+message SpinLevelConfigure {
+  int32 ID = 1;
+  int32 UpgradeLevelByProficiency = 2;
+  int32 NeedItemID = 3;
+  int32 NeedItemCount = 4;
+  repeated SpinLevelAchieveConfigureItem SpinLevelAchieve = 5;
+}
+
+message SpinLevelAchieveConfigureItem {
+  int32 AchieveConditionID = 1;
+  int32 Proficiency = 2;
+  int32 CompleteLimit = 3;
+}
+
+message SpinItemDatas {
+  repeated SpinItemConfigure Datas = 1;
+}
+
+message SpinItemConfigure {
+  int32 ID = 1;
+  bool IsShow = 2;
+  bool IsHandbookShow = 3;
+  int32 NeedShowbookItemID = 4;
+  int32 NeedFormulaItemID = 5;
+  int32 SpinLevel = 6;
+  int32 NeedTime = 7;
+  string OpeningTime = 8;
+  string ClosingTime = 9;
+  int32 NeedItemID = 10;
+  int32 NeedItemCount = 11;
+  repeated SpinItemConfigureItem SpinItems = 12;
+  float SuccessfulProbability = 13;
+  int32 GetItemID = 14;
+  repeated SpinAchieveConfigureItem SpinAchieveRewards = 15;
+  int32 NewSpinToolType = 16;
+  int32 NewSpinType = 17;
+  int32 NewSpinPageType = 18;
+}
+
+message SpinItemConfigureItem {
+  int32 ItemID = 1;
+  int32 ItemCount = 2;
+}
+
+message SpinAchieveConfigureItem {
+  int32 AchieveConditionID = 1;
+  int32 RewardID = 2;
+}
+
+message SpinSpellDatas {
+  repeated SpinSpellConfigure Datas = 1;
+}
+
+message SpinSpellConfigure {
+  int32 ID = 1;
+  repeated SpinSpellItemsConfigureItem SpinSpellItems = 2;
+}
+
+message SpinSpellItemsConfigureItem {
+  int32 Level = 1;
+  int32 IconID = 2;
+  int32 TextID = 3;
+  int32 NewLifeSpellEffectType = 4;
+  float SpellParam1 = 5;
+  float SpellParam2 = 6;
+  int32 NeedSpinLevel = 7;
+  int32 NeedTime = 8;
+  int32 NeedCurrencyID = 9;
+  int32 NeedCurrencyCount = 10;
+  repeated SpinNeedItems SpinNeedItem = 11;
+}
+
+message SpinNeedItems {
+  int32 NeedItemID = 1;
+  int32 NeedItemCount = 2;
+}

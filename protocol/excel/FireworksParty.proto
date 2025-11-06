@@ -1,0 +1,20 @@
+// Source: FireworksParty.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllFireworksPartyDatas {
+  FireworksPartyDatas FireworksParty = 1;
+}
+
+message FireworksPartyDatas {
+  repeated FireworksPartyConfigure Datas = 1;
+}
+
+message FireworksPartyConfigure {
+  int32 ID = 1;
+  string Path = 2;
+}

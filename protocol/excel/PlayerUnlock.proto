@@ -1,0 +1,23 @@
+// Source: PlayerUnlock.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllPlayerUnlockDatas {
+  PlayerUnlockDatas PlayerUnlock = 1;
+}
+
+message PlayerUnlockDatas {
+  repeated PlayerUnlockConfigure Datas = 1;
+}
+
+message PlayerUnlockConfigure {
+  int32 ID = 1;
+  int32 Para = 2;
+  int32 ItemID = 3;
+  bool IsShowTips = 4;
+  int32 NewUnlockFunctionType = 5;
+}

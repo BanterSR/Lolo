@@ -1,0 +1,52 @@
+// Source: NpcQuest.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllNpcQuestDatas {
+  NpcQuestInfoDatas NpcQuestInfo = 1;
+  NpcQuestPoolDatas NpcQuestPool = 2;
+}
+
+message NpcQuestInfoDatas {
+  repeated NpcQuestInfoConfigure Datas = 1;
+}
+
+message NpcQuestInfoConfigure {
+  int32 ID = 1;
+  int32 RefreshTime = 2;
+  int32 RefreshCurrency = 3;
+  int32 RefreshCost = 4;
+  int32 QuestPoolID = 5;
+  int32 OpenedDialog = 6;
+  int32 NormalDonateDialog = 7;
+}
+
+message NpcQuestPoolDatas {
+  repeated NpcQuestPoolConfigure Datas = 1;
+}
+
+message NpcQuestPoolConfigure {
+  int32 ID = 1;
+  repeated NpcQuestPoolItem NpcQuestPools = 2;
+}
+
+message NpcQuestPoolItem {
+  int32 QuestID = 1;
+  int32 NeedItemID = 2;
+  int32 NeedItemMinCount = 3;
+  int32 NeedItemMaxCount = 4;
+  int32 AmityAdd = 5;
+  int32 Weight = 6;
+  int32 NeedMinLevel = 7;
+  int32 NeedMaxLevel = 8;
+  repeated NpcQuestPoolRewardItem NpcQuestPoolRewardItem = 9;
+}
+
+message NpcQuestPoolRewardItem {
+  int32 RewardItemID = 1;
+  int32 RewardItemCount = 2;
+}

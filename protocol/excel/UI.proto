@@ -1,0 +1,416 @@
+// Source: UI.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllUIDatas {
+  UIItemIconDatas Icon = 1;
+  UIPlayerIconDatas PlayerIcon = 2;
+  UISpellDatas UISpell = 3;
+  UIPosterIconDatas PosterIcon = 4;
+  UIDungeonDatas UIDungeon = 5;
+  UIAbyssDatas UIAbyss = 6;
+  UISceneIconDatas UISceneIcon = 7;
+  UINPCIconDatas UINPCIcon = 8;
+  UICollectPhotoIconDatas CollectPhotoIcon = 9;
+  UICollectDataIconDatas CollectDataIcon = 10;
+  UIPassiveIconDatas PassiveIcon = 11;
+  UIMoonStoneDataIconDatas MoonStoneDataIcon = 12;
+  UIShopIconDatas UIShopIcon = 13;
+  UIGachaIconDatas UIGachaIcon = 14;
+  UIAbilityIconDatas UIAbilityIcon = 15;
+  UIExploreIconDatas UIExploreIcon = 16;
+  UIChatIconDatas UIChatIcon = 17;
+  UIExpressionIconDatas UIExpressionIcon = 18;
+  UIStoryIconDatas UIStoryIcon = 19;
+  UIExtraChaptertIconDatas UIExtraChapterIcon = 20;
+  UIGlobalBuffIconDatas UIGlobalBuffIcon = 21;
+  UIBattleIconDatas UIBattleIcon = 22;
+  UIFlagIconDatas UIFlagIcon = 23;
+  UIRiddleIconDatas UIRiddleIcon = 24;
+  UIChallengeIconDatas UIChallengeIcon = 25;
+  UIQuestTextureDatas UIQuestTexture = 26;
+  UILifeSpellIconDatas UILifeSpellIcon = 27;
+  UIManualIconDatas UIManualIcon = 28;
+  UIBuffIconDatas UIBuffIcon = 29;
+  UIMiniMapDatas UIMiniMap = 30;
+  UIHeadDatas UIHead = 31;
+  UIAchieveQuestDatas UIAchieveQuest = 32;
+  UIActivityDatas UIActivity = 33;
+  UIHelpDatas UIHelp = 34;
+  UITeamGameplayDatas UITeamGameplay = 35;
+  UIIntimacyDatas UIIntimacy = 36;
+  UIHomeItemThemeDatas UIHomeItemTheme = 37;
+  UIBossRushDatas UIBossRush = 38;
+  UIMusicNoteDatas UIMusicNote = 39;
+  UIGuideDatas UIGuide = 40;
+}
+
+message UIItemIconDatas {
+  repeated UIItemIconConfigure Datas = 1;
+}
+
+message UIItemIconConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIPlayerIconDatas {
+  repeated UIPlayerIconConfigure Datas = 1;
+}
+
+message UIPlayerIconConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UISpellDatas {
+  repeated UISpellConfigure Datas = 1;
+}
+
+message UISpellConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIPosterIconDatas {
+  repeated UIPosterIconConfigure Datas = 1;
+}
+
+message UIPosterIconConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIDungeonDatas {
+  repeated UIDungeonConfigure Datas = 1;
+}
+
+message UIDungeonConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIAbyssDatas {
+  repeated UIAbyssConfigure Datas = 1;
+}
+
+message UIAbyssConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UISceneIconDatas {
+  repeated UISceneIconConfigure Datas = 1;
+}
+
+message UISceneIconConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UINPCIconDatas {
+  repeated UINPCIconConfigure Datas = 1;
+}
+
+message UINPCIconConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UICollectPhotoIconDatas {
+  repeated UICollectPhotoIconConfigure Datas = 1;
+}
+
+message UICollectPhotoIconConfigure {
+  int32 ID = 1;
+  string AssetFullName = 2;
+}
+
+message UICollectDataIconDatas {
+  repeated UICollectDataIconConfigure Datas = 1;
+}
+
+message UICollectDataIconConfigure {
+  int32 ID = 1;
+  string AssetFullName = 2;
+}
+
+message UIPassiveIconDatas {
+  repeated UIPassiveIconConfigure Datas = 1;
+}
+
+message UIPassiveIconConfigure {
+  int32 ID = 1;
+  string AssetFullName = 2;
+}
+
+message UIMoonStoneDataIconDatas {
+  repeated UIMoonStoneDataIconConfigure Datas = 1;
+}
+
+message UIMoonStoneDataIconConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIShopIconDatas {
+  repeated UIShopIconConfigure Datas = 1;
+}
+
+message UIShopIconConfigure {
+  int32 ID = 1;
+  string AssetFullName = 2;
+}
+
+message UIGachaIconDatas {
+  repeated UIGachaIconConfigure Datas = 1;
+}
+
+message UIGachaIconConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIAbilityIconDatas {
+  repeated UIAbilityIconConfigure Datas = 1;
+}
+
+message UIAbilityIconConfigure {
+  int32 ID = 1;
+  string AssetFullName = 2;
+}
+
+message UIExploreIconDatas {
+  repeated UIExploreIconConfigure Datas = 1;
+}
+
+message UIExploreIconConfigure {
+  int32 ID = 1;
+  string AssetFullName = 2;
+}
+
+message UIChatIconDatas {
+  repeated UIChatIconConfigure Datas = 1;
+}
+
+message UIChatIconConfigure {
+  int32 ID = 1;
+  string AssetFullName = 2;
+}
+
+message UIExpressionIconDatas {
+  repeated UIExpressionIconConfigure Datas = 1;
+}
+
+message UIExpressionIconConfigure {
+  int32 ID = 1;
+  string AssetFullName = 2;
+}
+
+message UIStoryIconDatas {
+  repeated UIStoryIconConfigure Datas = 1;
+}
+
+message UIStoryIconConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIExtraChaptertIconDatas {
+  repeated UIExtraChaptertIconConfigure Datas = 1;
+}
+
+message UIExtraChaptertIconConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIGlobalBuffIconDatas {
+  repeated UIGlobalBuffIconConfigure Datas = 1;
+}
+
+message UIGlobalBuffIconConfigure {
+  int32 ID = 1;
+  string AssetFullName = 2;
+}
+
+message UIBattleIconDatas {
+  repeated UIBattleIconConfigure Datas = 1;
+}
+
+message UIBattleIconConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIFlagIconDatas {
+  repeated UIFlagIconConfigure Datas = 1;
+}
+
+message UIFlagIconConfigure {
+  int32 ID = 1;
+  string AssetFullName = 2;
+}
+
+message UIRiddleIconDatas {
+  repeated UIRiddleIconConfigure Datas = 1;
+}
+
+message UIRiddleIconConfigure {
+  int32 ID = 1;
+  string AssetFullName = 2;
+}
+
+message UIChallengeIconDatas {
+  repeated UIChallengeIconConfigure Datas = 1;
+}
+
+message UIChallengeIconConfigure {
+  int32 ID = 1;
+  string AssetFullName = 2;
+}
+
+message UIQuestTextureDatas {
+  repeated UIQuestTextureConfigure Datas = 1;
+}
+
+message UIQuestTextureConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UILifeSpellIconDatas {
+  repeated UILifeSpellIconConfigure Datas = 1;
+}
+
+message UILifeSpellIconConfigure {
+  int32 ID = 1;
+  string AssetFullName = 2;
+}
+
+message UIManualIconDatas {
+  repeated UIManualIconConfigure Datas = 1;
+}
+
+message UIManualIconConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIBuffIconDatas {
+  repeated UIBuffIconConfigure Datas = 1;
+}
+
+message UIBuffIconConfigure {
+  int32 ID = 1;
+  string AssetFullName = 2;
+}
+
+message UIMiniMapDatas {
+  repeated UIMiniMapConfigure Datas = 1;
+}
+
+message UIMiniMapConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIHeadDatas {
+  repeated UIHeadConfigure Datas = 1;
+}
+
+message UIHeadConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIAchieveQuestDatas {
+  repeated UIAchieveQuestConfigure Datas = 1;
+}
+
+message UIAchieveQuestConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIActivityDatas {
+  repeated UIActivityConfigure Datas = 1;
+}
+
+message UIActivityConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIHelpDatas {
+  repeated UIHelpConfigure Datas = 1;
+}
+
+message UIHelpConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UITeamGameplayDatas {
+  repeated UITeamGameplayConfigure Datas = 1;
+}
+
+message UITeamGameplayConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIIntimacyDatas {
+  repeated UIIntimacyConfigure Datas = 1;
+}
+
+message UIIntimacyConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIHomeItemThemeDatas {
+  repeated UIHomeItemThemeConfigure Datas = 1;
+}
+
+message UIHomeItemThemeConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIBossRushDatas {
+  repeated UIBossRushConfigure Datas = 1;
+}
+
+message UIBossRushConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIMusicNoteDatas {
+  repeated UIMusicNoteConfigure Datas = 1;
+}
+
+message UIMusicNoteConfigure {
+  int32 ID = 1;
+  string AssetLiveFullName = 2;
+  string AssetFreeFullName = 3;
+}
+
+message UIGuideDatas {
+  repeated UIGuideConfigure Datas = 1;
+}
+
+message UIGuideConfigure {
+  int32 ID = 1;
+  repeated string AssetFullName = 2;
+}
+
+message UIConfigure {
+  int32 ID = 1;
+  string AssetFullName = 4;
+}

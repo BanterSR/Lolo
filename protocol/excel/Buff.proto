@@ -1,0 +1,36 @@
+// Source: Buff.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllBuffDatas {
+  BuffDatas Buff = 1;
+  BuffScriptInfoDatas BuffScriptInfo = 2;
+}
+
+message BuffDatas {
+  repeated BuffConfigure Datas = 1;
+}
+
+message BuffConfigure {
+  int32 ID = 1;
+  int32 IconID = 2;
+  int32 TextID = 3;
+  int32 ScriptID = 4;
+  repeated float ScriptParams = 5;
+}
+
+message BuffScriptInfoDatas {
+  repeated BuffScriptInfoConfigure Datas = 1;
+}
+
+message BuffScriptInfoConfigure {
+  int32 ID = 1;
+  string ScriptName = 2;
+  bool Cover = 3;
+  string AssetFullName = 4;
+  int32 NewBuffType = 5;
+}

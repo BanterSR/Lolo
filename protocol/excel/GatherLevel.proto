@@ -1,0 +1,106 @@
+// Source: GatherLevel.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllGatherLevelDatas {
+  CollectionGlovesDatas CollectionGloves = 1;
+  LoggingAxeDatas LoggingAxe = 2;
+  MiningHammerDatas MiningHammer = 3;
+  InsectNetDatas InsectNet = 4;
+  WaterBottleDatas WaterBottle = 5;
+  PickDatas Pick = 6;
+}
+
+message CollectionGlovesDatas {
+  repeated CollectionGlovesConfigure Datas = 1;
+}
+
+message CollectionGlovesConfigure {
+  int32 ID = 1;
+  repeated CollectionGlovesLevelItem CollectionGlovesLevelItem = 2;
+}
+
+message CollectionGlovesLevelItem {
+  int32 Level = 1;
+  int32 NeedCount = 2;
+  int32 GuideVoice = 3;
+}
+
+message LoggingAxeDatas {
+  repeated LoggingAxeConfigure Datas = 1;
+}
+
+message LoggingAxeConfigure {
+  int32 ID = 1;
+  repeated CollectionLoggingAxeLevelItem CollectionLoggingAxeLevelItem = 2;
+}
+
+message CollectionLoggingAxeLevelItem {
+  int32 Level = 1;
+  int32 NeedCount = 2;
+  int32 GuideVoice = 3;
+}
+
+message MiningHammerDatas {
+  repeated MiningHammerConfigure Datas = 1;
+}
+
+message MiningHammerConfigure {
+  int32 ID = 1;
+  repeated CollectionMiningHammerLevelItem CollectionMiningHammerLevelItem = 2;
+}
+
+message CollectionMiningHammerLevelItem {
+  int32 Level = 1;
+  int32 NeedCount = 2;
+  int32 GuideVoice = 3;
+}
+
+message InsectNetDatas {
+  repeated InsectNetConfigure Datas = 1;
+}
+
+message InsectNetConfigure {
+  int32 ID = 1;
+  repeated CollectionInsectNetLevelItem CollectionInsectNetLevelItem = 2;
+}
+
+message CollectionInsectNetLevelItem {
+  int32 Level = 1;
+  int32 NeedCount = 2;
+  int32 GuideVoice = 3;
+}
+
+message WaterBottleDatas {
+  repeated WaterBottleConfigure Datas = 1;
+}
+
+message WaterBottleConfigure {
+  int32 ID = 1;
+  repeated CollectionWaterBottleLevelItem CollectionWaterBottleLevelItem = 2;
+}
+
+message CollectionWaterBottleLevelItem {
+  int32 Level = 1;
+  int32 NeedCount = 2;
+  int32 GuideVoice = 3;
+}
+
+message PickDatas {
+  repeated PickConfigure Datas = 1;
+}
+
+message PickConfigure {
+  int32 ID = 1;
+  repeated CollectionPickLevelItem CollectionPickLevelItem = 2;
+}
+
+message CollectionPickLevelItem {
+  int32 Level = 1;
+  int32 NeedCount = 2;
+  int32 GuideVoice = 3;
+}

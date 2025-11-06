@@ -1,0 +1,25 @@
+// Source: UIStaticText.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllUIStaticTextDatas {
+  UIStaticTextDatas UIStaticText = 1;
+}
+
+message UIStaticTextDatas {
+  repeated UIStaticTextConfigure Datas = 1;
+}
+
+message UIStaticTextConfigure {
+  int32 ID = 1;
+  string Key = 2;
+  string Chinese_Simplified = 3;
+  string Chinese_Traditional = 4;
+  string English = 5;
+  string Japanese = 6;
+  string Korea = 7;
+}

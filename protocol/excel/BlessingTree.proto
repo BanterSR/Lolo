@@ -1,0 +1,41 @@
+// Source: BlessingTree.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllBlessingTreeDatas {
+  BlessingTreeDatas BlessingTree = 1;
+  BlessingTreeInfoDatas BlessingTreeInfo = 2;
+}
+
+message BlessingTreeDatas {
+  repeated BlessingTreeConfigure Datas = 1;
+}
+
+message BlessingTreeConfigure {
+  int32 ID = 1;
+  string OpeningTime = 2;
+  string ClosingTime = 3;
+  int32 BlessingTreeInfoID = 4;
+}
+
+message BlessingTreeInfoDatas {
+  repeated BlessingTreeInfoConfigure Datas = 1;
+}
+
+message BlessingTreeInfoConfigure {
+  int32 ID = 1;
+  repeated BlessingTreeInfoGroupInfo BlessingTreeInfoGroupInfo = 2;
+}
+
+message BlessingTreeInfoGroupInfo {
+  int32 BoxID = 1;
+  int32 RelateBoxID = 2;
+  int32 ItemID = 3;
+  int32 ItemCount = 4;
+  int32 RewardItemID = 5;
+  int32 RewardItemCount = 6;
+}

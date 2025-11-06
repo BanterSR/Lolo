@@ -1,0 +1,40 @@
+// Source: AchieveQuest.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllAchieveQuestDatas {
+  AchieveQuestDatas AchieveQuest = 1;
+  AchieveQuestGroupDatas AchieveQuestGroup = 2;
+}
+
+message AchieveQuestDatas {
+  repeated AchieveQuestConfigure Datas = 1;
+}
+
+message AchieveQuestConfigure {
+  int32 ID = 1;
+  int32 TextID = 2;
+  int32 IconID = 3;
+  int32 AchieveGroupID = 4;
+  int32 RewardID = 5;
+}
+
+message AchieveQuestGroupDatas {
+  repeated AchieveQuestGroupConfigure Datas = 1;
+}
+
+message AchieveQuestGroupConfigure {
+  int32 ID = 1;
+  repeated AchieveQuestGroupInfo AchieveQuestGroupInfo = 2;
+}
+
+message AchieveQuestGroupInfo {
+  int32 GroupID = 1;
+  int32 AchieveConditionID = 2;
+  int32 TextID = 3;
+  int32 RewardID = 4;
+}

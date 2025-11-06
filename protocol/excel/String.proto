@@ -1,0 +1,722 @@
+// Source: String.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllStringDatas {
+  StringItemTextDatas StringItemText = 1;
+  StringDungeonDatas StringDungeon = 2;
+  StringPosterDatas StringPoster = 3;
+  StringFlagDatas StringFlag = 4;
+  StringPlayerNameDatas StringPlayerName = 5;
+  StringCharacterNameDatas StringCharacterName = 6;
+  StringSpellDatas StringSpell = 7;
+  StringNpcDatas StringNpc = 8;
+  StringBattleNormalTextDatas StringBattleNormalText = 9;
+  StringBattleGuideTextDatas StringBattleGuideText = 10;
+  StringBattleWeaponTextDatas StringBattleWeaponText = 11;
+  StringBattleGatherTextDatas StringBattleGatherText = 12;
+  StringBattleDefenderTextDatas StringBattleDefenderText = 13;
+  StringQuestDatas StringQuestText = 14;
+  StringQuestResourceDatas StringQuestResourceText = 15;
+  StringCookDatas StringCookText = 16;
+  PassiveDescDatas PassiveDesc = 17;
+  StringSceneDatas StringScene = 18;
+  StringCollectFileDatas StringCollectFileText = 19;
+  StringCollectDataDatas StringCollectDataText = 20;
+  StringCollectItemDatas StringCollectItemText = 21;
+  StringCollectTapeDatas StringCollectTapeText = 22;
+  StringCollectBookDatas StringCollectBookText = 23;
+  StringCollectPortalDatas StringCollectPortalText = 24;
+  StringCollectPhotoItemDatas StringCollectPhotoItem = 25;
+  StringAreaDatas StringAreaText = 26;
+  StringMoonStoneDatas StringMoonStoneText = 27;
+  StringRandomEventDatas StringRandomEventText = 28;
+  StringShopDatas StringShop = 29;
+  StringGachaDatas StringGacha = 30;
+  StringGlobalDatas StringGlobal = 31;
+  StringAbilityDatas StringAbility = 32;
+  StringAchieveDatas StringAchieve = 33;
+  StringRiddleDatas StringRiddle = 34;
+  StringChallengeDatas StringChallenge = 35;
+  StringExploreDatas StringExplore = 36;
+  StringNpcQuestDatas StringNpcQuest = 37;
+  StringChatDatas StringChat = 38;
+  StringPlayerLevelDatas StringPlayerLevel = 39;
+  StringBuffDatas StringBuff = 40;
+  StringExpressionDatas StringExpression = 41;
+  StringStoryDatas StringStory = 42;
+  StringExtraChapterDatas StringExtraChapter = 43;
+  StringExtraChapterTitleDatas StringExtraChapterTitle = 44;
+  StringGlobalBuffDatas StringGlobalBuff = 45;
+  StringDialogDatas StringDialogText = 46;
+  StringFishDatas StringFishText = 47;
+  StringMakeDatas StringMakeText = 48;
+  StringHandicraftDatas StringHandicraftText = 49;
+  StringSpinDatas StringSpinText = 50;
+  StringManualDatas StringManualText = 51;
+  StringMailDatas StringMail = 52;
+  StringAbyssDatas StringAbyss = 53;
+  StringHeadDatas StringHead = 54;
+  StringItemSourceDatas StringItemSource = 55;
+  StringMiniMapDatas StringMiniMap = 56;
+  StringAchieveQuestDatas StringAchieveQuest = 57;
+  StringWorldLevelDatas StringWorldLevel = 58;
+  StringActivityDatas StringActivity = 59;
+  StringLifeGatherDatas StringLifeGather = 60;
+  StringHelpDatas StringHelp = 61;
+  StringTeamGameplayDatas StringTeamGameplay = 62;
+  StringMiniGameDatas StringMiniGame = 63;
+  StringIntimacyDatas StringIntimacy = 64;
+  StringActivityTurntableDatas StringActivityTurntable = 65;
+  StringHomeItemThemeDatas StringHomeItemTheme = 66;
+  StringBossRushDatas StringBossRush = 67;
+  StringMusicItemDatas StringMusicItem = 68;
+  StringGuideDatas StringGuide = 69;
+  RestaurantGameItemDatas RestaurantGameItem = 70;
+  RestaurantGameTitleDatas RestaurantGameTitle = 71;
+}
+
+message StringItemTextDatas {
+  repeated StringItemTextConfigure Datas = 1;
+}
+
+message StringItemTextConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringDungeonDatas {
+  repeated StringDungeonConfigure Datas = 1;
+}
+
+message StringDungeonConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringPosterDatas {
+  repeated StringPosterConfigure Datas = 1;
+}
+
+message StringPosterConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringFlagDatas {
+  repeated StringFlagConfigure Datas = 1;
+}
+
+message StringFlagConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringPlayerNameDatas {
+  repeated StringPlayerNameConfigure Datas = 1;
+}
+
+message StringPlayerNameConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringCharacterNameDatas {
+  repeated StringCharacterNameConfigure Datas = 1;
+}
+
+message StringCharacterNameConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringSpellDatas {
+  repeated StringSpellConfigure Datas = 1;
+}
+
+message StringSpellConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringNpcDatas {
+  repeated StringNpcConfigure Datas = 1;
+}
+
+message StringNpcConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringBattleNormalTextDatas {
+  repeated StringBattleNormalTextConfigure Datas = 1;
+}
+
+message StringBattleNormalTextConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringBattleGuideTextDatas {
+  repeated StringBattleGuideTextConfigure Datas = 1;
+}
+
+message StringBattleGuideTextConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringBattleWeaponTextDatas {
+  repeated StringBattleWeaponTextConfigure Datas = 1;
+}
+
+message StringBattleWeaponTextConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringBattleGatherTextDatas {
+  repeated StringBattleGatherTextConfigure Datas = 1;
+}
+
+message StringBattleGatherTextConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringBattleDefenderTextDatas {
+  repeated StringBattleDefenderTextConfigure Datas = 1;
+}
+
+message StringBattleDefenderTextConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringQuestDatas {
+  repeated StringQuestConfigure Datas = 1;
+}
+
+message StringQuestConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringQuestResourceDatas {
+  repeated StringQuestResourceConfigure Datas = 1;
+}
+
+message StringQuestResourceConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringCookDatas {
+  repeated StringCookConfigure Datas = 1;
+}
+
+message StringCookConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message PassiveDescDatas {
+  repeated PassiveDescConfigure Datas = 1;
+}
+
+message PassiveDescConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringSceneDatas {
+  repeated StringSceneConfigure Datas = 1;
+}
+
+message StringSceneConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringCollectFileDatas {
+  repeated StringCollectFileConfigure Datas = 1;
+}
+
+message StringCollectFileConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringCollectDataDatas {
+  repeated StringCollectDataConfigure Datas = 1;
+}
+
+message StringCollectDataConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringCollectItemDatas {
+  repeated StringCollectItemConfigure Datas = 1;
+}
+
+message StringCollectItemConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringCollectTapeDatas {
+  repeated StringCollectTapeConfigure Datas = 1;
+}
+
+message StringCollectTapeConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringCollectBookDatas {
+  repeated StringCollectBookConfigure Datas = 1;
+}
+
+message StringCollectBookConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringCollectPortalDatas {
+  repeated StringCollectPortalConfigure Datas = 1;
+}
+
+message StringCollectPortalConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringCollectPhotoItemDatas {
+  repeated StringCollectPhotoItemConfigure Datas = 1;
+}
+
+message StringCollectPhotoItemConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringAreaDatas {
+  repeated StringAreaConfigure Datas = 1;
+}
+
+message StringAreaConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringMoonStoneDatas {
+  repeated StringMoonStoneConfigure Datas = 1;
+}
+
+message StringMoonStoneConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringRandomEventDatas {
+  repeated StringRandomEventConfigure Datas = 1;
+}
+
+message StringRandomEventConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringShopDatas {
+  repeated StringShopConfigure Datas = 1;
+}
+
+message StringShopConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringGachaDatas {
+  repeated StringGachaConfigure Datas = 1;
+}
+
+message StringGachaConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringGlobalDatas {
+  repeated StringGlobalConfigure Datas = 1;
+}
+
+message StringGlobalConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringAbilityDatas {
+  repeated StringAbilityConfigure Datas = 1;
+}
+
+message StringAbilityConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringAchieveDatas {
+  repeated StringAchieveConfigure Datas = 1;
+}
+
+message StringAchieveConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringRiddleDatas {
+  repeated StringRiddleConfigure Datas = 1;
+}
+
+message StringRiddleConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringChallengeDatas {
+  repeated StringChallengeConfigure Datas = 1;
+}
+
+message StringChallengeConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringExploreDatas {
+  repeated StringExploreConfigure Datas = 1;
+}
+
+message StringExploreConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringNpcQuestDatas {
+  repeated StringNpcQuestConfigure Datas = 1;
+}
+
+message StringNpcQuestConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringChatDatas {
+  repeated StringChatConfigure Datas = 1;
+}
+
+message StringChatConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringPlayerLevelDatas {
+  repeated StringPlayerLevelConfigure Datas = 1;
+}
+
+message StringPlayerLevelConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringBuffDatas {
+  repeated StringBuffConfigure Datas = 1;
+}
+
+message StringBuffConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringExpressionDatas {
+  repeated StringExpressionConfigure Datas = 1;
+}
+
+message StringExpressionConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringStoryDatas {
+  repeated StringStoryConfigure Datas = 1;
+}
+
+message StringStoryConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringExtraChapterDatas {
+  repeated StringExtraChapterConfigure Datas = 1;
+}
+
+message StringExtraChapterConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringExtraChapterTitleDatas {
+  repeated StringExtraChapterTitleConfigure Datas = 1;
+}
+
+message StringExtraChapterTitleConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringGlobalBuffDatas {
+  repeated StringGlobalBuffConfigure Datas = 1;
+}
+
+message StringGlobalBuffConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringDialogDatas {
+  repeated StringDialogConfigure Datas = 1;
+}
+
+message StringDialogConfigure {
+  int32 ID = 1;
+  string Key = 2;
+  string Title = 3;
+  string Content = 4;
+}
+
+message StringFishDatas {
+  repeated StringFishConfigure Datas = 1;
+}
+
+message StringFishConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringMakeDatas {
+  repeated StringMakeConfigure Datas = 1;
+}
+
+message StringMakeConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringHandicraftDatas {
+  repeated StringHandicraftConfigure Datas = 1;
+}
+
+message StringHandicraftConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringSpinDatas {
+  repeated StringSpinConfigure Datas = 1;
+}
+
+message StringSpinConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringManualDatas {
+  repeated StringManualConfigure Datas = 1;
+}
+
+message StringManualConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringMailDatas {
+  repeated StringMailConfigure Datas = 1;
+}
+
+message StringMailConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringAbyssDatas {
+  repeated StringAbyssConfigure Datas = 1;
+}
+
+message StringAbyssConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringHeadDatas {
+  repeated StringHeadConfigure Datas = 1;
+}
+
+message StringHeadConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringItemSourceDatas {
+  repeated StringItemSourceConfigure Datas = 1;
+}
+
+message StringItemSourceConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringMiniMapDatas {
+  repeated StringMiniMapConfigure Datas = 1;
+}
+
+message StringMiniMapConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringAchieveQuestDatas {
+  repeated StringAchieveQuestConfigure Datas = 1;
+}
+
+message StringAchieveQuestConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringWorldLevelDatas {
+  repeated StringWorldLevelConfigure Datas = 1;
+}
+
+message StringWorldLevelConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringActivityDatas {
+  repeated StringActivityConfigure Datas = 1;
+}
+
+message StringActivityConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringLifeGatherDatas {
+  repeated StringLifeGatherConfigure Datas = 1;
+}
+
+message StringLifeGatherConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringHelpDatas {
+  repeated StringHelpConfigure Datas = 1;
+}
+
+message StringHelpConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringTeamGameplayDatas {
+  repeated StringTeamGameplayConfigure Datas = 1;
+}
+
+message StringTeamGameplayConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringMiniGameDatas {
+  repeated StringMiniGameConfigure Datas = 1;
+}
+
+message StringMiniGameConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringIntimacyDatas {
+  repeated StringIntimacyConfigure Datas = 1;
+}
+
+message StringIntimacyConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringActivityTurntableDatas {
+  repeated StringActivityTurntableConfigure Datas = 1;
+}
+
+message StringActivityTurntableConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringHomeItemThemeDatas {
+  repeated StringHomeItemThemeConfigure Datas = 1;
+}
+
+message StringHomeItemThemeConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringBossRushDatas {
+  repeated StringBossRushConfigure Datas = 1;
+}
+
+message StringBossRushConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringMusicItemDatas {
+  repeated StringMusicItemConfigure Datas = 1;
+}
+
+message StringMusicItemConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message StringGuideDatas {
+  repeated StringGuideConfigure Datas = 1;
+}
+
+message StringGuideConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message RestaurantGameItemDatas {
+  repeated RestaurantGameItemConfigure Datas = 1;
+}
+
+message RestaurantGameItemConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}
+
+message RestaurantGameTitleDatas {
+  repeated RestaurantGameTitleConfigure Datas = 1;
+}
+
+message RestaurantGameTitleConfigure {
+  int32 ID = 1;
+  repeated string Text = 2;
+}

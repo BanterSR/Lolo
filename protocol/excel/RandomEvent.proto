@@ -1,0 +1,43 @@
+// Source: RandomEvent.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllRandomEventDatas {
+  RandomEventDatas RandomEvent = 1;
+  RandomEventResourceDatas RandomEventResource = 2;
+}
+
+message RandomEventDatas {
+  repeated RandomEventConfigure Datas = 1;
+}
+
+message RandomEventConfigure {
+  int32 ID = 1;
+  int32 Group = 2;
+  int32 Lv = 3;
+  int32 ItemID = 4;
+  int32 QuestID = 5;
+  int32 NpcID = 6;
+  bool IsReceive = 7;
+  int32 ResourceID = 8;
+  int32 TextID = 9;
+}
+
+message RandomEventResourceDatas {
+  repeated RandomEventResourceConfigure Datas = 1;
+}
+
+message RandomEventResourceConfigure {
+  int32 ID = 1;
+  repeated RandomEventResourceItems RandomEventResourceItems = 2;
+}
+
+message RandomEventResourceItems {
+  int32 Index = 1;
+  string Path = 2;
+  string Name = 3;
+}

@@ -1,0 +1,26 @@
+// Source: ItemLevel.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllItemLevelDatas {
+  ItemLevelDatas ItemLevel = 1;
+}
+
+message ItemLevelDatas {
+  repeated ItemLevelConfigure Datas = 1;
+}
+
+message ItemLevelConfigure {
+  int32 ID = 1;
+  repeated ItemLevelItem ItemLevelItem = 2;
+  int32 NewItemSourceEnum = 3;
+}
+
+message ItemLevelItem {
+  int32 Level = 1;
+  int32 VoiceID = 2;
+}

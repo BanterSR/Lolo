@@ -1,0 +1,21 @@
+// Source: Umbrella.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllUmbrellaDatas {
+  UmbrellaDatas Umbrella = 1;
+}
+
+message UmbrellaDatas {
+  repeated UmbrellaConfigure Datas = 1;
+}
+
+message UmbrellaConfigure {
+  int32 ID = 1;
+  int32 ItemID = 2;
+  string AssetFullName = 3;
+}

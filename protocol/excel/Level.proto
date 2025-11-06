@@ -1,0 +1,252 @@
+// Source: Level.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllLevelDatas {
+  playerLevelDatas PlayerLevel = 1;
+  WorldLevelDatas WorldLevel = 2;
+  NormalLevelDatas NormalLevel = 3;
+  GuideLevelDatas GuideLevel = 4;
+  WeaponLevelDatas WeaponLevel = 5;
+  ScenicLevelDatas ScenicLevel = 6;
+  CrystalLevelDatas CrystalLevel = 7;
+  PhotoLevelDatas PhotoLevel = 8;
+  DataLevelDatas DataLevel = 9;
+  FileLevelDatas FileLevel = 10;
+  BookLevelDatas BookLevel = 11;
+  TapeLevelDatas TapeLevel = 12;
+  CollectItemLevelDatas CollectItemLevel = 13;
+  PortalLevelDatas PortalLevel = 14;
+  PhotoItemLevelDatas PhotoItemLevel = 15;
+}
+
+message playerLevelDatas {
+  repeated playerLevelConfigure Datas = 1;
+}
+
+message playerLevelConfigure {
+  int32 ID = 1;
+  int32 NeedExp = 2;
+  int32 MonsterLevel = 3;
+  int32 RewardID = 4;
+  int32 DescriptionID = 5;
+  int32 LevelUpDescriptionID = 6;
+  int32 PlayerVitality = 7;
+  int32 PlayerEnergy = 8;
+}
+
+message WorldLevelDatas {
+  repeated WorldLevelConfigure Datas = 1;
+}
+
+message WorldLevelConfigure {
+  int32 ID = 1;
+  int32 Level = 2;
+  int32 TextID = 3;
+  int32 MonsterLevel = 4;
+  repeated WorldLevelInfo WorldLevelInfo = 5;
+}
+
+message WorldLevelInfo {
+  int32 AchieveID = 1;
+  int32 FlagID = 2;
+}
+
+message NormalLevelDatas {
+  repeated NormalLevelConfigure Datas = 1;
+}
+
+message NormalLevelConfigure {
+  int32 ID = 1;
+  repeated NormalLevelInfo NormalLevelInfo = 2;
+}
+
+message NormalLevelInfo {
+  int32 Level = 1;
+  int32 NeedExp = 2;
+  int32 GuideVoice = 3;
+}
+
+message GuideLevelDatas {
+  repeated GuideLevelConfigure Datas = 1;
+}
+
+message GuideLevelConfigure {
+  int32 ID = 1;
+  repeated GuideLevelInfo GuideLevelInfo = 2;
+}
+
+message GuideLevelInfo {
+  int32 Level = 1;
+  int32 NeedExp = 2;
+  int32 GuideVoice = 3;
+}
+
+message WeaponLevelDatas {
+  repeated WeaponLevelConfigure Datas = 1;
+}
+
+message WeaponLevelConfigure {
+  int32 ID = 1;
+  repeated WeaponLevelInfo WeaponLevelInfo = 2;
+}
+
+message WeaponLevelInfo {
+  int32 Level = 1;
+  int32 NeedExp = 2;
+  int32 GuideVoice = 3;
+}
+
+message ScenicLevelDatas {
+  repeated ScenicLevelConfigure Datas = 1;
+}
+
+message ScenicLevelConfigure {
+  int32 ID = 1;
+  repeated ScenicLevelInfo ScenicLevelInfo = 2;
+}
+
+message ScenicLevelInfo {
+  int32 Level = 1;
+  int32 NeedExp = 2;
+  int32 GuideVoice = 3;
+}
+
+message CrystalLevelDatas {
+  repeated CrystalLevelConfigure Datas = 1;
+}
+
+message CrystalLevelConfigure {
+  int32 ID = 1;
+  repeated CrystalLevelInfo CrystalLevelInfo = 2;
+}
+
+message CrystalLevelInfo {
+  int32 Level = 1;
+  int32 NeedExp = 2;
+  int32 GuideVoice = 3;
+}
+
+message PhotoLevelDatas {
+  repeated PhotoLevelConfigure Datas = 1;
+}
+
+message PhotoLevelConfigure {
+  int32 ID = 1;
+  repeated PhotoLevelInfo PhotoLevelInfo = 2;
+}
+
+message PhotoLevelInfo {
+  int32 Level = 1;
+  int32 NeedExp = 2;
+  int32 GuideVoice = 3;
+}
+
+message DataLevelDatas {
+  repeated DataLevelConfigure Datas = 1;
+}
+
+message DataLevelConfigure {
+  int32 ID = 1;
+  repeated DataLevelInfo DataLevelInfo = 2;
+}
+
+message DataLevelInfo {
+  int32 Level = 1;
+  int32 NeedExp = 2;
+  int32 GuideVoice = 3;
+}
+
+message FileLevelDatas {
+  repeated FileLevelConfigure Datas = 1;
+}
+
+message FileLevelConfigure {
+  int32 ID = 1;
+  repeated FileLevelInfo FileLevelInfo = 2;
+}
+
+message FileLevelInfo {
+  int32 Level = 1;
+  int32 NeedExp = 2;
+  int32 GuideVoice = 3;
+}
+
+message BookLevelDatas {
+  repeated BookLevelConfigure Datas = 1;
+}
+
+message BookLevelConfigure {
+  int32 ID = 1;
+  repeated BookLevelInfo BookLevelInfo = 2;
+}
+
+message BookLevelInfo {
+  int32 Level = 1;
+  int32 NeedExp = 2;
+  int32 GuideVoice = 3;
+}
+
+message TapeLevelDatas {
+  repeated TapeLevelConfigure Datas = 1;
+}
+
+message TapeLevelConfigure {
+  int32 ID = 1;
+  repeated TapeLevelInfo TapeLevelInfo = 2;
+}
+
+message TapeLevelInfo {
+  int32 Level = 1;
+  int32 NeedExp = 2;
+  int32 GuideVoice = 3;
+}
+
+message CollectItemLevelDatas {
+  repeated CollectItemLevelConfigure Datas = 1;
+}
+
+message CollectItemLevelConfigure {
+  int32 ID = 1;
+  repeated CollectItemLevelInfo CollectItemLevelInfo = 2;
+}
+
+message CollectItemLevelInfo {
+  int32 Level = 1;
+  int32 NeedExp = 2;
+  int32 GuideVoice = 3;
+}
+
+message PortalLevelDatas {
+  repeated PortalLevelConfigure Datas = 1;
+}
+
+message PortalLevelConfigure {
+  int32 ID = 1;
+  repeated PortalLevelInfo PortalLevelInfo = 2;
+}
+
+message PortalLevelInfo {
+  int32 Level = 1;
+  int32 NeedExp = 2;
+  int32 GuideVoice = 3;
+}
+
+message PhotoItemLevelDatas {
+  repeated PhotoItemLevelConfigure Datas = 1;
+}
+
+message PhotoItemLevelConfigure {
+  int32 ID = 1;
+  repeated PhotoItemLevelInfo PhotoItemLevelInfo = 2;
+}
+
+message PhotoItemLevelInfo {
+  int32 Level = 1;
+  int32 NeedExp = 2;
+  int32 GuideVoice = 3;
+}

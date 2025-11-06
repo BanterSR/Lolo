@@ -1,0 +1,22 @@
+// Source: Pendant.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllPendantDatas {
+  PendantDatas Pendant = 1;
+}
+
+message PendantDatas {
+  repeated PendantConfigure Datas = 1;
+}
+
+message PendantConfigure {
+  int32 ID = 1;
+  string RingPartName = 2;
+  string PendPartName = 3;
+  string MainPartName = 4;
+}

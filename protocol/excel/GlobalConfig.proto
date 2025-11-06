@@ -1,0 +1,21 @@
+// Source: GlobalConfig.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllGlobalConfigDatas {
+  GlobalConfigDatas Config = 1;
+}
+
+message GlobalConfigDatas {
+  repeated GlobalConfigConfigure Datas = 1;
+}
+
+message GlobalConfigConfigure {
+  int32 ID = 1;
+  string Key = 2;
+  repeated string Values = 3;
+}

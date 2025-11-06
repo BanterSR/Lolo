@@ -1,0 +1,46 @@
+// Source: SpellCard.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllSpellCardDatas {
+  SpellCardDatas SpellCard = 1;
+  SpellCardPropertyDatas SpellCardProperty = 2;
+}
+
+message SpellCardDatas {
+  repeated SpellCardConfigure Datas = 1;
+}
+
+message SpellCardConfigure {
+  int32 ID = 1;
+  int32 ItemID = 2;
+  int32 PropertyID = 3;
+  int32 NewWeaponType = 4;
+  int32 NewWeaponSystemType = 5;
+  int32 NewSpellFormType = 6;
+}
+
+message SpellCardPropertyDatas {
+  repeated SpellCardPropertyConfigure Datas = 1;
+}
+
+message SpellCardPropertyConfigure {
+  int32 ID = 1;
+  repeated SpellCardPropertyGroupInfo SpellCardPropertyGroupInfo = 2;
+}
+
+message SpellCardPropertyGroupInfo {
+  int32 Level = 1;
+  int32 SpellID = 2;
+  int32 SpellLevel = 3;
+  repeated SpellCardUpItems SpellCardUpItem = 4;
+}
+
+message SpellCardUpItems {
+  int32 NeedItemID = 1;
+  int32 NeedItemCount = 2;
+}

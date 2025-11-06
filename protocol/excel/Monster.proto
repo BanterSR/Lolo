@@ -1,0 +1,143 @@
+// Source: Monster.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllMonsterDatas {
+  MonsterCharacterDatas MonsterCharacterData = 1;
+  MonsterCharacterGrowthModelDatas MonsterGrowthModel = 2;
+  MonsterDungeonCharacterGrowthModelDatas MonsterDungeonGrowthModel = 3;
+}
+
+message MonsterCharacterDatas {
+  repeated MonsterCharacterConfigure Datas = 1;
+}
+
+message MonsterCharacterConfigure {
+  int32 ID = 1;
+  int32 GrowthModelID = 2;
+  int32 DungeonGrowthModelID = 3;
+  repeated int32 NormalSpellIDs = 4;
+  repeated int32 SpecialSpellIDs = 5;
+  repeated int32 PassiveSpellIDs = 6;
+  int32 NameID = 7;
+  int32 CharacterIcon = 8;
+  int32 RewardPoolID = 9;
+  string AssetFullName = 10;
+  int32 NewSex = 11;
+  int32 NewCampType = 12;
+  int32 NewTag = 13;
+  int32 NewArmorType = 14;
+  int32 NewElementType = 15;
+}
+
+message MonsterCharacterGrowthModelDatas {
+  repeated MonsterCharacterGrowthModelConfigure Datas = 1;
+}
+
+message MonsterCharacterGrowthModelConfigure {
+  int32 ID = 1;
+  repeated MonsterCharacterGrowthModelLevelInfo LevelGroupInfo = 2;
+}
+
+message MonsterCharacterGrowthModelLevelInfo {
+  int32 Level = 1;
+  float MaxHP = 2;
+  float MaxMP = 3;
+  float Attack = 4;
+  float Defense = 5;
+  float HurtCorrection = 6;
+  float ArmorBreaking = 7;
+  float MeleeDefend = 8;
+  float RemoteDefend = 9;
+  float WindyDamage = 10;
+  float FireDamage = 11;
+  float WaterDamage = 12;
+  float LightDamage = 13;
+  float DarkDamage = 14;
+  float ThunderDamage = 15;
+  float WindyDefend = 16;
+  float FireDefend = 17;
+  float WaterDefend = 18;
+  float LightDefend = 19;
+  float DarkDefend = 20;
+  float ThunderDefend = 21;
+  float MaxSP = 22;
+  float SPRegenerateSpeed = 23;
+  float DamageBalance = 24;
+  float CriticalRatio = 25;
+  float CriticalRatioDefend = 26;
+  float CriticalDamagePercent = 27;
+  float CriticalDamageDefendPercent = 28;
+  float BlockRatio = 29;
+  float BlockRatioDefendPercent = 30;
+  float MaxBreak = 31;
+  float BreakMarkup = 32;
+  float BreakRegenerateSpeed = 33;
+  float BreakRegenerateDelay = 34;
+  float BreakDamagePercent = 35;
+  float BreakingDamagePercent = 36;
+  float BreakDamageCriticalPercent = 37;
+  float BreakDamageCounterPercent = 38;
+  float BreakDamageDefendPercent = 39;
+  float CounterDamagePercent = 40;
+  float CounterDamageDefendPercent = 41;
+  float MaxCriticalRatio = 42;
+}
+
+message MonsterDungeonCharacterGrowthModelDatas {
+  repeated MonsterDungeonCharacterGrowthModelConfigure Datas = 1;
+}
+
+message MonsterDungeonCharacterGrowthModelConfigure {
+  int32 ID = 1;
+  repeated MonsterDungeonCharacterGrowthModelLevelInfo DungeonLevelGroupInfo = 2;
+}
+
+message MonsterDungeonCharacterGrowthModelLevelInfo {
+  int32 Level = 1;
+  float MaxHP = 2;
+  float MaxMP = 3;
+  float Attack = 4;
+  float Defense = 5;
+  float HurtCorrection = 6;
+  float ArmorBreaking = 7;
+  float MeleeDefend = 8;
+  float RemoteDefend = 9;
+  float WindyDamage = 10;
+  float FireDamage = 11;
+  float WaterDamage = 12;
+  float LightDamage = 13;
+  float DarkDamage = 14;
+  float ThunderDamage = 15;
+  float WindyDefend = 16;
+  float FireDefend = 17;
+  float WaterDefend = 18;
+  float LightDefend = 19;
+  float DarkDefend = 20;
+  float ThunderDefend = 21;
+  float MaxSP = 22;
+  float SPRegenerateSpeed = 23;
+  float DamageBalance = 24;
+  float CriticalRatio = 25;
+  float CriticalRatioDefend = 26;
+  float CriticalDamagePercent = 27;
+  float CriticalDamageDefendPercent = 28;
+  float BlockRatio = 29;
+  float BlockRatioDefendPercent = 30;
+  float MaxBreak = 31;
+  float BreakMarkup = 32;
+  float BreakRegenerateSpeed = 33;
+  float BreakRegenerateDelay = 34;
+  float BreakDamagePercent = 35;
+  float BreakingDamagePercent = 36;
+  float BreakDamageCriticalPercent = 37;
+  float BreakDamageCounterPercent = 38;
+  float BreakDamageDefendPercent = 39;
+  float CounterDamagePercent = 40;
+  float CounterDamageDefendPercent = 41;
+  float MaxCriticalRatio = 42;
+}

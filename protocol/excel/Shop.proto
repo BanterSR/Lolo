@@ -1,0 +1,133 @@
+// Source: Shop.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllShopDatas {
+  ShopInfoDatas Info = 1;
+  ShopGridDatas Grid = 2;
+  ShopPoolDatas Pool = 3;
+  ShopIncreasingDatas Increasing = 4;
+  ShopDatas Shop = 5;
+  RecommendationDatas Recommendation = 6;
+}
+
+message ShopInfoDatas {
+  repeated ShopInfoConfigure Datas = 1;
+}
+
+message ShopInfoConfigure {
+  int32 ID = 1;
+  int32 UIIndex = 2;
+  int32 TextID = 3;
+  int32 IconID = 4;
+  string OpeningTime = 5;
+  string ClosingTime = 6;
+  int32 GridID = 7;
+  int32 RefreshItemID = 8;
+  int32 RefreshItemCost = 9;
+  int32 UnlockItemID = 10;
+  repeated int32 ItemIDs = 11;
+  int32 NewShopType = 12;
+}
+
+message ShopGridDatas {
+  repeated ShopGridConfigure Datas = 1;
+}
+
+message ShopGridConfigure {
+  int32 ID = 1;
+  repeated ShopGridConfigureItem Items = 2;
+}
+
+message ShopGridConfigureItem {
+  int32 GridID = 1;
+  int32 Index = 2;
+  int32 NewGridConditionType = 3;
+  int32 ConditionParam = 4;
+  int32 FirstBuyShopPoolID = 5;
+  int32 ShopPoolID = 6;
+  int32 IconID = 7;
+  int32 BuyMaxCount = 8;
+  int32 NewShopRefreshType = 9;
+  repeated int32 RefreshTime = 10;
+  string GoodsID = 11;
+  bool IsGift = 12;
+}
+
+message ShopPoolDatas {
+  repeated ShopPoolConfigure Datas = 1;
+}
+
+message ShopPoolConfigure {
+  int32 ID = 1;
+  repeated ShopPoolConfigureItem Items = 2;
+}
+
+message ShopPoolConfigureItem {
+  int32 ItemID = 1;
+  bool IsRepeatedInBag = 2;
+  int32 ItemNum = 3;
+  int32 Index = 4;
+  string Name = 5;
+  int32 AddItemID = 6;
+  int32 AddItemNum = 7;
+  int32 MinLevel = 8;
+  int32 MaxLevel = 9;
+  string OpeningTime = 10;
+  string ClosingTime = 11;
+  float Discount = 12;
+  float ShowDiscount = 13;
+  bool IsHideInBag = 14;
+  repeated ShopCurrencyItems ShopCurrencyItem = 15;
+}
+
+message ShopCurrencyItems {
+  int32 CurrencyID = 1;
+  int32 Price = 2;
+  int32 IncreasingID = 3;
+}
+
+message ShopIncreasingDatas {
+  repeated ShopIncreasingConfigure Datas = 1;
+}
+
+message ShopIncreasingConfigure {
+  int32 ID = 1;
+  repeated ShopIncreasingConfigureItem Items = 2;
+}
+
+message ShopIncreasingConfigureItem {
+  int32 Price = 1;
+}
+
+message ShopDatas {
+  repeated ShopConfigure Datas = 1;
+}
+
+message ShopConfigure {
+  int32 ID = 1;
+}
+
+message RecommendationDatas {
+  repeated RecommendationConfigure Datas = 1;
+}
+
+message RecommendationConfigure {
+  int32 ID = 1;
+  int32 TextID = 2;
+  int32 IconID = 3;
+  repeated ShopRecommendationItem Items = 4;
+}
+
+message ShopRecommendationItem {
+  int32 PageIconID = 1;
+  int32 PageTextID = 2;
+  int32 ShopID = 3;
+  int32 ShopPoolID = 4;
+  string OpeningTime = 5;
+  string ClosingTime = 6;
+}

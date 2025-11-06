@@ -1,0 +1,52 @@
+// Source: Expression.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllExpressionDatas {
+  ExpressionDatas Expression = 1;
+  MultiplayerExpressionDatas MultiplayerExpression = 2;
+}
+
+message ExpressionDatas {
+  repeated ExpressionConfigure Datas = 1;
+}
+
+message ExpressionConfigure {
+  int32 ID = 1;
+  int32 TextID = 2;
+  int32 IconID = 3;
+  repeated ExpressionGroupInfo ExpressionGroupInfo = 4;
+  int32 NewExpressionType = 5;
+}
+
+message ExpressionGroupInfo {
+  int32 NeedItemID = 1;
+  int32 NeedItemCount = 2;
+  int32 Index = 3;
+  int32 ActionID = 4;
+  int32 AchieveConditionID = 5;
+  string OpeningTime = 6;
+  string ClosingTime = 7;
+  bool IsShow = 8;
+  bool IsStudy = 9;
+  int32 MultiplayerID = 10;
+}
+
+message MultiplayerExpressionDatas {
+  repeated MultiplayerExpressionConfigure Datas = 1;
+}
+
+message MultiplayerExpressionConfigure {
+  int32 ID = 1;
+  int32 PlayerNumber = 2;
+  int32 ActionLevel = 3;
+  int32 StarterPlayActionID = 4;
+  int32 RequesterPlayActionID = 5;
+  int32 IntimacyLimit = 6;
+  float RequesterPlayDistance = 7;
+  int32 NewMultiplayerExpressionType = 8;
+}

@@ -1,0 +1,51 @@
+// Source: BattlePass.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllBattlePassDatas {
+  BattlePassDatas BattlePass = 1;
+  BattlePassQuesetDatas BattlePassQueset = 2;
+}
+
+message BattlePassDatas {
+  repeated BattlePassConfigure Datas = 1;
+}
+
+message BattlePassConfigure {
+  int32 ID = 1;
+  int32 ShopID = 2;
+  int32 MaxExp = 3;
+  int32 DayQuestID = 4;
+  int32 WeekQuestID = 5;
+  int32 SeasonQuestID = 6;
+  repeated BattlePassLevelUp BattlePassLevelUps = 7;
+}
+
+message BattlePassLevelUp {
+  int32 Level = 1;
+  int32 Exp = 2;
+  repeated BattlePassRewards BattlePassReward = 3;
+}
+
+message BattlePassRewards {
+  int32 ItemID = 1;
+  int32 ItemNum = 2;
+}
+
+message BattlePassQuesetDatas {
+  repeated BattlePassQuesetConfigure Datas = 1;
+}
+
+message BattlePassQuesetConfigure {
+  int32 ID = 1;
+  repeated BattlePassQuesetItems BattlePassQuesetItem = 2;
+}
+
+message BattlePassQuesetItems {
+  int32 AchieveID = 1;
+  int32 Exp = 2;
+}

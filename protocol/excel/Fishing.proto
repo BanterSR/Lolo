@@ -1,0 +1,105 @@
+// Source: Fishing.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllFishingDatas {
+  FishingLevelDatas FishingLevel = 1;
+  FishingSpellDatas FishingSpell = 2;
+  FishingEventDatas FishingEvent = 3;
+  FishingInfoDatas FishingInfo = 4;
+}
+
+message FishingLevelDatas {
+  repeated FishingLevelConfigure Datas = 1;
+}
+
+message FishingLevelConfigure {
+  int32 ID = 1;
+  int32 UpgradeLevelByProficiency = 2;
+  int32 UpLevelNeedItemID = 3;
+  int32 UpLevelNeedItemCount = 4;
+  int32 NeedItemID = 5;
+  int32 NeedItemCount = 6;
+  repeated FishingLevelQuestConfigureItem FishingLevelQuest = 7;
+}
+
+message FishingLevelQuestConfigureItem {
+  int32 AchieveConditionID = 1;
+  int32 Proficiency = 2;
+  int32 CompleteLimit = 3;
+}
+
+message FishingSpellDatas {
+  repeated FishingSpellConfigure Datas = 1;
+}
+
+message FishingSpellConfigure {
+  int32 ID = 1;
+  repeated FishingSpellItemsConfigureItem FishingSpellItems = 2;
+}
+
+message FishingSpellItemsConfigureItem {
+  int32 Level = 1;
+  int32 IconID = 2;
+  int32 TextID = 3;
+  int32 NewLifeSpellEffectType = 4;
+  float Param1 = 5;
+  float Param2 = 6;
+  int32 NeedFishLevel = 7;
+  int32 NeedTime = 8;
+  int32 NeedCurrencyID = 9;
+  int32 NeedCurrencyCount = 10;
+  repeated FishingNeedItems FishingNeedItem = 11;
+}
+
+message FishingNeedItems {
+  int32 NeedItemID = 1;
+  int32 NeedItemCount = 2;
+}
+
+message FishingEventDatas {
+  repeated FishingEventConfigure Datas = 1;
+}
+
+message FishingEventConfigure {
+  int32 ID = 1;
+  repeated FishingEventItemsConfigureItem FishingEventItems = 2;
+}
+
+message FishingEventItemsConfigureItem {
+  int32 Index = 1;
+  int32 NewFishActionType = 2;
+  float TriggerTimeCoe = 3;
+  int32 NewFishEventType = 4;
+  float Param1 = 5;
+  float Param2 = 6;
+  int32 DesciptionID = 7;
+}
+
+message FishingInfoDatas {
+  repeated FishingInfoConfigure Datas = 1;
+}
+
+message FishingInfoConfigure {
+  int32 ID = 1;
+  int32 NeedLevel = 2;
+  int32 ItemID = 3;
+  bool IsShow = 4;
+  int32 NeedShowbookItemID = 5;
+  int32 NewSizeType = 6;
+  int32 NewFishClassifyType = 7;
+  int32 NewDayType = 8;
+  int32 UITypeID = 9;
+  float MinSize = 10;
+  float MaxSize = 11;
+  repeated FishAchieveRewardConfigureItem FishAchieveRewards = 12;
+}
+
+message FishAchieveRewardConfigureItem {
+  int32 AchieveConditionID = 1;
+  int32 RewardID = 2;
+}

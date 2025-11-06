@@ -1,0 +1,149 @@
+// Source: Armor.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllArmorDatas {
+  ArmorDatas Armor = 1;
+  ArmorPropertyDatas ArmorProperty = 2;
+  ArmorDisassembleDatas ArmorDisassemble = 3;
+  ArmorStrengthenDatas ArmorStrengthen = 4;
+  ArmorRandomPropertyDatas ArmorRandomProperty = 5;
+  ArmorRandomValueDatas ArmorRandomValue = 6;
+}
+
+message ArmorDatas {
+  repeated ArmorConfigure Datas = 1;
+}
+
+message ArmorConfigure {
+  int32 ID = 1;
+  int32 ItemID = 2;
+  int32 ArmorPropertyID = 3;
+  int32 BaseScore = 4;
+  int32 SuitIndex = 5;
+  int32 SuitID2 = 6;
+  int32 SuitID3 = 7;
+  repeated int32 PassiveSpellIDs = 8;
+  int32 NewWeaponSystemType = 9;
+  int32 NewEquipType = 10;
+}
+
+message ArmorPropertyDatas {
+  repeated ArmorPropertyConfigure Datas = 1;
+}
+
+message ArmorPropertyConfigure {
+  int32 ID = 1;
+  repeated ArmorPropertyGroupInfo ArmorPropertyGroupInfo = 2;
+}
+
+message ArmorPropertyGroupInfo {
+  int32 MinLevel = 1;
+  int32 MaxLevel = 2;
+  float MinExtHp = 3;
+  float MaxExtHp = 4;
+  float MinHpPercent = 5;
+  float MaxHpPercent = 6;
+  float MinExtAttack = 7;
+  float MaxExtAttack = 8;
+  float MinAttackPercent = 9;
+  float MaxAttackPercent = 10;
+  float MinExtDefense = 11;
+  float MaxExtDefense = 12;
+  float MinDefensePercent = 13;
+  float MaxDefensePercent = 14;
+  float MinCriticalRatio = 15;
+  float MaxCriticalRatio = 16;
+  float MinCriticalDamagePercent = 17;
+  float MaxCriticalDamagePercent = 18;
+  float MinRecoverPercent = 19;
+  float MaxRecoverPercent = 20;
+  float MinFloatValue = 21;
+  float MaxFloatValue = 22;
+  int32 ArmorLevel = 23;
+  int32 StrengthenID = 24;
+  int32 DisassembleID = 25;
+  int32 RandomProperty1ID = 26;
+  int32 RandomProperty2ID = 27;
+  int32 RandomProperty3ID = 28;
+  int32 RandomProperty4ID = 29;
+}
+
+message ArmorDisassembleDatas {
+  repeated ArmorDisassembleConfigure Datas = 1;
+}
+
+message ArmorDisassembleConfigure {
+  int32 ID = 1;
+  repeated ArmorDisassembleItem ArmorDisassembleItem = 2;
+}
+
+message ArmorDisassembleItem {
+  int32 ItemID = 1;
+  int32 ItemMinCount = 2;
+  int32 ItemMaxCount = 3;
+  float ItemRate = 4;
+}
+
+message ArmorStrengthenDatas {
+  repeated ArmorStrengthenConfigure Datas = 1;
+}
+
+message ArmorStrengthenConfigure {
+  int32 ID = 1;
+  repeated ArmorStrengthenGroupInfo ArmorStrengthenGroupInfo = 2;
+}
+
+message ArmorStrengthenGroupInfo {
+  int32 Level = 1;
+  float AddExtHp = 2;
+  float AddExtAttack = 3;
+  float AddHpPercent = 4;
+  float AddAttackPercent = 5;
+  float AddDefensePercent = 6;
+  float AddCriticalRatio = 7;
+  float AddCriticalDamagePercent = 8;
+  float AddRecoverPercent = 9;
+  float AddExtDefense = 10;
+  int32 NeedGoldCount = 11;
+  repeated ArmorStrengthNeedItems ArmorStrengthNeedItem = 12;
+}
+
+message ArmorStrengthNeedItems {
+  int32 NeedItemID = 1;
+  int32 NeedItemCount = 2;
+}
+
+message ArmorRandomPropertyDatas {
+  repeated ArmorRandomPropertyConfigure Datas = 1;
+}
+
+message ArmorRandomPropertyConfigure {
+  int32 ID = 1;
+  repeated ArmorRandomPropertyGroupInfo ArmorRandomPropertyGroupInfo = 2;
+}
+
+message ArmorRandomPropertyGroupInfo {
+  int32 RandomValueID = 1;
+  int32 NewPropertyType = 2;
+}
+
+message ArmorRandomValueDatas {
+  repeated ArmorRandomValueConfigure Datas = 1;
+}
+
+message ArmorRandomValueConfigure {
+  int32 ID = 1;
+  repeated ArmorRandomValueGroupInfo ArmorRandomValueGroupInfo = 2;
+}
+
+message ArmorRandomValueGroupInfo {
+  float MinLevel = 1;
+  float MaxLevel = 2;
+  float Min = 3;
+  float Max = 4;
+}

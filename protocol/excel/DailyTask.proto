@@ -1,0 +1,22 @@
+// Source: DailyTask.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllDailyTaskDatas {
+  DailyTaskRewardDatas DailyTaskReward = 1;
+}
+
+message DailyTaskRewardDatas {
+  repeated DailyTaskRewardConfigure Datas = 1;
+}
+
+message DailyTaskRewardConfigure {
+  int32 ID = 1;
+  int32 Step = 2;
+  int32 CostItemID = 3;
+  int32 CostItemNum = 4;
+}

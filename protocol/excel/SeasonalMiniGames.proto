@@ -1,0 +1,21 @@
+// Source: SeasonalMiniGames.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllSeasonalMiniGamesDatas {
+  MiniGamesActivityDatas MiniGamesActivity = 1;
+}
+
+message MiniGamesActivityDatas {
+  repeated MiniGamesActivityConfigure Datas = 1;
+}
+
+message MiniGamesActivityConfigure {
+  int32 ID = 1;
+  string StartTime = 2;
+  string EndTime = 3;
+}

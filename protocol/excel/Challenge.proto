@@ -1,0 +1,29 @@
+// Source: Challenge.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllChallengeDatas {
+  ChallengeDatas Challenge = 1;
+}
+
+message ChallengeDatas {
+  repeated ChallengeConfigure Datas = 1;
+}
+
+message ChallengeConfigure {
+  int32 ID = 1;
+  int32 TextID = 2;
+  int32 IconID = 3;
+  int32 StarTimer1 = 4;
+  int32 StarTimer3 = 5;
+  int32 StarTimer2 = 6;
+  int32 SceneID = 7;
+  string AssetFullName = 8;
+  int32 NewChallengeType = 9;
+  int32 NewGainRewardType = 10;
+  int32 NewRepeatGainRewardType = 11;
+}

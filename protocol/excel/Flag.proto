@@ -1,0 +1,30 @@
+// Source: Flag.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllFlagDatas {
+  FlagDatas Flag = 1;
+}
+
+message FlagDatas {
+  repeated FlagConfigure Datas = 1;
+}
+
+message FlagConfigure {
+  int32 ID = 1;
+  int32 TextID = 2;
+  int32 IconID = 3;
+  int32 SceneID = 4;
+  repeated FlagGroupInfo FlagGroupInfo = 5;
+}
+
+message FlagGroupInfo {
+  int32 Index = 1;
+  bool IsItemUnlock = 2;
+  int32 NewMissionType = 3;
+  int32 RelationID = 4;
+}

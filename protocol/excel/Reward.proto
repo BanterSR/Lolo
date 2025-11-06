@@ -1,0 +1,60 @@
+// Source: Reward.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllRewardDatas {
+  RewardPoolDatas RewardPool = 1;
+  RewardItemPoolDatas RewardItemPool = 2;
+  WorldLevelPoolDatas WorldLevelPool = 3;
+}
+
+message RewardPoolDatas {
+  repeated RewardPoolConfigure Datas = 1;
+}
+
+message RewardPoolConfigure {
+  int32 ID = 1;
+  repeated RewardPoolGroupInfo RewardPoolGroup = 2;
+}
+
+message RewardPoolGroupInfo {
+  int32 RewardPoolGroupID = 1;
+}
+
+message RewardItemPoolDatas {
+  repeated RewardItemPoolConfigure Datas = 1;
+}
+
+message RewardItemPoolConfigure {
+  int32 ID = 1;
+  repeated RewardItemPoolGroupInfo RewardItemPoolGroup = 2;
+}
+
+message RewardItemPoolGroupInfo {
+  int32 ItemID = 1;
+  repeated int32 NeedItems = 2;
+  int32 ShowItemID = 3;
+  bool ShowNum = 4;
+  int32 ItemMinCount = 5;
+  int32 ItemMaxCount = 6;
+  int32 MinLevelLimit = 7;
+  int32 MaxLevelLimit = 8;
+}
+
+message WorldLevelPoolDatas {
+  repeated WorldLevelPoolConfigure Datas = 1;
+}
+
+message WorldLevelPoolConfigure {
+  int32 ID = 1;
+  repeated WorldLevelPoolGroupInfo WorldLevelPoolGroup = 2;
+}
+
+message WorldLevelPoolGroupInfo {
+  int32 WorldLevel = 1;
+  int32 PoolID = 2;
+}

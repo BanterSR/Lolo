@@ -1,0 +1,107 @@
+// Source: BossRush.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllBossRushDatas {
+  BossRushSeasonDatas BossRushSeason = 1;
+  BossRushStageDatas BossRushStage = 2;
+  BossRushAchieveDatas BossRushAchieve = 3;
+  BossRushRankDatas BossRushRank = 4;
+  BossRushRankStuffDatas BossRushRankStuff = 5;
+}
+
+message BossRushSeasonDatas {
+  repeated BossRushSeasonConfigure Datas = 1;
+}
+
+message BossRushSeasonConfigure {
+  int32 ID = 1;
+  string StartTime = 2;
+  string EndTime = 3;
+  string ShowRankTime = 4;
+  int32 SeasonStage = 5;
+  int32 SeasonAchieve = 6;
+  int32 SeasonRankReward = 7;
+  int32 SeasonRankAdd = 8;
+  int32 BattleCostItem = 9;
+  int32 CostItemRecover = 10;
+  int32 BattleTime = 11;
+  int32 NextSeason = 12;
+  int32 StageNameTextID = 13;
+}
+
+message BossRushStageDatas {
+  repeated BossRushStageConfigure Datas = 1;
+}
+
+message BossRushStageConfigure {
+  int32 ID = 1;
+  repeated BossRushStageGroupInfo BossRushStageGroupInfo = 2;
+}
+
+message BossRushStageGroupInfo {
+  int32 TextID = 1;
+  int32 IconID = 2;
+  int32 DungeonID = 3;
+  int32 BeginDay = 4;
+  int32 Scroe = 5;
+  int32 MaxHP = 6;
+  int32 NewElementType1 = 7;
+  int32 NewUpTag1 = 8;
+  int32 NewUpTag2 = 9;
+  int32 NewUpTag3 = 10;
+  int32 NewUpTag4 = 11;
+  int32 NewUpDamageType1 = 12;
+  int32 NewUpDamageType2 = 13;
+  int32 NewUpDamageType3 = 14;
+  int32 NewUpDamageType4 = 15;
+}
+
+message BossRushAchieveDatas {
+  repeated BossRushAchieveConfigure Datas = 1;
+}
+
+message BossRushAchieveConfigure {
+  int32 ID = 1;
+  repeated BossRushAchieveGroupInfo BossRushAchieveGroupInfo = 2;
+}
+
+message BossRushAchieveGroupInfo {
+  int32 AchieveID = 1;
+  int32 RewardID = 2;
+}
+
+message BossRushRankDatas {
+  repeated BossRushRankConfigure Datas = 1;
+}
+
+message BossRushRankConfigure {
+  int32 ID = 1;
+  repeated BossRushRankGroupInfo BossRushRankGroupInfo = 2;
+}
+
+message BossRushRankGroupInfo {
+  repeated int32 RankRange = 1;
+  int32 RewardID = 2;
+  int32 IconID = 3;
+  int32 Rank = 4;
+}
+
+message BossRushRankStuffDatas {
+  repeated BossRushRankStuffConfigure Datas = 1;
+}
+
+message BossRushRankStuffConfigure {
+  int32 ID = 1;
+  repeated BossRushRankStuffGroupInfo BossRushRankStuffInfo = 2;
+}
+
+message BossRushRankStuffGroupInfo {
+  int32 Num = 1;
+  int32 ScoreMin = 2;
+  int32 ScoreMax = 3;
+}

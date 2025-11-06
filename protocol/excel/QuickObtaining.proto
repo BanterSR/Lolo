@@ -1,0 +1,27 @@
+// Source: QuickObtaining.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllQuickObtainingDatas {
+  QuickObtainingDatas QuickObtaining = 1;
+}
+
+message QuickObtainingDatas {
+  repeated QuickObtainingConfigure Datas = 1;
+}
+
+message QuickObtainingConfigure {
+  int32 ID = 1;
+  repeated QuickObtainingItem QuickObtainingItem = 2;
+}
+
+message QuickObtainingItem {
+  int32 PlayerLevel = 1;
+  int32 Num = 2;
+  int32 NeedVitality = 3;
+  int32 NeedSpecialcurrency = 4;
+}

@@ -1,0 +1,107 @@
+// Source: Cooking.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllCookingDatas {
+  CookLevelDatas CookLevel = 1;
+  CookFoodDatas CookFood = 2;
+  CookAffectDatas CookAffect = 3;
+  CookSpellDatas CookSpell = 4;
+}
+
+message CookLevelDatas {
+  repeated CookLevelConfigure Datas = 1;
+}
+
+message CookLevelConfigure {
+  int32 ID = 1;
+  int32 UpgradeLevelByProficiency = 2;
+  int32 NeedItemID = 3;
+  int32 NeedItemCount = 4;
+  repeated CookLevelQuestConfigureItem CookLevelQuest = 5;
+}
+
+message CookLevelQuestConfigureItem {
+  int32 AchieveConditionID = 1;
+  int32 Proficiency = 2;
+  int32 CompleteLimit = 3;
+}
+
+message CookFoodDatas {
+  repeated CookFoodConfigure Datas = 1;
+}
+
+message CookFoodConfigure {
+  int32 ID = 1;
+  bool IsShow = 2;
+  bool IsHandbookShow = 3;
+  int32 NeedShowbookItemID = 4;
+  int32 CookLevel = 5;
+  int32 NeedTime = 6;
+  string OpeningTime = 7;
+  string ClosingTime = 8;
+  int32 NeedItemID = 9;
+  int32 NeedItemCount = 10;
+  repeated CookFoodItemConfigureItem CookFoodItems = 11;
+  float SuccessfulProbability = 12;
+  int32 GetItemID = 13;
+  int32 NeedFormulaItemID = 14;
+  repeated CookFoodQuestConfigureItem CookFoodQuestRewards = 15;
+  int32 NewCookPageType = 16;
+  int32 NewCookFoodType = 17;
+  int32 NewCookToolType = 18;
+}
+
+message CookFoodItemConfigureItem {
+  int32 FoodItemID = 1;
+  int32 FoodItemCount = 2;
+}
+
+message CookFoodQuestConfigureItem {
+  int32 AchieveConditionID = 1;
+  int32 RewardID = 2;
+}
+
+message CookAffectDatas {
+  repeated CookAffectConfigure Datas = 1;
+}
+
+message CookAffectConfigure {
+  int32 ID = 1;
+  int32 FoodEffectTypeParam = 2;
+  int32 BuffID = 3;
+  int32 NewCookFoodAffectType = 4;
+  int32 NewCookFoodEffectType = 5;
+}
+
+message CookSpellDatas {
+  repeated CookSpellConfigure Datas = 1;
+}
+
+message CookSpellConfigure {
+  int32 ID = 1;
+  repeated CookSpellItemsConfigureItem CookSpellItems = 2;
+}
+
+message CookSpellItemsConfigureItem {
+  int32 Level = 1;
+  int32 IconID = 2;
+  int32 TextID = 3;
+  int32 NewLifeSpellEffectType = 4;
+  float SpellParam1 = 5;
+  float SpellParam2 = 6;
+  int32 NeedCookLevel = 7;
+  int32 NeedTime = 8;
+  int32 NeedCurrencyID = 9;
+  int32 NeedCurrencyCount = 10;
+  repeated CookNeedItems CookNeedItem = 11;
+}
+
+message CookNeedItems {
+  int32 NeedItemID = 1;
+  int32 NeedItemCount = 2;
+}

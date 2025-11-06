@@ -1,0 +1,52 @@
+// Source: TeamGameplay.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllTeamGameplayDatas {
+  ModeDatas Mode = 1;
+  SubModeDatas SubMode = 2;
+}
+
+message ModeDatas {
+  repeated ModeConfigure Datas = 1;
+}
+
+message ModeConfigure {
+  int32 ID = 1;
+  int32 TextID = 2;
+  int32 IconID = 3;
+  int32 UIIndex = 4;
+  repeated ModeItems ModeItems = 5;
+}
+
+message ModeItems {
+  int32 SubModeId = 1;
+  int32 SubTextID = 2;
+  int32 SubIconID = 3;
+  int32 PlayerMin = 4;
+  int32 PlayerMax = 5;
+  int32 SubUIIndex = 6;
+  int32 ItemUnlock = 7;
+  int32 NewPlayMode = 8;
+  repeated int32 RoomCost = 9;
+}
+
+message SubModeDatas {
+  repeated SubModeConfigure Datas = 1;
+}
+
+message SubModeConfigure {
+  int32 ID = 1;
+  repeated SubModeItems SubModeItems = 2;
+}
+
+message SubModeItems {
+  int32 Index = 1;
+  int32 Para = 2;
+  string AssetPath = 3;
+  int32 NewGamePlayerStartType = 4;
+}

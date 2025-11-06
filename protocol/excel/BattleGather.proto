@@ -1,0 +1,39 @@
+// Source: BattleGather.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllBattleGatherDatas {
+  BattleGatherDatas BattleGather = 1;
+  BattleGatherItemDatas BattleGatherItem = 2;
+}
+
+message BattleGatherDatas {
+  repeated BattleGatherConfigure Datas = 1;
+}
+
+message BattleGatherConfigure {
+  int32 ID = 1;
+  int32 TextID = 2;
+  int32 IconID = 3;
+  int32 PreTaskID = 4;
+  int32 StartVoiceID = 5;
+  string AssetFullName = 6;
+  int32 ReviseLevel = 7;
+  int32 MonsterLevel = 8;
+  int32 RecommendLv = 9;
+  int32 NewUnlockTaskType = 10;
+  int32 NewTaskType = 11;
+}
+
+message BattleGatherItemDatas {
+  repeated BattleGatherItemConfigure Datas = 1;
+}
+
+message BattleGatherItemConfigure {
+  int32 ID = 1;
+  int32 TextID = 2;
+}

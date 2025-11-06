@@ -1,0 +1,48 @@
+// Source: BattleWeapon.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllBattleWeaponDatas {
+  BattleWeaponTaskDatas BattleWeaponTask = 1;
+  BattleWeaponCharacterPoolDatas BattleWeaponCharacterPool = 2;
+}
+
+message BattleWeaponTaskDatas {
+  repeated BattleWeaponTaskConfigure Datas = 1;
+}
+
+message BattleWeaponTaskConfigure {
+  int32 ID = 1;
+  int32 TextID = 2;
+  int32 IconID = 3;
+  int32 PreTaskID = 4;
+  int32 VirualWeaponID = 5;
+  int32 UseCharacterPoolID = 6;
+  int32 StartVoiceID = 7;
+  string AssetFullName = 8;
+  int32 ReviseLevel = 9;
+  int32 MonsterLevel = 10;
+  int32 RecommendLv = 11;
+  int32 NewUnlockTaskType = 12;
+  int32 NewTaskType = 13;
+}
+
+message BattleWeaponCharacterPoolDatas {
+  repeated BattleWeaponCharacterPoolConfigure Datas = 1;
+}
+
+message BattleWeaponCharacterPoolConfigure {
+  int32 ID = 1;
+  repeated BattleWeaponCharacterPoolGroupInfo BattleWeaponCharacterPoolGroupInfo = 2;
+}
+
+message BattleWeaponCharacterPoolGroupInfo {
+  int32 Index = 1;
+  int32 CharacterID = 2;
+  int32 NewWeaponType = 3;
+  int32 NewCharacterType = 4;
+}

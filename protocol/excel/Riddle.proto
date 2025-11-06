@@ -1,0 +1,27 @@
+// Source: Riddle.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllRiddleDatas {
+  RiddleDatas Riddle = 1;
+}
+
+message RiddleDatas {
+  repeated RiddleConfigure Datas = 1;
+}
+
+message RiddleConfigure {
+  int32 ID = 1;
+  int32 TextID = 2;
+  int32 IconID = 3;
+  int32 RewardPoolID = 4;
+  int32 RepeatRewardPoolID = 5;
+  string AssetFullName = 6;
+  int32 NewRiddleType = 7;
+  int32 NewGainRewardType = 8;
+  int32 NewRepeatGainRewardType = 9;
+}

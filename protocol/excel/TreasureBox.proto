@@ -1,0 +1,70 @@
+// Source: TreasureBox.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllTreasureBoxDatas {
+  TreasureBoxDatas TreasureBox = 1;
+  CollectionTreasureBoxDatas CollectionTreasureBox = 2;
+  EncounterTreasureBoxDatas EncounterTreasureBox = 3;
+  RiddleTreasureBoxDatas RiddleTreasureBox = 4;
+  GameTreasureBoxDatas GameTreasureBox = 5;
+}
+
+message TreasureBoxDatas {
+  repeated TreasureBoxConfigure Datas = 1;
+}
+
+message TreasureBoxConfigure {
+  int32 ID = 1;
+  int32 RelateID = 2;
+  int32 NewTreasureBoxType = 3;
+  int32 NewTreasureBoxRewardShowType = 4;
+  int32 NewTreasureBoxRewardType = 5;
+}
+
+message CollectionTreasureBoxDatas {
+  repeated CollectionTreasureBoxConfigure Datas = 1;
+}
+
+message CollectionTreasureBoxConfigure {
+  int32 ID = 1;
+  repeated int32 RefreshTime = 2;
+  int32 NewRefreshType = 3;
+}
+
+message EncounterTreasureBoxDatas {
+  repeated EncounterTreasureBoxConfigure Datas = 1;
+}
+
+message EncounterTreasureBoxConfigure {
+  int32 ID = 1;
+  string TreasureRes = 2;
+  int32 AutoDisappear = 3;
+  int32 Disappear = 4;
+}
+
+message RiddleTreasureBoxDatas {
+  repeated RiddleTreasureBoxConfigure Datas = 1;
+}
+
+message RiddleTreasureBoxConfigure {
+  int32 ID = 1;
+  string TreasureRes = 2;
+  int32 AutoDisappear = 3;
+  int32 Disappear = 4;
+}
+
+message GameTreasureBoxDatas {
+  repeated GameTreasureBoxConfigure Datas = 1;
+}
+
+message GameTreasureBoxConfigure {
+  int32 ID = 1;
+  string TreasureRes = 2;
+  int32 AutoDisappear = 3;
+  int32 Disappear = 4;
+}

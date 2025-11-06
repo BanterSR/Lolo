@@ -1,0 +1,14 @@
+{
+  "DefaultCharacter": [101001, 102001, 102002, 201001],
+  "DefaultBadge": 5000,
+  "DefaultUmbrellaId": 4050,
+  "EquipmentPresetNum": 3,
+  "OutfitPresetNum": 3,
+  "DefaultPlayerName": "gucooing",
+  "DefaultPlayerLevel": 1,
+  "DefaultPlayerExp": 0,
+  "DefaultPlayerSign": "",
+  "DefaultPlayerHead": 41101,
+  "DefaultInstanceIndex": 0,
+  "DefaultPhoneBackground": 8000
+}

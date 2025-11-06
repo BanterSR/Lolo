@@ -1,0 +1,40 @@
+// Source: MsgCodeTips.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllMsgCodeTipsDatas {
+  MsgCodeTipsDatas MsgCodeTips = 1;
+  NetCloseReasonTipsDatas NetCloseReasonTips = 2;
+}
+
+message MsgCodeTipsDatas {
+  repeated MsgCodeTipsConfigure Datas = 1;
+}
+
+message MsgCodeTipsConfigure {
+  int32 ID = 1;
+  string Key = 2;
+  string Chinese_Simplified = 3;
+  string Chinese_Traditional = 4;
+  string English = 5;
+  string Japanese = 6;
+  string Korea = 7;
+}
+
+message NetCloseReasonTipsDatas {
+  repeated NetCloseReasonTipsConfigure Datas = 1;
+}
+
+message NetCloseReasonTipsConfigure {
+  int32 ID = 1;
+  string Key = 2;
+  string Chinese_Simplified = 3;
+  string Chinese_Traditional = 4;
+  string English = 5;
+  string Japanese = 6;
+  string Korea = 7;
+}

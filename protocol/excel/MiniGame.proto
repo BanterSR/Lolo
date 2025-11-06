@@ -1,0 +1,27 @@
+// Source: MiniGame.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllMiniGameDatas {
+  MiniGameGroupDatas MiniGameGroup = 1;
+}
+
+message MiniGameGroupDatas {
+  repeated MiniGameGroupConfigure Datas = 1;
+}
+
+message MiniGameGroupConfigure {
+  int32 ID = 1;
+  repeated MiniGameConfig MiniGameConfig = 2;
+}
+
+message MiniGameConfig {
+  int32 SceneId = 1;
+  repeated int32 RewardIDs = 2;
+  string AssetPath = 3;
+  int32 NewMiniGameType = 4;
+}

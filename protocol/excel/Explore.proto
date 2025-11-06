@@ -1,0 +1,75 @@
+// Source: Explore.proto
+// Tool: OverfieldTool
+
+syntax = "proto3";
+
+option go_package = "./;excel";
+package excel;
+
+message AllExploreDatas {
+  ExploreAreaDatas ExploreArea = 1;
+  ExploreActivityDatas ExploreActivity = 2;
+  ExploreIntervalDatas ExploreInterval = 3;
+}
+
+message ExploreAreaDatas {
+  repeated ExploreAreaConfigure Datas = 1;
+}
+
+message ExploreAreaConfigure {
+  int32 ID = 1;
+  int32 NameID = 2;
+  int32 IconID = 3;
+  int32 NeedTime = 4;
+  int32 QuickNeedItem = 5;
+  int32 QuickNeedItemCount = 6;
+  int32 NeedSceneID = 7;
+  int32 NeedPlayerLevel = 8;
+  int32 NeedItem = 9;
+  int32 NeedItemCount = 10;
+  repeated ExploreAreaItem ExploreAreaItem = 11;
+  int32 NewExploreDifficulty = 12;
+}
+
+message ExploreAreaItem {
+  int32 RewarItemID = 1;
+}
+
+message ExploreActivityDatas {
+  repeated ExploreActivityConfigure Datas = 1;
+}
+
+message ExploreActivityConfigure {
+  int32 ID = 1;
+  int32 NameID = 2;
+  int32 IconID = 3;
+  string StartTime = 4;
+  string EndTime = 5;
+  int32 NeedTime = 6;
+  int32 MaxTimes = 7;
+  int32 QuickNeedItem = 8;
+  int32 QuickNeedItemCount = 9;
+  int32 SpecialRewardItemID = 10;
+  repeated ExploreActivityItem ExploreActivityItem = 11;
+}
+
+message ExploreActivityItem {
+  int32 RewarItemID = 1;
+}
+
+message ExploreIntervalDatas {
+  repeated ExploreIntervalConfigure Datas = 1;
+}
+
+message ExploreIntervalConfigure {
+  int32 ID = 1;
+  int32 NameID = 2;
+  int32 IconID = 3;
+  int32 RetentionTime = 4;
+  int32 Time = 5;
+  int32 NeedItemID = 6;
+  int32 CaptainCount = 7;
+  int32 MemberCount = 8;
+  int32 QuickNeedItem = 9;
+  int32 QuickNeedItemCount = 10;
+}
