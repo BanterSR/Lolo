@@ -10,10 +10,9 @@ type TeamModel struct {
 }
 
 type TeamInfo struct {
-	CurChar uint32
-	Char1   uint32
-	Char2   uint32
-	Char3   uint32
+	Char1 uint32
+	Char2 uint32
+	Char3 uint32
 }
 
 func (s *Player) GetTeamModel() *TeamModel {
@@ -34,7 +33,6 @@ func (s *Player) newTeamInfo() *TeamInfo {
 		switch index {
 		case 0:
 			info.Char1 = id
-			info.CurChar = id
 		case 1:
 			info.Char2 = id
 		case 2:

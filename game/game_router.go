@@ -13,12 +13,21 @@ type HandlerFunc func(s *model.Player, msg *alg.GameMsg)
 func (g *Game) newRouter() {
 	g.handlerFuncRouteMap = map[uint32]HandlerFunc{
 		// cmd.PlayerLoginReq: g.PlayerLogin 登录第二个包 仅提示用
-		cmd.PlayerMainDataReq:    g.PlayerMainData,    // 获取玩家信息
-		cmd.GetWeaponReq:         g.GetWeapon,         // 获取玩家全部武器
+		// 基础包
+		cmd.PlayerPingReq: g.PlayerPing, // ping
+		// 玩家基础信息
+		cmd.PlayerMainDataReq: g.PlayerMainData, // 获取玩家信息
+		// 场景
 		cmd.PlayerSceneRecordReq: g.PlayerSceneRecord, // 玩家场景同步器
-		cmd.PlayerPingReq:        g.PlayerPing,        // ping
-		cmd.GachaListReq:         g.GachaList,         // 获取卡池信息
+		cmd.SendActionReq:        g.SendAction,        // 场景自动化同步器
+		// 队伍
+		cmd.UpdateTeamReq: g.UpdateTeam, // 更新队伍
+		// 武器
+		cmd.GetWeaponReq: g.GetWeapon, // 获取玩家全部武器
+		// 卡池
+		cmd.GachaListReq: g.GachaList, // 获取卡池信息
 
+		cmd.GenericSceneBReq:          g.GenericSceneB,
 		cmd.AbilityBadgeListReq:       g.AbilityBadgeList,
 		cmd.SceneProcessListReq:       g.SceneProcessList,
 		cmd.ShopInfoReq:               g.ShopInfo,
@@ -51,7 +60,7 @@ func (g *Game) RouteHandle(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
 	}
 	handlerFunc, ok := g.handlerFuncRouteMap[msg.MsgId]
 	if !ok {
-		log.Game.Errorf("no route for msg, cmdId: %v", msg.MsgId)
+		log.Game.Errorf("no route for msg, cmdId: %v name:%s", msg.MsgId, cmd.Get().GetCmdNameByCmdId(msg.MsgId))
 		return
 	}
 	player := g.GetUser(userId)

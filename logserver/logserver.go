@@ -22,12 +22,13 @@ func NewLogServer(router *gin.Engine) *LogServer {
 		cfg:    config.GetLogServer(),
 		router: router,
 	}
+	log.NewClientLog()
 
 	l.net, err = ofnet.NewNet("tcp", l.cfg.GetOuterAddr())
 	if err != nil {
 		panic(err)
 	}
-	l.net.SetLogMsg(true)
+	l.net.SetLogMsg(false)
 
 	return l
 }
@@ -39,7 +40,7 @@ func (g *LogServer) RunLogServer() error {
 			return err
 		}
 		conn.SetServerTag("LogServer")
-		log.Game.Debugf("LogServer 接受了新的连接请求:%s", conn.RemoteAddr())
+		log.ClientLog.Debugf("LogServer 接受了新的连接请求:%s", conn.RemoteAddr())
 		go g.NewSession(conn)
 	}
 }
@@ -49,7 +50,7 @@ func (g *LogServer) NewSession(conn ofnet.Conn) {
 		msg, err := conn.Read()
 		if err != nil {
 			conn.Close()
-			log.Game.Error(err.Error())
+			log.ClientLog.Error(err.Error())
 			return
 		}
 		if msg.MsgId == cmd.ClientLogAuthReq {
@@ -64,7 +65,7 @@ func (g *LogServer) NewSession(conn ofnet.Conn) {
 				ServerTimeMs: 0,
 			})
 		}
-		log.Game.Debugf("msg:%s", msg.Body)
+		log.ClientLog.Debugf("msg:%s", msg.Body)
 	}
 }
 

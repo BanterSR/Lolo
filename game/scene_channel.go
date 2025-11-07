@@ -26,6 +26,8 @@ type ChannelInfo struct {
 	addScenePlayerChan   chan *ScenePlayer         // 玩家进入通道
 	addSceneSyncDataChan chan *proto.SceneSyncData // 同步器添加通道
 	sceneSyncDatas       []*proto.SceneSyncData    // 同步器
+	serverSceneSyncChan  chan *ServerSceneSyncCtx  // 服务端场景同步通道
+	actionSyncChan       chan *ActionSyncCtx       // action同步通道
 }
 
 func (s *SceneInfo) newChannelInfo(channelId uint32) *ChannelInfo {
@@ -36,9 +38,11 @@ func (s *SceneInfo) newChannelInfo(channelId uint32) *ChannelInfo {
 		weatherType:          proto.WeatherType_WeatherType_RAINY,
 		tick:                 time.Duration(alg.MaxInt(50, gdconf.GetConstant().ChannelTick)) * time.Millisecond,
 		doneChan:             make(chan struct{}),
-		addScenePlayerChan:   make(chan *ScenePlayer, 100),
-		addSceneSyncDataChan: make(chan *proto.SceneSyncData, 100),
-		sceneSyncDatas:       make([]*proto.SceneSyncData, 0),
+		addScenePlayerChan:   make(chan *ScenePlayer, 1000),
+		addSceneSyncDataChan: make(chan *proto.SceneSyncData, 1000),
+		sceneSyncDatas:       make([]*proto.SceneSyncData, 1000),
+		serverSceneSyncChan:  make(chan *ServerSceneSyncCtx, 1000),
+		actionSyncChan:       make(chan *ActionSyncCtx, 1000),
 	}
 
 	go info.channelMainLoop()
@@ -73,12 +77,16 @@ func (c *ChannelInfo) channelMainLoop() {
 	for {
 		select {
 		case <-syncTimer.C: // 定时同步
-			c.playerSceneSync()
+			c.PlayerSceneSync()
 			syncTimer.Reset(c.tick)
 		case scenePlayer := <-c.addScenePlayerChan: // 玩家进入
 			c.addPlayer(scenePlayer)
 		case syncData := <-c.addSceneSyncDataChan: // 添加同步内容
 			alg.AddList(&c.sceneSyncDatas, syncData)
+		case ctx := <-c.serverSceneSyncChan: // 服务场景同步
+			c.ServerSceneSyncDataNotice(ctx)
+		case ctx := <-c.actionSyncChan: // action同步
+			c.SendActionNotice(ctx)
 		case <-c.doneChan:
 			return
 		}
@@ -95,7 +103,10 @@ func (c *ChannelInfo) addPlayer(scenePlayer *ScenePlayer) bool {
 	list[scenePlayer.UserId] = scenePlayer
 	// 通知包
 	c.SceneDataNotice(scenePlayer)
-	c.ServerSceneSyncDataNotice(scenePlayer, proto.SceneActionType_SceneActionType_ENTER)
+	c.ServerSceneSyncDataNotice(&ServerSceneSyncCtx{
+		ScenePlayer: scenePlayer,
+		ActionType:  proto.SceneActionType_SceneActionType_ENTER,
+	})
 	return true
 }
 
@@ -116,31 +127,38 @@ func (c *ChannelInfo) SceneDataNotice(scenePlayer *ScenePlayer) {
 	notice.Data = data
 }
 
+// 服务端场景同步上下文
+type ServerSceneSyncCtx struct {
+	ScenePlayer *ScenePlayer
+	ActionType  proto.SceneActionType
+}
+
 // 通知全部客户端执行Action
-func (c *ChannelInfo) ServerSceneSyncDataNotice(scenePlayer *ScenePlayer, actionType proto.SceneActionType) {
+func (c *ChannelInfo) ServerSceneSyncDataNotice(ctx *ServerSceneSyncCtx) {
 	notice := &proto.ServerSceneSyncDataNotice{
 		Status: proto.StatusCode_StatusCode_OK,
 		Data:   make([]*proto.ServerSceneSyncData, 0),
 	}
 	defer c.sendAllPlayer(cmd.ServerSceneSyncDataNotice, 0, notice)
 	syncData := &proto.ServerSceneSyncData{
-		PlayerId:   scenePlayer.UserId,
+		PlayerId:   ctx.ScenePlayer.UserId,
 		ServerData: nil,
 	}
 	alg.AddList(&notice.Data, syncData)
-	switch actionType {
-	case proto.SceneActionType_SceneActionType_ENTER: //  进入场景
+	switch ctx.ActionType {
+	case proto.SceneActionType_SceneActionType_ENTER, /*进入场景*/
+		proto.SceneActionType_SceneActionType_UPDATE_TEAM: /*更新队伍*/
 		syncData.ServerData = []*proto.SceneServerData{
 			{
-				ActionType: proto.SceneActionType_SceneActionType_ENTER,
-				Player:     c.GetPbScenePlayer(scenePlayer),
+				ActionType: ctx.ActionType,
+				Player:     c.GetPbScenePlayer(ctx.ScenePlayer),
 				TodTime:    0,
 			},
 		}
 	}
 }
 
-func (c *ChannelInfo) playerSceneSync() {
+func (c *ChannelInfo) PlayerSceneSync() {
 	notice := &proto.PlayerSceneSyncDataNotice{
 		Status: proto.StatusCode_StatusCode_OK,
 		Data:   c.sceneSyncDatas,
@@ -151,9 +169,28 @@ func (c *ChannelInfo) playerSceneSync() {
 	}
 }
 
+// action同步上下文
+type ActionSyncCtx struct {
+	ScenePlayer *ScenePlayer
+	ActionId    uint32
+}
+
+func (c *ChannelInfo) SendActionNotice(ctx *ActionSyncCtx) {
+	notice := &proto.SendActionNotice{
+		Status:            proto.StatusCode_StatusCode_OK,
+		ActionId:          ctx.ActionId,
+		FromPlayerId:      ctx.ScenePlayer.UserId,
+		FromPlayerName:    ctx.ScenePlayer.GetBasicModel().PlayerName,
+		IsStudy:           false,
+		EndTime:           0,
+		MultipleNeedCount: 0,
+	}
+	c.sendAllPlayer(cmd.SendActionNotice, 0, notice)
+}
+
 func (c *ChannelInfo) GetPbSceneData() (info *proto.SceneData) {
 	info = &proto.SceneData{
-		SceneId:        c.SceneId,
+		SceneId:        c.SceneId, // ok
 		GatherLimits:   make([]*proto.GatherLimit, 0),
 		DropItems:      make([]*proto.DropItem, 0),
 		Areas:          make([]*proto.AreaData, 0),
@@ -181,12 +218,12 @@ func (c *ChannelInfo) GetPbSceneData() (info *proto.SceneData) {
 			FurnitureCurrentPointNum:    0,
 		},
 		CurrentGatherGroupId: 0,
-		Players:              make([]*proto.ScenePlayer, 0),
-		ChannelId:            c.ChannelId,
-		TodTime:              c.todTime,
+		Players:              make([]*proto.ScenePlayer, 0), // ok
+		ChannelId:            c.ChannelId,                   // ok
+		TodTime:              c.todTime,                     // ok
 		CampFires:            make([]*proto.CampFire, 0),
-		WeatherType:          c.weatherType,
-		ChannelLabel:         c.ChannelId,
+		WeatherType:          c.weatherType, // ok
+		ChannelLabel:         c.ChannelId,   // ok
 		FireworksInfo:        new(proto.FireworksInfo),
 		MpBeacons:            make([]*proto.MPBeacon, 0),
 		NetworkEvent:         make([]*proto.NetworkEventData, 0),

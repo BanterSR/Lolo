@@ -13,9 +13,10 @@ import (
 )
 
 var (
-	App  *slog.SugaredLogger
-	Gate *slog.SugaredLogger
-	Game *slog.SugaredLogger
+	App       *slog.SugaredLogger
+	Gate      *slog.SugaredLogger
+	Game      *slog.SugaredLogger
+	ClientLog *slog.SugaredLogger
 )
 
 func Close() {
@@ -38,7 +39,7 @@ func NewApp() {
 		sl.ChannelName = conf.AppName
 		sl.Level = conf.Level
 	})
-	addHandler(conf.AppName, App, conf)
+	addHandler(App, conf)
 }
 
 func NewGate() {
@@ -47,7 +48,7 @@ func NewGate() {
 		sl.ChannelName = conf.AppName
 		sl.Level = conf.Level
 	})
-	addHandler(conf.AppName, Gate, conf)
+	addHandler(Gate, conf)
 }
 
 func NewGame() {
@@ -56,13 +57,22 @@ func NewGame() {
 		sl.ChannelName = conf.AppName
 		sl.Level = conf.Level
 	})
-	addHandler(conf.AppName, Game, conf)
+	addHandler(Game, conf)
 }
 
-func addHandler(appName string, l *slog.SugaredLogger, conf *config.Log) {
+func NewClientLog() {
+	conf := config.GetLogServer().GetLog()
+	ClientLog = slog.NewStdLogger(func(sl *slog.SugaredLogger) {
+		sl.ChannelName = conf.AppName
+		sl.Level = conf.Level
+	})
+	addHandler(ClientLog, conf)
+}
+
+func addHandler(l *slog.SugaredLogger, conf *config.Log) {
 	if conf.LogFile {
 		l.AddHandler(handler.NewBuilder().
-			WithLogfile(fmt.Sprintf("./log/%s_%s.log", appName, conf.AppName)).
+			WithLogfile(fmt.Sprintf("./log/%s.log", conf.AppName)).
 			WithLogLevels(slog.AllLevels).
 			WithBuffSize(1024 * 10).
 			WithRotateTime(rotatefile.Every30Min).

@@ -46,3 +46,32 @@ func (g *Game) SceneProcessList(s *model.Player, msg *alg.GameMsg) {
 		Process: 1,
 	})
 }
+
+func (g *Game) SendAction(s *model.Player, msg *alg.GameMsg) {
+	req := msg.Body.(*proto.SendActionReq)
+	rsp := &proto.SendActionRsp{
+		Status: proto.StatusCode_StatusCode_OK,
+	}
+	defer g.send(s, cmd.SendActionRsp, msg.PacketId, rsp)
+	scenePlayer := g.getWordInfo().getScenePlayer(s)
+	if scenePlayer == nil ||
+		scenePlayer.channelInfo == nil {
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
+		log.Game.Warnf("玩家:%v没有加入房间", s.UserId)
+		return
+	}
+	scenePlayer.channelInfo.actionSyncChan <- &ActionSyncCtx{
+		ScenePlayer: scenePlayer,
+		ActionId:    req.ActionId,
+	}
+}
+
+func (g *Game) GenericSceneB(s *model.Player, msg *alg.GameMsg) {
+	req := msg.Body.(*proto.GenericSceneBReq)
+	rsp := &proto.GenericSceneBRsp{
+		Status:       proto.StatusCode_StatusCode_OK,
+		GenericMsgId: req.GenericMsgId,
+		Params:       make([]*proto.CommonParam, 0),
+	}
+	defer g.send(s, cmd.GenericSceneBRsp, msg.PacketId, rsp)
+}
