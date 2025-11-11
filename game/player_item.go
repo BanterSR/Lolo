@@ -15,7 +15,7 @@ func (g *Game) PackNotice(s *model.Player) {
 		IsClearTempPack: false,
 	}
 	defer g.send(s, cmd.PackNotice, 0, notice)
-	// 徽章 伞
+	// 基础物品
 	for _, v := range s.GetItemModel().GetItemBaseMap() {
 		notice.Items = append(notice.Items, v.GetPbItemDetail())
 	}
@@ -33,6 +33,10 @@ func (g *Game) PackNotice(s *model.Player) {
 	}
 	// 海报
 	for _, v := range s.GetItemModel().GetItemPosterMap() {
+		notice.Items = append(notice.Items, v.GetPbItemDetail())
+	}
+	//
+	for _, v := range s.GetItemModel().GetItemInscriptionMap() {
 		notice.Items = append(notice.Items, v.GetPbItemDetail())
 	}
 }
@@ -81,6 +85,20 @@ func (g *Game) GetPoster(s *model.Player, msg *alg.GameMsg) {
 	}
 	defer g.send(s, cmd.GetPosterRsp, msg.PacketId, rsp)
 	for _, v := range s.GetItemModel().GetItemPosterMap() {
-		rsp.Posters = append(rsp.Posters, v.GetPbPosterInstance())
+		alg.AddList(&rsp.Posters, v.GetPbPosterInstance())
+	}
+}
+
+func (g *Game) PosterIllustrationList(s *model.Player, msg *alg.GameMsg) {
+	rsp := &proto.PosterIllustrationListRsp{
+		Status:              proto.StatusCode_StatusCode_OK,
+		PosterIllustrations: make([]*proto.PosterIllustration, 0),
+	}
+	defer g.send(s, cmd.PosterIllustrationListRsp, msg.PacketId, rsp)
+	for _, v := range s.GetItemModel().GetItemPosterMap() {
+		alg.AddList(&rsp.PosterIllustrations, &proto.PosterIllustration{
+			PosterIllustrationId: v.PosterId,
+			Status:               proto.RewardStatus_Reward,
+		})
 	}
 }

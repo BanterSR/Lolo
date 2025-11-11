@@ -80,6 +80,10 @@ func (g *GameConfig) load() {
 	g.loadQuest()
 	g.loadPlayerUnlock()
 	g.loadStory()
+	g.loadFashion()
+	g.loadArmor()
+	g.loadPoster()
+	g.loadInscription()
 
 	// config
 	g.loadSceneConfig()
@@ -99,6 +103,10 @@ type Excel struct {
 	Quest        *Quest
 	PlayerUnlock *PlayerUnlock
 	Story        *Story
+	Fashion      *Fashion
+	Armor        *Armor
+	Poster       *Poster
+	Inscription  *Inscription
 }
 
 type Config struct {

@@ -298,7 +298,7 @@ func (s *Player) NewEquipmentPresetList(id uint32) map[uint32]*EquipmentPreset {
 		}
 		if i == 0 {
 			// 添加武器
-			itemWeapon := s.GetItemModel().AddItemWeaponInfo(uint32(conf.CharacterInfo.DefaultWeaponID))
+			itemWeapon := s.GetItemModel().AddItemWeaponByWeaponId(uint32(conf.CharacterInfo.DefaultWeaponID))
 			if itemWeapon == nil {
 				log.Game.Warnf("角色:%v,添加默认武器:%v失败", id, conf.CharacterInfo.DefaultWeaponID)
 				return nil
@@ -399,7 +399,7 @@ func (s *Player) NewOutfitPresetList(id uint32) map[uint32]*OutfitPreset {
 		if outfitId == 0 {
 			return true
 		}
-		return s.GetItemModel().AddItemFashionInfo(outfitId)
+		return s.GetItemModel().AddItemFashionByItemId(outfitId)
 	}
 	if !addOutfit(uint32(conf.CharacterInfo.HatID)) {
 		goto err

@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/golang/protobuf/proto"
 	"github.com/golang/snappy"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
@@ -21,6 +20,7 @@ import (
 	"github.com/google/gopacket/pcapgo"
 	"github.com/google/gopacket/tcpassembly"
 	"github.com/google/gopacket/tcpassembly/tcpreader"
+	"google.golang.org/protobuf/proto"
 )
 
 // Packet 结构保持不变

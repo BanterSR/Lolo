@@ -19,7 +19,7 @@ func (s *Server) Router() {
 }
 
 func HandleDefault(c *gin.Context) {
-	c.String(200, "BanGK!")
+	c.String(200, "Lolo!")
 }
 
 type RegionInfoRequest struct {

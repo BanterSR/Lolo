@@ -1,9 +1,10 @@
 package game
 
 import (
-	"encoding/json"
 	"strconv"
 	"time"
+
+	"github.com/bytedance/sonic"
 
 	"gucooing/lolo/db"
 	"gucooing/lolo/game/model"
@@ -43,7 +44,7 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
 			Updated:   dbUser.UpdatedAt,
 		}
 		if dbUser.BinData != nil {
-			if err := json.Unmarshal(dbUser.BinData, s); err != nil {
+			if err := sonic.Unmarshal(dbUser.BinData, s); err != nil {
 				rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 				log.Game.Warnf("玩家:%v数据序列化失败:%s", userId, err.Error())
 				return
@@ -319,4 +320,14 @@ func (g *Game) BossRushInfo(s *model.Player, msg *alg.GameMsg) {
 		},
 	}
 	defer g.send(s, cmd.BossRushInfoRsp, msg.PacketId, rsp)
+}
+
+func (g *Game) PlayerVitality(s *model.Player, msg *alg.GameMsg) {
+	// req := msg.Body.(*proto.PlayerVitalityReq)
+	rsp := &proto.PlayerVitalityRsp{
+		Status:         proto.StatusCode_StatusCode_OK,
+		VitalityBuyNum: 0,
+		Items:          make([]*proto.ItemDetail, 0),
+	}
+	defer g.send(s, cmd.PlayerVitalityRsp, msg.PacketId, rsp)
 }

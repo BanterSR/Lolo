@@ -25,6 +25,9 @@ func (s *Player) GetQuestDetail() *proto.QuestDetail {
 		alg.AddList(&info.Chapters, chapter)
 	}
 	for questId, questInfo := range gdconf.GetQuestInfos() {
+		// if proto.EQuestType(questInfo.Config.NewType) == proto.EQuestType_EQuestType_MainQuest {
+		// 	continue
+		// }
 		quest := &proto.Quest{
 			QuestId:       questId,
 			Conditions:    make([]*proto.Condition, 0),

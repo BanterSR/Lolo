@@ -24,50 +24,52 @@ func (g *Game) newRouter() {
 		// 队伍
 		cmd.UpdateTeamReq: g.UpdateTeam, // 更新队伍
 		// 物品
-		cmd.GetWeaponReq: g.GetWeapon, // 获取武器列表-根据type
-		cmd.GetArmorReq:  g.GetArmor,  // 获取盔甲列表-根据type
-		cmd.GetPosterReq: g.GetPoster, // 获取海报列表
+		cmd.GetWeaponReq:              g.GetWeapon,              // 获取武器列表-根据type
+		cmd.GetArmorReq:               g.GetArmor,               // 获取盔甲列表-根据type
+		cmd.GetPosterReq:              g.GetPoster,              // 获取海报列表
+		cmd.PosterIllustrationListReq: g.PosterIllustrationList, // 海报插头列表
 		// 卡池
 		cmd.GachaListReq:   g.GachaList,   // 获取卡池信息
 		cmd.GachaRecordReq: g.GachaRecord, // 获取抽卡记录
 		// 角色
 		cmd.GetCharacterAchievementListReq: g.GetCharacterAchievementList, // 获取角色成就情况
 		cmd.OutfitPresetUpdateReq:          g.OutfitPresetUpdate,          // 保存预设装扮
-		// cmd.CharacterEquipUpdateReq:        g.CharacterEquipUpdate,        // 角色更新装备
+		cmd.CharacterEquipUpdateReq:        g.CharacterEquipUpdate,        // 角色更新装备
+		// cmd.UpdateCharacterAppearanceReq:   g.UpdateCharacterAppearance,   // 更新角色外观
 		// 信息记录
 		cmd.GetArchiveInfoReq: g.GetArchiveInfo, // 获取记录的信息
 		cmd.SetArchiveInfoReq: g.SetArchiveInfo, // 设置信息
 		// 星云树
 		cmd.GetCollectMoonInfoReq: g.GetCollectMoonInfo, // 获取星云树信息
 
-		cmd.BossRushInfoReq:           g.BossRushInfo,
-		cmd.FriendIntervalInitReq:     g.FriendIntervalInit,
-		cmd.SelfIntervalInitReq:       g.SelfIntervalInit,
-		cmd.ExploreInitReq:            g.ExploreInit,
-		cmd.NpcTalkReq:                g.NpcTalk,  // npc对话
-		cmd.TutorialReq:               g.Tutorial, // 开始教程
-		cmd.ChallengeFriendRankReq:    g.ChallengeFriendRank,
-		cmd.GenericSceneBReq:          g.GenericSceneB,
-		cmd.AbilityBadgeListReq:       g.AbilityBadgeList,
-		cmd.SceneProcessListReq:       g.SceneProcessList,
-		cmd.ShopInfoReq:               g.ShopInfo,
-		cmd.FriendReq:                 g.Friend,
-		cmd.WishListByFriendIdReq:     g.WishListByFriendId,
-		cmd.GetLifeInfoReq:            g.GetLifeInfo,
-		cmd.GetMailsReq:               g.GetMails,
-		cmd.GetAchieveOneGroupReq:     g.GetAchieveOneGroup,
-		cmd.GetAchieveGroupListReq:    g.GetAchieveGroupList,
-		cmd.GenericGameBReq:           g.GenericGameB,
-		cmd.GetCollectItemIdsReq:      g.GetCollectItemIds,
-		cmd.ManualListReq:             g.ManualList,
-		cmd.ChangeMusicalItemReq:      g.ChangeMusicalItem,
-		cmd.PlayerAbilityListReq:      g.PlayerAbilityList,      //
-		cmd.PosterIllustrationListReq: g.PosterIllustrationList, //
-		cmd.WorldLevelAchieveListReq:  g.WorldLevelAchieveList,  //
-		cmd.SupplyBoxInfoReq:          g.SupplyBoxInfo,          //
-		cmd.GetAllCharacterEquipReq:   g.GetAllCharacterEquip,   //
-		cmd.GamePlayRewardReq:         g.GamePlayReward,         //
-		cmd.AcceptQuestReq:            g.AcceptQuest,            //
+		cmd.PlayerVitalityReq:        g.PlayerVitality,
+		cmd.BossRushInfoReq:          g.BossRushInfo,
+		cmd.FriendIntervalInitReq:    g.FriendIntervalInit,
+		cmd.SelfIntervalInitReq:      g.SelfIntervalInit,
+		cmd.ExploreInitReq:           g.ExploreInit,
+		cmd.NpcTalkReq:               g.NpcTalk,  // npc对话
+		cmd.TutorialReq:              g.Tutorial, // 开始教程
+		cmd.ChallengeFriendRankReq:   g.ChallengeFriendRank,
+		cmd.GenericSceneBReq:         g.GenericSceneB,
+		cmd.AbilityBadgeListReq:      g.AbilityBadgeList,
+		cmd.SceneProcessListReq:      g.SceneProcessList,
+		cmd.ShopInfoReq:              g.ShopInfo,
+		cmd.FriendReq:                g.Friend,
+		cmd.WishListByFriendIdReq:    g.WishListByFriendId,
+		cmd.GetLifeInfoReq:           g.GetLifeInfo,
+		cmd.GetMailsReq:              g.GetMails,
+		cmd.GetAchieveOneGroupReq:    g.GetAchieveOneGroup,
+		cmd.GetAchieveGroupListReq:   g.GetAchieveGroupList,
+		cmd.GenericGameBReq:          g.GenericGameB,
+		cmd.GetCollectItemIdsReq:     g.GetCollectItemIds,
+		cmd.ManualListReq:            g.ManualList,
+		cmd.ChangeMusicalItemReq:     g.ChangeMusicalItem,
+		cmd.PlayerAbilityListReq:     g.PlayerAbilityList,     //
+		cmd.WorldLevelAchieveListReq: g.WorldLevelAchieveList, //
+		cmd.SupplyBoxInfoReq:         g.SupplyBoxInfo,         //
+		cmd.GetAllCharacterEquipReq:  g.GetAllCharacterEquip,  //
+		cmd.GamePlayRewardReq:        g.GamePlayReward,        //
+		cmd.AcceptQuestReq:           g.AcceptQuest,           //
 	}
 }
 

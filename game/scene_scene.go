@@ -58,7 +58,7 @@ func (w *WordInfo) getSceneInfo(sceneId uint32) (*SceneInfo, error) {
 	}
 	cfg := gdconf.GetSceneInfo(sceneId)
 	if cfg == nil {
-		return nil, errors.New("没有该场景")
+		return nil, errors.New("ScenesConfigAsset.json配置文件中没有该场景")
 	}
 	info := &SceneInfo{
 		cfg:        cfg,

@@ -167,7 +167,8 @@ func (c *ChannelInfo) serverSceneSync(ctx *ServerSceneSyncCtx) {
 	case proto.SceneActionType_SceneActionType_ENTER: // 进入场景
 		serverData.Player = c.GetPbScenePlayer(ctx.ScenePlayer)
 	case proto.SceneActionType_SceneActionType_LEAVE: // 退出场景
-	case proto.SceneActionType_SceneActionType_UPDATE_TEAM: // 更新队伍
+	case proto.SceneActionType_SceneActionType_UPDATE_TEAM, /* 更新队伍*/
+		proto.SceneActionType_SceneActionType_UPDATE_FASHION: /* 更新服装*/
 		serverData.Player = &proto.ScenePlayer{
 			Team: c.GetPbSceneTeam(ctx.ScenePlayer),
 		}
