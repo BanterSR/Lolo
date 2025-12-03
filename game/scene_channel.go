@@ -28,6 +28,7 @@ type ChannelInfo struct {
 	sceneSyncDatas   []*proto.SceneSyncData                // 一个tick中待同步的内容
 	sceneServerDatas map[uint32]*proto.ServerSceneSyncData // 一个tick中玩家变动内容
 	// chan
+	freezeChan           chan struct{}             // 冻结/解冻通道
 	addScenePlayerChan   chan *ScenePlayer         // 玩家进入通道
 	delScenePlayerChan   chan *ScenePlayer         // 玩家退出通道
 	addSceneSyncDataChan chan *proto.SceneSyncData // 同步器通道
@@ -42,6 +43,7 @@ func (s *SceneInfo) newChannelInfo(channelId uint32) *ChannelInfo {
 		allPlayer:            make(map[uint32]*ScenePlayer),
 		weatherType:          proto.WeatherType_WeatherType_SUNNY,
 		doneChan:             make(chan struct{}),
+		freezeChan:           make(chan struct{}, 1),
 		addScenePlayerChan:   make(chan *ScenePlayer, 10),
 		delScenePlayerChan:   make(chan *ScenePlayer, 10),
 		addSceneSyncDataChan: make(chan *proto.SceneSyncData, 100),
@@ -105,6 +107,13 @@ func (c *ChannelInfo) channelMainLoop() {
 			c.SendActionNotice(ctx)
 		case <-c.doneChan:
 			return
+		case <-c.freezeChan: // 房间冻结
+			select {
+			case scenePlayer := <-c.addScenePlayerChan: // 等待玩家进入解冻房间
+				c.addPlayer(scenePlayer)
+			case <-c.doneChan: // 或房间被取消
+				return
+			}
 		}
 	}
 }
@@ -147,7 +156,10 @@ func (c *ChannelInfo) channelTick() {
 		c.sendAllPlayer(cmd.ServerSceneSyncDataNotice, 0, notice)
 		c.sceneServerDatas = make(map[uint32]*proto.ServerSceneSyncData)
 	}
-
+	// 场景里没有玩家了就冻结掉
+	if len(c.getAllPlayer()) == 0 {
+		c.freezeChan <- struct{}{}
+	}
 }
 
 func (c *ChannelInfo) addPlayer(scenePlayer *ScenePlayer) bool {

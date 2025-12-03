@@ -137,6 +137,8 @@ func (i *ItemModel) AllItemModel() {
 			for _, conf := range confList {
 				i.AddItemInscription(uint32(conf.ID))
 			}
+		default:
+			log.Game.Warnf("未知的物品类型TypeID:%v Type:%s", tag, tag.String())
 		}
 	}
 }
