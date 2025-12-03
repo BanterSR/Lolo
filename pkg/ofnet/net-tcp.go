@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"encoding/binary"
 	"errors"
+	"github.com/gookit/slog"
 	"io"
 	"net"
+	"sync/atomic"
 
 	"github.com/golang/snappy"
 	pb "google.golang.org/protobuf/proto"
@@ -21,10 +23,11 @@ type tcpNet struct {
 	listener net.Listener
 }
 
-func newTcpNet(addr string) (*tcpNet, error) {
+func newTcpNet(addr string, log *slog.SugaredLogger) (*tcpNet, error) {
 	x := &tcpNet{
 		netBase: &netBase{
 			blackPackId: make(map[uint32]struct{}),
+			log:         log,
 		},
 	}
 	listener, err := net.Listen("tcp", addr)
@@ -73,6 +76,10 @@ func (x *tcpConn) GetSeqId() uint32 {
 }
 
 func (x *tcpConn) Read() (*alg.GameMsg, error) {
+	atomic.AddInt64(&x.net.connNum, 1)
+	defer func() {
+		atomic.AddInt64(&x.net.connNum, -1)
+	}()
 	for {
 		// head
 		headLenByte := make([]byte, alg.TcpHeadSize)
@@ -90,7 +97,7 @@ func (x *tcpConn) Read() (*alg.GameMsg, error) {
 		head := new(proto.PacketHead)
 		err = pb.Unmarshal(headByte, head)
 		if err != nil {
-			log.Gate.Errorf("Could not parse PacketHead proto Error:%s\n", err)
+			x.net.log.Errorf("Could not parse PacketHead proto Error:%s\n", err)
 			return nil, err
 		}
 
@@ -103,15 +110,15 @@ func (x *tcpConn) Read() (*alg.GameMsg, error) {
 		bodyByte = alg.HandleFlag(head.Flag, bodyByte)
 		protoObj := cmd.Get().GetProtoObjByCmdId(head.MsgId)
 		if protoObj == nil {
-			log.Gate.Errorf("protoObj by cmdId:%d\n", head.MsgId)
+			x.net.log.Errorf("protoObj by cmdId:%d\n", head.MsgId)
 			continue
 		}
 		err = pb.Unmarshal(bodyByte, protoObj)
 		if err != nil {
-			log.Gate.Errorf("unmarshal proto data err: %v\n", err)
+			x.net.log.Errorf("unmarshal proto data err: %v\n", err)
 			return nil, err
 		}
-		logMag(ClientMsg,
+		x.net.logMag(ClientMsg,
 			x.serverTag,
 			x.net.logPack(head.MsgId),
 			x.uid,
@@ -137,7 +144,7 @@ func (x *tcpConn) Send(cmdId, packetId uint32, protoObj pb.Message) {
 		return
 	}
 
-	logMag(ServerMsg, x.serverTag, x.net.logPack(cmdId), x.uid, cmdId, protoObj)
+	x.net.logMag(ServerMsg, x.serverTag, x.net.logPack(cmdId), x.uid, cmdId, protoObj)
 
 	head := &proto.PacketHead{
 		MsgId:    cmdId,
@@ -157,7 +164,7 @@ func (x *tcpConn) Send(cmdId, packetId uint32, protoObj pb.Message) {
 	head.BodyLen = uint32(len(bodyByte))
 	headBytes, err := pb.Marshal(head)
 	if err != nil {
-		log.Gate.Errorf("marshal proto data err: %v\n", err)
+		x.net.log.Errorf("marshal proto data err: %v\n", err)
 		return
 	}
 	bin := make([]byte, alg.TcpHeadSize+len(headBytes)+len(bodyByte))
@@ -170,7 +177,7 @@ func (x *tcpConn) Send(cmdId, packetId uint32, protoObj pb.Message) {
 
 	_, err = x.conn.Write(bin)
 	if err != nil && !errors.Is(err, io.ErrClosedPipe) {
-		log.Gate.Errorf("tcpConn write error: %v", err)
+		x.net.log.Errorf("tcpConn write error: %v", err)
 		return
 	}
 }

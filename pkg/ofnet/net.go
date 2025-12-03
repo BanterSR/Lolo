@@ -2,13 +2,14 @@ package ofnet
 
 import (
 	"errors"
+	"github.com/gookit/slog"
 	"net"
+	"sync/atomic"
 
 	"google.golang.org/protobuf/encoding/protojson"
 	pb "google.golang.org/protobuf/proto"
 
 	"gucooing/lolo/pkg/alg"
-	"gucooing/lolo/pkg/log"
 	"gucooing/lolo/protocol/cmd"
 )
 
@@ -22,18 +23,21 @@ type Net interface {
 	SetLogMsg(logMsg bool)
 }
 
-func NewNet(network, addr string) (Net, error) {
-	log.Gate.Infof("协议:%s,启动在%s 上", network, addr)
+func NewNet(network, addr string, log *slog.SugaredLogger) (Net, error) {
+	log.Infof("协议:%s,启动在%s 上", network, addr)
 	switch network {
 	case "tcp":
-		return newTcpNet(addr)
+		return newTcpNet(addr, log)
 	}
 	return nil, errors.New("network not support")
 }
 
 type netBase struct {
+	log         *slog.SugaredLogger
 	logMsg      bool
 	blackPackId map[uint32]struct{}
+	connNum     int64 // 连接数
+	maxConnNum  int64 // 最大连接数
 }
 
 func (c *netBase) SetBlackPackId(packIdList map[uint32]struct{}) {
@@ -52,6 +56,14 @@ func (c *netBase) logPack(packId uint32) bool {
 	return !ok
 }
 
+func (c *netBase) SetMaxConnNum(maxConnNum int64) {
+	c.maxConnNum = maxConnNum
+}
+
+func (c *netBase) GetConnNum() int64 {
+	return atomic.LoadInt64(&c.connNum)
+}
+
 type Conn interface {
 	Read() (*alg.GameMsg, error)
 	Send(cmdId, packetId uint32, protoObj pb.Message)
@@ -68,7 +80,7 @@ const (
 	ServerMsg
 )
 
-func logMag(tp int, serverTag string, isLog bool, uid, cmdId uint32, payloadMsg pb.Message) {
+func (c *netBase) logMag(tp int, serverTag string, isLog bool, uid, cmdId uint32, payloadMsg pb.Message) {
 	if !isLog {
 		return
 	}
@@ -79,7 +91,7 @@ func logMag(tp int, serverTag string, isLog bool, uid, cmdId uint32, payloadMsg 
 	case ServerMsg:
 		s = "s -> c"
 	}
-	log.Gate.Debugf("%s[Server:%s][UID:%v][CMD:%s]Pack:%s",
+	c.log.Debugf("%s[Server:%s][UID:%v][CMD:%s]Pack:%s",
 		s,
 		serverTag,
 		uid,
