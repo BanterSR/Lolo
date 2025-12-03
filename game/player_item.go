@@ -3,18 +3,17 @@ package game
 import (
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/pkg/alg"
-	"gucooing/lolo/protocol/cmd"
 	"gucooing/lolo/protocol/proto"
 )
 
-func (g *Game) PackNotice(s *model.Player) {
+func (g *Game) AllPackNotice(s *model.Player) {
 	notice := &proto.PackNotice{
 		Status:          proto.StatusCode_StatusCode_OK,
 		Items:           make([]*proto.ItemDetail, 0),
 		TempPackMaxSize: 30,
 		IsClearTempPack: false,
 	}
-	defer g.send(s, cmd.PackNotice, 0, notice)
+	defer g.send(s, 0, notice)
 	// 基础物品
 	for _, v := range s.GetItemModel().GetItemBaseMap() {
 		notice.Items = append(notice.Items, v.ItemDetail())
@@ -49,7 +48,7 @@ func (g *Game) GetWeapon(s *model.Player, msg *alg.GameMsg) {
 		TotalNum: uint32(len(s.GetItemModel().GetItemWeaponMap())),
 		EndIndex: uint32(len(s.GetItemModel().GetItemWeaponMap())),
 	}
-	defer g.send(s, cmd.GetWeaponRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 	for _, v := range s.GetItemModel().GetItemWeaponMap() {
 		if req.WeaponSystemType == proto.EWeaponSystemType_EWeaponSystemType_None ||
 			req.WeaponSystemType == v.WeaponSystemType {
@@ -66,7 +65,7 @@ func (g *Game) GetArmor(s *model.Player, msg *alg.GameMsg) {
 		TotalNum: uint32(len(s.GetItemModel().GetItemArmorMap())),
 		EndIndex: uint32(len(s.GetItemModel().GetItemArmorMap())),
 	}
-	defer g.send(s, cmd.GetArmorRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 	for _, v := range s.GetItemModel().GetItemArmorMap() {
 		if req.WeaponSystemType == proto.EWeaponSystemType_EWeaponSystemType_None ||
 			req.WeaponSystemType == v.WeaponSystemType {
@@ -83,7 +82,7 @@ func (g *Game) GetPoster(s *model.Player, msg *alg.GameMsg) {
 		TotalNum: uint32(len(s.GetItemModel().GetItemPosterMap())),
 		EndIndex: uint32(len(s.GetItemModel().GetItemPosterMap())),
 	}
-	defer g.send(s, cmd.GetPosterRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 	for _, v := range s.GetItemModel().GetItemPosterMap() {
 		alg.AddList(&rsp.Posters, v.PosterInstance())
 	}
@@ -94,7 +93,7 @@ func (g *Game) PosterIllustrationList(s *model.Player, msg *alg.GameMsg) {
 		Status:              proto.StatusCode_StatusCode_OK,
 		PosterIllustrations: make([]*proto.PosterIllustration, 0),
 	}
-	defer g.send(s, cmd.PosterIllustrationListRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 	for _, v := range s.GetItemModel().GetItemPosterMap() {
 		alg.AddList(&rsp.PosterIllustrations, &proto.PosterIllustration{
 			PosterIllustrationId: v.PosterId,

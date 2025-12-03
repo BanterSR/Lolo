@@ -54,7 +54,7 @@ func (c *netBase) logPack(packId uint32) bool {
 
 type Conn interface {
 	Read() (*alg.GameMsg, error)
-	Send(cmdId, packetId uint32, protoObj pb.Message)
+	Send(packetId uint32, protoObj pb.Message)
 	SetUID(uint32)
 	GetSeqId() uint32
 	SetServerTag(serverTag string)

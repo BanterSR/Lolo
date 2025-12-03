@@ -3,7 +3,6 @@ package game
 import (
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/pkg/alg"
-	"gucooing/lolo/protocol/cmd"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -14,7 +13,7 @@ func (g *Game) GetArchiveInfo(s *model.Player, msg *alg.GameMsg) {
 		Key:    req.Key,
 		Value:  s.GetArchive().GetArchiveValue(req.Key),
 	}
-	g.send(s, cmd.GetArchiveInfoRsp, msg.PacketId, rsp)
+	g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) SetArchiveInfo(s *model.Player, msg *alg.GameMsg) {
@@ -24,6 +23,6 @@ func (g *Game) SetArchiveInfo(s *model.Player, msg *alg.GameMsg) {
 		Key:    req.Key,
 		Value:  req.Value,
 	}
-	defer g.send(s, cmd.SetArchiveInfoRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 	s.GetArchive().SetArchiveMap(req.Key, req.Value)
 }

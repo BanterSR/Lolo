@@ -3,7 +3,6 @@ package game
 import (
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/pkg/alg"
-	"gucooing/lolo/protocol/cmd"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -12,7 +11,7 @@ func (g *Game) NpcTalk(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.NpcTalkRsp{
 		Status: proto.StatusCode_StatusCode_OK,
 	}
-	defer g.send(s, cmd.NpcTalkRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) Tutorial(s *model.Player, msg *alg.GameMsg) {
@@ -20,5 +19,5 @@ func (g *Game) Tutorial(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.TutorialRsp{
 		Status: proto.StatusCode_StatusCode_OK,
 	}
-	defer g.send(s, cmd.TutorialRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }

@@ -6,7 +6,6 @@ import (
 	"gucooing/lolo/config"
 	"gucooing/lolo/pkg/log"
 	"gucooing/lolo/pkg/ofnet"
-	"gucooing/lolo/protocol/cmd"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -53,16 +52,16 @@ func (g *LogServer) NewSession(conn ofnet.Conn) {
 			log.ClientLog.Error(err.Error())
 			return
 		}
-		if msg.MsgId == cmd.ClientLogAuthReq {
-			conn.Send(cmd.ClientLogAuthRsp, msg.PacketId, &proto.ClientLogAuthRsp{
+		switch req := msg.Body.(type) {
+		case *proto.ClientLogAuthReq:
+			conn.Send(msg.PacketId, &proto.ClientLogAuthRsp{
 				Status: proto.StatusCode_StatusCode_OK,
 			})
-		}
-		if msg.MsgId == cmd.PlayerPingReq {
-			conn.Send(cmd.PlayerPingRsp, msg.PacketId, &proto.PlayerPingRsp{
+		case *proto.PlayerPingReq:
+			conn.Send(msg.PacketId, &proto.PlayerPingRsp{
 				Status:       proto.StatusCode_StatusCode_OK,
-				ClientTimeMs: 0,
-				ServerTimeMs: 0,
+				ClientTimeMs: req.ClientTimeMs,
+				ServerTimeMs: req.ClientTimeMs,
 			})
 		}
 		log.ClientLog.Debugf("msg:%s", msg.Body)

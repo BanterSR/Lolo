@@ -126,10 +126,12 @@ func (x *tcpConn) Read() (*alg.GameMsg, error) {
 	}
 }
 
-func (x *tcpConn) Send(cmdId, packetId uint32, protoObj pb.Message) {
+func (x *tcpConn) Send(packetId uint32, protoObj pb.Message) {
 	if x == nil {
 		return
 	}
+
+	cmdId := cmd.Get().GetCmdIdByProtoObj(protoObj)
 
 	bodyByte, err := pb.Marshal(protoObj)
 	if err != nil {

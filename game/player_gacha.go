@@ -4,7 +4,6 @@ import (
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/pkg/alg"
-	"gucooing/lolo/protocol/cmd"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -13,7 +12,7 @@ func (g *Game) GachaList(s *model.Player, msg *alg.GameMsg) {
 		Status: proto.StatusCode_StatusCode_OK,
 		Gachas: make([]*proto.GachaInfo, 0),
 	}
-	defer g.send(s, cmd.GachaListRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 	for _, v := range gdconf.GetAllGacha().GetInfo().GetDatas() {
 		info := &proto.GachaInfo{
 			GachaId:        uint32(v.ID),
@@ -37,5 +36,5 @@ func (g *Game) GachaRecord(s *model.Player, msg *alg.GameMsg) {
 		TotalPage: 0,
 		Records:   make([]*proto.PlayerGachaRecord, 0),
 	}
-	defer g.send(s, cmd.GachaRecordRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }

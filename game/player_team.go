@@ -4,7 +4,6 @@ import (
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/pkg/log"
-	"gucooing/lolo/protocol/cmd"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -13,7 +12,7 @@ func (g *Game) UpdateTeam(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.UpdateTeamRsp{
 		Status: proto.StatusCode_StatusCode_OK,
 	}
-	defer g.send(s, cmd.UpdateTeamRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 	// 更新队伍
 	upChar := func(target *uint32, char uint32) bool {
 		*target = char

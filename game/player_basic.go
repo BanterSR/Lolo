@@ -13,7 +13,6 @@ import (
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/pkg/log"
 	"gucooing/lolo/pkg/ofnet"
-	"gucooing/lolo/protocol/cmd"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -75,7 +74,7 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
 		return
 	}
 	defer func() {
-		g.send(s, cmd.PlayerLoginRsp, msg.PacketId, rsp)
+		g.send(s, msg.PacketId, rsp)
 		if req.IsReconnect {
 			g.loginGame(s)
 		}
@@ -120,7 +119,7 @@ func (g *Game) PlayerMainData(s *model.Player, msg *alg.GameMsg) {
 		Status: proto.StatusCode_StatusCode_OK,
 	}
 	defer func() {
-		g.send(s, cmd.PlayerMainDataRsp, msg.PacketId, rsp)
+		g.send(s, msg.PacketId, rsp)
 		g.loginGame(s)
 	}()
 	// 基础信息
@@ -182,7 +181,7 @@ func (g *Game) PlayerMainData(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) loginGame(s *model.Player) {
-	g.PackNotice(s)
+	g.AllPackNotice(s)
 	// 进入房间
 	g.joinSceneChannel(s)
 	/*
@@ -199,7 +198,7 @@ func (g *Game) PlayerPing(s *model.Player, msg *alg.GameMsg) {
 		ClientTimeMs: req.ClientTimeMs,
 		ServerTimeMs: time.Now().UnixMilli(),
 	}
-	defer g.send(s, cmd.PlayerPingRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) GamePlayReward(s *model.Player, msg *alg.GameMsg) {
@@ -209,7 +208,7 @@ func (g *Game) GamePlayReward(s *model.Player, msg *alg.GameMsg) {
 		DynamicTreasureBoxInfo: nil,
 		Items:                  make([]*proto.ItemDetail, 0),
 	}
-	defer g.send(s, cmd.GamePlayRewardRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) AcceptQuest(s *model.Player, msg *alg.GameMsg) {
@@ -225,7 +224,7 @@ func (g *Game) AcceptQuest(s *model.Player, msg *alg.GameMsg) {
 			ActivityId:    0,
 		},
 	}
-	defer g.send(s, cmd.AcceptQuestRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) GetAchieveOneGroup(s *model.Player, msg *alg.GameMsg) {
@@ -240,7 +239,7 @@ func (g *Game) GetAchieveOneGroup(s *model.Player, msg *alg.GameMsg) {
 		},
 		IsReward: false,
 	}
-	defer g.send(s, cmd.GetAchieveOneGroupRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) GetAchieveGroupList(s *model.Player, msg *alg.GameMsg) {
@@ -249,7 +248,7 @@ func (g *Game) GetAchieveGroupList(s *model.Player, msg *alg.GameMsg) {
 		Status:             proto.StatusCode_StatusCode_OK,
 		RewardedGroupIdLst: make([]uint32, 0),
 	}
-	defer g.send(s, cmd.GetAchieveGroupListRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) GenericGameB(s *model.Player, msg *alg.GameMsg) {
@@ -259,7 +258,7 @@ func (g *Game) GenericGameB(s *model.Player, msg *alg.GameMsg) {
 		GenericMsgId: 0,
 		Params:       make([]*proto.CommonParam, 0),
 	}
-	defer g.send(s, cmd.GenericGameBRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) GetCollectItemIds(s *model.Player, msg *alg.GameMsg) {
@@ -268,7 +267,7 @@ func (g *Game) GetCollectItemIds(s *model.Player, msg *alg.GameMsg) {
 		Status:  proto.StatusCode_StatusCode_OK,
 		ItemIds: make([]uint32, 0),
 	}
-	defer g.send(s, cmd.GetCollectItemIdsRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) ManualList(s *model.Player, msg *alg.GameMsg) {
@@ -277,7 +276,7 @@ func (g *Game) ManualList(s *model.Player, msg *alg.GameMsg) {
 		Status: proto.StatusCode_StatusCode_OK,
 		Flags:  make([]*proto.ManualFlag, 0),
 	}
-	defer g.send(s, cmd.ManualListRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) GetCollectMoonInfo(s *model.Player, msg *alg.GameMsg) {
@@ -288,7 +287,7 @@ func (g *Game) GetCollectMoonInfo(s *model.Player, msg *alg.GameMsg) {
 		CollectedMoonIds: make([]uint32, 0),
 		EmotionMoons:     make([]*proto.EmotionMoonInfo, 0),
 	}
-	defer g.send(s, cmd.GetCollectMoonInfoRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) ChangeMusicalItem(s *model.Player, msg *alg.GameMsg) {
@@ -299,7 +298,7 @@ func (g *Game) ChangeMusicalItem(s *model.Player, msg *alg.GameMsg) {
 		MusicalItemInstanceId: 0,
 		MusicalItemId:         0,
 	}
-	defer g.send(s, cmd.ChangeMusicalItemRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) SelfIntervalInit(s *model.Player, msg *alg.GameMsg) {
@@ -317,7 +316,7 @@ func (g *Game) SelfIntervalInit(s *model.Player, msg *alg.GameMsg) {
 			Member:     make([]*proto.FriendIntervalInfo, 0),
 		},
 	}
-	defer g.send(s, cmd.SelfIntervalInitRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) BossRushInfo(s *model.Player, msg *alg.GameMsg) {
@@ -337,7 +336,7 @@ func (g *Game) BossRushInfo(s *model.Player, msg *alg.GameMsg) {
 			UsedCharacters:    make([]uint32, 0),
 		},
 	}
-	defer g.send(s, cmd.BossRushInfoRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) PlayerVitality(s *model.Player, msg *alg.GameMsg) {
@@ -347,5 +346,5 @@ func (g *Game) PlayerVitality(s *model.Player, msg *alg.GameMsg) {
 		VitalityBuyNum: 0,
 		Items:          make([]*proto.ItemDetail, 0),
 	}
-	defer g.send(s, cmd.PlayerVitalityRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }

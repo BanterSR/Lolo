@@ -5,7 +5,6 @@ import (
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/pkg/log"
 	"gucooing/lolo/pkg/ofnet"
-	"gucooing/lolo/protocol/cmd"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -47,7 +46,7 @@ func (g *Gateway) VerifyLoginToken(req *LoginInfo) {
 		BanEndTime:   0,
 	}
 	defer func() {
-		req.conn.Send(cmd.VerifyLoginTokenRsp, 0, rsp)
+		req.conn.Send(0, rsp)
 		g.delLoginChan <- req.SdkUid
 	}()
 	sdkUid := alg.S2U32(req.SdkUid)

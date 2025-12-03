@@ -2,7 +2,6 @@ package game
 
 import (
 	"gucooing/lolo/game/model"
-	"gucooing/lolo/protocol/cmd"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -12,5 +11,5 @@ func (g *Game) ChatMsgRecordInitNotice(s *model.Player) {
 		Type:   0,
 		Msg:    make([]*proto.ChatMsgData, 0),
 	}
-	defer g.send(s, cmd.ChatMsgRecordInitNotice, 0, notice)
+	defer g.send(s, 0, notice)
 }

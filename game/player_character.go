@@ -6,7 +6,6 @@ import (
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/pkg/constant"
 	"gucooing/lolo/pkg/log"
-	"gucooing/lolo/protocol/cmd"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -15,7 +14,7 @@ func (g *Game) GetAllCharacterEquip(s *model.Player, msg *alg.GameMsg) {
 		Status: proto.StatusCode_StatusCode_OK,
 		Items:  make([]*proto.ItemDetail, 0),
 	}
-	defer g.send(s, cmd.GetAllCharacterEquipRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) GetCharacterAchievementList(s *model.Player, msg *alg.GameMsg) {
@@ -28,7 +27,7 @@ func (g *Game) GetCharacterAchievementList(s *model.Player, msg *alg.GameMsg) {
 		CharacterId:             req.CharacterId,
 		RewardedIdLst:           make([]uint32, 0),
 	}
-	defer g.send(s, cmd.GetCharacterAchievementListRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) CharacterLevelUp(s *model.Player, msg *alg.GameMsg) {
@@ -39,7 +38,7 @@ func (g *Game) CharacterLevelUp(s *model.Player, msg *alg.GameMsg) {
 		Level:  0,
 		Exp:    0,
 	}
-	defer g.send(s, cmd.CharacterLevelUpRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharId)
 	if characterInfo == nil {
 		rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
@@ -84,7 +83,7 @@ func (g *Game) CharacterLevelUp(s *model.Player, msg *alg.GameMsg) {
 
 	// 提交事务
 	tx.Commit()
-	g.send(s, cmd.PackNotice, 0, tx.PackNotice)
+	g.send(s, 0, tx.PackNotice)
 
 	rsp.Level = characterInfo.Level
 	rsp.Exp = characterInfo.Exp
@@ -99,7 +98,7 @@ func (g *Game) CharacterLevelBreak(s *model.Player, msg *alg.GameMsg) {
 		Exp:      0,
 		MaxLevel: 0,
 	}
-	defer g.send(s, cmd.CharacterLevelBreakRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharId)
 	if characterInfo == nil {
 		rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
@@ -127,7 +126,7 @@ func (g *Game) CharacterLevelBreak(s *model.Player, msg *alg.GameMsg) {
 		}
 	}
 	tx.Commit()
-	g.send(s, cmd.PackNotice, 0, tx.PackNotice)
+	g.send(s, 0, tx.PackNotice)
 
 	characterInfo.BreakLevel++
 	characterInfo.UpMaxLevel()
@@ -144,7 +143,7 @@ func (g *Game) OutfitPresetUpdate(s *model.Player, msg *alg.GameMsg) {
 		Preset: req.Preset,
 	}
 	defer func() {
-		g.send(s, cmd.OutfitPresetUpdateRsp, msg.PacketId, rsp)
+		g.send(s, msg.PacketId, rsp)
 		teamInfo := s.GetTeamModel().GetTeamInfo()
 		scenePlayer := g.getWordInfo().getScenePlayer(s)
 		if (req.CharId == teamInfo.Char1 ||
@@ -204,7 +203,7 @@ func (g *Game) CharacterEquipUpdate(s *model.Player, msg *alg.GameMsg) {
 		Character: make([]*proto.Character, 0),
 		Items:     make([]*proto.ItemDetail, 0),
 	}
-	defer g.send(s, cmd.CharacterEquipUpdateRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharId)
 	if characterInfo == nil {
 		log.Game.Warnf("保存角色装备失败,角色%v不存在", req.CharId)

@@ -76,11 +76,11 @@ func (g *Game) gameMainLoop() {
 	}
 }
 
-func (g *Game) send(s *model.Player, cmdId uint32, packetId uint32, payloadMsg pb.Message) {
+func (g *Game) send(s *model.Player, packetId uint32, payloadMsg pb.Message) {
 	if s.NetFreeze {
 		return
 	}
-	s.Conn.Send(cmdId, packetId, payloadMsg)
+	s.Conn.Send(packetId, payloadMsg)
 }
 
 func (g *Game) GetUser(userId uint32) *model.Player {

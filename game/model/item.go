@@ -111,12 +111,12 @@ func (i *ItemModel) AllItemModel() {
 				i.AddItemBase(uint32(conf.ID), 1)
 			}
 		case proto.EBagItemTag_EBagItemTag_AbilityItem:
-			for _, conf := range confList {
-				if gdconf.GetPlayerAbilityConfigure(conf.ID) == nil {
-					continue
-				}
-				i.AddItemBase(uint32(conf.ID), 1)
-			}
+			// for _, conf := range confList {
+			// 	if gdconf.GetPlayerAbilityConfigure(conf.ID) == nil {
+			// 		continue
+			// 	}
+			// 	i.AddItemBase(uint32(conf.ID), 1)
+			// }
 		case proto.EBagItemTag_EBagItemTag_Weapon:
 			for _, conf := range confList {
 				i.AddItemWeapon(uint32(conf.ID))

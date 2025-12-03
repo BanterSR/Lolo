@@ -9,7 +9,6 @@ import (
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/pkg/log"
-	"gucooing/lolo/protocol/cmd"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -63,14 +62,14 @@ func (c *ChannelInfo) getAllPlayer() map[uint32]*ScenePlayer {
 	return c.allPlayer
 }
 
-func (c *ChannelInfo) sendAllPlayer(cmdId uint32, packetId uint32, payloadMsg pb.Message) {
+func (c *ChannelInfo) sendAllPlayer(packetId uint32, payloadMsg pb.Message) {
 	for _, player := range c.getAllPlayer() {
-		player.Conn.Send(cmdId, packetId, payloadMsg)
+		player.Conn.Send(packetId, payloadMsg)
 	}
 }
 
-func (c *ChannelInfo) sendPlayer(player *ScenePlayer, cmdId uint32, packetId uint32, payloadMsg pb.Message) {
-	player.Conn.Send(cmdId, packetId, payloadMsg)
+func (c *ChannelInfo) sendPlayer(player *ScenePlayer, packetId uint32, payloadMsg pb.Message) {
+	player.Conn.Send(packetId, payloadMsg)
 }
 
 func (c *ChannelInfo) getTodTime() uint32 {
@@ -132,7 +131,7 @@ func (c *ChannelInfo) channelTick() {
 			Status: proto.StatusCode_StatusCode_OK,
 			Data:   c.sceneSyncDatas,
 		}
-		c.sendAllPlayer(cmd.PlayerSceneSyncDataNotice, 0, notice)
+		c.sendAllPlayer(0, notice)
 		c.sceneSyncDatas = make([]*proto.SceneSyncData, 0)
 	}
 	// 玩家变化同步
@@ -144,7 +143,7 @@ func (c *ChannelInfo) channelTick() {
 		for _, data := range c.sceneServerDatas {
 			alg.AddList(&notice.Data, data)
 		}
-		c.sendAllPlayer(cmd.ServerSceneSyncDataNotice, 0, notice)
+		c.sendAllPlayer(0, notice)
 		c.sceneServerDatas = make(map[uint32]*proto.ServerSceneSyncData)
 	}
 
@@ -184,7 +183,7 @@ func (c *ChannelInfo) SceneDataNotice(scenePlayer *ScenePlayer) {
 		Status: proto.StatusCode_StatusCode_OK,
 		Data:   nil,
 	}
-	defer c.sendPlayer(scenePlayer, cmd.SceneDataNotice, 0, notice)
+	defer c.sendPlayer(scenePlayer, 0, notice)
 	data := c.GetPbSceneData()
 	if data == nil {
 		str, _ := sonic.MarshalString(c)
@@ -254,7 +253,7 @@ func (c *ChannelInfo) SendActionNotice(ctx *ActionSyncCtx) {
 		EndTime:           0,
 		MultipleNeedCount: 0,
 	}
-	c.sendAllPlayer(cmd.SendActionNotice, 0, notice)
+	c.sendAllPlayer(0, notice)
 }
 
 func (c *ChannelInfo) GetPbSceneData() (info *proto.SceneData) {
@@ -452,5 +451,5 @@ func (c *ChannelInfo) SceneWeatherChangeNotice() {
 		Status:      proto.StatusCode_StatusCode_OK,
 		WeatherType: c.weatherType,
 	}
-	c.sendAllPlayer(cmd.SceneWeatherChangeNotice, 0, notice)
+	c.sendAllPlayer(0, notice)
 }

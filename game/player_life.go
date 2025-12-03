@@ -3,7 +3,6 @@ package game
 import (
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/pkg/alg"
-	"gucooing/lolo/protocol/cmd"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -26,5 +25,5 @@ func (g *Game) GetLifeInfo(s *model.Player, msg *alg.GameMsg) {
 			RewardedLifeAchieveIdLst: nil,
 		},
 	}
-	defer g.send(s, cmd.GetLifeInfoRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 }

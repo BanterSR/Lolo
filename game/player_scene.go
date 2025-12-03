@@ -4,7 +4,6 @@ import (
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/pkg/log"
-	"gucooing/lolo/protocol/cmd"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -13,7 +12,7 @@ func (g *Game) PlayerSceneRecord(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.PlayerSceneRecordRsp{
 		Status: proto.StatusCode_StatusCode_OK,
 	}
-	defer g.send(s, cmd.PlayerSceneRecordRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil ||
 		scenePlayer.channelInfo == nil {
@@ -32,7 +31,7 @@ func (g *Game) SceneProcessList(s *model.Player, msg *alg.GameMsg) {
 		Status:           proto.StatusCode_StatusCode_OK,
 		SceneProcessList: make([]*proto.SceneProcess, 0),
 	}
-	defer g.send(s, cmd.SceneProcessListRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 	rsp.SceneProcessList = append(rsp.SceneProcessList, &proto.SceneProcess{
 		SceneId: 9999,
 		Process: 1,
@@ -52,7 +51,7 @@ func (g *Game) SendAction(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.SendActionRsp{
 		Status: proto.StatusCode_StatusCode_OK,
 	}
-	defer g.send(s, cmd.SendActionRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil ||
 		scenePlayer.channelInfo == nil {
@@ -76,7 +75,7 @@ func (g *Game) ChangeSceneChannel(s *model.Player, msg *alg.GameMsg) {
 		PasswordAllowTime: 0,
 		TargetPlayerId:    0,
 	}
-	defer g.send(s, cmd.ChangeSceneChannelRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil ||
 		scenePlayer.channelInfo == nil {
@@ -114,7 +113,7 @@ func (g *Game) GenericSceneB(s *model.Player, msg *alg.GameMsg) {
 		GenericMsgId: req.GenericMsgId,
 		Params:       make([]*proto.CommonParam, 0),
 	}
-	defer g.send(s, cmd.GenericSceneBRsp, msg.PacketId, rsp)
+	defer g.send(s, msg.PacketId, rsp)
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil ||
 		scenePlayer.channelInfo == nil {
