@@ -80,9 +80,9 @@ func newLolo() {
 	log.App.Debug("开始初始化数据库")
 	if err := db.NewDB(); err != nil {
 		panic(fmt.Sprintf("初始化数据库失败:%s", err.Error()))
-	} else {
-		log.App.Debug("初始化数据库成功")
 	}
+
+	log.App.Debug("初始化数据库成功")
 	// 初始化资源文件
 	gdconf.LoadGameConfig()
 	// 初始化gin

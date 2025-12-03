@@ -24,7 +24,7 @@ func NewLogServer(router *gin.Engine) *LogServer {
 	}
 	log.NewClientLog()
 
-	l.net, err = ofnet.NewNet("tcp", l.cfg.GetOuterAddr())
+	l.net, err = ofnet.NewNet("tcp", l.cfg.GetOuterAddr(), log.ClientLog)
 	if err != nil {
 		panic(err)
 	}

@@ -37,7 +37,7 @@ func NewGateway(router *gin.Engine) *Gateway {
 		doneChan:     make(chan struct{}),
 		game:         game.NewGame(),
 	}
-	g.net, err = ofnet.NewNet("tcp", g.cfg.GetOuterAddr())
+	g.net, err = ofnet.NewNet("tcp", g.cfg.GetOuterAddr(), log.Gate)
 	if err != nil {
 		panic(err)
 	}
