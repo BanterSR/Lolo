@@ -9,6 +9,7 @@ type LogServer struct {
 	OuterIp   string `json:"OuterIp"`
 	OuterPort int    `json:"OuterPort"`
 	OuterAddr string `json:"OuterAddr"`
+	IsLogMsg  bool   `json:"IsLogMsg"`
 }
 
 var defaultLogServer = &LogServer{
@@ -20,6 +21,7 @@ var defaultLogServer = &LogServer{
 	OuterIp:   "127.0.0.1",
 	OuterPort: 12000,
 	OuterAddr: "0.0.0.0:12000",
+	IsLogMsg:  false,
 }
 
 func GetLogServer() *LogServer {
@@ -43,4 +45,8 @@ func (x *LogServer) GetOuterPort() int {
 
 func (x *LogServer) GetOuterAddr() string {
 	return x.OuterAddr
+}
+
+func (x *LogServer) GetIsLogMsg() bool {
+	return x.IsLogMsg
 }
