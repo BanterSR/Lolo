@@ -1,6 +1,12 @@
 name: Lolo_Build.yml
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "tag"
+        required: false
+        default: ""
+        type: string
   pull_request:
     types:
       - opened
