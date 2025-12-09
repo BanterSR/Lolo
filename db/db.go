@@ -37,6 +37,7 @@ func NewDB() error {
 	}
 	err = db.AutoMigrate(
 		&OFGame{},
+		&UserBasic{},
 		&BlackDevice{},
 		&OFUser{},
 		&OFFriendInfo{},

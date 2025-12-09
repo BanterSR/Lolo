@@ -20,8 +20,8 @@ type Player struct {
 	ActiveTime    time.Time       `json:"-"`                       // 上一次活跃时间
 	LastSaveTime  time.Time       `json:"-"`                       // 上一次数据保存时间
 	UserId        uint32          `json:"-"`                       // 玩家id
+	NickName      string          `json:"-"`                       // 玩家昵称
 	InstanceIndex uint32          `json:"instanceIndex,omitempty"` // 唯一索引生成
-	Basic         *BasicModel     `json:"basic,omitempty"`         // 基础信息
 	Item          *ItemModel      `json:"item,omitempty"`          // 背包
 	Character     *CharacterModel `json:"character,omitempty"`     // 角色
 	Team          *TeamModel      `json:"team,omitempty"`          // 队伍

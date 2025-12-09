@@ -36,8 +36,15 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
 			log.Game.Warnf("数据库拉取玩家:%v数据失败:%s", userId, err.Error())
 			return
 		}
+		basic, err := db.GetUserBasic(userId)
+		if err != nil {
+			log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败:%s", s.UserId, err.Error())
+			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
+			return
+		}
 		s = &model.Player{
 			UserId:    userId,
+			NickName:  basic.NickName,
 			Conn:      conn,
 			Online:    true,
 			NetFreeze: false,
@@ -67,9 +74,9 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
 		g.userMap[userId] = s
 	}
 
-	basic := s.GetBasicModel()
-	if basic == nil {
-		log.Game.Warnf("UserId:%v 登录失败,玩家数据异常", s.UserId)
+	basic, err := db.GetUserBasic(userId)
+	if err != nil {
+		log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败:%s", s.UserId, err.Error())
 		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		return
 	}
@@ -86,7 +93,7 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
 	}
 	// 基础信息
 	{
-		rsp.PlayerName = basic.PlayerName
+		rsp.PlayerName = basic.NickName
 		rsp.RegisterTime = uint32(s.Created.Unix())
 		rsp.AnalysisAccountId = strconv.Itoa(int(s.UserId))
 	}
@@ -123,11 +130,16 @@ func (g *Game) PlayerMainData(s *model.Player, msg *alg.GameMsg) {
 		g.loginGame(s)
 	}()
 	// 基础信息
-	basic := s.GetBasicModel()
 	{
+		basic, err := db.GetUserBasic(s.UserId)
+		if err != nil {
+			log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败:%s", s.UserId, err.Error())
+			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
+			return
+		}
 		rsp.PlayerId = s.UserId
 		rsp.PlayerLabel = s.UserId // 玩家标签
-		rsp.PlayerName = basic.PlayerName
+		rsp.PlayerName = basic.NickName
 		rsp.Level = basic.Level
 		rsp.Sign = basic.Sign
 		rsp.Exp = basic.Exp

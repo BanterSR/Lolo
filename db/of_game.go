@@ -12,6 +12,7 @@ type OFGame struct {
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime"`
 	BinData   []byte
+	Basic     *UserBasic `gorm:"foreignKey:UserId"`
 }
 
 // GetOFGameByUserId 使用UserId拉取数据 如果不存在就添加

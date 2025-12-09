@@ -260,7 +260,7 @@ func (c *ChannelInfo) SendActionNotice(ctx *ActionSyncCtx) {
 		Status:            proto.StatusCode_StatusCode_OK,
 		ActionId:          ctx.ActionId,
 		FromPlayerId:      ctx.ScenePlayer.UserId,
-		FromPlayerName:    ctx.ScenePlayer.GetBasicModel().PlayerName,
+		FromPlayerName:    ctx.ScenePlayer.NickName,
 		IsStudy:           false,
 		EndTime:           0,
 		MultipleNeedCount: 0,
@@ -321,7 +321,7 @@ func (c *ChannelInfo) GetPbSceneData() (info *proto.SceneData) {
 func (c *ChannelInfo) GetPbScenePlayer(scenePlayer *ScenePlayer) (info *proto.ScenePlayer) {
 	info = &proto.ScenePlayer{
 		PlayerId:              scenePlayer.UserId,
-		PlayerName:            scenePlayer.GetBasicModel().PlayerName,
+		PlayerName:            scenePlayer.NickName,
 		Team:                  c.GetPbSceneTeam(scenePlayer),
 		Status:                new(proto.ScenePlayerActionStatus),
 		FoodBuffIds:           make([]uint32, 0),
