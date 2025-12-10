@@ -36,7 +36,7 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
 			log.Game.Warnf("数据库拉取玩家:%v数据失败:%s", userId, err.Error())
 			return
 		}
-		basic, err := db.GetUserBasic(userId)
+		basic, err := db.GetGameBasic(userId)
 		if err != nil {
 			log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败:%s", s.UserId, err.Error())
 			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
@@ -73,7 +73,7 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
 		g.userMap[userId] = s
 	}
 
-	basic, err := db.GetUserBasic(userId)
+	basic, err := db.GetGameBasic(userId)
 	if err != nil {
 		log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败:%s", s.UserId, err.Error())
 		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
@@ -130,7 +130,7 @@ func (g *Game) PlayerMainData(s *model.Player, msg *alg.GameMsg) {
 	}()
 	// 基础信息
 	{
-		basic, err := db.GetUserBasic(s.UserId)
+		basic, err := db.GetGameBasic(s.UserId)
 		if err != nil {
 			log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败:%s", s.UserId, err.Error())
 			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
@@ -195,10 +195,8 @@ func (g *Game) loginGame(s *model.Player) {
 	g.AllPackNotice(s)
 	// 进入房间
 	g.joinSceneChannel(s)
-	/*
-		s.ChangeChatChannel()
-	*/
-	g.ChatMsgRecordInitNotice(s)
+	// 初始化聊天
+	g.chatInit(s)
 	g.send(s, 0, &proto.GmNotice{
 		Status: proto.StatusCode_StatusCode_OK,
 		Notice: alg.GmNotice,

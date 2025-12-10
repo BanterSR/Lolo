@@ -320,7 +320,7 @@ func (c *ChannelInfo) GetPbSceneData() (info *proto.SceneData) {
 }
 
 func (c *ChannelInfo) GetPbScenePlayer(scenePlayer *ScenePlayer) (info *proto.ScenePlayer) {
-	basic, err := db.GetUserBasic(scenePlayer.UserId)
+	basic, err := db.GetGameBasic(scenePlayer.UserId)
 	if err != nil {
 		log.Game.Errorf("UserId:%v获取玩家基础数据失败:%s", scenePlayer.UserId, err.Error())
 		return

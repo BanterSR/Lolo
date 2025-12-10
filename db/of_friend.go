@@ -15,8 +15,8 @@ type OFFriendInfo struct {
 
 // 好友申请表
 type OFFriendRequest struct {
-	SenderUserId  uint32    `gorm:"primary_key;not null;index:request"` // 申请者
-	RequestUserId uint32    `gorm:"primary_key;not null;index:request"` // 被申请者
+	SenderUserId  uint32    `gorm:"primary_key;not null;uniqueIndex:request"` // 申请者
+	RequestUserId uint32    `gorm:"primary_key;not null;uniqueIndex:request"` // 被申请者
 	CreatedAt     time.Time `gorm:"autoCreateTime"`
 	UpdatedAt     time.Time `gorm:"autoUpdateTime"`
 }
@@ -51,8 +51,8 @@ func CreateFriendApply(senderId, requestUserId uint32) error {
 
 // 好友关系表
 type OFFriend struct {
-	UserId           uint32    `gorm:"primary_key;not null;index:friend"` // 用户id
-	FriendId         uint32    `gorm:"primary_key;not null;index:friend"` // 用户id的好友id
+	UserId           uint32    `gorm:"primary_key;not null;uniqueIndex:friend"` // 用户id
+	FriendId         uint32    `gorm:"primary_key;not null;uniqueIndex:friend"` // 用户id的好友id
 	CreatedAt        time.Time `gorm:"autoCreateTime"`
 	UpdatedAt        time.Time `gorm:"autoUpdateTime"`
 	Alias            string    `gorm:"default:''"` // 别名
@@ -121,8 +121,8 @@ func DelFiend(userId, friendId uint32) error {
 
 // 好友黑名单表
 type OFFriendBlack struct {
-	UserId    uint32    `gorm:"primary_key;not null;index:black"`
-	BlackId   uint32    `gorm:"primary_key;not null;index:black"`
+	UserId    uint32    `gorm:"primary_key;not null;uniqueIndex:black"`
+	BlackId   uint32    `gorm:"primary_key;not null;uniqueIndex:black"`
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime"`
 }

@@ -37,13 +37,14 @@ func NewDB() error {
 	}
 	err = db.AutoMigrate(
 		&OFGame{},
-		&UserBasic{},
+		&OFGameBasic{},
 		&BlackDevice{},
 		&OFUser{},
 		&OFFriendInfo{},
 		&OFFriendRequest{},
 		&OFFriend{},
 		&OFFriendBlack{},
+		&OFChatPrivate{},
 	)
 
 	db.Create(&OFUser{

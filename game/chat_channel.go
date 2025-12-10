@@ -1,5 +1,19 @@
 package game
 
+import (
+	"gucooing/lolo/game/model"
+)
+
+// 初始化玩家聊天
+func (g *Game) chatInit(s *model.Player) {
+	// 获取私聊情况
+	g.PrivateChatOfflineNotice(s)
+	/*
+		s.ChangeChatChannel()
+	*/
+	g.ChatMsgRecordInitNotice(s)
+}
+
 type ChatInfo struct {
 	noticeChan    *ChatChannel            // 通知频道
 	allSystemChat map[uint32]*ChatChannel // 系统频道

@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	basicCache = cache.New[uint32, *UserBasic](5 * time.Second)
+	basicCache = cache.New[uint32, *OFGameBasic](5 * time.Second)
 )
 
-type UserBasic struct {
+type OFGameBasic struct {
 	UserId          uint32         `gorm:"primaryKey;not null"`
 	NickName        string         `gorm:"default:'gucooing'"`
 	Level           uint32         `gorm:"default:1"`
@@ -29,11 +29,11 @@ type UserBasic struct {
 }
 
 // 获取玩家基础信息
-func GetUserBasic(userId uint32) (*UserBasic, error) {
+func GetGameBasic(userId uint32) (*OFGameBasic, error) {
 	if basic, ok := basicCache.Get(userId); ok {
 		return basic, nil
 	}
-	basic := &UserBasic{
+	basic := &OFGameBasic{
 		UserId: userId,
 	}
 	err := db.FirstOrCreate(basic).Error
@@ -45,8 +45,8 @@ func GetUserBasic(userId uint32) (*UserBasic, error) {
 }
 
 // 更新基础信息
-func UpUserBasic(userId uint32, fx func(basic *UserBasic) bool) error {
-	basic, err := GetUserBasic(userId)
+func UpGameBasic(userId uint32, fx func(basic *OFGameBasic) bool) error {
+	basic, err := GetGameBasic(userId)
 	if err != nil {
 		return err
 	}

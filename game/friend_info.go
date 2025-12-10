@@ -7,9 +7,9 @@ import (
 )
 
 func (g *Game) GetFriendBriefInfo(userId uint32, friend *db.OFFriend) *proto.FriendBriefInfo {
-	basic, err := db.GetUserBasic(userId)
+	basic, err := db.GetGameBasic(userId)
 	if err != nil {
-		log.Game.Warnf("GetUserBasic:%v func db.GetUserBasic:%v", userId, err)
+		log.Game.Warnf("GetGameBasic:%v func db.GetGameBasic:%v", userId, err)
 		return nil
 	}
 	info := &proto.FriendBriefInfo{
@@ -29,7 +29,7 @@ func (g *Game) GetFriendBriefInfo(userId uint32, friend *db.OFFriend) *proto.Fri
 	return info
 }
 
-func (g *Game) PlayerBriefInfo(b *db.UserBasic) *proto.PlayerBriefInfo {
+func (g *Game) PlayerBriefInfo(b *db.OFGameBasic) *proto.PlayerBriefInfo {
 	return &proto.PlayerBriefInfo{
 		PlayerId:        b.UserId,
 		NickName:        b.NickName,

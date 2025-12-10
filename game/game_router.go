@@ -47,6 +47,8 @@ func (g *Game) newRouter() {
 		cmd.FriendAddReq:    g.FriendAdd,    // 添加好友请求
 		cmd.FriendHandleReq: g.FriendHandle, // 处理好友申请
 		cmd.FriendDelReq:    g.FriendDel,    // 删除好友关系
+		cmd.FriendBlackReq:  g.FriendBlack,  // 拉黑玩家
+		// 聊天
 		// 星云树
 		cmd.GetCollectMoonInfoReq: g.GetCollectMoonInfo, // 获取星云树信息
 
