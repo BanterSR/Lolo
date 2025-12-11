@@ -209,9 +209,7 @@ func (g *Game) CharacterEquipUpdate(s *model.Player, msg *alg.GameMsg) {
 		log.Game.Warnf("保存角色装备失败,角色%v不存在", req.CharId)
 		return
 	}
-	defer func() {
-		alg.AddList(&rsp.Character, characterInfo.Character())
-	}()
+	defer alg.AddList(&rsp.Character, characterInfo.Character())
 
 	equipmentPreset := characterInfo.GetEquipmentPreset(req.EquipmentPreset.PresetIndex)
 	// 更新武器

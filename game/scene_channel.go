@@ -108,12 +108,7 @@ func (c *ChannelInfo) channelMainLoop() {
 		case <-c.doneChan:
 			return
 		case <-c.freezeChan: // 房间冻结
-			select {
-			case scenePlayer := <-c.addScenePlayerChan: // 等待玩家进入解冻房间
-				c.addPlayer(scenePlayer)
-			case <-c.doneChan: // 或房间被取消
-				return
-			}
+			c.freezeChannel()
 		}
 	}
 }
@@ -162,6 +157,16 @@ func (c *ChannelInfo) channelTick() {
 	}
 }
 
+func (c *ChannelInfo) freezeChannel() {
+	log.Game.Debugf("场景%v房间%v已冻结", c.SceneInfo.SceneId, c.ChannelId)
+	select {
+	case scenePlayer := <-c.addScenePlayerChan: // 等待玩家进入解冻房间
+		c.addPlayer(scenePlayer)
+	case <-c.doneChan: // 或房间被取消
+		return
+	}
+}
+
 func (c *ChannelInfo) addPlayer(scenePlayer *ScenePlayer) bool {
 	list := c.getAllPlayer()
 	if _, ok := list[scenePlayer.UserId]; ok {
@@ -200,7 +205,7 @@ func (c *ChannelInfo) SceneDataNotice(scenePlayer *ScenePlayer) {
 	data := c.GetPbSceneData()
 	if data == nil {
 		str, _ := sonic.MarshalString(c)
-		log.Game.Errorf("玩家场景信息异常:%s", str)
+		log.Game.Errorf("玩家场景信息异常|场景快照:%s", str)
 		notice.Status = proto.StatusCode_StatusCode_CANT_JOIN_PLAYER_CURRENT_SCENE_CHANNEL
 		return
 	}
