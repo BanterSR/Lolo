@@ -194,7 +194,7 @@ func (g *Game) PlayerMainData(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) loginGame(s *model.Player) {
 	g.AllPackNotice(s)
 	// 进入房间
-	g.joinSceneChannel(s)
+	g.getWordInfo().joinSceneChannel(s)
 	// 初始化聊天
 	g.chatInit(s)
 	g.send(s, 0, &proto.GmNotice{

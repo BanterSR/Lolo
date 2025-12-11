@@ -9,6 +9,7 @@ type Constant struct {
 	DefaultInstanceIndex uint32   `json:"DefaultInstanceIndex"`
 	DefaultSceneId       uint32   `json:"DefaultSceneId"`
 	DefaultChannelId     uint32   `json:"DefaultChannelId"`
+	DefaultChatChannelId uint32   `json:"DefaultChatChannelId"`
 	ChannelTick          int      `json:"ChannelTick"`
 }
 

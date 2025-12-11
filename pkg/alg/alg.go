@@ -43,6 +43,13 @@ func MaxInt(a, b int) int {
 	return b
 }
 
+func MinInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 func NoZero[T comparable](a *T, b T) {
 	var zero T
 	if b != zero {

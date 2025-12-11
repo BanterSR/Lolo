@@ -7,5 +7,6 @@
   "DefaultInstanceIndex": 0,
   "DefaultSceneId": 9999,
   "DefaultChannelId": 1314,
+  "DefaultChatChannelId": 1000,
   "ChannelTick": 200
 }

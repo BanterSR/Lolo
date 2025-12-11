@@ -72,9 +72,16 @@ func (g *Game) SendChatMsg(s *model.Player, msg *alg.GameMsg) {
 		Text:       req.Text,
 		Expression: req.Expression,
 	}
+	chatMsgData := model.GetUserChatMsgData(chatMsg, req.PlayerId)
 	switch req.Type {
 	case proto.ChatChannelType_ChatChannel_Default: // 默认消息是房间消息
 	case proto.ChatChannelType_ChatChannel_ChatRoom: // 聊天房间
+		chatChannel := g.getChatInfo().getChannelUser(s)
+		if chatChannel.channel == nil {
+			log.Game.Warnf("User:%v 玩家没加入聊天房间", s.UserId)
+			return
+		}
+		chatChannel.channel.allSendMsgChan <- chatMsgData
 	case proto.ChatChannelType_ChatChannel_Private: // 私聊
 		// 好友判断
 		if count, err := db.GetIsFiend(s.UserId, req.PlayerId); err != nil {
@@ -94,45 +101,27 @@ func (g *Game) SendChatMsg(s *model.Player, msg *alg.GameMsg) {
 		}
 		// 如果在线就通知过去
 		if user := g.GetUser(req.PlayerId); user != nil {
-			go g.ChatPrivateMsgNotice(user, privateMsg)
+			go g.ChatPrivateMsgNotice(user, chatMsgData)
 		}
 	}
 }
 
 // 历史消息同步通知
-func (g *Game) ChatMsgPrivateRecordInitNotice(s *model.Player, msgs []*db.OFChatPrivateMsg) {
+func (g *Game) ChatMsgRecordInitNotice(s *model.Player, msgs []*proto.ChatMsgData, t proto.ChatChannelType) {
 	notice := &proto.ChatMsgRecordInitNotice{
 		Status: proto.StatusCode_StatusCode_OK,
-		Type:   proto.ChatChannelType_ChatChannel_Private,
-		Msg:    make([]*proto.ChatMsgData, 0, len(msgs)),
+		Type:   t,
+		Msg:    msgs,
 	}
-
-	for _, msg := range msgs {
-		alg.AddList(&notice.Msg, model.GetUserChatMsgData(msg.OFChatMsg, msg.UserId))
-	}
-	timer := time.NewTimer(5 * time.Second)
-	defer timer.Stop()
-	select {
-	case <-timer.C:
-		return
-	default:
-		g.send(s, 0, notice)
-	}
+	g.send(s, 0, notice)
 }
 
 // 实时消息通知
-func (g *Game) ChatPrivateMsgNotice(s *model.Player, msg *db.OFChatPrivateMsg) {
+func (g *Game) ChatPrivateMsgNotice(s *model.Player, msg *proto.ChatMsgData) {
 	notice := &proto.ChatMsgNotice{
 		Status: proto.StatusCode_StatusCode_OK,
 		Type:   proto.ChatChannelType_ChatChannel_Private,
-		Msg:    model.GetUserChatMsgData(msg.OFChatMsg, msg.UserId),
+		Msg:    msg,
 	}
-	timer := time.NewTimer(5 * time.Second)
-	defer timer.Stop()
-	select {
-	case <-timer.C:
-		return
-	default:
-		g.send(s, 0, notice)
-	}
+	g.send(s, 0, notice)
 }

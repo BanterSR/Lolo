@@ -151,13 +151,13 @@ func (w *WordInfo) addScenePlayer(player *model.Player) *ScenePlayer {
 }
 
 // 加入房间
-func (g *Game) joinSceneChannel(s *model.Player) {
-	scenePlayer := g.getWordInfo().getScenePlayer(s)
+func (w *WordInfo) joinSceneChannel(s *model.Player) {
+	scenePlayer := w.getScenePlayer(s)
 	if scenePlayer == nil {
 		log.Game.Warnf("玩家:%v没有准备好加入房间", s.UserId)
 		return
 	}
-	sceneInfo, err := g.getWordInfo().getSceneInfo(scenePlayer.SceneId)
+	sceneInfo, err := w.getSceneInfo(scenePlayer.SceneId)
 	if sceneInfo == nil {
 		log.Game.Errorf("场景:%v不存在！err:%s", scenePlayer.SceneId, err.Error())
 		return
