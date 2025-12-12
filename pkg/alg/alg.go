@@ -36,6 +36,13 @@ func AddList[T any](list *[]*T, n *T) {
 	*list = append(*list, n)
 }
 
+func AddLists[T any](list *[]T, n T) {
+	if list == nil {
+		list = new([]T)
+	}
+	*list = append(*list, n)
+}
+
 func MaxInt(a, b int) int {
 	if a > b {
 		return a

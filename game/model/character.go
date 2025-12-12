@@ -111,7 +111,7 @@ func (s *Player) AddCharacter(characterId uint32) bool {
 		log.Game.Warnf("角色:%v,添加默认武器:%v失败", characterId, conf.CharacterInfo.DefaultWeaponID)
 		return false
 	}
-	itemWeapon.SetWearerId(characterId)
+	itemWeapon.SetWearerId(characterId, preset.PresetIndex)
 	preset.WeaponInstanceId = itemWeapon.InstanceId
 	// 初始化外观
 	for index := uint32(0); index < gdconf.GetConstant().OutfitPresetNum; index++ {

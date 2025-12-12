@@ -218,6 +218,7 @@ type ItemWeaponInfo struct {
 	CriticalRatio    uint32                  `json:"criticalRatio,omitempty"`    // 临界比率
 	RandomProperty   RandomPropertys         `json:"randomProperty,omitempty"`   // 随机属性
 	WearerId         uint32                  `json:"wearerId,omitempty"`         // 装备者id
+	WearerIndex      uint32                  `json:"wearerIndex,omitempty"`      // 装备格索引
 	Level            uint32                  `json:"level,omitempty"`            // 等级
 	StrengthLevel    uint32                  `json:"strengthLevel,omitempty"`    // 强度等级
 	StrengthExp      uint32                  `json:"strengthExp,omitempty"`      // 强度经验
@@ -307,8 +308,9 @@ func (i *ItemWeaponInfo) ItemDetail() *proto.ItemDetail {
 	return info
 }
 
-func (i *ItemWeaponInfo) SetWearerId(id uint32) {
+func (i *ItemWeaponInfo) SetWearerId(id, index uint32) {
 	i.WearerId = id
+	i.WearerIndex = index
 }
 
 func (i *ItemWeaponInfo) WeaponInstance() *proto.WeaponInstance {

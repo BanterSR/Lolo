@@ -261,8 +261,9 @@ func (c *ChannelInfo) serverSceneSync(ctx *ServerSceneSyncCtx) {
 	case proto.SceneActionType_SceneActionType_ENTER: // 进入场景
 		serverData.Player = c.GetPbScenePlayer(ctx.ScenePlayer)
 	case proto.SceneActionType_SceneActionType_LEAVE: // 退出场景
-	case proto.SceneActionType_SceneActionType_UPDATE_TEAM, /* 更新队伍*/
-		proto.SceneActionType_SceneActionType_UPDATE_FASHION: /* 更新服装*/
+	case proto.SceneActionType_SceneActionType_UPDATE_EQUIP, /*更新装备*/
+		proto.SceneActionType_SceneActionType_UPDATE_FASHION, /*更新服装*/
+		proto.SceneActionType_SceneActionType_UPDATE_TEAM:    /*更新队伍*/
 		serverData.Player = &proto.ScenePlayer{
 			Team: c.GetPbSceneTeam(ctx.ScenePlayer),
 		}
@@ -491,4 +492,20 @@ func (c *ChannelInfo) SceneWeatherChangeNotice() {
 		WeatherType: c.weatherType,
 	}
 	c.sendAllPlayer(0, notice)
+}
+
+func (g *Game) SceneActionCharacterUpdate(s *model.Player, t proto.SceneActionType, characterId ...uint32) {
+	scenePlayer := g.getWordInfo().getScenePlayer(s)
+	if scenePlayer == nil || scenePlayer.channelInfo == nil {
+		return
+	}
+	curTeam := s.GetTeamModel().GetTeamInfo()
+	for _, id := range characterId {
+		if id == curTeam.Char1 || id == curTeam.Char2 || id == curTeam.Char3 {
+			scenePlayer.channelInfo.serverSceneSyncChan <- &ServerSceneSyncCtx{
+				ScenePlayer: scenePlayer,
+				ActionType:  t,
+			}
+		}
+	}
 }

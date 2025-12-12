@@ -204,6 +204,7 @@ func (g *Game) CharacterEquipUpdate(s *model.Player, msg *alg.GameMsg) {
 		Items:     make([]*proto.ItemDetail, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
+
 	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharId)
 	if characterInfo == nil {
 		log.Game.Warnf("保存角色装备失败,角色%v不存在", req.CharId)
@@ -211,35 +212,41 @@ func (g *Game) CharacterEquipUpdate(s *model.Player, msg *alg.GameMsg) {
 	}
 	defer alg.AddList(&rsp.Character, characterInfo.Character())
 
+	upCharacterList := make([]uint32, 2)
+	defer g.SceneActionCharacterUpdate(
+		s, proto.SceneActionType_SceneActionType_UPDATE_EQUIP, upCharacterList...)
+	alg.AddLists(&upCharacterList, req.CharId)
+
 	equipmentPreset := characterInfo.GetEquipmentPreset(req.EquipmentPreset.PresetIndex)
 	// 更新武器
 	if req.EquipmentPreset.Weapon != equipmentPreset.WeaponInstanceId {
 		oldEquipmentInfo := s.GetItemModel().GetItemWeaponInfo(equipmentPreset.WeaponInstanceId)
 		newEquipmentInfo := s.GetItemModel().GetItemWeaponInfo(req.EquipmentPreset.Weapon)
 
-		if newEquipmentInfo != nil {
-			oldCharacterInfo := s.GetCharacterModel().GetCharacterInfo(newEquipmentInfo.WearerId)
-			if oldCharacterInfo != nil {
-				// 移除装备上的角色
-				for _, oldCharacterEquipmentPreset := range oldCharacterInfo.GetEquipmentPresetList() {
-					if oldCharacterEquipmentPreset.WeaponInstanceId == newEquipmentInfo.InstanceId {
-						oldCharacterEquipmentPreset.WeaponInstanceId = 0
-						alg.AddList(&rsp.Character, oldCharacterInfo.Character())
-						break
-					}
-				}
-			}
-
-			equipmentPreset.WeaponInstanceId = newEquipmentInfo.InstanceId
-			newEquipmentInfo.WearerId = characterInfo.CharacterId
-			alg.AddList(&rsp.Items, newEquipmentInfo.ItemDetail())
+		if newEquipmentInfo == nil {
+			log.Game.Warnf("UserId:%v Weapon:%v 武器不存在",
+				s.UserId, req.EquipmentPreset.Weapon)
+			return
 		}
-
+		// 移除新装备上的角色
+		oldCharacterInfo := s.GetCharacterModel().GetCharacterInfo(newEquipmentInfo.WearerId)
+		if oldCharacterInfo != nil {
+			oldEquipmentPreset := oldCharacterInfo.GetEquipmentPreset(newEquipmentInfo.WearerIndex)
+			oldEquipmentPreset.WeaponInstanceId = 0
+			alg.AddList(&rsp.Character, oldCharacterInfo.Character())
+			alg.AddLists(&upCharacterList, oldCharacterInfo.CharacterId)
+		}
+		// 将新装备赋到目标角色上
+		equipmentPreset.WeaponInstanceId = newEquipmentInfo.InstanceId
+		newEquipmentInfo.SetWearerId(characterInfo.CharacterId, equipmentPreset.PresetIndex)
+		alg.AddList(&rsp.Items, newEquipmentInfo.ItemDetail())
+		// 将老装备取消装备
 		if oldEquipmentInfo != nil {
-			oldEquipmentInfo.WearerId = 0
+			oldEquipmentInfo.SetWearerId(0, 0)
 			alg.AddList(&rsp.Items, oldEquipmentInfo.ItemDetail())
 		}
 	}
 	// 更新盔甲
+
 	// 更新海报
 }
