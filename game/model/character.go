@@ -314,6 +314,32 @@ func newEquipmentPreset(presetIndex uint32) *EquipmentPreset {
 	return info
 }
 
+func (e *EquipmentPreset) GetArmor(t proto.EEquipType) *ArmorInfo {
+	if e.Armors == nil {
+		e.Armors = make(map[proto.EEquipType]*ArmorInfo)
+	}
+	if e.Armors[t] == nil {
+		e.Armors[t] = &ArmorInfo{
+			EquipType:  t,
+			InstanceId: 0,
+		}
+	}
+	return e.Armors[t]
+}
+
+func (e *EquipmentPreset) GetPoster(index proto.PosterInfo_PosterIndex) *PosterInfo {
+	if e.Posters == nil {
+		e.Posters = make(map[proto.PosterInfo_PosterIndex]*PosterInfo)
+	}
+	if e.Posters[index] == nil {
+		e.Posters[index] = &PosterInfo{
+			PosterIndex: index,
+			InstanceId:  0,
+		}
+	}
+	return e.Posters[index]
+}
+
 func (c *CharacterInfo) GetEquipmentPresetList() map[uint32]*EquipmentPreset {
 	if c.EquipmentPresetList == nil {
 		c.EquipmentPresetList = make(map[uint32]*EquipmentPreset)

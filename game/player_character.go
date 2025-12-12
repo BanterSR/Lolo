@@ -210,12 +210,16 @@ func (g *Game) CharacterEquipUpdate(s *model.Player, msg *alg.GameMsg) {
 		log.Game.Warnf("保存角色装备失败,角色%v不存在", req.CharId)
 		return
 	}
-	defer alg.AddList(&rsp.Character, characterInfo.Character())
+	defer func() {
+		alg.AddList(&rsp.Character, characterInfo.Character())
+	}()
 
-	upCharacterList := make([]uint32, 2)
-	defer g.SceneActionCharacterUpdate(
-		s, proto.SceneActionType_SceneActionType_UPDATE_EQUIP, upCharacterList...)
-	alg.AddLists(&upCharacterList, req.CharId)
+	upCharacterList := make(map[uint32]struct{}, 2)
+	defer func() {
+		g.SceneActionCharacterUpdate(
+			s, proto.SceneActionType_SceneActionType_UPDATE_EQUIP, alg.OrNum(upCharacterList)...)
+		upCharacterList[req.CharId] = struct{}{}
+	}()
 
 	equipmentPreset := characterInfo.GetEquipmentPreset(req.EquipmentPreset.PresetIndex)
 	// 更新武器
@@ -223,23 +227,21 @@ func (g *Game) CharacterEquipUpdate(s *model.Player, msg *alg.GameMsg) {
 		oldEquipmentInfo := s.GetItemModel().GetItemWeaponInfo(equipmentPreset.WeaponInstanceId)
 		newEquipmentInfo := s.GetItemModel().GetItemWeaponInfo(req.EquipmentPreset.Weapon)
 
-		if newEquipmentInfo == nil {
-			log.Game.Warnf("UserId:%v Weapon:%v 武器不存在",
-				s.UserId, req.EquipmentPreset.Weapon)
-			return
+		if newEquipmentInfo != nil {
+			// 移除新装备上的角色
+			oldCharacterInfo := s.GetCharacterModel().GetCharacterInfo(newEquipmentInfo.WearerId)
+			if oldCharacterInfo != nil {
+				oldEquipmentPreset := oldCharacterInfo.GetEquipmentPreset(newEquipmentInfo.WearerIndex)
+				oldEquipmentPreset.WeaponInstanceId = 0
+				alg.AddList(&rsp.Character, oldCharacterInfo.Character())
+				upCharacterList[oldCharacterInfo.CharacterId] = struct{}{}
+			}
+			// 将新装备赋到目标角色上
+			equipmentPreset.WeaponInstanceId = newEquipmentInfo.InstanceId
+			newEquipmentInfo.SetWearerId(characterInfo.CharacterId, equipmentPreset.PresetIndex)
+			alg.AddList(&rsp.Items, newEquipmentInfo.ItemDetail())
 		}
-		// 移除新装备上的角色
-		oldCharacterInfo := s.GetCharacterModel().GetCharacterInfo(newEquipmentInfo.WearerId)
-		if oldCharacterInfo != nil {
-			oldEquipmentPreset := oldCharacterInfo.GetEquipmentPreset(newEquipmentInfo.WearerIndex)
-			oldEquipmentPreset.WeaponInstanceId = 0
-			alg.AddList(&rsp.Character, oldCharacterInfo.Character())
-			alg.AddLists(&upCharacterList, oldCharacterInfo.CharacterId)
-		}
-		// 将新装备赋到目标角色上
-		equipmentPreset.WeaponInstanceId = newEquipmentInfo.InstanceId
-		newEquipmentInfo.SetWearerId(characterInfo.CharacterId, equipmentPreset.PresetIndex)
-		alg.AddList(&rsp.Items, newEquipmentInfo.ItemDetail())
+
 		// 将老装备取消装备
 		if oldEquipmentInfo != nil {
 			oldEquipmentInfo.SetWearerId(0, 0)
@@ -247,6 +249,59 @@ func (g *Game) CharacterEquipUpdate(s *model.Player, msg *alg.GameMsg) {
 		}
 	}
 	// 更新盔甲
+	for _, armor := range req.EquipmentPreset.Armors {
+		curArmor := equipmentPreset.GetArmor(armor.EquipType)
+		if curArmor.InstanceId != armor.ArmorId {
+			oldArmorInfo := s.GetItemModel().GetItemArmorInfo(curArmor.InstanceId)
+			newArmorInfo := s.GetItemModel().GetItemArmorInfo(armor.ArmorId)
+
+			if newArmorInfo != nil {
+				oldCharacterInfo := s.GetCharacterModel().GetCharacterInfo(newArmorInfo.WearerId)
+				if oldCharacterInfo != nil {
+					oldEquipmentPreset := oldCharacterInfo.GetEquipmentPreset(newArmorInfo.WearerIndex)
+					oldArmor := oldEquipmentPreset.GetArmor(armor.EquipType)
+					oldArmor.InstanceId = 0
+					upCharacterList[oldCharacterInfo.CharacterId] = struct{}{}
+				}
+				newArmorInfo.SetWearer(req.CharId, equipmentPreset.PresetIndex)
+				alg.AddList(&rsp.Items, newArmorInfo.ItemDetail())
+			}
+
+			if oldArmorInfo != nil {
+				oldArmorInfo.SetWearer(0, 0)
+				alg.AddList(&rsp.Items, oldArmorInfo.ItemDetail())
+			}
+
+			curArmor.InstanceId = armor.ArmorId
+		}
+	}
 
 	// 更新海报
+	for _, poster := range req.EquipmentPreset.Posters {
+		curPoster := equipmentPreset.GetPoster(poster.PosterIndex)
+		if curPoster.InstanceId != poster.PosterId {
+			oldPosterInfo := s.GetItemModel().GetItemArmorInfo(curPoster.InstanceId)
+			newPosterInfo := s.GetItemModel().GetItemPosterInfo(poster.PosterId)
+
+			if newPosterInfo != nil {
+				// 检查新海报上是否有角色
+				oldCharacterInfo := s.GetCharacterModel().GetCharacterInfo(newPosterInfo.WearerId)
+				if oldCharacterInfo != nil {
+					oldEquipmentPreset := oldCharacterInfo.GetEquipmentPreset(newPosterInfo.WearerIndex)
+					oldPoster := oldEquipmentPreset.GetPoster(poster.PosterIndex)
+					oldPoster.InstanceId = 0
+					upCharacterList[oldCharacterInfo.CharacterId] = struct{}{}
+				}
+				newPosterInfo.SetWearer(req.CharId, equipmentPreset.PresetIndex)
+				alg.AddList(&rsp.Items, newPosterInfo.ItemDetail())
+			}
+
+			// 检查目标位置是否有海报
+			if oldPosterInfo != nil {
+				oldPosterInfo.SetWearer(0, 0)
+				alg.AddList(&rsp.Items, oldPosterInfo.ItemDetail())
+			}
+			curPoster.InstanceId = poster.PosterId
+		}
+	}
 }

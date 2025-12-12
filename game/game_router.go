@@ -71,6 +71,7 @@ func (g *Game) newRouter() {
 		cmd.GetMailsReq:              g.GetMails,
 		cmd.GetAchieveOneGroupReq:    g.GetAchieveOneGroup,
 		cmd.GetAchieveGroupListReq:   g.GetAchieveGroupList,
+		cmd.GenericGameAReq:          g.GenericGameA,
 		cmd.GenericGameBReq:          g.GenericGameB,
 		cmd.GetCollectItemIdsReq:     g.GetCollectItemIds,
 		cmd.ManualListReq:            g.ManualList,

@@ -467,6 +467,7 @@ type ItemArmorInfo struct {
 	MainPropertyVal  uint32                  `json:"mainPropertyVal,omitempty"`
 	RandomProperty   RandomPropertys         `json:"randomProperty,omitempty"`
 	WearerId         uint32                  `json:"wearerId,omitempty"`
+	WearerIndex      uint32                  `json:"wearerIndex,omitempty"`
 	Level            uint32                  `json:"level,omitempty"`
 	StrengthLevel    uint32                  `json:"strengthLevel,omitempty"`
 	StrengthExp      uint32                  `json:"strengthExp,omitempty"`
@@ -521,6 +522,11 @@ func (i *ItemModel) AddItemArmor(armorId uint32) *ItemArmorInfo {
 	return info
 }
 
+func (a *ItemArmorInfo) SetWearer(wearerId, wearerIndex uint32) {
+	a.WearerId = wearerId
+	a.WearerIndex = wearerIndex
+}
+
 func (a *ItemArmorInfo) ItemDetail() *proto.ItemDetail {
 	info := &proto.ItemDetail{
 		MainItem: &proto.ItemInfo{
@@ -564,11 +570,12 @@ func (a *ItemArmorInfo) BaseArmor() *proto.BaseArmor {
 }
 
 type ItemPosterInfo struct {
-	PosterId   uint32
-	ItemId     uint32
-	InstanceId uint32
-	WearerId   uint32
-	Star       uint32
+	PosterId    uint32 `json:"posterId,omitempty"`
+	ItemId      uint32 `json:"itemId,omitempty"`
+	InstanceId  uint32 `json:"instanceId,omitempty"`
+	WearerId    uint32 `json:"wearerId,omitempty"`
+	WearerIndex uint32 `json:"wearerIndex,omitempty"`
+	Star        uint32 `json:"star,omitempty"`
 }
 
 func (i *ItemModel) GetItemPosterMap() map[uint32]*ItemPosterInfo {
@@ -615,6 +622,11 @@ func newItemPosterInfo(conf *gdconf.PosterAllInfo, instanceId uint32) *ItemPoste
 	}
 }
 
+func (p *ItemPosterInfo) SetWearer(wearerId, wearerIndex uint32) {
+	p.WearerId = wearerId
+	p.WearerIndex = wearerIndex
+}
+
 func (p *ItemPosterInfo) ItemDetail() *proto.ItemDetail {
 	info := &proto.ItemDetail{
 		MainItem: &proto.ItemInfo{
@@ -650,10 +662,10 @@ func (p *ItemPosterInfo) BasePoster() *proto.BasePoster {
 }
 
 type ItemInscriptionInfo struct {
-	ItemId           uint32
-	InscriptionId    uint32
-	Level            uint32
-	WeaponInstanceId uint32
+	ItemId           uint32 `json:"itemId,omitempty"`
+	InscriptionId    uint32 `json:"inscriptionId,omitempty"`
+	Level            uint32 `json:"level,omitempty"`
+	WeaponInstanceId uint32 `json:"weaponInstanceId,omitempty"`
 }
 
 func (i *ItemModel) GetItemInscriptionMap() map[uint32]*ItemInscriptionInfo {

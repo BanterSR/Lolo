@@ -263,11 +263,21 @@ func (g *Game) GetAchieveGroupList(s *model.Player, msg *alg.GameMsg) {
 	defer g.send(s, msg.PacketId, rsp)
 }
 
+func (g *Game) GenericGameA(s *model.Player, msg *alg.GameMsg) {
+	req := msg.Body.(*proto.GenericGameAReq)
+	rsp := &proto.GenericGameARsp{
+		Status:       proto.StatusCode_StatusCode_OK,
+		GenericMsgId: req.GenericMsgId,
+		Params:       make([]*proto.CommonParam, 0),
+	}
+	defer g.send(s, msg.PacketId, rsp)
+}
+
 func (g *Game) GenericGameB(s *model.Player, msg *alg.GameMsg) {
-	// req := msg.Body.(*proto.GenericGameBReq)
+	req := msg.Body.(*proto.GenericGameBReq)
 	rsp := &proto.GenericGameBRsp{
 		Status:       proto.StatusCode_StatusCode_OK,
-		GenericMsgId: 0,
+		GenericMsgId: req.GenericMsgId,
 		Params:       make([]*proto.CommonParam, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
