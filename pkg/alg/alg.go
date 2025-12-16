@@ -1,6 +1,7 @@
 package alg
 
 import (
+	"math/rand/v2"
 	"strconv"
 	"strings"
 )
@@ -78,4 +79,13 @@ func Uint32UniqueUint64(a, b uint32) uint64 {
 		return uint64(a)<<32 | uint64(b)
 	}
 	return uint64(b)<<32 | uint64(a)
+}
+
+func RandUn[T any](list []*T) *T {
+	length := len(list)
+	if length == 0 {
+		var zero *T
+		return zero
+	}
+	return list[rand.IntN(length)]
 }

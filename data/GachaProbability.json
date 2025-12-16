@@ -1,0 +1,36 @@
+{
+  "1": {
+    "guaranteeSR": 10,
+    "guaranteeSSR": 50,
+    "probabilitySSR": 100,
+    "probabilitySR": 600,
+    "probabilityPosterSSR": 80,
+    "probabilityPosterSR": 9220
+  },
+  "2": {
+    "guaranteeSR": 10,
+    "guaranteeSSR": 70,
+    "probabilitySSR": 100,
+    "probabilitySR": 600,
+    "probabilityPosterSSR": 80,
+    "probabilityPosterSR": 9220
+  },
+  "3": {
+    "guaranteeSR": 10,
+    "guaranteeSSR": 70,
+    "probabilitySSRUP": 50,
+    "probabilitySSR": 50,
+    "probabilitySR": 600,
+    "probabilityPosterSSR": 80,
+    "probabilityPosterSR": 9220
+  },
+  "5": {
+    "guaranteeFashion": 10,
+    "guaranteeDesire": 70,
+    "probabilityFashion": 200,
+    "probabilityFurniture": 5000,
+    "probabilityWeaponSSR": 400,
+    "probabilityWeaponSR": 3500,
+    "probabilityDyeStuff": 900
+  }
+}

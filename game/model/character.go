@@ -100,6 +100,7 @@ func (s *Player) AddCharacter(characterId uint32) *CharacterInfo {
 		return nil
 	}
 	if characterInfo, ok := list[characterId]; ok {
+		characterInfo.IsNew = false
 		log.Game.Debugf("重复添加角色:%v", characterId)
 		return characterInfo
 	}
@@ -178,9 +179,6 @@ func (c *CharacterInfo) Character() *proto.Character {
 }
 
 func (c *CharacterInfo) ItemDetail() *proto.ItemDetail {
-	defer func() {
-		c.IsNew = false
-	}()
 	return &proto.ItemDetail{
 		MainItem: &proto.ItemInfo{
 			ItemId:  c.CharacterId,

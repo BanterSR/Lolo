@@ -23,6 +23,7 @@ import (
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/logserver"
 	"gucooing/lolo/pkg"
+	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/pkg/log"
 	"gucooing/lolo/sdk"
 )
@@ -36,6 +37,7 @@ func main() {
 			return
 		}
 	}
+	fmt.Printf("%s\n", alg.GmNotice)
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println("\n程序异常退出,原因:")

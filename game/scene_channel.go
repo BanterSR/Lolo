@@ -36,6 +36,7 @@ type ChannelInfo struct {
 	addSceneSyncDataChan chan *proto.SceneSyncData // 同步器通道
 	serverSceneSyncChan  chan *ServerSceneSyncCtx  // 服务端场景同步通道
 	actionSyncChan       chan *ActionSyncCtx       // action同步通道
+	interActionSyncChan  chan *InterActionCtx      // 玩家交互同步通道
 }
 
 func (s *SceneInfo) newChannelInfo(channelId uint32) *ChannelInfo {
@@ -55,6 +56,7 @@ func (s *SceneInfo) newChannelInfo(channelId uint32) *ChannelInfo {
 		sceneServerDatas:     make(map[uint32]*proto.ServerSceneSyncData),
 		serverSceneSyncChan:  make(chan *ServerSceneSyncCtx, 100),
 		actionSyncChan:       make(chan *ActionSyncCtx, 100),
+		interActionSyncChan:  make(chan *InterActionCtx, 100),
 	}
 
 	info.chatChannel.doneChan = info.doneChan
@@ -117,6 +119,8 @@ func (c *ChannelInfo) channelMainLoop() {
 			c.serverSceneSync(ctx)
 		case ctx := <-c.actionSyncChan: // action同步
 			c.SendActionNotice(ctx)
+		case ctx := <-c.interActionSyncChan: // 交互同步
+			c.SceneInterActionPlayStatusNotice(ctx)
 		case <-c.doneChan:
 			return
 		case <-c.freezeChan: // 房间冻结
@@ -298,6 +302,22 @@ func (c *ChannelInfo) SendActionNotice(ctx *ActionSyncCtx) {
 		IsStudy:           false,
 		EndTime:           0,
 		MultipleNeedCount: 0,
+	}
+	c.sendAllPlayer(0, notice)
+}
+
+type InterActionCtx struct {
+	ScenePlayer  *ScenePlayer
+	ActionStatus *proto.ScenePlayerActionStatus
+	PushType     proto.InterActionPushType
+}
+
+func (c *ChannelInfo) SceneInterActionPlayStatusNotice(ctx *InterActionCtx) {
+	notice := &proto.SceneInterActionPlayStatusNotice{
+		Status:       proto.StatusCode_StatusCode_OK,
+		ActionStatus: ctx.ActionStatus,
+		PushType:     ctx.PushType,
+		PlayerId:     ctx.ScenePlayer.UserId,
 	}
 	c.sendAllPlayer(0, notice)
 }
