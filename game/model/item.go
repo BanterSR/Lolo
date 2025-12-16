@@ -530,7 +530,7 @@ func (a *ItemArmorInfo) SetWearer(wearerId, wearerIndex uint32) {
 func (a *ItemArmorInfo) ItemDetail() *proto.ItemDetail {
 	info := &proto.ItemDetail{
 		MainItem: &proto.ItemInfo{
-			ItemId:  a.InstanceId,
+			ItemId:  a.ItemId,
 			ItemTag: proto.EBagItemTag_EBagItemTag_Armor,
 			Item: &proto.ItemInfo_Armor{
 				Armor: a.ArmorInstance(),
@@ -630,7 +630,7 @@ func (p *ItemPosterInfo) SetWearer(wearerId, wearerIndex uint32) {
 func (p *ItemPosterInfo) ItemDetail() *proto.ItemDetail {
 	info := &proto.ItemDetail{
 		MainItem: &proto.ItemInfo{
-			ItemId:  p.InstanceId,
+			ItemId:  p.ItemId,
 			ItemTag: proto.EBagItemTag_EBagItemTag_Poster,
 			Item: &proto.ItemInfo_Poster{
 				Poster: p.PosterInstance(),

@@ -19,10 +19,11 @@ func (g *Game) newRouter() {
 		cmd.PlayerMainDataReq: g.PlayerMainData, // 获取玩家信息
 		cmd.ChangeNickNameReq: g.ChangeNickName, // 修改玩家昵称和生日
 		// 场景
-		cmd.PlayerSceneRecordReq:  g.PlayerSceneRecord,  // 玩家场景同步器
-		cmd.SendActionReq:         g.SendAction,         // 场景自动化同步器
-		cmd.ChangeSceneChannelReq: g.ChangeSceneChannel, // 切换场景/房间
-		cmd.GenericSceneBReq:      g.GenericSceneB,      // 获取房间中的天气
+		cmd.PlayerSceneRecordReq:          g.PlayerSceneRecord,          // 玩家场景同步器
+		cmd.SendActionReq:                 g.SendAction,                 // 场景自动化同步器
+		cmd.ChangeSceneChannelReq:         g.ChangeSceneChannel,         // 切换场景/房间
+		cmd.GenericSceneBReq:              g.GenericSceneB,              // 获取房间中的天气
+		cmd.SceneInterActionPlayStatusReq: g.SceneInterActionPlayStatus, // 同步玩家交互请求
 		// 队伍
 		cmd.UpdateTeamReq: g.UpdateTeam, // 更新队伍
 		// 物品
@@ -33,6 +34,7 @@ func (g *Game) newRouter() {
 		// 卡池
 		cmd.GachaListReq:   g.GachaList,   // 获取卡池信息
 		cmd.GachaRecordReq: g.GachaRecord, // 获取抽卡记录
+		cmd.GachaReq:       g.Gacha,       // 抽卡，启动！
 		// 角色
 		cmd.GetCharacterAchievementListReq: g.GetCharacterAchievementList, // 获取角色成就情况
 		cmd.CharacterLevelUpReq:            g.CharacterLevelUp,            // 角色升级

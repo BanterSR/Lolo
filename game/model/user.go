@@ -26,6 +26,7 @@ type Player struct {
 	Team          *TeamModel      `json:"team,omitempty"`          // 队伍
 	Archive       *ArchiveModel   `json:"archive,omitempty"`       // 信息记录
 	Chat          *ChatModel      `json:"chat,omitempty"`          // 聊天
+	Gacha         *GachaModel     `json:"gacha,omitempty"`         // 卡池
 }
 
 func (s *Player) GetSeqId() uint32 {
