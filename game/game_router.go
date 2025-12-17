@@ -18,6 +18,7 @@ func (g *Game) newRouter() {
 		// 玩家基础信息
 		cmd.PlayerMainDataReq: g.PlayerMainData, // 获取玩家信息
 		cmd.ChangeNickNameReq: g.ChangeNickName, // 修改玩家昵称和生日
+		cmd.UnlockHeadListReq: g.UnlockHeadList, // 解锁头像列表
 		// 场景
 		cmd.PlayerSceneRecordReq:          g.PlayerSceneRecord,          // 玩家场景同步器
 		cmd.SendActionReq:                 g.SendAction,                 // 场景自动化同步器

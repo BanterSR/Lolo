@@ -21,6 +21,7 @@ type ItemModel struct {
 	ItemArmorMap       map[uint32]*ItemArmorInfo       `json:"itemArmorMap,omitempty"`   // 盔甲
 	ItemPosterMap      map[uint32]*ItemPosterInfo      `json:"itemPosterMap,omitempty"`  // 海报
 	ItemInscriptionMap map[uint32]*ItemInscriptionInfo `json:"itemInscriptionMap,omitempty"`
+	ItemHeadMap        map[uint32]*ItemHeadInfo        `json:"itemHeadMap,omitempty"` // 头像
 }
 
 func DefaultItemModel() *ItemModel {
@@ -78,7 +79,6 @@ func (s *Player) AddAllTypeItem(id uint32, num int64) EBagItemTag {
 		proto.EBagItemTag_EBagItemTag_Quest,
 		proto.EBagItemTag_EBagItemTag_StrengthStone,
 		proto.EBagItemTag_EBagItemTag_ExpBook,
-		proto.EBagItemTag_EBagItemTag_Head,
 		proto.EBagItemTag_EBagItemTag_UnlockAbilityItem,
 		proto.EBagItemTag_EBagItemTag_CharacterBadge,
 		proto.EBagItemTag_EBagItemTag_DyeStuff,
@@ -112,6 +112,8 @@ func (s *Player) AddAllTypeItem(id uint32, num int64) EBagItemTag {
 		return s.AddCharacter(id)
 	case proto.EBagItemTag_EBagItemTag_Currency:
 		return i.AddItemBase(id, num)
+	case proto.EBagItemTag_EBagItemTag_Head:
+		return i.AddHead(id)
 	case proto.EBagItemTag_EBagItemTag_UnlockItem:
 		if gdconf.GetPlayerUnlockConfigure(conf.ID) == nil {
 			return nil
@@ -199,6 +201,23 @@ func (i *ItemBaseInfo) ItemDetail() *proto.ItemDetail {
 				BaseItem: &proto.BaseItem{
 					ItemId: i.ItemId,
 					Num:    i.Num,
+				},
+			},
+		},
+		PackType: proto.ItemDetail_PackType_Inventory,
+	}
+	return info
+}
+
+func (i *ItemBaseInfo) AddItemDetail(num int64) *proto.ItemDetail {
+	info := &proto.ItemDetail{
+		MainItem: &proto.ItemInfo{
+			ItemId:  i.ItemId,
+			ItemTag: i.ItemType,
+			Item: &proto.ItemInfo_BaseItem{
+				BaseItem: &proto.BaseItem{
+					ItemId: i.ItemId,
+					Num:    num,
 				},
 			},
 		},
@@ -718,6 +737,60 @@ func (i *ItemInscriptionInfo) GetPbInscription() *proto.Inscription {
 		InscriptionId:    i.InscriptionId,
 		Level:            i.Level,
 		WeaponInstanceId: i.WeaponInstanceId,
+	}
+	return info
+}
+
+type ItemHeadInfo struct {
+	HeadId  uint32 `json:"headId,omitempty"`
+	AddTime int64  `json:"addTime,omitempty"`
+}
+
+func (i *ItemModel) GetItemHeadMap() map[uint32]*ItemHeadInfo {
+	if i.ItemHeadMap == nil {
+		i.ItemHeadMap = map[uint32]*ItemHeadInfo{
+			41101: {
+				HeadId:  41101,
+				AddTime: time.Now().Unix(),
+			},
+		}
+	}
+	return i.ItemHeadMap
+}
+
+func (i *ItemModel) GetHeads() []uint32 {
+	list := make([]uint32, 0)
+	for id, _ := range i.GetItemHeadMap() {
+		list = append(list, id)
+	}
+	return list
+}
+
+func (i *ItemModel) AddHead(head uint32) *ItemHeadInfo {
+	list := i.GetItemHeadMap()
+	if info, ok := list[head]; ok {
+		return info
+	}
+	info := &ItemHeadInfo{
+		HeadId:  head,
+		AddTime: time.Now().Unix(),
+	}
+	list[head] = info
+	return info
+}
+
+func (i *ItemHeadInfo) ItemDetail() *proto.ItemDetail {
+	info := &proto.ItemDetail{
+		MainItem: &proto.ItemInfo{
+			ItemId:  i.HeadId,
+			ItemTag: proto.EBagItemTag_EBagItemTag_Head,
+			Item: &proto.ItemInfo_BaseItem{
+				BaseItem: &proto.BaseItem{
+					ItemId: i.HeadId,
+				},
+			},
+		},
+		PackType: proto.ItemDetail_PackType_Inventory,
 	}
 	return info
 }

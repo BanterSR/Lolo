@@ -201,16 +201,16 @@ func (c *GachaCtx) Run() {
 		switch itemType {
 		case characterSSR:
 			alg.AddList(&itemDetail.Extras,
-				c.player.AddAllTypeItem(107, 1500).ItemDetail().MainItem)
+				c.player.AddAllTypeItem(107, 1500).(*ItemBaseInfo).AddItemDetail(1500).MainItem)
 		case characterSR:
 			alg.AddList(&itemDetail.Extras,
-				c.player.AddAllTypeItem(107, 500).ItemDetail().MainItem)
+				c.player.AddAllTypeItem(107, 500).(*ItemBaseInfo).AddItemDetail(500).MainItem)
 		case posterSSR:
 			alg.AddList(&itemDetail.Extras,
-				c.player.AddAllTypeItem(107, 500).ItemDetail().MainItem)
+				c.player.AddAllTypeItem(107, 500).(*ItemBaseInfo).AddItemDetail(500).MainItem)
 		case posterSR:
 			alg.AddList(&itemDetail.Extras,
-				c.player.AddAllTypeItem(107, 50).ItemDetail().MainItem)
+				c.player.AddAllTypeItem(107, 50).(*ItemBaseInfo).AddItemDetail(50).MainItem)
 		}
 		alg.AddList(&c.ItemDetails, itemDetail)
 	}

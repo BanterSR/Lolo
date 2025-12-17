@@ -100,6 +100,9 @@ func (g *Game) checkPlayer() {
 		}
 		playerList = append(playerList, player)
 	}
+	for _, player := range playerList {
+		delete(g.userMap, player.UserId)
+	}
 	go func() {
 		defer g.checkPlayerTimer.Reset(3 * time.Minute)
 		for _, player := range playerList {
@@ -112,9 +115,10 @@ func (g *Game) checkPlayer() {
 
 func (g *Game) kickPlayer(userId uint32) {
 	player := g.GetUser(userId)
-	if player == nil {
+	if player == nil || !player.Online {
 		return
 	}
+	player.Online = false
 	// 退出世界
 	g.getWordInfo().killScenePlayer(player)
 	// 退出聊天频道

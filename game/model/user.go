@@ -63,7 +63,7 @@ func (s *Player) IsSave() bool {
 }
 
 func (s *Player) IsOffline() bool {
-	if s.ActiveTime.Add(playerCacheTime).Before(time.Now()) {
+	if s.ActiveTime.Add(playerCacheTime).Before(time.Now()) && s.Online {
 		return true
 	}
 	return false

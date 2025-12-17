@@ -36,6 +36,7 @@ func GetGachaRecords(userId, gachaId, page uint32) ([]*OFGachaRecord, uint32, er
 		return nil, 0, err
 	}
 	err = all.
+		Order("id DESC").
 		Limit(5).
 		Offset(int((page - 1) * 5)).
 		Find(&list).Error

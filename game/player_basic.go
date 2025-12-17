@@ -238,6 +238,15 @@ func (g *Game) ChangeNickName(s *model.Player, msg *alg.GameMsg) {
 	rsp.NickName = s.NickName
 }
 
+func (g *Game) UnlockHeadList(s *model.Player, msg *alg.GameMsg) {
+	// req := msg.Body.(*proto.UnlockHeadListReq)
+	rsp := &proto.UnlockHeadListRsp{
+		Status: 0,
+		Heads:  s.GetItemModel().GetHeads(),
+	}
+	defer g.send(s, msg.PacketId, rsp)
+}
+
 func (g *Game) GamePlayReward(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.GamePlayRewardReq)
 	rsp := &proto.GamePlayRewardRsp{
