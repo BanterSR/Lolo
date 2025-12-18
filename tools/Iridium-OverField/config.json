@@ -1,9 +1,0 @@
-{
-  "deviceName": "",
-  "packetFilter": [
-    ""
-  ],
-  "autoSavePcapFiles": true,
-  "maxPort": 11100,
-  "minPort": 11000
-}

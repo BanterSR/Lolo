@@ -27,7 +27,6 @@ go.work.sum
 /Build
 /.build
 /test
-/tools/dump
-tools/dump.cs
-*pb.go
+/tools
+*.proto
 /bin
