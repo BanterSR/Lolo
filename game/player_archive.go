@@ -9,7 +9,7 @@ import (
 func (g *Game) GetArchiveInfo(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GetArchiveInfoReq)
 	rsp := &proto.GetArchiveInfoRsp{
-		Status: proto.StatusCode_StatusCode_OK,
+		Status: proto.StatusCode_StatusCode_Ok,
 		Key:    req.Key,
 		Value:  s.GetArchive().GetArchiveValue(req.Key),
 	}
@@ -19,7 +19,7 @@ func (g *Game) GetArchiveInfo(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) SetArchiveInfo(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.SetArchiveInfoReq)
 	rsp := &proto.SetArchiveInfoRsp{
-		Status: proto.StatusCode_StatusCode_OK,
+		Status: proto.StatusCode_StatusCode_Ok,
 		Key:    req.Key,
 		Value:  req.Value,
 	}

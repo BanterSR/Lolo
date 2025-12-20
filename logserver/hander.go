@@ -23,7 +23,7 @@ func (g *LogServer) logMainLoop() {
 func (g *LogServer) PlayerPing(conn ofnet.Conn, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.PlayerPingReq)
 	conn.Send(msg.PacketId, &proto.PlayerPingRsp{
-		Status:       proto.StatusCode_StatusCode_OK,
+		Status:       proto.StatusCode_StatusCode_Ok,
 		ClientTimeMs: req.ClientTimeMs,
 		ServerTimeMs: req.ClientTimeMs,
 	})

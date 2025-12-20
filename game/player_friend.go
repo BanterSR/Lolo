@@ -11,14 +11,14 @@ import (
 func (g *Game) Friend(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.FriendReq)
 	rsp := &proto.FriendRsp{
-		Status: proto.StatusCode_StatusCode_OK,
+		Status: proto.StatusCode_StatusCode_Ok,
 		Info:   make([]*proto.FriendBriefInfo, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 
 	switch req.Type {
-	case proto.FriendListType_FriendListType_NONE:
-	case proto.FriendListType_FriendListType_APPLY:
+	case proto.FriendListType_FriendListType_None:
+	case proto.FriendListType_FriendListType_Apply:
 		applyList, err := db.GetAllFriendApply(s.UserId)
 		if err != nil {
 			log.Game.Warnf("UserId:%v func db.GetAllFriendApply:%v", s.UserId, err)
@@ -27,7 +27,7 @@ func (g *Game) Friend(s *model.Player, msg *alg.GameMsg) {
 		for _, v := range applyList {
 			alg.AddList(&rsp.Info, g.GetFriendBriefInfo(v.RequestUserId, nil))
 		}
-	case proto.FriendListType_FriendListType_FRIEND:
+	case proto.FriendListType_FriendListType_Friend:
 		allFriend, err := db.GetAllFiend(s.UserId)
 		if err != nil {
 			log.Game.Warnf("UserId:%v func db.GetAllFriend:%v", s.UserId, err)
@@ -36,7 +36,7 @@ func (g *Game) Friend(s *model.Player, msg *alg.GameMsg) {
 		for _, v := range allFriend {
 			alg.AddList(&rsp.Info, g.GetFriendBriefInfo(v.FriendId, v))
 		}
-	case proto.FriendListType_FriendListType_BLACK:
+	case proto.FriendListType_FriendListType_Black:
 		allBlack, err := db.GetAllFriendBlack(s.UserId)
 		if err != nil {
 			log.Game.Warnf("UserId:%v func db.GetAllFriendBlack:%v", s.UserId, err)
@@ -50,7 +50,7 @@ func (g *Game) Friend(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) FriendAdd(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.FriendAddReq)
 	rsp := &proto.FriendAddRsp{
-		Status: proto.StatusCode_StatusCode_OK,
+		Status: proto.StatusCode_StatusCode_Ok,
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	// 判断是否存在好友关系
@@ -58,7 +58,7 @@ func (g *Game) FriendAdd(s *model.Player, msg *alg.GameMsg) {
 		log.Game.Warnf("UserId:%v db.GetIsFiend:%v", s.UserId, err)
 		return
 	} else if conn != 0 {
-		rsp.Status = proto.StatusCode_StatusCode_FRIEND_ADD_FAIL
+		rsp.Status = proto.StatusCode_StatusCode_FriendAddFail
 		return
 	}
 	// 判断是否已经申请
@@ -73,7 +73,7 @@ func (g *Game) FriendAdd(s *model.Player, msg *alg.GameMsg) {
 	// 都没有就写入申请请求
 	err := db.CreateFriendApply(s.UserId, req.PlayerId)
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_FRIEND_ADD_FAIL
+		rsp.Status = proto.StatusCode_StatusCode_FriendAddFail
 		log.Game.Warnf("UserId:%v db.CreateFriendApply:%v", s.UserId, err)
 		return
 	}
@@ -82,12 +82,12 @@ func (g *Game) FriendAdd(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) FriendHandle(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.FriendHandleReq)
 	rsp := &proto.FriendHandleRsp{
-		Status: proto.StatusCode_StatusCode_OK,
+		Status: proto.StatusCode_StatusCode_Ok,
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	err := db.FriendHandleApply(s.UserId, req.PlayerId, req.IsAgree)
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_FRIEND_NOT_APPLY
+		rsp.Status = proto.StatusCode_StatusCode_FriendNotApply
 		log.Game.Warnf("UserId:%v func db.FriendHandleApply:%v", s.UserId, err)
 	}
 }
@@ -95,7 +95,7 @@ func (g *Game) FriendHandle(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) FriendDel(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.FriendDelReq)
 	rsp := &proto.FriendDelRsp{
-		Status: proto.StatusCode_StatusCode_OK,
+		Status: proto.StatusCode_StatusCode_Ok,
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	// 直接删除好友关系
@@ -108,7 +108,7 @@ func (g *Game) FriendDel(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) FriendBlack(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.FriendBlackReq)
 	rsp := &proto.FriendBlackRsp{
-		Status: proto.StatusCode_StatusCode_OK,
+		Status: proto.StatusCode_StatusCode_Ok,
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	err := db.CreateFriendBlack(s.UserId, req.PlayerId, req.IsRemove)
@@ -120,7 +120,7 @@ func (g *Game) FriendBlack(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) WishListByFriendId(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.WishListByFriendIdReq)
 	rsp := &proto.WishListByFriendIdRsp{
-		Status:        proto.StatusCode_StatusCode_OK,
+		Status:        proto.StatusCode_StatusCode_Ok,
 		PlayerId:      0,
 		WishList:      make([]*proto.WishListInfo, 0),
 		WeekSendCount: 0,
@@ -131,7 +131,7 @@ func (g *Game) WishListByFriendId(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) ChallengeFriendRank(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.ChallengeFriendRankReq)
 	rsp := &proto.ChallengeFriendRankRsp{
-		Status:   proto.StatusCode_StatusCode_OK,
+		Status:   proto.StatusCode_StatusCode_Ok,
 		RankInfo: make([]*proto.ChallengeFriendRankInfo, 0),
 		SelfChallenge: &proto.PlayerChallengeCache{
 			PlayerId:       s.UserId,
@@ -144,7 +144,7 @@ func (g *Game) ChallengeFriendRank(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) FriendIntervalInit(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.FriendIntervalInitReq)
 	rsp := &proto.FriendIntervalInitRsp{
-		Status:      proto.StatusCode_StatusCode_OK,
+		Status:      proto.StatusCode_StatusCode_Ok,
 		FriendInfos: make([]*proto.IntervalInfo, 0),
 		JoinInfos:   make([]*proto.IntervalInfo, 0),
 	}

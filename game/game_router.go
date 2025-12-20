@@ -87,6 +87,7 @@ func (g *Game) newRouter() {
 		cmd.GetAllCharacterEquipReq:  g.GetAllCharacterEquip,  //
 		cmd.GamePlayRewardReq:        g.GamePlayReward,        //
 		cmd.AcceptQuestReq:           g.AcceptQuest,           //
+		cmd.GemDuelInfoReq:           g.GemDuelInfo,
 	}
 }
 

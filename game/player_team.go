@@ -9,12 +9,12 @@ import (
 func (g *Game) UpdateTeam(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.UpdateTeamReq)
 	rsp := &proto.UpdateTeamRsp{
-		Status: proto.StatusCode_StatusCode_OK,
+		Status: proto.StatusCode_StatusCode_Ok,
 	}
 	defer func() {
 		g.send(s, msg.PacketId, rsp)
 		g.SceneActionCharacterUpdate(
-			s, proto.SceneActionType_SceneActionType_UPDATE_TEAM, req.Char1)
+			s, proto.SceneActionType_SceneActionType_UpdateTeam, req.Char1)
 	}()
 
 	// 更新队伍

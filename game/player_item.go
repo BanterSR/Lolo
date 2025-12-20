@@ -8,7 +8,7 @@ import (
 
 func (g *Game) AllPackNotice(s *model.Player) {
 	notice := &proto.PackNotice{
-		Status:          proto.StatusCode_StatusCode_OK,
+		Status:          proto.StatusCode_StatusCode_Ok,
 		Items:           make([]*proto.ItemDetail, 0),
 		TempPackMaxSize: 30,
 		IsClearTempPack: false,
@@ -43,7 +43,7 @@ func (g *Game) AllPackNotice(s *model.Player) {
 func (g *Game) GetWeapon(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GetWeaponReq)
 	rsp := &proto.GetWeaponRsp{
-		Status:   proto.StatusCode_StatusCode_OK,
+		Status:   proto.StatusCode_StatusCode_Ok,
 		Weapons:  make([]*proto.WeaponInstance, 0),
 		TotalNum: uint32(len(s.GetItemModel().GetItemWeaponMap())),
 		EndIndex: uint32(len(s.GetItemModel().GetItemWeaponMap())),
@@ -60,7 +60,7 @@ func (g *Game) GetWeapon(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GetArmor(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GetArmorReq)
 	rsp := &proto.GetArmorRsp{
-		Status:   proto.StatusCode_StatusCode_OK,
+		Status:   proto.StatusCode_StatusCode_Ok,
 		Armors:   make([]*proto.ArmorInstance, 0),
 		TotalNum: uint32(len(s.GetItemModel().GetItemArmorMap())),
 		EndIndex: uint32(len(s.GetItemModel().GetItemArmorMap())),
@@ -77,7 +77,7 @@ func (g *Game) GetArmor(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GetPoster(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.GetPosterReq)
 	rsp := &proto.GetPosterRsp{
-		Status:   proto.StatusCode_StatusCode_OK,
+		Status:   proto.StatusCode_StatusCode_Ok,
 		Posters:  make([]*proto.PosterInstance, 0),
 		TotalNum: uint32(len(s.GetItemModel().GetItemPosterMap())),
 		EndIndex: uint32(len(s.GetItemModel().GetItemPosterMap())),
@@ -90,14 +90,14 @@ func (g *Game) GetPoster(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) PosterIllustrationList(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.PosterIllustrationListRsp{
-		Status:              proto.StatusCode_StatusCode_OK,
+		Status:              proto.StatusCode_StatusCode_Ok,
 		PosterIllustrations: make([]*proto.PosterIllustration, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	for _, v := range s.GetItemModel().GetItemPosterMap() {
 		alg.AddList(&rsp.PosterIllustrations, &proto.PosterIllustration{
 			PosterIllustrationId: v.PosterId,
-			Status:               proto.RewardStatus_Reward,
+			Status:               proto.RewardStatus_RewardStatus_Reward,
 		})
 	}
 }

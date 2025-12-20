@@ -11,7 +11,7 @@ import (
 
 func (g *Game) GachaList(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.GachaListRsp{
-		Status: proto.StatusCode_StatusCode_OK,
+		Status: proto.StatusCode_StatusCode_Ok,
 		Gachas: make([]*proto.GachaInfo, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
@@ -30,7 +30,7 @@ func (g *Game) GachaList(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GachaRecord(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GachaRecordReq)
 	rsp := &proto.GachaRecordRsp{
-		Status:    proto.StatusCode_StatusCode_OK,
+		Status:    proto.StatusCode_StatusCode_Ok,
 		GachaId:   req.GachaId,
 		Page:      req.Page, // 当前页
 		TotalPage: 0,        // 总页
@@ -52,7 +52,7 @@ func (g *Game) GachaRecord(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) Gacha(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GachaReq)
 	rsp := &proto.GachaRsp{
-		Status: proto.StatusCode_StatusCode_OK,
+		Status: proto.StatusCode_StatusCode_Ok,
 		Items:  nil,
 		Info:   nil,
 	}

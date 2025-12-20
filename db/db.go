@@ -90,6 +90,8 @@ func NewDB(option *Option) error {
 		SdkUid: 0,
 	})
 
+	db = d.db
+
 	return err
 }
 

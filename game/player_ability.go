@@ -8,7 +8,7 @@ import (
 
 func (g *Game) AbilityBadgeList(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.AbilityBadgeListRsp{
-		Status:                       proto.StatusCode_StatusCode_OK,
+		Status:                       proto.StatusCode_StatusCode_Ok,
 		AbilityBadgePages:            make([]*proto.AbilityBadgePageInfo, 0),
 		AbilityBadgeAchieves:         make([]*proto.Achieve, 0),
 		AbilityBadgeRewardAchieveIds: make([]uint32, 0),
@@ -18,7 +18,7 @@ func (g *Game) AbilityBadgeList(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) PlayerAbilityList(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.PlayerAbilityListRsp{
-		Status:      proto.StatusCode_StatusCode_OK,
+		Status:      proto.StatusCode_StatusCode_Ok,
 		AbilityList: make([]*proto.PlayerAbility, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)

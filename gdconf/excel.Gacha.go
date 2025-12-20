@@ -96,7 +96,7 @@ func GetOpenGachas() []*GachaData {
 }
 
 func isOpenGacha(g *excel.GachaInfoConfigure) bool {
-	if proto.EUIGachaType(g.NewUIGachaType) != proto.EUIGachaType_EUIGachaType_limit {
+	if proto.EUIGachaType(g.NewUIGachaType) != proto.EUIGachaType_EUIGachaType_Limit {
 		return true
 	}
 	openTime, err := time.Parse("2006-01-02 15:04:05", g.OpeningTime)

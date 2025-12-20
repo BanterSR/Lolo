@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	InValid                                 = -1
+	InValid                                 = 4294967295
 	VerifyLoginTokenReq                     = 1001
 	VerifyLoginTokenRsp                     = 1002
 	PlayerLoginReq                          = 1003
@@ -184,6 +184,8 @@ const (
 	ForbiddenInfoNotice                     = 1534
 	ClientIFIxGMNotice                      = 1536
 	SpeechRecyclingNotice                   = 1538
+	ChangePhoneCaseReq                      = 1539
+	ChangePhoneCaseRsp                      = 1540
 	FlagUnlockAddNotice                     = 1580
 	FlagUnLockRemoveNotice                  = 1582
 	TutorialReq                             = 1589
@@ -671,6 +673,44 @@ const (
 	SetRoomDecorReq                         = 2747
 	SetRoomDecorRsp                         = 2748
 	RoomDecorNotice                         = 2750
+	DungeonOpenFinalBoxNotice               = 2760
+	SceneSitVehicleReq                      = 2765
+	SceneSitVehicleRsp                      = 2766
+	GemDuelInfoReq                          = 2801
+	GemDuelInfoRsp                          = 2802
+	GemDuelEnterMainDungeonReq              = 2803
+	GemDuelEnterMainDungeonRsp              = 2804
+	GemDuelSetTeamCharacterReq              = 2805
+	GemDuelSetTeamCharacterRsp              = 2806
+	GemDuelActionReq                        = 2807
+	GemDuelActionRsp                        = 2808
+	GemDuelActionNotice                     = 2810
+	GemDuelPackUpdateNotice                 = 2812
+	GemDuelDrawExtraStaminaReq              = 2813
+	GemDuelDrawExtraStaminaRsp              = 2814
+	GemDuelCharacterLevelUpReq              = 2815
+	GemDuelCharacterLevelUpRsp              = 2816
+	GemDuelNewCharacterNotice               = 2818
+	GemDuelCharacterStarUpReq               = 2819
+	GemDuelCharacterStarUpRsp               = 2820
+	GemDuelCharacterUnlockSkillReq          = 2821
+	GemDuelCharacterUnlockSkillRsp          = 2822
+	GemDuelBuyStaminaReq                    = 2823
+	GemDuelBuyStaminaRsp                    = 2824
+	GemDuelSetCharacterFavoriteReq          = 2825
+	GemDuelSetCharacterFavoriteRsp          = 2826
+	GemDuelSetTeamNameReq                   = 2827
+	GemDuelSetTeamNameRsp                   = 2828
+	GemDuelMainDungeonEndNotice             = 2830
+	GemDuelEnterArenaDungeonReq             = 2831
+	GemDuelEnterArenaDungeonRsp             = 2832
+	GemDuelArenaDungeonEndNotice            = 2834
+	GemDuelArenaRefreshRivalReq             = 2835
+	GemDuelArenaRefreshRivalRsp             = 2836
+	GemDuelArenaRankReq                     = 2837
+	GemDuelArenaRankRsp                     = 2838
+	InheritCodeUseReq                       = 3001
+	InheritCodeUseRsp                       = 3002
 )
 
 func (c *CmdProtoMap) registerAllMessage() {
@@ -852,6 +892,8 @@ func (c *CmdProtoMap) registerAllMessage() {
 	c.regMsg(ForbiddenInfoNotice, func() any { return new(proto.ForbiddenInfoNotice) })
 	c.regMsg(ClientIFIxGMNotice, func() any { return new(proto.ClientIFIxGMNotice) })
 	c.regMsg(SpeechRecyclingNotice, func() any { return new(proto.SpeechRecyclingNotice) })
+	c.regMsg(ChangePhoneCaseReq, func() any { return new(proto.ChangePhoneCaseReq) })
+	c.regMsg(ChangePhoneCaseRsp, func() any { return new(proto.ChangePhoneCaseRsp) })
 	c.regMsg(FlagUnlockAddNotice, func() any { return new(proto.FlagUnlockAddNotice) })
 	c.regMsg(FlagUnLockRemoveNotice, func() any { return new(proto.FlagUnLockRemoveNotice) })
 	c.regMsg(TutorialReq, func() any { return new(proto.TutorialReq) })
@@ -1339,4 +1381,42 @@ func (c *CmdProtoMap) registerAllMessage() {
 	c.regMsg(SetRoomDecorReq, func() any { return new(proto.SetRoomDecorReq) })
 	c.regMsg(SetRoomDecorRsp, func() any { return new(proto.SetRoomDecorRsp) })
 	c.regMsg(RoomDecorNotice, func() any { return new(proto.RoomDecorNotice) })
+	c.regMsg(DungeonOpenFinalBoxNotice, func() any { return new(proto.DungeonOpenFinalBoxNotice) })
+	c.regMsg(SceneSitVehicleReq, func() any { return new(proto.SceneSitVehicleReq) })
+	c.regMsg(SceneSitVehicleRsp, func() any { return new(proto.SceneSitVehicleRsp) })
+	c.regMsg(GemDuelInfoReq, func() any { return new(proto.GemDuelInfoReq) })
+	c.regMsg(GemDuelInfoRsp, func() any { return new(proto.GemDuelInfoRsp) })
+	c.regMsg(GemDuelEnterMainDungeonReq, func() any { return new(proto.GemDuelEnterMainDungeonReq) })
+	c.regMsg(GemDuelEnterMainDungeonRsp, func() any { return new(proto.GemDuelEnterMainDungeonRsp) })
+	c.regMsg(GemDuelSetTeamCharacterReq, func() any { return new(proto.GemDuelSetTeamCharacterReq) })
+	c.regMsg(GemDuelSetTeamCharacterRsp, func() any { return new(proto.GemDuelSetTeamCharacterRsp) })
+	c.regMsg(GemDuelActionReq, func() any { return new(proto.GemDuelActionReq) })
+	c.regMsg(GemDuelActionRsp, func() any { return new(proto.GemDuelActionRsp) })
+	c.regMsg(GemDuelActionNotice, func() any { return new(proto.GemDuelActionNotice) })
+	c.regMsg(GemDuelPackUpdateNotice, func() any { return new(proto.GemDuelPackUpdateNotice) })
+	c.regMsg(GemDuelDrawExtraStaminaReq, func() any { return new(proto.GemDuelDrawExtraStaminaReq) })
+	c.regMsg(GemDuelDrawExtraStaminaRsp, func() any { return new(proto.GemDuelDrawExtraStaminaRsp) })
+	c.regMsg(GemDuelCharacterLevelUpReq, func() any { return new(proto.GemDuelCharacterLevelUpReq) })
+	c.regMsg(GemDuelCharacterLevelUpRsp, func() any { return new(proto.GemDuelCharacterLevelUpRsp) })
+	c.regMsg(GemDuelNewCharacterNotice, func() any { return new(proto.GemDuelNewCharacterNotice) })
+	c.regMsg(GemDuelCharacterStarUpReq, func() any { return new(proto.GemDuelCharacterStarUpReq) })
+	c.regMsg(GemDuelCharacterStarUpRsp, func() any { return new(proto.GemDuelCharacterStarUpRsp) })
+	c.regMsg(GemDuelCharacterUnlockSkillReq, func() any { return new(proto.GemDuelCharacterUnlockSkillReq) })
+	c.regMsg(GemDuelCharacterUnlockSkillRsp, func() any { return new(proto.GemDuelCharacterUnlockSkillRsp) })
+	c.regMsg(GemDuelBuyStaminaReq, func() any { return new(proto.GemDuelBuyStaminaReq) })
+	c.regMsg(GemDuelBuyStaminaRsp, func() any { return new(proto.GemDuelBuyStaminaRsp) })
+	c.regMsg(GemDuelSetCharacterFavoriteReq, func() any { return new(proto.GemDuelSetCharacterFavoriteReq) })
+	c.regMsg(GemDuelSetCharacterFavoriteRsp, func() any { return new(proto.GemDuelSetCharacterFavoriteRsp) })
+	c.regMsg(GemDuelSetTeamNameReq, func() any { return new(proto.GemDuelSetTeamNameReq) })
+	c.regMsg(GemDuelSetTeamNameRsp, func() any { return new(proto.GemDuelSetTeamNameRsp) })
+	c.regMsg(GemDuelMainDungeonEndNotice, func() any { return new(proto.GemDuelMainDungeonEndNotice) })
+	c.regMsg(GemDuelEnterArenaDungeonReq, func() any { return new(proto.GemDuelEnterArenaDungeonReq) })
+	c.regMsg(GemDuelEnterArenaDungeonRsp, func() any { return new(proto.GemDuelEnterArenaDungeonRsp) })
+	c.regMsg(GemDuelArenaDungeonEndNotice, func() any { return new(proto.GemDuelArenaDungeonEndNotice) })
+	c.regMsg(GemDuelArenaRefreshRivalReq, func() any { return new(proto.GemDuelArenaRefreshRivalReq) })
+	c.regMsg(GemDuelArenaRefreshRivalRsp, func() any { return new(proto.GemDuelArenaRefreshRivalRsp) })
+	c.regMsg(GemDuelArenaRankReq, func() any { return new(proto.GemDuelArenaRankReq) })
+	c.regMsg(GemDuelArenaRankRsp, func() any { return new(proto.GemDuelArenaRankRsp) })
+	c.regMsg(InheritCodeUseReq, func() any { return new(proto.InheritCodeUseReq) })
+	c.regMsg(InheritCodeUseRsp, func() any { return new(proto.InheritCodeUseRsp) })
 }

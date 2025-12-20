@@ -10,13 +10,13 @@ import (
 func (g *Game) PlayerSceneRecord(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.PlayerSceneRecordReq)
 	rsp := &proto.PlayerSceneRecordRsp{
-		Status: proto.StatusCode_StatusCode_OK,
+		Status: proto.StatusCode_StatusCode_Ok,
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil ||
 		scenePlayer.channelInfo == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
+		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
 		log.Game.Warnf("玩家:%v没有加入房间", s.UserId)
 		return
 	}
@@ -28,7 +28,7 @@ func (g *Game) PlayerSceneRecord(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) SceneProcessList(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.SceneProcessListRsp{
-		Status:           proto.StatusCode_StatusCode_OK,
+		Status:           proto.StatusCode_StatusCode_Ok,
 		SceneProcessList: make([]*proto.SceneProcess, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
@@ -49,13 +49,13 @@ func (g *Game) SceneProcessList(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) SendAction(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.SendActionReq)
 	rsp := &proto.SendActionRsp{
-		Status: proto.StatusCode_StatusCode_OK,
+		Status: proto.StatusCode_StatusCode_Ok,
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil ||
 		scenePlayer.channelInfo == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
+		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
 		log.Game.Warnf("玩家:%v没有加入房间", s.UserId)
 		return
 	}
@@ -68,7 +68,7 @@ func (g *Game) SendAction(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) ChangeSceneChannel(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ChangeSceneChannelReq)
 	rsp := &proto.ChangeSceneChannelRsp{
-		Status:            proto.StatusCode_StatusCode_OK,
+		Status:            proto.StatusCode_StatusCode_Ok,
 		SceneId:           req.SceneId,
 		ChannelId:         0,
 		ChannelLabel:      0,
@@ -79,7 +79,7 @@ func (g *Game) ChangeSceneChannel(s *model.Player, msg *alg.GameMsg) {
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil ||
 		scenePlayer.channelInfo == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
+		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
 		log.Game.Warnf("玩家:%v没有加入房间", s.UserId)
 		return
 	}
@@ -94,7 +94,7 @@ func (g *Game) ChangeSceneChannel(s *model.Player, msg *alg.GameMsg) {
 	if err != nil {
 		scenePlayer.SceneId = oldChannelInfo.SceneInfo.SceneId
 		scenePlayer.ChannelId = oldChannelInfo.ChannelId
-		rsp.Status = proto.StatusCode_StatusCode_SCENE_CHANNEL_NOT_EXIST
+		rsp.Status = proto.StatusCode_StatusCode_SceneChannelNotExist
 		log.Game.Warnf("场景:%v没有目标房间:%v err:%s", req.SceneId, req.ChannelLabel, err)
 		return
 	}
@@ -109,7 +109,7 @@ func (g *Game) ChangeSceneChannel(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GenericSceneB(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GenericSceneBReq)
 	rsp := &proto.GenericSceneBRsp{
-		Status:       proto.StatusCode_StatusCode_OK,
+		Status:       proto.StatusCode_StatusCode_Ok,
 		GenericMsgId: req.GenericMsgId,
 		Params:       make([]*proto.CommonParam, 0),
 	}
@@ -117,7 +117,7 @@ func (g *Game) GenericSceneB(s *model.Player, msg *alg.GameMsg) {
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil ||
 		scenePlayer.channelInfo == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
+		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
 		log.Game.Warnf("玩家:%v没有加入房间", s.UserId)
 		return
 	}
@@ -126,7 +126,7 @@ func (g *Game) GenericSceneB(s *model.Player, msg *alg.GameMsg) {
 	for i := int64(0); i < 12; i++ {
 		value := (h + i) % 24
 		alg.AddList(&rsp.Params, &proto.CommonParam{
-			ParamType: proto.CommonParamType_COMMON_PARAM_TYPE_NONE,
+			ParamType: proto.CommonParamType_CommonParamType_None,
 			IntValue:  value,
 			StringValue: func() string {
 				if value/12 == 0 {
@@ -141,13 +141,13 @@ func (g *Game) GenericSceneB(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) SceneInterActionPlayStatus(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.SceneInterActionPlayStatusReq)
 	rsp := &proto.SceneInterActionPlayStatusRsp{
-		Status: proto.StatusCode_StatusCode_OK,
+		Status: proto.StatusCode_StatusCode_Ok,
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil ||
 		scenePlayer.channelInfo == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
+		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
 		log.Game.Warnf("玩家:%v没有加入房间", s.UserId)
 		return
 	}

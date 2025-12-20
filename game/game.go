@@ -101,8 +101,8 @@ func (g *Game) checkPlayer() {
 	for _, player := range g.userMap {
 		if player.IsOffline() {
 			g.kickPlayer(player.UserId)
+			playerList = append(playerList, player)
 		}
-		playerList = append(playerList, player)
 	}
 	for _, player := range playerList {
 		delete(g.userMap, player.UserId)

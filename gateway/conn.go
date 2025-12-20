@@ -53,7 +53,7 @@ func (g *Gateway) VerifyLoginToken(req *LoginInfo) {
 	// token验证
 	ofUser, err := db.GetOFUserBySdkUid(sdkUid)
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_ACCOUNT_UNAUTH
+		rsp.Status = proto.StatusCode_StatusCode_AccountUnauth
 		log.Gate.Debugf("SdkUid:%s,拉取账号失败err:%s", req.SdkUid, err.Error())
 		return
 	}
@@ -64,7 +64,7 @@ func (g *Gateway) VerifyLoginToken(req *LoginInfo) {
 	// 检查在线满了?
 
 	rsp.IsServerOpen = true
-	rsp.Status = proto.StatusCode_StatusCode_OK
+	rsp.Status = proto.StatusCode_StatusCode_Ok
 	rsp.TimeLeft = 4294967295
 	rsp.UserId = ofUser.UserId
 

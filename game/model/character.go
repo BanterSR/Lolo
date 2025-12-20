@@ -280,10 +280,10 @@ func (c *CharacterInfo) GetPbCharacterSkillList() []*proto.CharacterSkill {
 }
 
 type EquipmentPreset struct {
-	PresetIndex      uint32                                       `json:"presetIndex,omitempty"`
-	WeaponInstanceId uint32                                       `json:"weaponInstanceId,omitempty"`
-	Armors           map[proto.EEquipType]*ArmorInfo              `json:"armors,omitempty"`
-	Posters          map[proto.PosterInfo_PosterIndex]*PosterInfo `json:"posters,omitempty"`
+	PresetIndex      uint32                            `json:"presetIndex,omitempty"`
+	WeaponInstanceId uint32                            `json:"weaponInstanceId,omitempty"`
+	Armors           map[proto.EEquipType]*ArmorInfo   `json:"armors,omitempty"`
+	Posters          map[proto.PosterIndex]*PosterInfo `json:"posters,omitempty"`
 }
 
 type ArmorInfo struct {
@@ -299,8 +299,8 @@ func (a *ArmorInfo) ArmorInfo() *proto.ArmorInfo {
 }
 
 type PosterInfo struct {
-	PosterIndex proto.PosterInfo_PosterIndex `json:"posterIndex,omitempty"`
-	InstanceId  uint32                       `json:"instanceId,omitempty"`
+	PosterIndex proto.PosterIndex `json:"posterIndex,omitempty"`
+	InstanceId  uint32            `json:"instanceId,omitempty"`
 }
 
 func (a *PosterInfo) PosterInfo() *proto.PosterInfo {
@@ -315,7 +315,7 @@ func newEquipmentPreset(presetIndex uint32) *EquipmentPreset {
 		PresetIndex:      presetIndex,
 		WeaponInstanceId: 0,
 		Armors:           make(map[proto.EEquipType]*ArmorInfo),
-		Posters:          make(map[proto.PosterInfo_PosterIndex]*PosterInfo),
+		Posters:          make(map[proto.PosterIndex]*PosterInfo),
 	}
 	// 添加盔甲
 	for _, tag := range proto.EEquipType_value {
@@ -325,9 +325,9 @@ func newEquipmentPreset(presetIndex uint32) *EquipmentPreset {
 		}
 	}
 	// 添加海报
-	for _, index := range proto.PosterInfo_PosterIndex_value {
-		info.Posters[proto.PosterInfo_PosterIndex(index)] = &PosterInfo{
-			PosterIndex: proto.PosterInfo_PosterIndex(index),
+	for _, index := range proto.PosterIndex_value {
+		info.Posters[proto.PosterIndex(index)] = &PosterInfo{
+			PosterIndex: proto.PosterIndex(index),
 			InstanceId:  0,
 		}
 	}
@@ -347,9 +347,9 @@ func (e *EquipmentPreset) GetArmor(t proto.EEquipType) *ArmorInfo {
 	return e.Armors[t]
 }
 
-func (e *EquipmentPreset) GetPoster(index proto.PosterInfo_PosterIndex) *PosterInfo {
+func (e *EquipmentPreset) GetPoster(index proto.PosterIndex) *PosterInfo {
 	if e.Posters == nil {
-		e.Posters = make(map[proto.PosterInfo_PosterIndex]*PosterInfo)
+		e.Posters = make(map[proto.PosterIndex]*PosterInfo)
 	}
 	if e.Posters[index] == nil {
 		e.Posters[index] = &PosterInfo{

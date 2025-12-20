@@ -8,7 +8,7 @@ import (
 
 func (g *Game) SupplyBoxInfo(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.SupplyBoxInfoRsp{
-		Status:         proto.StatusCode_StatusCode_OK,
+		Status:         proto.StatusCode_StatusCode_Ok,
 		NextRewardTime: 0,
 	}
 	defer g.send(s, msg.PacketId, rsp)

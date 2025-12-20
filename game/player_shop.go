@@ -9,7 +9,7 @@ import (
 func (g *Game) ShopInfo(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ShopInfoReq)
 	rsp := &proto.ShopInfoRsp{
-		Status: proto.StatusCode_StatusCode_OK,
+		Status: proto.StatusCode_StatusCode_Ok,
 		ShopId: req.ShopId,
 		Grids:  make([]*proto.ShopGrid, 0),
 	}

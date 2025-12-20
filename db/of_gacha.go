@@ -35,6 +35,7 @@ func GetGachaRecords(userId, gachaId, page uint32) ([]*OFGachaRecord, uint32, er
 	if err != nil {
 		return nil, 0, err
 	}
+	totalPage /= 5
 	err = all.
 		Order("id DESC").
 		Limit(5).

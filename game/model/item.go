@@ -204,7 +204,7 @@ func (i *ItemBaseInfo) ItemDetail() *proto.ItemDetail {
 				},
 			},
 		},
-		PackType: proto.ItemDetail_PackType_Inventory,
+		PackType: proto.PackType_PackType_Inventory,
 	}
 	return info
 }
@@ -221,7 +221,7 @@ func (i *ItemBaseInfo) AddItemDetail(num int64) *proto.ItemDetail {
 				},
 			},
 		},
-		PackType: proto.ItemDetail_PackType_Inventory,
+		PackType: proto.PackType_PackType_Inventory,
 	}
 	return info
 }
@@ -322,7 +322,7 @@ func (i *ItemWeaponInfo) ItemDetail() *proto.ItemDetail {
 				Weapon: i.WeaponInstance(),
 			},
 		},
-		PackType: proto.ItemDetail_PackType_Inventory,
+		PackType: proto.PackType_PackType_Inventory,
 	}
 	return info
 }
@@ -471,7 +471,7 @@ func (f *ItemFashionInfo) ItemDetail() *proto.ItemDetail {
 				},
 			},
 		},
-		PackType: proto.ItemDetail_PackType_Inventory,
+		PackType: proto.PackType_PackType_Inventory,
 	}
 	return info
 }
@@ -555,7 +555,7 @@ func (a *ItemArmorInfo) ItemDetail() *proto.ItemDetail {
 				Armor: a.ArmorInstance(),
 			},
 		},
-		PackType: proto.ItemDetail_PackType_Inventory,
+		PackType: proto.PackType_PackType_Inventory,
 	}
 	return info
 }
@@ -655,7 +655,7 @@ func (p *ItemPosterInfo) ItemDetail() *proto.ItemDetail {
 				Poster: p.PosterInstance(),
 			},
 		},
-		PackType: proto.ItemDetail_PackType_Inventory,
+		PackType: proto.PackType_PackType_Inventory,
 	}
 	return info
 }
@@ -727,7 +727,7 @@ func (i *ItemInscriptionInfo) ItemDetail() *proto.ItemDetail {
 				Inscription: i.GetPbInscription(),
 			},
 		},
-		PackType: proto.ItemDetail_PackType_Inventory,
+		PackType: proto.PackType_PackType_Inventory,
 	}
 	return info
 }
@@ -790,7 +790,7 @@ func (i *ItemHeadInfo) ItemDetail() *proto.ItemDetail {
 				},
 			},
 		},
-		PackType: proto.ItemDetail_PackType_Inventory,
+		PackType: proto.PackType_PackType_Inventory,
 	}
 	return info
 }
@@ -833,7 +833,7 @@ func (t *ItemTransaction) Commit() (tx *ItemTransaction) {
 		return
 	}
 	t.PackNotice = &proto.PackNotice{
-		Status: proto.StatusCode_StatusCode_OK,
+		Status: proto.StatusCode_StatusCode_Ok,
 		Items:  make([]*proto.ItemDetail, 0),
 	}
 	for id, num := range t.baseItem {

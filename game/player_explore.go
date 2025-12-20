@@ -8,7 +8,7 @@ import (
 
 func (g *Game) ExploreInit(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.ExploreInitRsp{
-		Status:          proto.StatusCode_StatusCode_OK,
+		Status:          proto.StatusCode_StatusCode_Ok,
 		Explore:         make([]*proto.PlayerExploreInfo, 0),
 		ActivityExplore: make([]*proto.PlayerExploreInfo, 0),
 	}

@@ -15,6 +15,7 @@ func (s *Server) Router() {
 	dispatch := s.router.Group("/dispatch")
 	{
 		dispatch.POST("/region_info", regionInfo)
+		dispatch.POST("/client_hot_update", clientHotUpdate)
 	}
 }
 
@@ -64,6 +65,56 @@ func regionInfo(c *gin.Context) {
 		ClientLogTcpPort: config.GetLogServer().GetOuterPort(),
 		CurrentVersion:   gdconf.GetClientVersion(req.Version),
 		PhotoShareCdnUrl: "https://cdn-photo-of.inutan.com/cn_prod_main",
+	}
+
+	c.JSONP(http.StatusOK, info)
+}
+
+type GMClientConfig struct {
+	Status               bool   `json:"status"`
+	Message              string `json:"message"`
+	HotOssUrl            string `json:"hotOssUrl"`
+	CurrentVersion       string `json:"currentVersion"`
+	Server               string `json:"server"`
+	SsAppId              string `json:"ssAppId"`
+	SsServerUrl          string `json:"ssServerUrl"`
+	OpenGm               bool   `json:"open_gm"`
+	OpenErrorLog         bool   `json:"open_error_log"`
+	OpenNetConnectingLog bool   `json:"open_netConnecting_log"`
+	IpAddress            string `json:"ipAddress"`
+	PayUrl               string `json:"payUrl"`
+	IsTestServer         bool   `json:"isTestServer"`
+	ErrorLogLevel        int    `json:"error_log_level"`
+	ServerId             string `json:"server_id"`
+	OpenCs               bool   `json:"open_cs"`
+}
+
+func clientHotUpdate(c *gin.Context) {
+	var req RegionInfoRequest
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request parameters",
+		})
+		return
+	}
+
+	info := &GMClientConfig{
+		Status:               true,
+		Message:              "success",
+		HotOssUrl:            "http://cdn-of.inutan.com/Resources;https://cdn-of.inutan.com/Resources",
+		CurrentVersion:       gdconf.GetClientVersion(req.Version),
+		Server:               "cn_prod_main",
+		SsAppId:              "c969ebf346794cc797ed6eb6c3eac089",
+		SsServerUrl:          "https://te-of.inutan.com",
+		OpenGm:               true,
+		OpenErrorLog:         true,
+		OpenNetConnectingLog: true,
+		IpAddress:            c.ClientIP(),
+		PayUrl:               "http://api-callback-of.inutan.com:19701",
+		IsTestServer:         true,
+		ErrorLogLevel:        0,
+		ServerId:             "10001",
+		OpenCs:               true,
 	}
 
 	c.JSONP(http.StatusOK, info)

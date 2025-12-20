@@ -13,7 +13,7 @@ func (g *LogServer) login(conn ofnet.Conn, msg *alg.GameMsg) {
 			return
 		}
 		rsp := &proto.ClientLogAuthRsp{
-			Status: proto.StatusCode_StatusCode_OK,
+			Status: proto.StatusCode_StatusCode_Ok,
 		}
 		conn.Send(msg.PacketId, rsp)
 		// new log session

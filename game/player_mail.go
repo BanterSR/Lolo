@@ -9,7 +9,7 @@ import (
 func (g *Game) GetMails(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.GetMailsReq)
 	rsp := &proto.GetMailsRsp{
-		Status: proto.StatusCode_StatusCode_OK,
+		Status: proto.StatusCode_StatusCode_Ok,
 		Mails:  make([]*proto.MailBriefData, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
