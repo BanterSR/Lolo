@@ -37,7 +37,7 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
 		}
 		basic, err := db.GetGameBasic(userId)
 		if err != nil {
-			log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败:%s", s.UserId, err.Error())
+			log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败:%s", userId, err.Error())
 			rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
 			return
 		}

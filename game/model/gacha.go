@@ -212,6 +212,8 @@ func (c *GachaCtx) Run() {
 		case posterSR:
 			alg.AddList(&itemDetail.Extras,
 				c.player.AddAllTypeItem(107, 50).AddItemDetail().MainItem)
+		default:
+			
 		}
 		alg.AddList(&c.ItemDetails, itemDetail)
 	}

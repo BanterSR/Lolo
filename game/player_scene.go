@@ -264,8 +264,8 @@ func (g *Game) TakeOutFurniture(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) SceneSitVehicle(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.SceneSitVehicleReq)
 	rsp := &proto.SceneSitVehicleRsp{
-		Status:   0,
-		PlayerId: 0,
+		Status:   proto.StatusCode_StatusCode_Ok,
+		PlayerId: s.UserId,
 		ChairId:  req.ChairId,
 		SeatId:   req.SeatId,
 		IsSit:    req.IsSit,

@@ -103,7 +103,10 @@ func (d *Database) newMysql() error {
 
 func (d *Database) newSqlite() error {
 	if _, err := os.Stat(filepath.Dir(d.option.Dsn)); os.IsNotExist(err) {
-		os.MkdirAll(filepath.Dir(d.option.Dsn), 0777)
+		err := os.MkdirAll(filepath.Dir(d.option.Dsn), 0777)
+		if err != nil {
+			return err
+		}
 	}
 	openDb, err := gorm.Open(sqlite.Open(d.option.Dsn), d.getGormConfig())
 	if err != nil {
