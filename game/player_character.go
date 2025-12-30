@@ -339,11 +339,17 @@ func (g *Game) CharacterGatherWeaponUpdate(s *model.Player, msg *alg.GameMsg) {
 		g.SceneActionCharacterUpdate(
 			s, proto.SceneActionType_SceneActionType_UpdateEquip, req.CharacterId)
 	}()
+	itemInfo := s.GetItemModel().GetItemWeaponInfo(req.WeaponId)
 	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharacterId)
 	if characterInfo == nil {
 		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
 		log.Game.Warnf("玩家:%v 角色:%v 不存在", s.UserId, req.CharacterId)
 		return
 	}
-	characterInfo.GatherWeapon = req.WeaponId
+	if itemInfo != nil {
+		characterInfo.GatherWeapon = itemInfo.WeaponId
+	} else {
+		characterInfo.GatherWeapon = 0
+	}
+
 }

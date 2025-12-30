@@ -260,3 +260,15 @@ func (g *Game) TakeOutFurniture(s *model.Player, msg *alg.GameMsg) {
 	}
 	defer g.send(s, msg.PacketId, rsp)
 }
+
+func (g *Game) SceneSitVehicle(s *model.Player, msg *alg.GameMsg) {
+	req := msg.Body.(*proto.SceneSitVehicleReq)
+	rsp := &proto.SceneSitVehicleRsp{
+		Status:   0,
+		PlayerId: 0,
+		ChairId:  req.ChairId,
+		SeatId:   req.SeatId,
+		IsSit:    req.IsSit,
+	}
+	defer g.send(s, msg.PacketId, rsp)
+}

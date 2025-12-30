@@ -305,20 +305,30 @@ type SceneGardenFurnitureCtx struct {
 	FurnitureInfos []*proto.FurnitureDetailsInfo // 覆盖式更新家具
 	AllUpdate      bool                          // 是否覆盖更新
 	FurnitureId    int64                         // 删除的家具信息
+	CharacterId    uint32                        // 摆放/移除的角色
 }
 
 // 花园家具更新
 func (c *ChannelInfo) SceneGardenFurnitureUpdate(ctx *SceneGardenFurnitureCtx) {
 	if ctx.Remove { // 移除
-		furnitureInfo := c.sceneGardenData.RemoveFurniture(
-			ctx.ScenePlayer.Player,
-			c.ChannelId, ctx.FurnitureId, true)
-		if furnitureInfo != nil {
-			notice := &proto.SceneGardenFurnitureRemoveNotice{
-				Status:      proto.StatusCode_StatusCode_Ok,
-				FurnitureId: furnitureInfo.FurnitureId,
-				ItemId:      furnitureInfo.FurnitureItemId,
-				UpdateItems: make([]*proto.ItemDetail, 0),
+		if ctx.FurnitureId != 0 { // 移除家具
+			furnitureInfo := c.sceneGardenData.RemoveFurniture(
+				ctx.ScenePlayer.Player,
+				c.ChannelId, ctx.FurnitureId, true)
+			if furnitureInfo != nil { // 移除家具
+				notice := &proto.SceneGardenFurnitureRemoveNotice{
+					Status:      proto.StatusCode_StatusCode_Ok,
+					FurnitureId: furnitureInfo.FurnitureId,
+					ItemId:      furnitureInfo.FurnitureItemId,
+					UpdateItems: make([]*proto.ItemDetail, 0),
+				}
+				c.sendAllPlayer(0, notice)
+			}
+		}
+		if ctx.CharacterId != 0 {
+			notice := &proto.GardenPlaceCharacterNotice{
+				Status:            proto.StatusCode_StatusCode_Ok,
+				RemoveCharacterId: ctx.CharacterId,
 			}
 			c.sendAllPlayer(0, notice)
 		}
@@ -337,7 +347,7 @@ func (c *ChannelInfo) SceneGardenFurnitureUpdate(ctx *SceneGardenFurnitureCtx) {
 			i++
 		}
 		c.GardenFurnitureBatchUpdateNotice(ctx.ScenePlayer)
-	} else if ctx.FurnitureInfo != nil { // 添加
+	} else if ctx.FurnitureInfo != nil { // 添加家具
 		c.sceneGardenData.AddFurniture(
 			ctx.ScenePlayer.Player,
 			c.ChannelId,
@@ -347,6 +357,13 @@ func (c *ChannelInfo) SceneGardenFurnitureUpdate(ctx *SceneGardenFurnitureCtx) {
 		notice := &proto.SceneGardenFurnitureUpdateNotice{
 			Status:        proto.StatusCode_StatusCode_Ok,
 			FurnitureInfo: ctx.FurnitureInfo,
+		}
+		c.sendAllPlayer(0, notice)
+	} else if ctx.CharacterId != 0 { // 摆放角色
+		notice := &proto.GardenPlaceCharacterNotice{
+			Status:            proto.StatusCode_StatusCode_Ok,
+			Character:         c.sceneGardenData.GetScenePlacedCharacter(ctx.CharacterId),
+			RemoveCharacterId: 0,
 		}
 		c.sendAllPlayer(0, notice)
 	}
@@ -427,7 +444,7 @@ func (c *ChannelInfo) GetPbSceneData() (info *proto.SceneData) {
 		FireworksInfo:        new(proto.FireworksInfo),
 		MpBeacons:            make([]*proto.MPBeacon, 0),
 		NetworkEvent:         make([]*proto.NetworkEventData, 0),
-		PlacedCharacters:     make([]*proto.ScenePlacedCharacter, 0),
+		PlacedCharacters:     c.sceneGardenData.PlacedCharacters(), // ok
 		MoonSpots:            make([]*proto.MoonSpotData, 0),
 		RoomDecorList:        make([]*proto.RoomDecorData, 0),
 	}
@@ -458,6 +475,8 @@ func (c *ChannelInfo) GetPbScenePlayer(scenePlayer *ScenePlayer) (info *proto.Sc
 		MusicalItemInstanceId: 0,
 		AbyssRank:             0,
 		PlayingMusicNote:      new(proto.PlayingMusicNote),
+		PhoneCase:             0,
+		VehicleItemId:         0,
 	}
 	return
 }
@@ -476,7 +495,7 @@ func (s *ScenePlayer) GetPbSceneCharacter(characterId uint32) (info *proto.Scene
 	characterInfo := s.GetCharacterModel().GetCharacterInfo(characterId)
 	if characterInfo == nil {
 		log.Game.Debugf("玩家:%v队伍角色:%v不存在", s.UserId, characterId)
-		return new(proto.SceneCharacter)
+		return nil
 	}
 	info = &proto.SceneCharacter{
 		Pos:                 s.Pos,

@@ -246,9 +246,12 @@ func (g *Game) UpdatePlayerAppearance(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.UpdatePlayerAppearanceReq)
 	rsp := &proto.UpdatePlayerAppearanceRsp{
 		Status:     proto.StatusCode_StatusCode_Ok,
-		Appearance: model.GetPlayerAppearance(s.UserId),
+		Appearance: nil,
 	}
-	defer g.send(s, msg.PacketId, rsp)
+	defer func() {
+		rsp.Appearance = model.GetPlayerAppearance(s.UserId)
+		g.send(s, msg.PacketId, rsp)
+	}()
 	err := db.UpGameBasic(s.UserId, func(basic *db.OFGameBasic) bool {
 		basic.Pendant = req.Appearance.Pendant
 		basic.AvatarFrame = req.Appearance.AvatarFrame

@@ -31,6 +31,7 @@ func (g *Game) newRouter() {
 		cmd.PlaceFurnitureReq:             g.PlaceFurniture,             // 摆放家具请求
 		cmd.TakeOutHandingFurnitureReq:    g.TakeOutHandingFurniture,    // 回收家具请求
 		cmd.TakeOutFurnitureReq:           g.TakeOutFurniture,           // 拿起家具请求
+		cmd.SceneSitVehicleReq:            g.SceneSitVehicle,            // 上下车请求
 		// 花园
 		cmd.SwitchGardenStatusReq:           g.SwitchGardenStatus,           // 更新花园设置
 		cmd.GardenLikeRecordReq:             g.GardenLikeRecord,             // 花园点赞记录
@@ -40,6 +41,7 @@ func (g *Game) newRouter() {
 		cmd.GardenFurnitureRemoveAllReq:     g.GardenFurnitureRemoveAll,     // 清空全部家具
 		cmd.GardenFurnitureSchemeSetNameReq: g.GardenFurnitureSchemeSetName, // 预设重命名
 		cmd.GardenFurnitureApplySchemeReq:   g.GardenFurnitureApplyScheme,   // 应用预设
+		cmd.GardenPlaceCharacterReq:         g.GardenPlaceCharacter,         // 摆放角色
 		// 照片墙
 		cmd.PhotoShareSearchReq: g.PhotoShareSearch, // 获取照片墙大厅请求
 		// 队伍

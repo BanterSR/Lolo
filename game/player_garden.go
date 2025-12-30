@@ -123,3 +123,44 @@ func (g *Game) GardenFurnitureApplyScheme(s *model.Player, msg *alg.GameMsg) {
 		ScenePlayer:    scenePlayer,
 	}
 }
+
+func (g *Game) GardenPlaceCharacter(s *model.Player, msg *alg.GameMsg) {
+	req := msg.Body.(*proto.GardenPlaceCharacterReq)
+	rsp := &proto.GardenPlaceCharacterRsp{
+		Status:      proto.StatusCode_StatusCode_Ok,
+		CharacterId: req.CharacterId,
+		FurnitureId: req.FurnitureId,
+		SeatId:      req.SeatId,
+		IsRemove:    req.IsRemove,
+	}
+	defer g.send(s, msg.PacketId, rsp)
+	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharacterId)
+	scenePlayer := g.getWordInfo().getScenePlayer(s)
+	if characterInfo == nil || scenePlayer == nil ||
+		scenePlayer.channelInfo == nil ||
+		scenePlayer.channelInfo.ChannelId != s.UserId {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		return
+	}
+	garden := model.GetSceneGardenData(s.UserId, 9999)
+	if req.IsRemove {
+		if !garden.RemovePlacedCharacter(req.CharacterId) {
+			rsp.Status = proto.StatusCode_StatusCode_BadReq
+			return
+		}
+	} else {
+		if !garden.AddPlacedCharacter(&proto.ScenePlacedCharacter{
+			CharacterId:  req.CharacterId,
+			OutfitPreset: scenePlayer.GetPbSceneCharacterOutfitPreset(characterInfo),
+			FurnitureId:  req.FurnitureId,
+			SeatId:       req.SeatId,
+		}) {
+			rsp.Status = proto.StatusCode_StatusCode_BadReq
+			return
+		}
+	}
+	scenePlayer.channelInfo.gardenFurnitureChan <- &SceneGardenFurnitureCtx{
+		Remove:      req.IsRemove,
+		CharacterId: req.CharacterId,
+	}
+}
