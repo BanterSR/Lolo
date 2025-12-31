@@ -90,6 +90,7 @@ func (g *GameConfig) load() {
 	g.loadGlobalConfig()
 	g.loadChat()
 	g.loadShop()
+	g.loadAbility()
 
 	// config
 	g.loadSceneConfig()
@@ -119,6 +120,7 @@ type Excel struct {
 	GlobalConfig  *GlobalConfig
 	Chat          *Chat
 	Shop          *Shop
+	Ability       *Ability
 }
 
 type Config struct {

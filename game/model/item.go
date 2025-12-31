@@ -142,12 +142,10 @@ func (s *Player) AddAllTypeItem(id uint32, num int64) *AddItemCtx {
 		}
 		ctx.EBagItemTag = i.AddItemBase(id, num)
 	case proto.EBagItemTag_EBagItemTag_AbilityItem:
-	// for _, conf := range confList {
-	// 	if gdconf.GetPlayerAbilityConfigure(conf.ID) == nil {
-	// 		continue
-	// 	}
-	// 	i.AddItemBase(uint32(conf.ID), 1)
-	// }
+		if gdconf.GetAbilityByItemId(uint32(conf.ID)) == nil {
+			return nil
+		}
+		i.AddItemBase(uint32(conf.ID), 1)
 	case proto.EBagItemTag_EBagItemTag_Weapon:
 		ctx.EBagItemTag = i.AddItemWeapon(id)
 	case proto.EBagItemTag_EBagItemTag_Fashion:
