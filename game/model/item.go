@@ -911,6 +911,9 @@ func (t *ItemTransaction) Commit() (tx *ItemTransaction) {
 	}
 	for id, num := range t.baseItem {
 		info := t.i.GetItemBaseInfo(id)
+		if info == nil {
+			continue
+		}
 		info.Num -= num
 		alg.AddList(&t.PackNotice.Items, info.ItemDetail())
 	}

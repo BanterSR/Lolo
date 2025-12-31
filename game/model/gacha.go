@@ -48,8 +48,9 @@ type GachaModel struct {
 }
 
 type GachaInfo struct {
-	GachaId    uint32 `json:"gachaId,omitempty"`    // 卡池id
-	GachaTimes uint32 `json:"gachaTimes,omitempty"` // 已抽数
+	GachaId        uint32 `json:"gachaId,omitempty"`        // 卡池id
+	GachaTimes     uint32 `json:"gachaTimes,omitempty"`     // 已抽数
+	OptionalItemId uint32 `json:"optionalItemId,omitempty"` // 选择的保底物品
 }
 
 type GachaTypeInfo struct {
@@ -114,7 +115,7 @@ func (g *GachaInfo) GachaInfo() *proto.GachaInfo {
 		GachaTimes:     g.GachaTimes,
 		HasFullPick:    false,
 		IsFree:         conf.Conf.IsFree,
-		OptionalUpItem: 0,
+		OptionalUpItem: g.OptionalItemId,
 		OptionalValue:  0,
 		Guarantee:      0,
 	}
@@ -211,6 +212,8 @@ func (c *GachaCtx) Run() {
 		case posterSR:
 			alg.AddList(&itemDetail.Extras,
 				c.player.AddAllTypeItem(107, 50).AddItemDetail().MainItem)
+		default:
+			
 		}
 		alg.AddList(&c.ItemDetails, itemDetail)
 	}
@@ -340,5 +343,5 @@ func (c *GachaCtx) probabilityDyeStuff() int32 {
 // 概率落在愿望上
 func (c *GachaCtx) probabilityDesire() int32 {
 	c.typeInfo.GuaranteeDesire = 0
-	return 0
+	return int32(c.gachaInfo.OptionalItemId)
 }

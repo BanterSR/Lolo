@@ -270,6 +270,7 @@ func (c *ChannelInfo) serverSceneSync(ctx *ServerSceneSyncCtx) {
 
 	serverData := &proto.SceneServerData{
 		ActionType: ctx.ActionType,
+		Player:     new(proto.ScenePlayer),
 	}
 	alg.AddList(&playerData.ServerData, serverData)
 	switch ctx.ActionType {
@@ -295,6 +296,8 @@ func (c *ChannelInfo) serverSceneSync(ctx *ServerSceneSyncCtx) {
 		}
 	case proto.SceneActionType_SceneActionType_TodUpdate: /* 时间更新*/
 		serverData.TodTime = c.getTodTime()
+	case proto.SceneActionType_SceneActionType_UpdateMusicalItem: // 乐器更新
+		ctx.ScenePlayer.UpdateMusicalItem(serverData.Player)
 	}
 }
 
@@ -470,15 +473,26 @@ func (c *ChannelInfo) GetPbScenePlayer(scenePlayer *ScenePlayer) (info *proto.Sc
 		GlobalBuffIds:         make([]uint32, 0),
 		IsBirthday:            false,             // 是生日？
 		AvatarFrame:           basic.AvatarFrame, // 头像框
-		MusicalItemId:         0,
-		MusicalItemSource:     0,
-		MusicalItemInstanceId: 0,
+		MusicalItemId:         0,                 // ok
+		MusicalItemSource:     0,                 // ok
+		MusicalItemInstanceId: 0,                 // ok
 		AbyssRank:             0,
-		PlayingMusicNote:      new(proto.PlayingMusicNote),
+		PlayingMusicNote:      nil, // ok
 		PhoneCase:             0,
 		VehicleItemId:         0,
 	}
+	scenePlayer.UpdateMusicalItem(info) // 赋值音乐物品
 	return
+}
+
+func (s *ScenePlayer) UpdateMusicalItem(info *proto.ScenePlayer) {
+	if info == nil {
+		return
+	}
+	info.MusicalItemId = s.MusicalItemId                 // 音乐物品id
+	info.MusicalItemSource = s.MusicalItemSource         // 音乐来源
+	info.MusicalItemInstanceId = s.MusicalItemInstanceId // 音乐实例id
+	info.PlayingMusicNote = s.PlayingMusicNote           // 演奏音符
 }
 
 func (c *ChannelInfo) GetPbSceneTeam(scenePlayer *ScenePlayer) (info *proto.SceneTeam) {

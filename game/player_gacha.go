@@ -68,3 +68,15 @@ func (g *Game) Gacha(s *model.Player, msg *alg.GameMsg) {
 	ctx.Run()
 	rsp.Items = ctx.ItemDetails
 }
+
+func (g *Game) OptionalUpPoolItem(s *model.Player, msg *alg.GameMsg) {
+	req := msg.Body.(*proto.OptionalUpPoolItemReq)
+	rsp := &proto.OptionalUpPoolItemRsp{
+		Status: 0,
+		Info:   nil,
+	}
+	defer g.send(s, msg.PacketId, rsp)
+	info := s.GetGachaModel().GetGachaInfo(req.GachaId)
+	info.OptionalItemId = req.ItemId
+	rsp.Info = info.GachaInfo()
+}

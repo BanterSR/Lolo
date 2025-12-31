@@ -8,7 +8,7 @@
   "DefaultSceneId": 9999,
   "DefaultChannelId": 1314,
   "DefaultChatChannelId": 1000,
-  "ChannelTick": 200,
+  "ChannelTick": 5,
   "FurnitureLimitNum": 100,
   "GardenSchemeNum": 2
 }

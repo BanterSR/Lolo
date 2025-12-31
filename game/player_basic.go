@@ -37,7 +37,7 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
 		}
 		basic, err := db.GetGameBasic(userId)
 		if err != nil {
-			log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败:%s", s.UserId, err.Error())
+			log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败:%s", userId, err.Error())
 			rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
 			return
 		}
@@ -347,28 +347,6 @@ func (g *Game) ManualList(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.ManualListRsp{
 		Status: proto.StatusCode_StatusCode_Ok,
 		Flags:  make([]*proto.ManualFlag, 0),
-	}
-	defer g.send(s, msg.PacketId, rsp)
-}
-
-func (g *Game) GetCollectMoonInfo(s *model.Player, msg *alg.GameMsg) {
-	req := msg.Body.(*proto.GetCollectMoonInfoReq)
-	rsp := &proto.GetCollectMoonInfoRsp{
-		Status:           proto.StatusCode_StatusCode_Ok,
-		SceneId:          req.SceneId,
-		CollectedMoonIds: make([]uint32, 0),
-		EmotionMoons:     make([]*proto.EmotionMoonInfo, 0),
-	}
-	defer g.send(s, msg.PacketId, rsp)
-}
-
-func (g *Game) ChangeMusicalItem(s *model.Player, msg *alg.GameMsg) {
-	// req := msg.Body.(*proto.ChangeMusicalItemReq)
-	rsp := &proto.ChangeMusicalItemRsp{
-		Status:                proto.StatusCode_StatusCode_Ok,
-		Source:                0,
-		MusicalItemInstanceId: 0,
-		MusicalItemId:         0,
 	}
 	defer g.send(s, msg.PacketId, rsp)
 }

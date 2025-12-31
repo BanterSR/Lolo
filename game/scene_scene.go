@@ -34,11 +34,17 @@ type SceneInfo struct {
 
 type ScenePlayer struct {
 	*model.Player
+	// 基础信息
 	Pos         *proto.Vector3
 	Rot         *proto.Vector3
 	SceneId     uint32
 	ChannelId   uint32
 	channelInfo *ChannelInfo // 绑定的房间
+	// 音乐
+	MusicalItemId         uint32
+	MusicalItemSource     proto.MusicalItemSource
+	MusicalItemInstanceId int64
+	PlayingMusicNote      *proto.PlayingMusicNote
 }
 
 func (g *Game) getWordInfo() *WordInfo {
