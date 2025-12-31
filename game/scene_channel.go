@@ -247,6 +247,7 @@ func (c *ChannelInfo) SceneDataNotice(scenePlayer *ScenePlayer) {
 type ServerSceneSyncCtx struct {
 	ScenePlayer *ScenePlayer
 	ActionType  proto.SceneActionType
+	CharacterId uint32 // 需要更新的角色id
 }
 
 func (c *ChannelInfo) serverSceneSync(ctx *ServerSceneSyncCtx) {
@@ -277,8 +278,10 @@ func (c *ChannelInfo) serverSceneSync(ctx *ServerSceneSyncCtx) {
 	case proto.SceneActionType_SceneActionType_Enter: // 进入场景
 		serverData.Player = c.GetPbScenePlayer(ctx.ScenePlayer)
 	case proto.SceneActionType_SceneActionType_Leave: // 退出场景
-	case proto.SceneActionType_SceneActionType_UpdateEquip, /*更新装备*/
-		proto.SceneActionType_SceneActionType_UpdateFashion,    /*更新服装*/
+	case proto.SceneActionType_SceneActionType_UpdateEquip: /*更新装备*/
+		sceneCharacter := ctx.NewTeamSceneCharacter(serverData)
+		ctx.ScenePlayer.UpdateEquip(sceneCharacter)
+	case proto.SceneActionType_SceneActionType_UpdateFashion, /*更新服装*/
 		proto.SceneActionType_SceneActionType_UpdateTeam,       /*更新队伍*/
 		proto.SceneActionType_SceneActionType_UpdateAppearance: /*更新外观*/
 		serverData.Player = &proto.ScenePlayer{
@@ -299,6 +302,25 @@ func (c *ChannelInfo) serverSceneSync(ctx *ServerSceneSyncCtx) {
 	case proto.SceneActionType_SceneActionType_UpdateMusicalItem: // 乐器更新
 		ctx.ScenePlayer.UpdateMusicalItem(serverData.Player)
 	}
+}
+
+func (ctx *ServerSceneSyncCtx) NewTeamSceneCharacter(serverDate *proto.SceneServerData) *proto.SceneCharacter {
+	teamInfo := ctx.ScenePlayer.GetTeamModel().GetTeamInfo()
+	info := new(proto.SceneCharacter)
+	if serverDate.Player.Team == nil {
+		serverDate.Player.Team = new(proto.SceneTeam)
+	}
+	switch ctx.CharacterId {
+	case teamInfo.Char1:
+		serverDate.Player.Team.Char1 = info
+	case teamInfo.Char2:
+		serverDate.Player.Team.Char2 = info
+	case teamInfo.Char3:
+		serverDate.Player.Team.Char3 = info
+	default:
+		return nil
+	}
+	return info
 }
 
 type SceneGardenFurnitureCtx struct {
@@ -520,17 +542,18 @@ func (s *ScenePlayer) GetPbSceneCharacter(characterId uint32) (info *proto.Scene
 		CharStar:            characterInfo.Star,
 		CharacterAppearance: characterInfo.GetPbCharacterAppearance(),
 		OutfitPreset:        s.GetPbSceneCharacterOutfitPreset(characterInfo),
-		WeaponId:            0,
-		WeaponStar:          0,
+		WeaponId:            0, // ok
+		WeaponStar:          0, // ok
 		Armors:              make([]*proto.BaseArmor, 0),
 		Posters:             make([]*proto.BasePoster, 0),
-		GatherWeapon:        characterInfo.GatherWeapon,
-
-		IsDead:        false,
-		InscriptionId: 0,
-		InscriptionLv: 0,
-		MpGameWeapon:  0,
+		GatherWeapon:        0, // ok
+		IsDead:              false,
+		InscriptionId:       0,
+		InscriptionLv:       0,
+		MpGameWeapon:        0,
 	}
+	// 装备
+	s.UpdateEquip(info)
 	// 装备
 	{
 		equipmentPreset := characterInfo.GetEquipmentPreset(characterInfo.InUseEquipmentPresetIndex)
@@ -538,15 +561,6 @@ func (s *ScenePlayer) GetPbSceneCharacter(characterId uint32) (info *proto.Scene
 			log.Game.Warnf("玩家:%v角色:%v装备序号:%v缺少",
 				s.UserId, characterInfo.CharacterId, characterInfo.InUseEquipmentPresetIndex)
 		} else {
-			// 武器
-			weaponInfo := s.GetItemModel().GetItemWeaponInfo(equipmentPreset.WeaponInstanceId)
-			if weaponInfo == nil {
-				log.Game.Warnf("玩家:%v角色:%v装备-武器:%v缺少",
-					s.UserId, characterInfo.CharacterId, equipmentPreset.WeaponInstanceId)
-			} else {
-				info.WeaponStar = weaponInfo.Star
-				info.WeaponId = weaponInfo.WeaponId
-			}
 			// 盔甲
 			for _, armor := range equipmentPreset.Armors {
 				item := s.GetItemModel().GetItemArmorInfo(armor.InstanceId)
@@ -562,6 +576,29 @@ func (s *ScenePlayer) GetPbSceneCharacter(characterId uint32) (info *proto.Scene
 	}
 
 	return
+}
+
+func (s *ScenePlayer) UpdateEquip(info *proto.SceneCharacter) {
+	characterInfo := s.GetCharacterModel().GetCharacterInfo(info.GetCharId())
+	if characterInfo == nil || info == nil {
+		return
+	}
+	info.GatherWeapon = characterInfo.GatherWeapon
+	equipmentPreset := characterInfo.GetEquipmentPreset(characterInfo.InUseEquipmentPresetIndex)
+	if equipmentPreset == nil {
+		log.Game.Warnf("玩家:%v角色:%v装备序号:%v缺少",
+			s.UserId, characterInfo.CharacterId, characterInfo.InUseEquipmentPresetIndex)
+	} else {
+		// 武器
+		weaponInfo := s.GetItemModel().GetItemWeaponInfo(equipmentPreset.WeaponInstanceId)
+		if weaponInfo == nil {
+			log.Game.Warnf("玩家:%v角色:%v装备-武器:%v缺少",
+				s.UserId, characterInfo.CharacterId, equipmentPreset.WeaponInstanceId)
+		} else {
+			info.WeaponStar = weaponInfo.Star
+			info.WeaponId = weaponInfo.WeaponId
+		}
+	}
 }
 
 func (s *ScenePlayer) GetPbSceneCharacterOutfitPreset(characterInfo *model.CharacterInfo) *proto.SceneCharacterOutfitPreset {
@@ -641,6 +678,7 @@ func (g *Game) SceneActionCharacterUpdate(s *model.Player, t proto.SceneActionTy
 				scenePlayer.channelInfo.serverSceneSyncChan <- &ServerSceneSyncCtx{
 					ScenePlayer: scenePlayer,
 					ActionType:  t,
+					CharacterId: id,
 				}
 			}
 		}
