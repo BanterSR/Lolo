@@ -306,7 +306,9 @@ func (c *ChannelInfo) serverSceneSync(ctx *ServerSceneSyncCtx) {
 
 func (ctx *ServerSceneSyncCtx) NewTeamSceneCharacter(serverDate *proto.SceneServerData) *proto.SceneCharacter {
 	teamInfo := ctx.ScenePlayer.GetTeamModel().GetTeamInfo()
-	info := new(proto.SceneCharacter)
+	info := &proto.SceneCharacter{
+		CharId: ctx.CharacterId,
+	}
 	if serverDate.Player.Team == nil {
 		serverDate.Player.Team = new(proto.SceneTeam)
 	}

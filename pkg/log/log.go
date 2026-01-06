@@ -1,7 +1,9 @@
 package log
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -137,13 +139,40 @@ func addHandler(l *slog.SugaredLogger, conf *config.Log) {
 	}
 }
 
+type ResponseWriter struct {
+	gin.ResponseWriter
+	body    *bytes.Buffer
+	context *gin.Context
+}
+
+func (w *ResponseWriter) Write(b []byte) (int, error) {
+	w.body.Write(b)
+	return w.ResponseWriter.Write(b)
+}
+
 func GinLog(l *slog.SugaredLogger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		path := c.Request.URL.Path
 		raw := c.Request.URL.RawQuery
 
+		var reqBody []byte
+		blw := &ResponseWriter{ResponseWriter: c.Writer, body: bytes.NewBuffer([]byte{})}
+		if config.GetMode() == config.ModeDev &&
+			c.Request.Body != nil {
+			reqBody, _ = io.ReadAll(c.Request.Body)
+			c.Request.Body = io.NopCloser(bytes.NewBuffer(reqBody))
+			c.Writer = blw
+		}
 		c.Next()
+		if config.GetMode() == config.ModeDev {
+			l.Debugf("HTTP [%s][Path:%s] req:%s resp:%s",
+				c.Request.Method,
+				path,
+				string(reqBody),
+				blw.body.String(),
+			)
+		}
 		latency := time.Now().Sub(start)
 
 		if raw != "" {

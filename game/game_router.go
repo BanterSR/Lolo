@@ -89,6 +89,8 @@ func (g *Game) newRouter() {
 		// 战斗
 		cmd.BattleEncounterInfoReq:        g.BattleEncounterInfo,        // 获取战斗遭遇信息
 		cmd.BattleEncounterStateUpdateReq: g.BattleEncounterStateUpdate, // 战斗遭遇开始更新请求
+		// 深渊
+		cmd.AbyssInfoReq: g.AbyssInfo, // 深渊信息请求
 
 		cmd.PlayerVitalityReq:        g.PlayerVitality,
 		cmd.BossRushInfoReq:          g.BossRushInfo,
