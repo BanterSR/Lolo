@@ -263,6 +263,31 @@ func (g *Game) TakeOutFurniture(s *model.Player, msg *alg.GameMsg) {
 	defer g.send(s, msg.PacketId, rsp)
 }
 
+func (g *Game) SceneSitChair(s *model.Player, msg *alg.GameMsg) {
+	req := msg.Body.(*proto.SceneSitChairReq)
+	rsp := &proto.SceneSitChairRsp{
+		Status:   proto.StatusCode_StatusCode_Ok,
+		PlayerId: s.UserId,
+		ChairId:  req.ChairId,
+		IsSit:    req.IsSit,
+	}
+	scenePlayer := g.getWordInfo().getScenePlayer(s)
+	if scenePlayer == nil ||
+		scenePlayer.channelInfo == nil {
+		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
+		log.Game.Warnf("玩家:%v没有加入房间", s.UserId)
+		g.send(s, msg.PacketId, rsp)
+		return
+	}
+	scenePlayer.channelInfo.chairSyncChan <- &ChairSyncCtx{
+		SyncMsg:  rsp,
+		PlayerId: s.UserId,
+		ChairId:  req.ChairId,
+		SeatId:   req.SeatId,
+		IsSit:    req.IsSit,
+	}
+}
+
 func (g *Game) SceneSitVehicle(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.SceneSitVehicleReq)
 	rsp := &proto.SceneSitVehicleRsp{
@@ -272,7 +297,21 @@ func (g *Game) SceneSitVehicle(s *model.Player, msg *alg.GameMsg) {
 		SeatId:   req.SeatId,
 		IsSit:    req.IsSit,
 	}
-	defer g.send(s, msg.PacketId, rsp)
+	scenePlayer := g.getWordInfo().getScenePlayer(s)
+	if scenePlayer == nil ||
+		scenePlayer.channelInfo == nil {
+		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
+		log.Game.Warnf("玩家:%v没有加入房间", s.UserId)
+		g.send(s, msg.PacketId, rsp)
+		return
+	}
+	scenePlayer.channelInfo.chairSyncChan <- &ChairSyncCtx{
+		SyncMsg:  rsp,
+		PlayerId: s.UserId,
+		ChairId:  int64(req.ChairId),
+		SeatId:   req.SeatId,
+		IsSit:    req.IsSit,
+	}
 }
 
 func (g *Game) ChangeMusicalItem(s *model.Player, msg *alg.GameMsg) {

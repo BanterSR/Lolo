@@ -31,6 +31,7 @@ type ChannelInfo struct {
 	sceneServerDatas map[uint32]*proto.ServerSceneSyncData // 一个tick中玩家变动内容
 	chatChannel      *ChatChannel                          // 当前场景的聊天房间
 	sceneGardenData  *model.SceneGardenData                // 花园信息
+	chaiInfoMap      map[uint32]*proto.ChairInfo           // 座位信息
 	// chan
 	freezeChan           chan struct{}                 // 冻结/解冻通道
 	addScenePlayerChan   chan *ScenePlayer             // 玩家进入通道
@@ -40,6 +41,7 @@ type ChannelInfo struct {
 	actionSyncChan       chan *ActionSyncCtx           // action同步通道
 	interActionSyncChan  chan *InterActionCtx          // 玩家交互同步通道
 	gardenFurnitureChan  chan *SceneGardenFurnitureCtx // 家具通道
+	chairSyncChan        chan *ChairSyncCtx            // 交换同步通道
 }
 
 func (s *SceneInfo) newChannelInfo(channelId uint32, channelType int) *ChannelInfo {
@@ -52,6 +54,7 @@ func (s *SceneInfo) newChannelInfo(channelId uint32, channelType int) *ChannelIn
 		weatherType:          proto.WeatherType_WeatherType_Sunny,
 		chatChannel:          newChatChannel(),
 		sceneGardenData:      model.GetSceneGardenData(channelId, s.SceneId),
+		chaiInfoMap:          make(map[uint32]*proto.ChairInfo),
 		doneChan:             make(chan struct{}),
 		freezeChan:           make(chan struct{}, 1),
 		addScenePlayerChan:   make(chan *ScenePlayer, 10),
@@ -63,6 +66,7 @@ func (s *SceneInfo) newChannelInfo(channelId uint32, channelType int) *ChannelIn
 		actionSyncChan:       make(chan *ActionSyncCtx, 100),
 		interActionSyncChan:  make(chan *InterActionCtx, 100),
 		gardenFurnitureChan:  make(chan *SceneGardenFurnitureCtx, 100),
+		chairSyncChan:        make(chan *ChairSyncCtx, 100),
 	}
 
 	info.chatChannel.doneChan = info.doneChan
@@ -129,6 +133,8 @@ func (c *ChannelInfo) channelMainLoop() {
 			c.SceneInterActionPlayStatusNotice(ctx)
 		case ctx := <-c.gardenFurnitureChan: // 家具通道
 			c.SceneGardenFurnitureUpdate(ctx)
+		case ctx := <-c.chairSyncChan: // 交互通道
+			c.SceneChairSync(ctx)
 		case <-c.doneChan:
 			return
 		case <-c.freezeChan: // 房间冻结
@@ -406,6 +412,28 @@ func (c *ChannelInfo) GardenFurnitureBatchUpdateNotice(player *ScenePlayer) {
 	c.sendAllPlayer(0, notice)
 }
 
+// 交互上下文
+type ChairSyncCtx struct {
+	SyncMsg  pb.Message
+	PlayerId uint32
+	ChairId  int64
+	SeatId   int32
+	IsSit    bool
+}
+
+func (c *ChannelInfo) SceneChairSync(ctx *ChairSyncCtx) {
+	defer c.sendAllPlayer(0, ctx.SyncMsg)
+	if ctx.IsSit { // 坐？
+		c.chaiInfoMap[ctx.PlayerId] = &proto.ChairInfo{
+			ChairId:  ctx.ChairId,
+			SeatId:   ctx.SeatId,
+			PlayerId: ctx.PlayerId,
+		}
+	} else {
+		delete(c.chaiInfoMap, ctx.PlayerId)
+	}
+}
+
 // action同步上下文
 type ActionSyncCtx struct {
 	ScenePlayer *ScenePlayer
@@ -478,6 +506,10 @@ func (c *ChannelInfo) GetPbSceneData() (info *proto.SceneData) {
 	// 添加场景中的玩家
 	for _, scenePlayer := range c.getAllPlayer() {
 		alg.AddList(&info.Players, c.GetPbScenePlayer(scenePlayer))
+	}
+	// 添加座位信息
+	for _, chaiInfo := range c.chaiInfoMap {
+		alg.AddList(&info.ChairInfoList, chaiInfo)
 	}
 	return
 }

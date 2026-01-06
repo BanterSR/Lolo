@@ -31,6 +31,7 @@ func (g *Game) newRouter() {
 		cmd.PlaceFurnitureReq:             g.PlaceFurniture,             // 摆放家具请求
 		cmd.TakeOutHandingFurnitureReq:    g.TakeOutHandingFurniture,    // 回收家具请求
 		cmd.TakeOutFurnitureReq:           g.TakeOutFurniture,           // 拿起家具请求
+		cmd.SceneSitChairReq:              g.SceneSitChair,              // 坐/离 椅子请求
 		cmd.SceneSitVehicleReq:            g.SceneSitVehicle,            // 上下车请求
 		cmd.ChangeMusicalItemReq:          g.ChangeMusicalItem,          // 切换音乐源请求
 		cmd.PlayMusicNoteReq:              g.PlayMusicNote,              // 演奏请求
