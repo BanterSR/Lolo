@@ -80,6 +80,7 @@ type CharacterInfo struct {
 	InUseOutfitPresetIndex    uint32                      `json:"inUseOutfitPresetIndex,omitempty"`    // 当前服装表
 	OutfitPresetList          map[uint32]*OutfitPreset    `json:"outfitPresets,omitempty"`             // 角色服装预设表
 	GatherWeapon              uint32                      `json:"gatherWeapon,omitempty"`              // 手持道具
+	IsUnlockPayment           bool                        `json:"isUnlockPayment,omitempty"`           // 已解锁购买
 }
 
 func newCharacterInfo(characterId uint32) *CharacterInfo {
@@ -198,7 +199,7 @@ func (c *CharacterInfo) Character() *proto.Character {
 		CharacterAppearance:       c.GetPbCharacterAppearance(),
 		CharacterSkillList:        c.GetPbCharacterSkillList(),
 		RewardedAchievementIdLst:  make([]uint32, 0),
-		IsUnlockPayment:           false,
+		IsUnlockPayment:           c.IsUnlockPayment,
 		RewardIndexLst:            make([]uint32, 0),
 		MpGameWeapon:              0,
 	}
@@ -275,6 +276,13 @@ type CharacterSkill struct {
 	SkillLevel uint32 `json:"skillLevel,omitempty"`
 }
 
+func (s *CharacterSkill) CharacterSkill() *proto.CharacterSkill {
+	return &proto.CharacterSkill{
+		SkillId:    s.SkillId,
+		SkillLevel: s.SkillLevel,
+	}
+}
+
 func newCharacterSkillList(id uint32) map[uint32]*CharacterSkill {
 	conf := gdconf.GetCharacterAll(id)
 	if conf == nil {
@@ -300,10 +308,7 @@ func newCharacterSkillList(id uint32) map[uint32]*CharacterSkill {
 func (c *CharacterInfo) GetPbCharacterSkillList() []*proto.CharacterSkill {
 	pbInfoList := make([]*proto.CharacterSkill, 0)
 	for _, info := range c.CharacterSkillList {
-		alg.AddList(&pbInfoList, &proto.CharacterSkill{
-			SkillId:    info.SkillId,
-			SkillLevel: info.SkillLevel,
-		})
+		alg.AddList(&pbInfoList, info.CharacterSkill())
 	}
 
 	return pbInfoList

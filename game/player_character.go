@@ -28,6 +28,13 @@ func (g *Game) GetCharacterAchievementList(s *model.Player, msg *alg.GameMsg) {
 		RewardedIdLst:           make([]uint32, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
+	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharacterId)
+	if characterInfo == nil {
+		rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+		log.Game.Warnf("获取角色成就列表失败,角色%v不存在", req.CharacterId)
+		return
+	}
+	rsp.IsUnlockedPayment = characterInfo.IsUnlockPayment
 }
 
 func (g *Game) CharacterLevelUp(s *model.Player, msg *alg.GameMsg) {
@@ -408,4 +415,56 @@ func (g *Game) CharacterStarUp(s *model.Player, msg *alg.GameMsg) {
 
 	characterInfo.Star++
 	rsp.Star = characterInfo.Star
+}
+
+func (g *Game) CharacterSkillLevelUp(s *model.Player, msg *alg.GameMsg) {
+	req := msg.Body.(*proto.CharacterSkillLevelUpReq)
+	rsp := &proto.CharacterSkillLevelUpRsp{
+		Status: proto.StatusCode_StatusCode_Ok,
+		CharId: req.CharId,
+		Items:  make([]*proto.ItemDetail, 0),
+		Skill:  nil,
+	}
+	defer g.send(s, msg.PacketId, rsp)
+	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharId)
+	if characterInfo == nil {
+		rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+		log.Game.Warnf("保存角色技能升级失败,角色%v不存在", req.CharId)
+		return
+	}
+	skillInfo, ok := characterInfo.CharacterSkillList[req.SkillId]
+	if !ok {
+		rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+		return
+	}
+	conf := gdconf.GetSpellLevelUpInfoBySkillId(req.SkillId, skillInfo.SkillLevel)
+	if conf == nil {
+		rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+		return
+	}
+	// 申请事务
+	tx, err := s.GetItemModel().Begin()
+	if err != nil {
+		rsp.Status = proto.StatusCode_StatusCode_ItemNotEnough
+		log.Game.Errorf("玩家:%v申请背包事务失败:%s", s.UserId, err.Error())
+		return
+	}
+
+	for _, item := range conf.SpellLevelUpInfoItem {
+		for index, itemId := range item.ItemID {
+			tx.DelBaseItem(uint32(itemId), int64(item.Num[index]))
+			if tx.Error != nil {
+				tx.Rollback()
+				rsp.Status = proto.StatusCode_StatusCode_ExploreNumLimit
+				log.Game.Errorf("玩家:%v扣除背包物品失败:%s", s.UserId, tx.Error.Error())
+				return
+			}
+		}
+	}
+
+	tx.Commit()
+	g.send(s, 0, tx.PackNotice)
+
+	skillInfo.SkillLevel++
+	rsp.Skill = skillInfo.CharacterSkill()
 }

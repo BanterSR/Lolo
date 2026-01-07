@@ -92,6 +92,7 @@ func (g *GameConfig) load() {
 	g.loadChat()
 	g.loadShop()
 	g.loadAbility()
+	g.loadSpell()
 
 	// config
 	g.loadSceneConfig()
@@ -123,6 +124,7 @@ type Excel struct {
 	Chat          *Chat
 	Shop          *Shop
 	Ability       *Ability
+	Spell         *Spell
 }
 
 type Config struct {

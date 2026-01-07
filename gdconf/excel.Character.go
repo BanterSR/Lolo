@@ -9,6 +9,7 @@ type Character struct {
 	CharacterAllMap  map[uint32]*CharacterAllInfo
 	GrowthLevelMap   map[int32]map[uint32]*excel.CharacterLevelInfo
 	CharacterStarMap map[uint32]map[uint32]*excel.CharacterStarInfo
+	CharacterByShop  map[uint32]*excel.CharacterConfigure
 }
 
 type CharacterAllInfo struct {
@@ -23,6 +24,7 @@ func (g *GameConfig) loadCharacter() {
 		CharacterAllMap:  make(map[uint32]*CharacterAllInfo),
 		GrowthLevelMap:   make(map[int32]map[uint32]*excel.CharacterLevelInfo),
 		CharacterStarMap: make(map[uint32]map[uint32]*excel.CharacterStarInfo),
+		CharacterByShop:  make(map[uint32]*excel.CharacterConfigure),
 	}
 	g.Excel.Character = info
 	name := "Character.json"
@@ -51,6 +53,7 @@ func (g *GameConfig) loadCharacter() {
 
 	for _, v := range info.all.GetCharacter().GetDatas() {
 		getCharacterAllMap(v.ID).CharacterInfo = v
+		info.CharacterByShop[uint32(v.ShopID)] = v
 	}
 	for _, v := range info.all.GetLevelRule().GetDatas() {
 		getCharacterAllMap(v.ID).LevelRules = v.LevelRuleInfo
@@ -102,4 +105,8 @@ func GetCharacterStar(characterId, star uint32) *excel.CharacterStarInfo {
 		return nil
 	}
 	return list[star]
+}
+
+func GetCharacterInfoByShop(shopId uint32) *excel.CharacterConfigure {
+	return cc.Excel.Character.CharacterByShop[shopId]
 }

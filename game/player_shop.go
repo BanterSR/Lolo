@@ -4,6 +4,7 @@ import (
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/pkg/alg"
+	"gucooing/lolo/pkg/log"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -69,9 +70,25 @@ func (g *Game) ShopBuy(s *model.Player, msg *alg.GameMsg) {
 	}
 	ctx.Commit()
 	g.send(s, 0, ctx.PackNotice)
-	// 给商品
-	bagItem := s.AddAllTypeItem(uint32(conf.ItemID), int64(conf.ItemNum*int32(req.BuyTimes)))
-	alg.AddList(&rsp.Items, bagItem.AddItemDetail())
+	// 根据商店类型给予商品
+	switch proto.EShopType(gdconf.GetShopInfo(req.ShopId).NewShopType) {
+	case proto.EShopType_EShopType_BattlePass: // 通行证
+
+	case proto.EShopType_EShopType_CharacterBp: // 角色商店
+		// 解锁角色购买
+		characterInfo := s.GetCharacterModel().GetCharacterInfo(uint32(gdconf.GetCharacterInfoByShop(req.ShopId).ID))
+		if characterInfo == nil {
+			rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+			log.Game.Warnf("获取角色商店失败,商店%v不存在", req.ShopId)
+			return
+		}
+		characterInfo.IsUnlockPayment = true
+
+		alg.AddList(&rsp.Items, characterInfo.ItemDetail())
+	default:
+		bagItem := s.AddAllTypeItem(uint32(conf.ItemID), int64(conf.ItemNum*int32(req.BuyTimes)))
+		alg.AddList(&rsp.Items, bagItem.AddItemDetail())
+	}
 }
 
 func (g *Game) CreatePayOrder(s *model.Player, msg *alg.GameMsg) {
