@@ -159,6 +159,7 @@ func (g *Game) GardenPlaceCharacter(s *model.Player, msg *alg.GameMsg) {
 			return
 		}
 	}
+	s.GetCharacterModel().SetPlacedCharacter(req.CharacterId, req.IsRemove)
 	scenePlayer.channelInfo.gardenFurnitureChan <- &SceneGardenFurnitureCtx{
 		Remove:      req.IsRemove,
 		CharacterId: req.CharacterId,

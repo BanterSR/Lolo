@@ -71,6 +71,7 @@ func NewDB(option *Option) error {
 	// SetConnMaxLifetime 设置了连接可复用的最大时间。
 	sqlDB.SetConnMaxLifetime(d.option.ConnMaxLifetime)
 
+	time1 := time.Now()
 	err = d.db.AutoMigrate(
 		&OFQuick{},
 		&OFUser{},
@@ -85,6 +86,10 @@ func NewDB(option *Option) error {
 		&OFGachaRecord{},
 		&OFHome{},
 	)
+
+	if time.Now().Sub(time1) >= 2*time.Second {
+		log.Printf("数据库迁移耗时过长: %s 建议更换本地数据库", time.Now().Sub(time1).String())
+	}
 
 	db = d.db
 

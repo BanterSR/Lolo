@@ -5,7 +5,6 @@ import (
 
 	"github.com/bytedance/sonic"
 
-	"gucooing/lolo/config"
 	"gucooing/lolo/db"
 	"gucooing/lolo/pkg/log"
 	"gucooing/lolo/pkg/ofnet"
@@ -61,8 +60,7 @@ var (
 )
 
 func (s *Player) IsSave() bool {
-	if s.ActiveTime.Before(s.LastSaveTime) ||
-		config.GetMode() == config.ModeDev {
+	if s.ActiveTime.Before(s.LastSaveTime) {
 		return false
 	}
 	if s.LastSaveTime.Add(playerSaveIntervalTime).After(time.Now()) {

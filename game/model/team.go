@@ -29,7 +29,7 @@ func newTeamInfo() *TeamInfo {
 		return nil
 	}
 	info := &TeamInfo{
-		Char1: gdconf.GetConstant().DefaultCharacter[0],
+		Char1: 101001,
 		Char2: 0,
 		Char3: 0,
 	}

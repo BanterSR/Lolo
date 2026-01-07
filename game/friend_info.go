@@ -48,7 +48,7 @@ func (g *Game) PlayerBriefInfo(b *db.OFGameBasic) *proto.PlayerBriefInfo {
 		GardenLikeNum:   0,
 		AccountType:     int32(b.AccountType), // 登录的账号类型 - 渠道
 		Birthday:        b.Birthday,
-		HideValue:       0,
+		HideValue:       b.HideValue,
 		AvatarFrame:     b.AvatarFrame,
 	}
 }

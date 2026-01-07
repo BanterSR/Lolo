@@ -68,6 +68,7 @@ func (g *Game) ShopBuy(s *model.Player, msg *alg.GameMsg) {
 		return
 	}
 	ctx.Commit()
+	g.send(s, 0, ctx.PackNotice)
 	// 给商品
 	bagItem := s.AddAllTypeItem(uint32(conf.ItemID), int64(conf.ItemNum*int32(req.BuyTimes)))
 	alg.AddList(&rsp.Items, bagItem.AddItemDetail())

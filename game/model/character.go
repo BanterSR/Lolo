@@ -8,12 +8,14 @@ import (
 )
 
 type CharacterModel struct {
-	CharacterMap map[uint32]*CharacterInfo `json:"characterMap,omitempty"`
+	CharacterMap     map[uint32]*CharacterInfo `json:"characterMap,omitempty"`
+	PlacedCharacters []uint32                  `json:"placedCharacters"` // 摆放的角色
 }
 
 func DefaultCharacterModel() *CharacterModel {
 	info := &CharacterModel{
-		CharacterMap: make(map[uint32]*CharacterInfo),
+		CharacterMap:     make(map[uint32]*CharacterInfo),
+		PlacedCharacters: make([]uint32, 0),
 	}
 	return info
 }
@@ -36,6 +38,31 @@ func (s *Player) GetCharacterModel() *CharacterModel {
 		s.Character = DefaultCharacterModel()
 	}
 	return s.Character
+}
+
+func (c *CharacterModel) GetPlacedCharacters() []uint32 {
+	if c.PlacedCharacters == nil {
+		c.PlacedCharacters = make([]uint32, 0)
+	}
+	return c.PlacedCharacters
+}
+
+func (c *CharacterModel) SetPlacedCharacter(characterId uint32, isRemove bool) {
+	if isRemove {
+		for i := 0; i < len(c.PlacedCharacters); i++ {
+			if c.PlacedCharacters[i] == characterId {
+				c.PlacedCharacters = append(c.PlacedCharacters[:i], c.PlacedCharacters[i+1:]...)
+				return
+			}
+		}
+	} else {
+		for _, id := range c.PlacedCharacters {
+			if id == characterId {
+				return
+			}
+		}
+		c.PlacedCharacters = append(c.PlacedCharacters, characterId)
+	}
 }
 
 type CharacterInfo struct {

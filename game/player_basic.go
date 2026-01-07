@@ -54,12 +54,12 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
 			}
 		} else {
 			// newPlayer
+			characterInfo := s.AddCharacter(101001)
+			if characterInfo == nil {
+				log.Game.Errorf("初始化默认角色:%v失败", 101001)
+			}
 			for _, characterId := range gdconf.GetConstant().DefaultCharacter {
-				characterInfo := s.AddCharacter(characterId)
-				if characterInfo == nil {
-					log.Game.Errorf("初始化默认角色:%v失败", characterId)
-					continue
-				}
+				s.AddCharacter(characterId)
 			}
 			s.GetItemModel().InitItem()
 			if config.GetMode() == config.ModeDev {
@@ -175,8 +175,8 @@ func (g *Game) PlayerMainData(s *model.Player, msg *alg.GameMsg) {
 		rsp.QuestDetail = s.GetQuestDetail()
 		rsp.QuestionnaireInfo = s.GetPlayerQuestionnaireInfo()
 		rsp.UnlockFunctions = s.GetUnlockFunctions()
-		rsp.PlacedCharacters = make([]uint32, 0)
-		rsp.FurnitureItemInfo = s.GetItemModel().FurnitureItemInfo() // 已摆放的家具
+		rsp.PlacedCharacters = s.GetCharacterModel().GetPlacedCharacters() // 摆放的角色列表
+		rsp.FurnitureItemInfo = s.GetItemModel().FurnitureItemInfo()       // 已摆放的家具
 		rsp.DailyTask = &proto.PlayerDailyTask{
 			Tasks:             make(map[uint32]uint32),
 			TodayConverted:    0,
@@ -255,6 +255,78 @@ func (g *Game) UpdatePlayerAppearance(s *model.Player, msg *alg.GameMsg) {
 	err := db.UpGameBasic(s.UserId, func(basic *db.OFGameBasic) bool {
 		basic.Pendant = req.Appearance.Pendant
 		basic.AvatarFrame = req.Appearance.AvatarFrame
+		return true
+	})
+	if err != nil {
+		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		log.Game.Errorf("UserId:%v func db.UpGameBasic err:%v", s.UserId, err)
+	}
+}
+
+func (g *Game) ChangePhoneBackground(s *model.Player, msg *alg.GameMsg) {
+	req := msg.Body.(*proto.ChangePhoneBackgroundReq)
+	rsp := &proto.ChangePhoneBackgroundRsp{
+		Status:          proto.StatusCode_StatusCode_Ok,
+		PhoneBackground: req.PhoneBackground,
+	}
+	defer g.send(s, msg.PacketId, rsp)
+	err := db.UpGameBasic(s.UserId, func(basic *db.OFGameBasic) bool {
+		basic.PhoneBackground = req.PhoneBackground
+		return true
+	})
+	if err != nil {
+		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		log.Game.Errorf("UserId:%v func db.UpGameBasic err:%v", s.UserId, err)
+	}
+}
+
+func (g *Game) ChangeIsHideBirthday(s *model.Player, msg *alg.GameMsg) {
+	// req := msg.Body.(*proto.ChangeIsHideBirthdayReq)
+	rsp := &proto.ChangeIsHideBirthdayRsp{
+		Status: proto.StatusCode_StatusCode_Ok,
+	}
+	defer g.send(s, msg.PacketId, rsp)
+	err := db.UpGameBasic(s.UserId, func(basic *db.OFGameBasic) bool {
+		basic.IsHideBirthday = !basic.IsHideBirthday
+		return true
+	})
+	if err != nil {
+		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		log.Game.Errorf("UserId:%v func db.UpGameBasic err:%v", s.UserId, err)
+	}
+}
+
+func (g *Game) ChangeHideType(s *model.Player, msg *alg.GameMsg) {
+	req := msg.Body.(*proto.ChangeHideTypeReq)
+	rsp := &proto.ChangeHideTypeRsp{
+		Status:    proto.StatusCode_StatusCode_Ok,
+		HideValue: 0,
+	}
+	defer g.send(s, msg.PacketId, rsp)
+	err := db.UpGameBasic(s.UserId, func(basic *db.OFGameBasic) bool {
+		if basic.HideValue&uint32(req.HideType) != 0 {
+			basic.HideValue &^= uint32(req.HideType)
+		} else {
+			basic.HideValue |= uint32(req.HideType)
+		}
+		rsp.HideValue = basic.HideValue
+		return true
+	})
+	if err != nil {
+		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		log.Game.Errorf("UserId:%v func db.UpGameBasic err:%v", s.UserId, err)
+	}
+}
+
+func (g *Game) ChangeSign(s *model.Player, msg *alg.GameMsg) {
+	req := msg.Body.(*proto.ChangeSignReq)
+	rsp := &proto.ChangeSignRsp{
+		Status: proto.StatusCode_StatusCode_Ok,
+		Sign:   req.Sign,
+	}
+	defer g.send(s, msg.PacketId, rsp)
+	err := db.UpGameBasic(s.UserId, func(basic *db.OFGameBasic) bool {
+		basic.Sign = req.Sign
 		return true
 	})
 	if err != nil {

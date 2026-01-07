@@ -67,6 +67,7 @@ func (g *Game) Gacha(s *model.Player, msg *alg.GameMsg) {
 	}
 	ctx.Run()
 	rsp.Items = ctx.ItemDetails
+	g.send(s, 0, ctx.ItemTx.PackNotice)
 }
 
 func (g *Game) OptionalUpPoolItem(s *model.Player, msg *alg.GameMsg) {

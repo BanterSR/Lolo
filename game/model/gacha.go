@@ -123,6 +123,7 @@ func (g *GachaInfo) GachaInfo() *proto.GachaInfo {
 
 type GachaCtx struct {
 	player      *Player
+	ItemTx      *ItemTransaction
 	req         *proto.GachaReq
 	conf        *gdconf.GachaData
 	probability *gdconf.GachaProbability
@@ -171,6 +172,7 @@ func (s *Player) NewGachaCtx(req *proto.GachaReq) (*GachaCtx, error) {
 	if itemTx.Commit().Error != nil {
 		return nil, itemTx.Error
 	}
+	ctx.ItemTx = itemTx
 	ctx.records = make([]*db.OFGachaRecord, ctx.gachaNum)
 
 	return ctx, nil
@@ -213,7 +215,7 @@ func (c *GachaCtx) Run() {
 			alg.AddList(&itemDetail.Extras,
 				c.player.AddAllTypeItem(107, 50).AddItemDetail().MainItem)
 		default:
-			
+
 		}
 		alg.AddList(&c.ItemDetails, itemDetail)
 	}

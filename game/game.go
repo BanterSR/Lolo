@@ -96,24 +96,20 @@ func (g *Game) GetUser(userId uint32) *model.Player {
 }
 
 func (g *Game) checkPlayer() {
+	defer g.checkPlayerTimer.Reset(3 * time.Minute)
 	playerList := make([]*model.Player, 0)
 	for _, player := range g.userMap {
 		if player.IsOffline() {
 			g.kickPlayer(player.UserId)
 			playerList = append(playerList, player)
 		}
+		if player.IsSave() {
+			player.SavePlayer()
+		}
 	}
 	for _, player := range playerList {
 		delete(g.userMap, player.UserId)
 	}
-	go func() {
-		defer g.checkPlayerTimer.Reset(3 * time.Minute)
-		for _, player := range playerList {
-			if player.IsSave() {
-				player.SavePlayer()
-			}
-		}
-	}()
 }
 
 func (g *Game) kickPlayer(userId uint32) {

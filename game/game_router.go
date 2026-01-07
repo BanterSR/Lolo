@@ -20,6 +20,10 @@ func (g *Game) newRouter() {
 		cmd.ChangeNickNameReq:         g.ChangeNickName,         // 修改玩家昵称和生日
 		cmd.UnlockHeadListReq:         g.UnlockHeadList,         // 解锁头像列表
 		cmd.UpdatePlayerAppearanceReq: g.UpdatePlayerAppearance, // 更新玩家外观
+		cmd.ChangePhoneBackgroundReq:  g.ChangePhoneBackground,  // 更换手机背景
+		cmd.ChangeIsHideBirthdayReq:   g.ChangeIsHideBirthday,   // 更改是否隐藏生日
+		cmd.ChangeHideTypeReq:         g.ChangeHideType,         // 更改隐身状态
+		cmd.ChangeSignReq:             g.ChangeSign,             // 更改签名
 		// 场景
 		cmd.PlayerSceneRecordReq:          g.PlayerSceneRecord,          // 玩家场景同步器
 		cmd.SendActionReq:                 g.SendAction,                 // 场景自动化同步器
