@@ -77,6 +77,14 @@ func (g *Game) FriendAdd(s *model.Player, msg *alg.GameMsg) {
 		log.Game.Warnf("UserId:%v db.CreateFriendApply:%v", s.UserId, err)
 		return
 	}
+	// 如果在线通知对方
+	if friend := g.GetUser(req.PlayerId); friend != nil {
+		g.send(friend, 0, &proto.FriendHandleNotice{
+			Status:         proto.StatusCode_StatusCode_Ok,
+			Type:           proto.FriendHandleType_FriendHandleType_Apply,
+			TargetPlayerId: s.UserId,
+		})
+	}
 }
 
 func (g *Game) FriendHandle(s *model.Player, msg *alg.GameMsg) {
@@ -89,6 +97,14 @@ func (g *Game) FriendHandle(s *model.Player, msg *alg.GameMsg) {
 	if err != nil {
 		rsp.Status = proto.StatusCode_StatusCode_FriendNotApply
 		log.Game.Warnf("UserId:%v func db.FriendHandleApply:%v", s.UserId, err)
+	}
+	// 如果在线通知对方
+	if friend := g.GetUser(req.PlayerId); friend != nil && req.IsAgree {
+		g.send(friend, 0, &proto.FriendHandleNotice{
+			Status:         proto.StatusCode_StatusCode_Ok,
+			Type:           proto.FriendHandleType_FriendHandleType_Add,
+			TargetPlayerId: s.UserId,
+		})
 	}
 }
 
@@ -103,6 +119,14 @@ func (g *Game) FriendDel(s *model.Player, msg *alg.GameMsg) {
 	if err != nil {
 		log.Game.Warnf("UserId:%v db.DelFiend:%v", s.UserId, err)
 	}
+	// 如果在线通知对方
+	if friend := g.GetUser(req.PlayerId); friend != nil {
+		g.send(friend, 0, &proto.FriendHandleNotice{
+			Status:         proto.StatusCode_StatusCode_Ok,
+			Type:           proto.FriendHandleType_FriendHandleType_Del,
+			TargetPlayerId: s.UserId,
+		})
+	}
 }
 
 func (g *Game) FriendBlack(s *model.Player, msg *alg.GameMsg) {
@@ -115,6 +139,30 @@ func (g *Game) FriendBlack(s *model.Player, msg *alg.GameMsg) {
 	if err != nil {
 		log.Game.Warnf("UserId:%v db.CreateFriendBlack:%v", s.UserId, err)
 	}
+}
+
+func (g *Game) OtherPlayerInfo(s *model.Player, msg *alg.GameMsg) {
+	//req := msg.Body.(*proto.OtherPlayerInfoReq)
+	//rsp := &proto.OtherPlayerInfoRsp{
+	//	Status:           proto.StatusCode_StatusCode_Ok,
+	//	OtherInfo:        nil,
+	//	FriendStatus:     0,
+	//	Alias:            "",
+	//	FriendTag:        0,
+	//	FriendIntimacy:   0,
+	//	FriendBackground: 0,
+	//}
+	//defer g.send(s, msg.PacketId, rsp)
+}
+
+func (g *Game) FriendSearch(s *model.Player, msg *alg.GameMsg) {
+	//req := msg.Body.(*proto.FriendSearchReq)
+	//rsp := &proto.FriendSearchRsp{
+	//	Status:       proto.StatusCode_StatusCode_Ok,
+	//	Data:         nil,
+	//	FriendStatus: 0,
+	//}
+	//defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) WishListByFriendId(s *model.Player, msg *alg.GameMsg) {
