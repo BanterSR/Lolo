@@ -66,8 +66,10 @@ func UnGzip(bin []byte) ([]byte, error) {
 func CompGzip(bin []byte) ([]byte, error) {
 	var buf bytes.Buffer
 	gz := gzip.NewWriter(&buf)
-	defer gz.Close()
 	if _, err := gz.Write(bin); err != nil {
+		return nil, err
+	}
+	if err := gz.Close(); err != nil {
 		return nil, err
 	}
 	return buf.Bytes(), nil
