@@ -6,6 +6,15 @@ import (
 	"gucooing/lolo/protocol/proto"
 )
 
+func (g *Game) Collecting(s *model.Player, msg *alg.GameMsg) {
+	rsp := &proto.CollectingRsp{
+		Status:      proto.StatusCode_StatusCode_Ok,
+		Collections: make([]*proto.CollectionData, 0),
+		Items:       make([]*proto.ItemDetail, 0),
+	}
+	defer g.send(s, msg.PacketId, rsp)
+}
+
 func (g *Game) GetCollectMoonInfo(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GetCollectMoonInfoReq)
 	rsp := &proto.GetCollectMoonInfoRsp{

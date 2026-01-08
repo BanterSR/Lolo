@@ -28,6 +28,7 @@ type Player struct {
 	Gacha         *GachaModel     `json:"gacha,omitempty"`         // 卡池
 	Garden        *GardenModel    `json:"garden,omitempty"`        // 花园
 	Shop          *ShopModel      `json:"shop,omitempty"`          // 商店
+	Scene         *SceneModel     `json:"scene,omitempty"`         // 场景信息
 }
 
 // 将玩家状态重置成在线

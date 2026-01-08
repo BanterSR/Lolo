@@ -109,6 +109,8 @@ func (g *Game) newRouter() {
 		// 邮箱
 		cmd.GetMailsReq:     g.GetMails,     // 获取邮件列表
 		cmd.OperateMailsReq: g.OperateMails, // 邮件操作请求
+		// 收集
+		cmd.CollectingReq: g.Collecting, // 收集请求
 
 		cmd.PlayerVitalityReq:        g.PlayerVitality,
 		cmd.BossRushInfoReq:          g.BossRushInfo,
