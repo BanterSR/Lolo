@@ -397,3 +397,17 @@ func (g *Game) PlayMusicNote(s *model.Player, msg *alg.GameMsg) {
 		ActionType:  proto.SceneActionType_SceneActionType_UpdateMusicalItem,
 	}
 }
+
+func (g *Game) AreaClose(s *model.Player, msg *alg.GameMsg) {
+	req := msg.Body.(*proto.AreaCloseReq)
+	rsp := &proto.AreaCloseRsp{
+		Status: proto.StatusCode_StatusCode_Ok,
+		Area: &proto.AreaData{
+			AreaId:    req.AreaId,
+			AreaState: proto.AreaState_AreaState_Close,
+			Level:     0,
+			Items:     make([]*proto.BaseItem, 0),
+		},
+	}
+	defer g.send(s, msg.PacketId, rsp)
+}

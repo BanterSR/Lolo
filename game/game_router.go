@@ -39,6 +39,7 @@ func (g *Game) newRouter() {
 		cmd.SceneSitVehicleReq:            g.SceneSitVehicle,            // 上下车请求
 		cmd.ChangeMusicalItemReq:          g.ChangeMusicalItem,          // 切换音乐源请求
 		cmd.PlayMusicNoteReq:              g.PlayMusicNote,              // 演奏请求
+		cmd.AreaCloseReq:                  g.AreaClose,                  // 区域关闭
 		// 花园
 		cmd.SwitchGardenStatusReq:           g.SwitchGardenStatus,           // 更新花园设置
 		cmd.GardenLikeRecordReq:             g.GardenLikeRecord,             // 花园点赞记录
@@ -94,9 +95,6 @@ func (g *Game) newRouter() {
 		cmd.PrivateChatMsgRecordReq: g.PrivateChatMsgRecord, // 获取私聊聊天记录
 		cmd.SendChatMsgReq:          g.SendChatMsg,          // 发送聊天消息
 		cmd.ChangeChatChannelReq:    g.ChangeChatChannel,    // 切换聊天房间
-		// 星云树
-		cmd.GetCollectMoonInfoReq: g.GetCollectMoonInfo, // 获取星云树信息
-		cmd.CollectMoonReq:        g.CollectMoon,        // 收集月亮请求
 		// 商店
 		cmd.ShopInfoReq:       g.ShopInfo,       // 获取商店信息
 		cmd.ShopBuyReq:        g.ShopBuy,        // 商店购买请求
@@ -109,6 +107,13 @@ func (g *Game) newRouter() {
 		// 邮箱
 		cmd.GetMailsReq:     g.GetMails,     // 获取邮件列表
 		cmd.OperateMailsReq: g.OperateMails, // 邮件操作请求
+		// 收集
+		cmd.GetCollectItemIdsReq:  g.GetCollectItemIds,  // 获取收集物品列表
+		cmd.CollectingReq:         g.Collecting,         // 收集请求
+		cmd.GatherReq:             g.Gather,             // 收集请求
+		cmd.TreasureBoxOpenReq:    g.TreasureBoxOpen,    // 打开宝箱
+		cmd.GetCollectMoonInfoReq: g.GetCollectMoonInfo, // 获取星云树信息
+		cmd.CollectMoonReq:        g.CollectMoon,        // 收集月亮请求
 
 		cmd.PlayerVitalityReq:        g.PlayerVitality,
 		cmd.BossRushInfoReq:          g.BossRushInfo,
@@ -126,7 +131,6 @@ func (g *Game) newRouter() {
 		cmd.GetAchieveGroupListReq:   g.GetAchieveGroupList,
 		cmd.GenericGameAReq:          g.GenericGameA,
 		cmd.GenericGameBReq:          g.GenericGameB,
-		cmd.GetCollectItemIdsReq:     g.GetCollectItemIds,
 		cmd.ManualListReq:            g.ManualList,
 		cmd.PlayerAbilityListReq:     g.PlayerAbilityList,     //
 		cmd.WorldLevelAchieveListReq: g.WorldLevelAchieveList, //

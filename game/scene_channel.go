@@ -242,7 +242,7 @@ func (c *ChannelInfo) SceneDataNotice(scenePlayer *ScenePlayer) {
 		Data:   nil,
 	}
 	defer c.sendPlayer(scenePlayer, 0, notice)
-	data := c.GetPbSceneData()
+	data := c.GetPbSceneData(scenePlayer)
 	if data == nil {
 		str, _ := sonic.MarshalString(c)
 		log.Game.Errorf("玩家场景信息异常|场景快照:%s", str)
@@ -477,13 +477,13 @@ func (c *ChannelInfo) SceneInterActionPlayStatusNotice(ctx *InterActionCtx) {
 	c.sendAllPlayer(0, notice)
 }
 
-func (c *ChannelInfo) GetPbSceneData() (info *proto.SceneData) {
+func (c *ChannelInfo) GetPbSceneData(scenePlayer *ScenePlayer) (info *proto.SceneData) {
 	info = &proto.SceneData{
 		SceneId:              c.SceneInfo.SceneId, // ok
 		GatherLimits:         make([]*proto.GatherLimit, 0),
 		DropItems:            make([]*proto.DropItem, 0),
 		Areas:                make([]*proto.AreaData, 0),
-		Collections:          make([]*proto.CollectionData, 0),
+		Collections:          make([]*proto.CollectionData, 0), // ok
 		Challenges:           make([]*proto.ChallengeData, 0),
 		TreasureBoxes:        make([]*proto.TreasureBoxData, 0),
 		Riddles:              make([]*proto.RiddleData, 0),
@@ -493,7 +493,7 @@ func (c *ChannelInfo) GetPbSceneData() (info *proto.SceneData) {
 		RegionVoices:         make([]uint32, 0),
 		BonFires:             make([]*proto.Bonfire, 0),
 		SoccerPosition:       new(proto.SoccerPosition),
-		ChairInfoList:        make([]*proto.ChairInfo, 0),
+		ChairInfoList:        make([]*proto.ChairInfo, 0), // ok
 		Dungeons:             make([]*proto.DungeonData, 0),
 		FlagIds:              make([]uint32, 0),
 		SceneGardenData:      c.sceneGardenData.SceneGardenData(), // ok
@@ -504,12 +504,20 @@ func (c *ChannelInfo) GetPbSceneData() (info *proto.SceneData) {
 		CampFires:            make([]*proto.CampFire, 0),
 		WeatherType:          c.weatherType, // ok
 		ChannelLabel:         c.ChannelId,   // ok
-		FireworksInfo:        new(proto.FireworksInfo),
-		MpBeacons:            make([]*proto.MPBeacon, 0),
-		NetworkEvent:         make([]*proto.NetworkEventData, 0),
-		PlacedCharacters:     c.sceneGardenData.PlacedCharacters(), // ok
-		MoonSpots:            make([]*proto.MoonSpotData, 0),
-		RoomDecorList:        make([]*proto.RoomDecorData, 0),
+		FireworksInfo: &proto.FireworksInfo{
+			FireworksId:           10005,
+			FireworksDurationTime: 60 * 60 * 24,
+			FireworksStartTime:    time.Now().Unix(),
+		},
+		MpBeacons:        make([]*proto.MPBeacon, 0),
+		NetworkEvent:     make([]*proto.NetworkEventData, 0),
+		PlacedCharacters: c.sceneGardenData.PlacedCharacters(), // ok
+		MoonSpots:        make([]*proto.MoonSpotData, 0),
+		RoomDecorList:    make([]*proto.RoomDecorData, 0),
+	}
+	// 添加收集情况
+	for _, collectInfo := range scenePlayer.GetSceneModel().GetSceneInfo(c.SceneInfo.SceneId).Collections {
+		alg.AddList(&info.Collections, collectInfo.CollectionData())
 	}
 	// 添加场景中的玩家
 	for _, scenePlayer := range c.getAllPlayer() {

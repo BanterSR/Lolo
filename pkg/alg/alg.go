@@ -31,11 +31,11 @@ func S2U32(msg string) uint32 {
 	return uint32(ms)
 }
 
-func AddList[T any](list *[]*T, n *T) {
+func AddList[T any](list *[]*T, n ...*T) {
 	if list == nil {
 		list = new([]*T)
 	}
-	*list = append(*list, n)
+	*list = append(*list, n...)
 }
 
 func AddLists[T any](list *[]T, n T) {

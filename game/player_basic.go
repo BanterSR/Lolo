@@ -405,15 +405,6 @@ func (g *Game) GenericGameB(s *model.Player, msg *alg.GameMsg) {
 	defer g.send(s, msg.PacketId, rsp)
 }
 
-func (g *Game) GetCollectItemIds(s *model.Player, msg *alg.GameMsg) {
-	// req := msg.Body.(*proto.GetCollectItemIdsReq)
-	rsp := &proto.GetCollectItemIdsRsp{
-		Status:  proto.StatusCode_StatusCode_Ok,
-		ItemIds: make([]uint32, 0),
-	}
-	defer g.send(s, msg.PacketId, rsp)
-}
-
 func (g *Game) ManualList(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.ManualListReq)
 	rsp := &proto.ManualListRsp{

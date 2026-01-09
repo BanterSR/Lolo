@@ -92,7 +92,7 @@ func (g *LogServer) receive(conn ofnet.Conn) {
 				errors.Is(err, io.ErrClosedPipe):
 				return
 			default:
-				log.Gate.Errorf("%s", err)
+				log.ClientLog.Errorf("%s", err)
 				return
 			}
 		}
