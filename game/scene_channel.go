@@ -479,10 +479,10 @@ func (c *ChannelInfo) SceneInterActionPlayStatusNotice(ctx *InterActionCtx) {
 
 func (c *ChannelInfo) GetPbSceneData(scenePlayer *ScenePlayer) (info *proto.SceneData) {
 	info = &proto.SceneData{
-		SceneId:              c.SceneInfo.SceneId, // ok
-		GatherLimits:         make([]*proto.GatherLimit, 0),
+		SceneId:              c.SceneInfo.SceneId,           // ok
+		GatherLimits:         make([]*proto.GatherLimit, 0), // ok
 		DropItems:            make([]*proto.DropItem, 0),
-		Areas:                make([]*proto.AreaData, 0),
+		Areas:                make([]*proto.AreaData, 0),       // ok
 		Collections:          make([]*proto.CollectionData, 0), // ok
 		Challenges:           make([]*proto.ChallengeData, 0),
 		TreasureBoxes:        make([]*proto.TreasureBoxData, 0),
@@ -515,6 +515,14 @@ func (c *ChannelInfo) GetPbSceneData(scenePlayer *ScenePlayer) (info *proto.Scen
 		MoonSpots:        make([]*proto.MoonSpotData, 0),
 		RoomDecorList:    make([]*proto.RoomDecorData, 0),
 	}
+	// 添加资源点
+	for _, gather := range scenePlayer.GetSceneModel().GetSceneInfo(c.SceneInfo.SceneId).GetGatherLimits() {
+		alg.AddList(&info.GatherLimits, gather.GatherLimit())
+	}
+	// 添加锚点
+	for _, area := range scenePlayer.GetSceneModel().GetSceneInfo(c.SceneInfo.SceneId).GetAreaDatas() {
+		alg.AddList(&info.Areas, area.AreaData())
+	}
 	// 添加收集情况
 	for _, collectInfo := range scenePlayer.GetSceneModel().GetSceneInfo(c.SceneInfo.SceneId).Collections {
 		if len(collectInfo.ItemMap) == 0 {
@@ -523,8 +531,8 @@ func (c *ChannelInfo) GetPbSceneData(scenePlayer *ScenePlayer) (info *proto.Scen
 		alg.AddList(&info.Collections, collectInfo.CollectionData())
 	}
 	// 添加场景中的玩家
-	for _, scenePlayer := range c.getAllPlayer() {
-		alg.AddList(&info.Players, c.GetPbScenePlayer(scenePlayer))
+	for _, player := range c.getAllPlayer() {
+		alg.AddList(&info.Players, c.GetPbScenePlayer(player))
 	}
 	// 添加座位信息
 	for _, chaiInfo := range c.chaiInfoMap {

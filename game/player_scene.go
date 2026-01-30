@@ -10,6 +10,17 @@ import (
 	"gucooing/lolo/protocol/proto"
 )
 
+func (g *Game) GatherSceneLimitRecoveryNotice(s *model.Player) {
+	notice := &proto.GatherSceneLimitRecoveryNotice{
+		Status:            proto.StatusCode_StatusCode_Ok,
+		SceneGatherLimits: make([]*proto.SceneGatherLimit, 0),
+	}
+	defer g.send(s, 0, notice)
+	for _, sc := range s.GetSceneModel().GetSceneMap() {
+		alg.AddList(&notice.SceneGatherLimits, sc.SceneGatherLimit())
+	}
+}
+
 func (g *Game) PlayerSceneRecord(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.PlayerSceneRecordReq)
 	rsp := &proto.PlayerSceneRecordRsp{
@@ -107,7 +118,7 @@ func (g *Game) ChangeSceneChannel(s *model.Player, msg *alg.GameMsg) {
 		if pos == nil && rot == nil {
 			sceneConf := gdconf.GetSceneInfo(sceneId)
 			if sceneConf != nil {
-				posr, rotr := gdconf.GetSceneInfoRandomBorn(sceneConf)
+				posr, rotr := sceneConf.GetSceneInfoRandomBorn()
 				pos = gdconf.ConfigVector3ToProtoVector3(posr)
 				rot = gdconf.ConfigVector4ToProtoVector3(rotr)
 			}
@@ -408,6 +419,41 @@ func (g *Game) AreaClose(s *model.Player, msg *alg.GameMsg) {
 			Level:     0,
 			Items:     make([]*proto.BaseItem, 0),
 		},
+	}
+	defer g.send(s, msg.PacketId, rsp)
+}
+
+func (g *Game) AreaUnlock(s *model.Player, msg *alg.GameMsg) {
+	req := msg.Body.(*proto.AreaUnlockReq)
+	rsp := &proto.AreaUnlockRsp{
+		Status: proto.StatusCode_StatusCode_Ok,
+		Area:   nil,
+	}
+	defer g.send(s, msg.PacketId, rsp)
+	scenePlayer := g.getWordInfo().getScenePlayer(s)
+	if scenePlayer == nil {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		return
+	}
+	areas := s.GetSceneModel().GetSceneInfo(scenePlayer.SceneId).GetAreaDatas()
+	areaInfo, ok := areas[req.AreaId]
+	if !ok {
+		areaInfo = &model.AreaData{
+			AreaId:    req.AreaId,
+			AreaState: proto.AreaState_AreaState_Unlock,
+			Level:     1,
+		}
+		areas[req.AreaId] = areaInfo
+	}
+	rsp.Area = areaInfo.AreaData()
+}
+
+func (g *Game) AreaAchieveList(s *model.Player, msg *alg.GameMsg) {
+	req := msg.Body.(*proto.AreaAchieveListReq)
+	rsp := &proto.AreaAchieveListRsp{
+		Status:   proto.StatusCode_StatusCode_Ok,
+		AreaId:   req.AreaId,
+		Achieves: make([]*proto.Achieve, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 }

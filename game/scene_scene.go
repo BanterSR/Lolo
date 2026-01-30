@@ -8,7 +8,6 @@ import (
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/pkg/log"
-	"gucooing/lolo/protocol/config"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -25,7 +24,7 @@ type WordInfo struct {
 
 type SceneInfo struct {
 	game       *Game
-	cfg        *config.SceneInfo       // 场景配置
+	cfg        *gdconf.SceneInfo       // 场景配置
 	SceneId    uint32                  // 场景id
 	allChannel map[uint32]*ChannelInfo // 全部房间
 }
@@ -155,7 +154,7 @@ func (w *WordInfo) addScenePlayer(player *model.Player) *ScenePlayer {
 		log.Game.Error(err.Error())
 		return nil
 	}
-	pos, rot := gdconf.GetSceneInfoRandomBorn(sceneInfo.cfg)
+	pos, rot := sceneInfo.cfg.GetSceneInfoRandomBorn()
 
 	info := &ScenePlayer{
 		Player:    player,

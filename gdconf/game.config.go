@@ -95,6 +95,7 @@ func (g *GameConfig) load() {
 	g.loadSpell()
 	g.loadCollectionItem()
 	g.loadReward()
+	g.loadGather()
 
 	// config
 	g.loadSceneConfig()
@@ -129,6 +130,7 @@ type Excel struct {
 	Spell          *Spell
 	CollectionItem *CollectionItem
 	Reward         *Reward
+	Gather         *Gather
 }
 
 type Config struct {

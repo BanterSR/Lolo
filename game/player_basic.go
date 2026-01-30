@@ -186,6 +186,9 @@ func (g *Game) PlayerMainData(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) loginGame(s *model.Player) {
+	// 资源点采集
+	g.GatherSceneLimitRecoveryNotice(s)
+	// 物品
 	g.AllPackNotice(s)
 	// 进入房间
 	g.getWordInfo().joinSceneChannel(s)

@@ -4,6 +4,7 @@ import (
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/pkg/alg"
+	"gucooing/lolo/protocol/excel"
 	"gucooing/lolo/protocol/proto"
 	"math/rand/v2"
 	"slices"
@@ -105,16 +106,56 @@ func (g *Game) CollectionReward(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) Gather(s *model.Player, msg *alg.GameMsg) {
-	// req := msg.Body.(*proto.GatherReq)
+	req := msg.Body.(*proto.GatherReq)
 	rsp := &proto.GatherRsp{
 		Status:           proto.StatusCode_StatusCode_Ok,
-		Index:            0,
+		Index:            req.GetGatherItem().GetIndex(),
 		Items:            make([]*proto.ItemDetail, 0),
-		GroupGatherLimit: nil,
-		SceneGatherLimit: nil,
+		GroupGatherLimit: new(proto.GroupGatherLimit),
+		SceneGatherLimit: new(proto.SceneGatherLimit),
 		ItemLevel:        0,
 	}
 	defer g.send(s, msg.PacketId, rsp)
+	scenePlayer := g.getWordInfo().getScenePlayer(s)
+	if scenePlayer == nil {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		return
+	}
+	conf := gdconf.GetSceneInfo(scenePlayer.SceneId).GatherPointInfo(req.GetGatherItem().GetIndex())
+	gatherConf := gdconf.GetGatherConfigure(uint32(conf.GetGatherID()))
+	rewardConf := gdconf.GetGatherRewardConfigure(req.GetGatherItem().GetReward())
+	if gatherConf == nil || rewardConf == nil {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		return
+	}
+	var t uint32
+	rewards := make([]*excel.GatherRewardGroupInfo, 0)
+	for _, info := range gatherConf.GatherGroupInfo {
+		if info.Reward == req.GetGatherItem().GetReward() {
+			t = uint32(info.NewGatherType)
+			break
+		}
+	}
+	for _, info := range rewardConf.GetGatherRewardGroupInfo() {
+		if info.Lucky == req.GetGatherItem().GetIsLucky() {
+			alg.AddList(&rewards, info)
+		}
+	}
+
+	packItems := make([]*proto.ItemDetail, 0)
+	for _, reward := range rewards {
+		item := s.AddAllTypeItem(uint32(reward.ItemID), int64(reward.Count))
+		alg.AddList(&rsp.Items, item.AddItemDetail())
+		alg.AddList(&packItems, item.AddItemDetail())
+	}
+	g.PackNoticeByItems(s, packItems)
+
+	sceneInfo := s.GetSceneModel().GetSceneInfo(scenePlayer.SceneId)
+	info := sceneInfo.GetGatherLimit(t)
+	info.GatherNum++
+
+	rsp.SceneGatherLimit = sceneInfo.SceneGatherLimit()
+	rsp.GroupGatherLimit.GatherLimit = info.GatherLimit()
 }
 
 func (g *Game) TreasureBoxOpen(s *model.Player, msg *alg.GameMsg) {

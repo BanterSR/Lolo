@@ -40,6 +40,8 @@ func (g *Game) newRouter() {
 		cmd.ChangeMusicalItemReq:          g.ChangeMusicalItem,          // 切换音乐源请求
 		cmd.PlayMusicNoteReq:              g.PlayMusicNote,              // 演奏请求
 		cmd.AreaCloseReq:                  g.AreaClose,                  // 区域关闭
+		cmd.AreaUnlockReq:                 g.AreaUnlock,                 // 解锁传送锚点
+		cmd.AreaAchieveListReq:            g.AreaAchieveList,            // 获取区域成就列表
 		// 花园
 		cmd.SwitchGardenStatusReq:           g.SwitchGardenStatus,           // 更新花园设置
 		cmd.GardenLikeRecordReq:             g.GardenLikeRecord,             // 花园点赞记录
