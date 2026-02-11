@@ -23,6 +23,7 @@
 1. 更简单的的安卓代理方法(在模拟器中可能没有效果):[AnimeGamesProxy](https://github.com/Xuoos/AnimeGamesProxy/releases)
 2. 虽然默认支持tls但是依然推荐使用http,并通过反向代理使用https
 3. 如果你的pc端无法登录,请关闭config.json中的ChecnToken
+4. 如果你想使用其他sdk,这里有一个接入示例:[Lolo-sdk](https://github.com/BanterSR/Lolo-sdk/blob/main/src/handlers/token.rs#L91)
 
 ## 已实现功能
 
