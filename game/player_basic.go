@@ -26,8 +26,10 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
 	// 重复登录检查
 	s := g.GetUser(userId)
 	if s != nil {
-		g.kickPlayer(userId) // 下线老玩家
+		g.kickPlayer(s) // 下线老玩家
 	} else {
+		// 新登录 判断是否满人了
+
 		// 拉取数据
 		dbUser, err := db.GetOFGameByUserId(userId)
 		if err != nil {

@@ -36,14 +36,14 @@ func (g *Gateway) VerifyLoginToken(req *LoginInfo) {
 		AccountType: req.AccountType,
 		SdkUid:      req.SdkUid,
 		DeviceUuid:  req.DeviceUuid,
+		Status:      proto.StatusCode_StatusCode_Ok,
+		TimeLeft:    4294967295,
+		Text:        "",
+		BanEndTime:  0,
 
-		Status:       0,
 		UserId:       0,
 		IsServerOpen: false,
-		Text:         "",
-		TimeLeft:     0,
 		Os:           0,
-		BanEndTime:   0,
 	}
 	defer func() {
 		req.conn.Send(0, rsp)
@@ -61,18 +61,19 @@ func (g *Gateway) VerifyLoginToken(req *LoginInfo) {
 		log.Gate.Debugf("SdkUid:%s,拉取账号失败err:%s", req.SdkUid, err.Error())
 		return
 	}
-
-	// 验证是否被ban
-
-	// 检查在线满了?
-
 	rsp.IsServerOpen = true
-	rsp.Status = proto.StatusCode_StatusCode_Ok
-	rsp.TimeLeft = 4294967295
 	rsp.UserId = ofUser.UserId
 
+	// 验证是否被ban
+	if ofUser.Ban {
+		rsp.Text = ofUser.BanText
+		rsp.BanEndTime = ofUser.BanTime.Unix()
+		log.Gate.Debugf("SdkUid:%s,因被封禁被禁止登录,封禁原因:%s", req.SdkUid, ofUser.BanText)
+		return
+	}
+
 	req.conn.SetUID(ofUser.UserId)
-	log.Gate.Infof("UserId:%v 平台:%s 正在登录中...", ofUser.UserId, proto.AccountType(req.AccountType).String())
+	log.Gate.Infof("UserId:%v 平台:%s 身份验证成功正在登录中...", ofUser.UserId, proto.AccountType(req.AccountType).String())
 
 	go g.receive(req.conn, ofUser.UserId)
 }

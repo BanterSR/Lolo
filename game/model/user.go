@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/bytedance/sonic"
+	"github.com/google/uuid"
 
 	"gucooing/lolo/db"
 	"gucooing/lolo/pkg/log"
@@ -19,6 +20,7 @@ type Player struct {
 	LastSaveTime  time.Time       `json:"-"`                       // 上一次数据保存时间
 	UserId        uint32          `json:"-"`                       // 玩家id
 	NickName      string          `json:"-"`                       // 玩家昵称
+	LoginUUID     string          `json:"-"`                       // 当前登录uuid
 	InstanceIndex uint32          `json:"instanceIndex,omitempty"` // 唯一索引生成
 	Item          *ItemModel      `json:"item,omitempty"`          // 背包
 	Character     *CharacterModel `json:"character,omitempty"`     // 角色
@@ -36,6 +38,7 @@ func (s *Player) Init(conn ofnet.Conn) {
 	s.Conn = conn
 	s.Online = true
 	s.NetFreeze = false
+	s.LoginUUID = uuid.NewString()
 }
 
 func (s *Player) GetSeqId() uint32 {

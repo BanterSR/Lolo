@@ -2,10 +2,12 @@ package gateway
 
 import (
 	"errors"
-	"github.com/bytedance/sonic"
-	"gucooing/lolo/protocol/quick"
 	"io"
 	"time"
+
+	"github.com/bytedance/sonic"
+
+	"gucooing/lolo/protocol/quick"
 
 	"github.com/gin-gonic/gin"
 	pb "google.golang.org/protobuf/proto"
@@ -122,9 +124,6 @@ ty:
 }
 
 func (g *Gateway) receive(conn ofnet.Conn, userId uint32) {
-	defer func() {
-		g.game.GetKillUserChan() <- userId
-	}()
 	for {
 		select {
 		case <-g.doneChan:

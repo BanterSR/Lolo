@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -12,6 +13,9 @@ type OFUser struct {
 	Token     string
 	DeviceId  string // 设备码
 	ChannelId string
+	Ban       bool
+	BanTime   time.Time
+	BanText   string
 	Game      *OFGame `gorm:"foreignKey:UserId"`
 }
 

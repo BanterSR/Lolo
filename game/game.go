@@ -1,10 +1,11 @@
 package game
 
 import (
-	"github.com/gin-gonic/gin"
 	"runtime"
 	"runtime/debug"
 	"time"
+
+	"github.com/gin-gonic/gin"
 
 	pb "google.golang.org/protobuf/proto"
 
@@ -19,7 +20,6 @@ import (
 type Game struct {
 	router              *gin.Engine // http 服务器
 	gameMsgChan         chan *GameMsg
-	killUserChan        chan uint32
 	userMap             map[uint32]*model.Player
 	handlerFuncRouteMap map[uint32]HandlerFunc
 	wordInfo            *WordInfo
@@ -38,11 +38,10 @@ func NewGame(router *gin.Engine) *Game {
 	conf := config.GetGame()
 	log.NewGame()
 	g := &Game{
-		router:       router,
-		gameMsgChan:  make(chan *GameMsg, conf.MsgChanSize),
-		killUserChan: make(chan uint32, 100),
-		userMap:      make(map[uint32]*model.Player),
-		doneChan:     make(chan struct{}),
+		router:      router,
+		gameMsgChan: make(chan *GameMsg, conf.MsgChanSize),
+		userMap:     make(map[uint32]*model.Player, 1000),
+		doneChan:    make(chan struct{}),
 	}
 	g.newRouter()
 	// 初始化场景配置
@@ -74,8 +73,6 @@ func (g *Game) gameMainLoop() {
 			g.RouteHandle(msg.Conn, msg.UserId, msg.GameMsg)
 		case <-g.checkPlayerTimer.C:
 			g.checkPlayer()
-		case userId := <-g.killUserChan:
-			g.kickPlayer(userId)
 		}
 	}
 }
@@ -100,7 +97,7 @@ func (g *Game) checkPlayer() {
 	playerList := make([]*model.Player, 0)
 	for _, player := range g.userMap {
 		if player.IsOffline() {
-			g.kickPlayer(player.UserId)
+			g.kickPlayer(player)
 			playerList = append(playerList, player)
 		}
 		if player.IsSave() {
@@ -112,9 +109,10 @@ func (g *Game) checkPlayer() {
 	}
 }
 
-func (g *Game) kickPlayer(userId uint32) {
-	player := g.GetUser(userId)
-	if player == nil || !player.Online {
+func (g *Game) kickPlayer(player *model.Player) {
+	player2 := g.GetUser(player.UserId)
+	if player2 == nil || !player2.Online ||
+		player.LoginUUID != player2.LoginUUID {
 		return
 	}
 	player.Online = false
@@ -122,15 +120,11 @@ func (g *Game) kickPlayer(userId uint32) {
 	g.getWordInfo().killScenePlayer(player)
 	// 退出聊天频道
 	g.getChatInfo().killChannelUser(player)
-	log.Game.Debugf("玩家:%v 离线", userId)
+	log.Game.Debugf("玩家:%v 离线", player.UserId)
 }
 
 func (g *Game) GetGameMsgChan() chan *GameMsg {
 	return g.gameMsgChan
-}
-
-func (g *Game) GetKillUserChan() chan uint32 {
-	return g.killUserChan
 }
 
 func (g *Game) Close() {
