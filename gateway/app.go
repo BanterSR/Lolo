@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bytedance/sonic"
+	"github.com/google/uuid"
 
 	"gucooing/lolo/protocol/quick"
 
@@ -124,6 +125,7 @@ ty:
 }
 
 func (g *Gateway) receive(conn ofnet.Conn, userId uint32) {
+	loginUUID := uuid.NewString()
 	for {
 		select {
 		case <-g.doneChan:
@@ -134,6 +136,7 @@ func (g *Gateway) receive(conn ofnet.Conn, userId uint32) {
 			case err == nil:
 				g.game.GetGameMsgChan() <- &game.GameMsg{
 					UserId:  userId,
+					UUID:    loginUUID,
 					Conn:    conn,
 					GameMsg: msg,
 				}

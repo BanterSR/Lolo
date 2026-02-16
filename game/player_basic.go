@@ -16,7 +16,7 @@ import (
 	"gucooing/lolo/protocol/proto"
 )
 
-func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
+func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.PlayerLoginReq)
 	rsp := &proto.PlayerLoginRsp{
 		Status:           proto.StatusCode_StatusCode_Ok,
@@ -26,6 +26,9 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
 	// 重复登录检查
 	s := g.GetUser(userId)
 	if s != nil {
+		if s.LoginUUID == uuid { // uuid相同代表同一连接，直接跳出初始化
+			goto login
+		}
 		g.kickPlayer(s) // 下线老玩家
 	} else {
 		// 新登录 判断是否满人了
@@ -44,9 +47,10 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
 			return
 		}
 		s = &model.Player{
-			UserId:   userId,
-			NickName: basic.NickName,
-			Created:  basic.CreatedAt,
+			UserId:    userId,
+			LoginUUID: uuid,
+			NickName:  basic.NickName,
+			Created:   basic.CreatedAt,
 		}
 		if len(dbUser.BinData) != 0 {
 			if err := sonic.Unmarshal(dbUser.BinData, s); err != nil {
@@ -70,6 +74,7 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
 		}
 		g.userMap[userId] = s
 	}
+login:
 	s.Init(conn)
 
 	basic, err := db.GetGameBasic(userId)

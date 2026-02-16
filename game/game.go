@@ -30,6 +30,7 @@ type Game struct {
 
 type GameMsg struct {
 	UserId uint32
+	UUID   string
 	Conn   ofnet.Conn
 	*alg.GameMsg
 }
@@ -70,7 +71,7 @@ func (g *Game) gameMainLoop() {
 		case <-g.doneChan:
 			return
 		case msg := <-g.gameMsgChan:
-			g.RouteHandle(msg.Conn, msg.UserId, msg.GameMsg)
+			g.RouteHandle(msg.Conn, msg.UserId, msg.UUID, msg.GameMsg)
 		case <-g.checkPlayerTimer.C:
 			g.checkPlayer()
 		}

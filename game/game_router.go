@@ -146,9 +146,9 @@ func (g *Game) newRouter() {
 	}
 }
 
-func (g *Game) RouteHandle(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
+func (g *Game) RouteHandle(conn ofnet.Conn, userId uint32, uuid string, msg *alg.GameMsg) {
 	if msg.MsgId == cmd.PlayerLoginReq {
-		g.PlayerLogin(conn, userId, msg)
+		g.PlayerLogin(conn, userId, uuid, msg)
 		return
 	}
 	handlerFunc, ok := g.handlerFuncRouteMap[msg.MsgId]
@@ -165,7 +165,7 @@ func (g *Game) RouteHandle(conn ofnet.Conn, userId uint32, msg *alg.GameMsg) {
 		log.Game.Errorf("player not online, userId: %v", userId)
 		return
 	}
-	if player.NetFreeze {
+	if player.NetFreeze || player.LoginUUID != uuid { // 玩家冻结或脏数据过滤
 		return
 	}
 	handlerFunc(player, msg)

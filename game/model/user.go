@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/bytedance/sonic"
-	"github.com/google/uuid"
 
 	"gucooing/lolo/db"
 	"gucooing/lolo/pkg/log"
@@ -38,7 +37,6 @@ func (s *Player) Init(conn ofnet.Conn) {
 	s.Conn = conn
 	s.Online = true
 	s.NetFreeze = false
-	s.LoginUUID = uuid.NewString()
 }
 
 func (s *Player) GetSeqId() uint32 {
