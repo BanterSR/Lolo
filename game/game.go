@@ -15,6 +15,7 @@ import (
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/pkg/log"
 	"gucooing/lolo/pkg/ofnet"
+	"gucooing/lolo/protocol/proto"
 )
 
 type Game struct {
@@ -110,6 +111,24 @@ func (g *Game) checkPlayer() {
 	}
 }
 
+// 仅做客户端下线
+func (g *Game) offlinePlayer(player *model.Player, reason proto.PlayerOfflineReason) {
+	player2 := g.GetUser(player.UserId)
+	if player2 == nil || !player2.Online ||
+		player.LoginUUID != player2.LoginUUID {
+		return
+	}
+	g.send(player, 0, &proto.PlayerOfflineRsp{
+		Status:             proto.StatusCode_StatusCode_Ok,
+		Reason:             reason,
+		ServerNextOpenTime: 0,
+	})
+	player.Conn.Close()
+	player.Conn = nil
+	player.NetFreeze = true
+}
+
+// 彻底移除玩家
 func (g *Game) kickPlayer(player *model.Player) {
 	player2 := g.GetUser(player.UserId)
 	if player2 == nil || !player2.Online ||

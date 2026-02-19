@@ -29,7 +29,8 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg
 		if s.LoginUUID == uuid { // uuid相同代表同一连接，直接跳出初始化
 			goto login
 		}
-		g.kickPlayer(s) // 下线老玩家
+		g.offlinePlayer(s,
+			proto.PlayerOfflineReason_PlayerOfflineReason_AnotherLogin) // 下线老玩家
 	} else {
 		// 新登录 判断是否满人了
 

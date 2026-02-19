@@ -1,13 +1,14 @@
 package game
 
 import (
+	"math/rand/v2"
+	"slices"
+
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/protocol/excel"
 	"gucooing/lolo/protocol/proto"
-	"math/rand/v2"
-	"slices"
 )
 
 func (g *Game) GetCollectItemIds(s *model.Player, msg *alg.GameMsg) {

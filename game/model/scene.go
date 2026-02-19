@@ -1,9 +1,10 @@
 package model
 
 import (
+	"time"
+
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/protocol/proto"
-	"time"
 )
 
 func CopyVector3(rot *proto.Vector3) *proto.Vector3 {
@@ -200,11 +201,11 @@ func (si *SceneInfo) GetGatherLimit(t uint32) *GatherLimit {
 }
 
 type TreasureBox struct {
-	Index           uint32                 `json:"index,omitempty"`
-	BoxId           uint32                 `json:"boxId,omitempty"`
-	Type            proto.ETreasureBoxType `json:"type,omitempty"`
-	State           proto.TreasureBoxState `json:"state,omitempty"`
-	NextRefreshTime int64                  `json:"nextRefreshTime,omitempty"`
+	Index           uint32                 `json:"index,omitempty"`           // 序号
+	BoxId           uint32                 `json:"boxId,omitempty"`           // id
+	Type            proto.ETreasureBoxType `json:"type,omitempty"`            // 类型
+	State           proto.TreasureBoxState `json:"state,omitempty"`           // 状态
+	NextRefreshTime int64                  `json:"nextRefreshTime,omitempty"` // 下次更新时间
 }
 
 func (t *TreasureBox) TreasureBoxData() *proto.TreasureBoxData {
