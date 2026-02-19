@@ -1,8 +1,9 @@
 package game
 
 import (
-	"gucooing/lolo/gdconf"
 	"time"
+
+	"gucooing/lolo/gdconf"
 
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/pkg/alg"
@@ -42,9 +43,11 @@ func (g *Game) PlayerSceneRecord(s *model.Player, msg *alg.GameMsg) {
 			}
 		}
 	}
-	scenePlayer.channelInfo.addSceneSyncDataChan <- &proto.SceneSyncData{
-		PlayerId: s.UserId,
-		Data:     []*proto.PlayerRecorderData{req.Data},
+	if !scenePlayer.NetFreeze {
+		scenePlayer.channelInfo.addSceneSyncDataChan <- &proto.SceneSyncData{
+			PlayerId: s.UserId,
+			Data:     []*proto.PlayerRecorderData{req.Data},
+		}
 	}
 }
 

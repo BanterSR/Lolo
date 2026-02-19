@@ -118,6 +118,8 @@ func (g *Game) newRouter() {
 		cmd.TreasureBoxOpenReq:    g.TreasureBoxOpen,    // 打开宝箱
 		cmd.GetCollectMoonInfoReq: g.GetCollectMoonInfo, // 获取星云树信息
 		cmd.CollectMoonReq:        g.CollectMoon,        // 收集月亮请求
+		// 副本
+		cmd.DungeonEnterReq: g.DungeonEnter, // 进入副本
 
 		cmd.PlayerVitalityReq:        g.PlayerVitality,
 		cmd.BossRushInfoReq:          g.BossRushInfo,

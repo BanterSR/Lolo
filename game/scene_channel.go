@@ -91,6 +91,9 @@ func (c *ChannelInfo) getAllPlayer() map[uint32]*ScenePlayer {
 
 func (c *ChannelInfo) sendAllPlayer(packetId uint32, payloadMsg pb.Message) {
 	for _, player := range c.getAllPlayer() {
+		if player.NetFreeze { // 网络冻结排除
+			continue
+		}
 		player.Conn.Send(packetId, payloadMsg)
 	}
 }

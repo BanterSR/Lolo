@@ -39,11 +39,18 @@ type ScenePlayer struct {
 	SceneId     uint32
 	ChannelId   uint32
 	channelInfo *ChannelInfo // 绑定的房间
+	NetFreeze   bool         // 冻结收发包
 	// 音乐
 	MusicalItemId         uint32
 	MusicalItemSource     proto.MusicalItemSource
 	MusicalItemInstanceId int64
 	PlayingMusicNote      *proto.PlayingMusicNote
+	// 其他
+	Dungeon *PlayerDungeon // 副本
+}
+
+// 副本信息
+type PlayerDungeon struct {
 }
 
 func (g *Game) getWordInfo() *WordInfo {
