@@ -25,10 +25,15 @@ const (
 )
 
 type AllGemDuel_SkillDatas struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GemDuelSkill  *GemDuelSkillDatas     `protobuf:"bytes,1,opt,name=GemDuelSkill,proto3" json:"GemDuelSkill,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                             protoimpl.MessageState                  `protogen:"open.v1"`
+	GemDuelSkill                      *GemDuelSkillDatas                      `protobuf:"bytes,1,opt,name=GemDuelSkill,proto3" json:"GemDuelSkill,omitempty"`
+	GemDuelSkillTargetSelection       *GemDuelSkillTargetSelectionDatas       `protobuf:"bytes,2,opt,name=GemDuelSkillTargetSelection,proto3" json:"GemDuelSkillTargetSelection,omitempty"`
+	GemDuelSkillTriggerEffect         *GemDuelSkillTriggerEffectDatas         `protobuf:"bytes,3,opt,name=GemDuelSkillTriggerEffect,proto3" json:"GemDuelSkillTriggerEffect,omitempty"`
+	GemDuelSkillConditionalComparison *GemDuelSkillConditionalComparisonDatas `protobuf:"bytes,4,opt,name=GemDuelSkillConditionalComparison,proto3" json:"GemDuelSkillConditionalComparison,omitempty"`
+	GemDuelSkillSummon                *GemDuelSkillSummonDatas                `protobuf:"bytes,5,opt,name=GemDuelSkillSummon,proto3" json:"GemDuelSkillSummon,omitempty"`
+	GemDuelSkillSceneEventEffcet      *GemDuelSkillSceneEventEffcetDatas      `protobuf:"bytes,6,opt,name=GemDuelSkillSceneEventEffcet,proto3" json:"GemDuelSkillSceneEventEffcet,omitempty"`
+	unknownFields                     protoimpl.UnknownFields
+	sizeCache                         protoimpl.SizeCache
 }
 
 func (x *AllGemDuel_SkillDatas) Reset() {
@@ -64,6 +69,41 @@ func (*AllGemDuel_SkillDatas) Descriptor() ([]byte, []int) {
 func (x *AllGemDuel_SkillDatas) GetGemDuelSkill() *GemDuelSkillDatas {
 	if x != nil {
 		return x.GemDuelSkill
+	}
+	return nil
+}
+
+func (x *AllGemDuel_SkillDatas) GetGemDuelSkillTargetSelection() *GemDuelSkillTargetSelectionDatas {
+	if x != nil {
+		return x.GemDuelSkillTargetSelection
+	}
+	return nil
+}
+
+func (x *AllGemDuel_SkillDatas) GetGemDuelSkillTriggerEffect() *GemDuelSkillTriggerEffectDatas {
+	if x != nil {
+		return x.GemDuelSkillTriggerEffect
+	}
+	return nil
+}
+
+func (x *AllGemDuel_SkillDatas) GetGemDuelSkillConditionalComparison() *GemDuelSkillConditionalComparisonDatas {
+	if x != nil {
+		return x.GemDuelSkillConditionalComparison
+	}
+	return nil
+}
+
+func (x *AllGemDuel_SkillDatas) GetGemDuelSkillSummon() *GemDuelSkillSummonDatas {
+	if x != nil {
+		return x.GemDuelSkillSummon
+	}
+	return nil
+}
+
+func (x *AllGemDuel_SkillDatas) GetGemDuelSkillSceneEventEffcet() *GemDuelSkillSceneEventEffcetDatas {
+	if x != nil {
+		return x.GemDuelSkillSceneEventEffcet
 	}
 	return nil
 }
@@ -113,10 +153,16 @@ func (x *GemDuelSkillDatas) GetDatas() []*GemDuelSkillConfigure {
 }
 
 type GemDuelSkillConfigure struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	ID              int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	TextID          int32                  `protobuf:"varint,2,opt,name=TextID,proto3" json:"TextID,omitempty"`
+	IconID          int32                  `protobuf:"varint,3,opt,name=IconID,proto3" json:"IconID,omitempty"`
+	Performance     string                 `protobuf:"bytes,4,opt,name=Performance,proto3" json:"Performance,omitempty"`
+	SkillTag        string                 `protobuf:"bytes,5,opt,name=SkillTag,proto3" json:"SkillTag,omitempty"`
+	CastType        int32                  `protobuf:"varint,6,opt,name=CastType,proto3" json:"CastType,omitempty"`
+	TargetSelection []int32                `protobuf:"varint,7,rep,packed,name=TargetSelection,proto3" json:"TargetSelection,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *GemDuelSkillConfigure) Reset() {
@@ -156,17 +202,870 @@ func (x *GemDuelSkillConfigure) GetID() int32 {
 	return 0
 }
 
+func (x *GemDuelSkillConfigure) GetTextID() int32 {
+	if x != nil {
+		return x.TextID
+	}
+	return 0
+}
+
+func (x *GemDuelSkillConfigure) GetIconID() int32 {
+	if x != nil {
+		return x.IconID
+	}
+	return 0
+}
+
+func (x *GemDuelSkillConfigure) GetPerformance() string {
+	if x != nil {
+		return x.Performance
+	}
+	return ""
+}
+
+func (x *GemDuelSkillConfigure) GetSkillTag() string {
+	if x != nil {
+		return x.SkillTag
+	}
+	return ""
+}
+
+func (x *GemDuelSkillConfigure) GetCastType() int32 {
+	if x != nil {
+		return x.CastType
+	}
+	return 0
+}
+
+func (x *GemDuelSkillConfigure) GetTargetSelection() []int32 {
+	if x != nil {
+		return x.TargetSelection
+	}
+	return nil
+}
+
+type GemDuelSkillTargetSelectionDatas struct {
+	state         protoimpl.MessageState                  `protogen:"open.v1"`
+	Datas         []*GemDuelSkillTargetSelectionConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GemDuelSkillTargetSelectionDatas) Reset() {
+	*x = GemDuelSkillTargetSelectionDatas{}
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GemDuelSkillTargetSelectionDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GemDuelSkillTargetSelectionDatas) ProtoMessage() {}
+
+func (x *GemDuelSkillTargetSelectionDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GemDuelSkillTargetSelectionDatas.ProtoReflect.Descriptor instead.
+func (*GemDuelSkillTargetSelectionDatas) Descriptor() ([]byte, []int) {
+	return file_AllGemDuel_SkillDatas_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GemDuelSkillTargetSelectionDatas) GetDatas() []*GemDuelSkillTargetSelectionConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type GemDuelSkillTargetSelectionConfigure struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	ID               int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	TargetCategory   int32                  `protobuf:"varint,2,opt,name=TargetCategory,proto3" json:"TargetCategory,omitempty"`
+	Sorting          int32                  `protobuf:"varint,3,opt,name=Sorting,proto3" json:"Sorting,omitempty"`
+	MinCount         int32                  `protobuf:"varint,4,opt,name=MinCount,proto3" json:"MinCount,omitempty"`
+	MaxCount         int32                  `protobuf:"varint,5,opt,name=MaxCount,proto3" json:"MaxCount,omitempty"`
+	BonusPercentage  int32                  `protobuf:"varint,6,opt,name=BonusPercentage,proto3" json:"BonusPercentage,omitempty"`
+	RiggerEffect     []int32                `protobuf:"varint,7,rep,packed,name=RiggerEffect,proto3" json:"RiggerEffect,omitempty"`
+	NewSelectScope   int32                  `protobuf:"varint,8,opt,name=NewSelectScope,proto3" json:"NewSelectScope,omitempty"`
+	NewDefaultTarget int32                  `protobuf:"varint,9,opt,name=NewDefaultTarget,proto3" json:"NewDefaultTarget,omitempty"`
+	NewAttribute     int32                  `protobuf:"varint,10,opt,name=NewAttribute,proto3" json:"NewAttribute,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *GemDuelSkillTargetSelectionConfigure) Reset() {
+	*x = GemDuelSkillTargetSelectionConfigure{}
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GemDuelSkillTargetSelectionConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GemDuelSkillTargetSelectionConfigure) ProtoMessage() {}
+
+func (x *GemDuelSkillTargetSelectionConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GemDuelSkillTargetSelectionConfigure.ProtoReflect.Descriptor instead.
+func (*GemDuelSkillTargetSelectionConfigure) Descriptor() ([]byte, []int) {
+	return file_AllGemDuel_SkillDatas_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GemDuelSkillTargetSelectionConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *GemDuelSkillTargetSelectionConfigure) GetTargetCategory() int32 {
+	if x != nil {
+		return x.TargetCategory
+	}
+	return 0
+}
+
+func (x *GemDuelSkillTargetSelectionConfigure) GetSorting() int32 {
+	if x != nil {
+		return x.Sorting
+	}
+	return 0
+}
+
+func (x *GemDuelSkillTargetSelectionConfigure) GetMinCount() int32 {
+	if x != nil {
+		return x.MinCount
+	}
+	return 0
+}
+
+func (x *GemDuelSkillTargetSelectionConfigure) GetMaxCount() int32 {
+	if x != nil {
+		return x.MaxCount
+	}
+	return 0
+}
+
+func (x *GemDuelSkillTargetSelectionConfigure) GetBonusPercentage() int32 {
+	if x != nil {
+		return x.BonusPercentage
+	}
+	return 0
+}
+
+func (x *GemDuelSkillTargetSelectionConfigure) GetRiggerEffect() []int32 {
+	if x != nil {
+		return x.RiggerEffect
+	}
+	return nil
+}
+
+func (x *GemDuelSkillTargetSelectionConfigure) GetNewSelectScope() int32 {
+	if x != nil {
+		return x.NewSelectScope
+	}
+	return 0
+}
+
+func (x *GemDuelSkillTargetSelectionConfigure) GetNewDefaultTarget() int32 {
+	if x != nil {
+		return x.NewDefaultTarget
+	}
+	return 0
+}
+
+func (x *GemDuelSkillTargetSelectionConfigure) GetNewAttribute() int32 {
+	if x != nil {
+		return x.NewAttribute
+	}
+	return 0
+}
+
+type GemDuelSkillTriggerEffectDatas struct {
+	state         protoimpl.MessageState                `protogen:"open.v1"`
+	Datas         []*GemDuelSkillTriggerEffectConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GemDuelSkillTriggerEffectDatas) Reset() {
+	*x = GemDuelSkillTriggerEffectDatas{}
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GemDuelSkillTriggerEffectDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GemDuelSkillTriggerEffectDatas) ProtoMessage() {}
+
+func (x *GemDuelSkillTriggerEffectDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GemDuelSkillTriggerEffectDatas.ProtoReflect.Descriptor instead.
+func (*GemDuelSkillTriggerEffectDatas) Descriptor() ([]byte, []int) {
+	return file_AllGemDuel_SkillDatas_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GemDuelSkillTriggerEffectDatas) GetDatas() []*GemDuelSkillTriggerEffectConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type GemDuelSkillTriggerEffectConfigure struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	ID                 int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	EffectType         int32                  `protobuf:"varint,2,opt,name=EffectType,proto3" json:"EffectType,omitempty"`
+	EffectSubType      int32                  `protobuf:"varint,3,opt,name=EffectSubType,proto3" json:"EffectSubType,omitempty"`
+	EffectFeedback     int32                  `protobuf:"varint,4,opt,name=EffectFeedback,proto3" json:"EffectFeedback,omitempty"`
+	ScriptParams       []int32                `protobuf:"varint,5,rep,packed,name=ScriptParams,proto3" json:"ScriptParams,omitempty"`
+	Duration           int32                  `protobuf:"varint,6,opt,name=Duration,proto3" json:"Duration,omitempty"`
+	TriggerTiming      int32                  `protobuf:"varint,7,opt,name=TriggerTiming,proto3" json:"TriggerTiming,omitempty"`
+	TriggerProbability int32                  `protobuf:"varint,8,opt,name=TriggerProbability,proto3" json:"TriggerProbability,omitempty"`
+	Overwrite          int32                  `protobuf:"varint,9,opt,name=Overwrite,proto3" json:"Overwrite,omitempty"`
+	NewDefineType      int32                  `protobuf:"varint,10,opt,name=NewDefineType,proto3" json:"NewDefineType,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *GemDuelSkillTriggerEffectConfigure) Reset() {
+	*x = GemDuelSkillTriggerEffectConfigure{}
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GemDuelSkillTriggerEffectConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GemDuelSkillTriggerEffectConfigure) ProtoMessage() {}
+
+func (x *GemDuelSkillTriggerEffectConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GemDuelSkillTriggerEffectConfigure.ProtoReflect.Descriptor instead.
+func (*GemDuelSkillTriggerEffectConfigure) Descriptor() ([]byte, []int) {
+	return file_AllGemDuel_SkillDatas_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GemDuelSkillTriggerEffectConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *GemDuelSkillTriggerEffectConfigure) GetEffectType() int32 {
+	if x != nil {
+		return x.EffectType
+	}
+	return 0
+}
+
+func (x *GemDuelSkillTriggerEffectConfigure) GetEffectSubType() int32 {
+	if x != nil {
+		return x.EffectSubType
+	}
+	return 0
+}
+
+func (x *GemDuelSkillTriggerEffectConfigure) GetEffectFeedback() int32 {
+	if x != nil {
+		return x.EffectFeedback
+	}
+	return 0
+}
+
+func (x *GemDuelSkillTriggerEffectConfigure) GetScriptParams() []int32 {
+	if x != nil {
+		return x.ScriptParams
+	}
+	return nil
+}
+
+func (x *GemDuelSkillTriggerEffectConfigure) GetDuration() int32 {
+	if x != nil {
+		return x.Duration
+	}
+	return 0
+}
+
+func (x *GemDuelSkillTriggerEffectConfigure) GetTriggerTiming() int32 {
+	if x != nil {
+		return x.TriggerTiming
+	}
+	return 0
+}
+
+func (x *GemDuelSkillTriggerEffectConfigure) GetTriggerProbability() int32 {
+	if x != nil {
+		return x.TriggerProbability
+	}
+	return 0
+}
+
+func (x *GemDuelSkillTriggerEffectConfigure) GetOverwrite() int32 {
+	if x != nil {
+		return x.Overwrite
+	}
+	return 0
+}
+
+func (x *GemDuelSkillTriggerEffectConfigure) GetNewDefineType() int32 {
+	if x != nil {
+		return x.NewDefineType
+	}
+	return 0
+}
+
+type GemDuelSkillConditionalComparisonDatas struct {
+	state         protoimpl.MessageState                        `protogen:"open.v1"`
+	Datas         []*GemDuelSkillConditionalComparisonConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GemDuelSkillConditionalComparisonDatas) Reset() {
+	*x = GemDuelSkillConditionalComparisonDatas{}
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GemDuelSkillConditionalComparisonDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GemDuelSkillConditionalComparisonDatas) ProtoMessage() {}
+
+func (x *GemDuelSkillConditionalComparisonDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GemDuelSkillConditionalComparisonDatas.ProtoReflect.Descriptor instead.
+func (*GemDuelSkillConditionalComparisonDatas) Descriptor() ([]byte, []int) {
+	return file_AllGemDuel_SkillDatas_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GemDuelSkillConditionalComparisonDatas) GetDatas() []*GemDuelSkillConditionalComparisonConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type GemDuelSkillConditionalComparisonConfigure struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	ID                int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Value             int32                  `protobuf:"varint,2,opt,name=Value,proto3" json:"Value,omitempty"`
+	IsCombine         int32                  `protobuf:"varint,3,opt,name=IsCombine,proto3" json:"IsCombine,omitempty"`
+	WorkConditions    []int32                `protobuf:"varint,4,rep,packed,name=WorkConditions,proto3" json:"WorkConditions,omitempty"`
+	LoseConditions    []int32                `protobuf:"varint,5,rep,packed,name=LoseConditions,proto3" json:"LoseConditions,omitempty"`
+	NewConditionType1 int32                  `protobuf:"varint,6,opt,name=NewConditionType1,proto3" json:"NewConditionType1,omitempty"`
+	NewConditionExpr1 int32                  `protobuf:"varint,7,opt,name=NewConditionExpr1,proto3" json:"NewConditionExpr1,omitempty"`
+	NewOperation      int32                  `protobuf:"varint,8,opt,name=NewOperation,proto3" json:"NewOperation,omitempty"`
+	Newcompare        int32                  `protobuf:"varint,9,opt,name=Newcompare,proto3" json:"Newcompare,omitempty"`
+	NewConditionType2 int32                  `protobuf:"varint,10,opt,name=NewConditionType2,proto3" json:"NewConditionType2,omitempty"`
+	NewConditionExpr2 int32                  `protobuf:"varint,11,opt,name=NewConditionExpr2,proto3" json:"NewConditionExpr2,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *GemDuelSkillConditionalComparisonConfigure) Reset() {
+	*x = GemDuelSkillConditionalComparisonConfigure{}
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GemDuelSkillConditionalComparisonConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GemDuelSkillConditionalComparisonConfigure) ProtoMessage() {}
+
+func (x *GemDuelSkillConditionalComparisonConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GemDuelSkillConditionalComparisonConfigure.ProtoReflect.Descriptor instead.
+func (*GemDuelSkillConditionalComparisonConfigure) Descriptor() ([]byte, []int) {
+	return file_AllGemDuel_SkillDatas_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *GemDuelSkillConditionalComparisonConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *GemDuelSkillConditionalComparisonConfigure) GetValue() int32 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+func (x *GemDuelSkillConditionalComparisonConfigure) GetIsCombine() int32 {
+	if x != nil {
+		return x.IsCombine
+	}
+	return 0
+}
+
+func (x *GemDuelSkillConditionalComparisonConfigure) GetWorkConditions() []int32 {
+	if x != nil {
+		return x.WorkConditions
+	}
+	return nil
+}
+
+func (x *GemDuelSkillConditionalComparisonConfigure) GetLoseConditions() []int32 {
+	if x != nil {
+		return x.LoseConditions
+	}
+	return nil
+}
+
+func (x *GemDuelSkillConditionalComparisonConfigure) GetNewConditionType1() int32 {
+	if x != nil {
+		return x.NewConditionType1
+	}
+	return 0
+}
+
+func (x *GemDuelSkillConditionalComparisonConfigure) GetNewConditionExpr1() int32 {
+	if x != nil {
+		return x.NewConditionExpr1
+	}
+	return 0
+}
+
+func (x *GemDuelSkillConditionalComparisonConfigure) GetNewOperation() int32 {
+	if x != nil {
+		return x.NewOperation
+	}
+	return 0
+}
+
+func (x *GemDuelSkillConditionalComparisonConfigure) GetNewcompare() int32 {
+	if x != nil {
+		return x.Newcompare
+	}
+	return 0
+}
+
+func (x *GemDuelSkillConditionalComparisonConfigure) GetNewConditionType2() int32 {
+	if x != nil {
+		return x.NewConditionType2
+	}
+	return 0
+}
+
+func (x *GemDuelSkillConditionalComparisonConfigure) GetNewConditionExpr2() int32 {
+	if x != nil {
+		return x.NewConditionExpr2
+	}
+	return 0
+}
+
+type GemDuelSkillSummonDatas struct {
+	state         protoimpl.MessageState         `protogen:"open.v1"`
+	Datas         []*GemDuelSkillSummonConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GemDuelSkillSummonDatas) Reset() {
+	*x = GemDuelSkillSummonDatas{}
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GemDuelSkillSummonDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GemDuelSkillSummonDatas) ProtoMessage() {}
+
+func (x *GemDuelSkillSummonDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GemDuelSkillSummonDatas.ProtoReflect.Descriptor instead.
+func (*GemDuelSkillSummonDatas) Descriptor() ([]byte, []int) {
+	return file_AllGemDuel_SkillDatas_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *GemDuelSkillSummonDatas) GetDatas() []*GemDuelSkillSummonConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type GemDuelSkillSummonConfigure struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	ID                int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Level1            int32                  `protobuf:"varint,2,opt,name=Level1,proto3" json:"Level1,omitempty"`
+	Star1             int32                  `protobuf:"varint,3,opt,name=Star1,proto3" json:"Star1,omitempty"`
+	EnemySkillUnlock1 []int32                `protobuf:"varint,4,rep,packed,name=EnemySkillUnlock1,proto3" json:"EnemySkillUnlock1,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *GemDuelSkillSummonConfigure) Reset() {
+	*x = GemDuelSkillSummonConfigure{}
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GemDuelSkillSummonConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GemDuelSkillSummonConfigure) ProtoMessage() {}
+
+func (x *GemDuelSkillSummonConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GemDuelSkillSummonConfigure.ProtoReflect.Descriptor instead.
+func (*GemDuelSkillSummonConfigure) Descriptor() ([]byte, []int) {
+	return file_AllGemDuel_SkillDatas_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *GemDuelSkillSummonConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *GemDuelSkillSummonConfigure) GetLevel1() int32 {
+	if x != nil {
+		return x.Level1
+	}
+	return 0
+}
+
+func (x *GemDuelSkillSummonConfigure) GetStar1() int32 {
+	if x != nil {
+		return x.Star1
+	}
+	return 0
+}
+
+func (x *GemDuelSkillSummonConfigure) GetEnemySkillUnlock1() []int32 {
+	if x != nil {
+		return x.EnemySkillUnlock1
+	}
+	return nil
+}
+
+type GemDuelSkillSceneEventEffcetDatas struct {
+	state         protoimpl.MessageState                   `protogen:"open.v1"`
+	Datas         []*GemDuelSkillSceneEventEffcetConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GemDuelSkillSceneEventEffcetDatas) Reset() {
+	*x = GemDuelSkillSceneEventEffcetDatas{}
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GemDuelSkillSceneEventEffcetDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GemDuelSkillSceneEventEffcetDatas) ProtoMessage() {}
+
+func (x *GemDuelSkillSceneEventEffcetDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GemDuelSkillSceneEventEffcetDatas.ProtoReflect.Descriptor instead.
+func (*GemDuelSkillSceneEventEffcetDatas) Descriptor() ([]byte, []int) {
+	return file_AllGemDuel_SkillDatas_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GemDuelSkillSceneEventEffcetDatas) GetDatas() []*GemDuelSkillSceneEventEffcetConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type GemDuelSkillSceneEventEffcetConfigure struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	ID                 int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Duration           int32                  `protobuf:"varint,2,opt,name=Duration,proto3" json:"Duration,omitempty"`
+	ScriptParams       []int32                `protobuf:"varint,3,rep,packed,name=ScriptParams,proto3" json:"ScriptParams,omitempty"`
+	RiggerEffect       []int32                `protobuf:"varint,4,rep,packed,name=RiggerEffect,proto3" json:"RiggerEffect,omitempty"`
+	CasterRiggerEffect []int32                `protobuf:"varint,5,rep,packed,name=CasterRiggerEffect,proto3" json:"CasterRiggerEffect,omitempty"`
+	MaxValue           int32                  `protobuf:"varint,6,opt,name=MaxValue,proto3" json:"MaxValue,omitempty"`
+	NewEventType       int32                  `protobuf:"varint,7,opt,name=NewEventType,proto3" json:"NewEventType,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *GemDuelSkillSceneEventEffcetConfigure) Reset() {
+	*x = GemDuelSkillSceneEventEffcetConfigure{}
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GemDuelSkillSceneEventEffcetConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GemDuelSkillSceneEventEffcetConfigure) ProtoMessage() {}
+
+func (x *GemDuelSkillSceneEventEffcetConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllGemDuel_SkillDatas_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GemDuelSkillSceneEventEffcetConfigure.ProtoReflect.Descriptor instead.
+func (*GemDuelSkillSceneEventEffcetConfigure) Descriptor() ([]byte, []int) {
+	return file_AllGemDuel_SkillDatas_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *GemDuelSkillSceneEventEffcetConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *GemDuelSkillSceneEventEffcetConfigure) GetDuration() int32 {
+	if x != nil {
+		return x.Duration
+	}
+	return 0
+}
+
+func (x *GemDuelSkillSceneEventEffcetConfigure) GetScriptParams() []int32 {
+	if x != nil {
+		return x.ScriptParams
+	}
+	return nil
+}
+
+func (x *GemDuelSkillSceneEventEffcetConfigure) GetRiggerEffect() []int32 {
+	if x != nil {
+		return x.RiggerEffect
+	}
+	return nil
+}
+
+func (x *GemDuelSkillSceneEventEffcetConfigure) GetCasterRiggerEffect() []int32 {
+	if x != nil {
+		return x.CasterRiggerEffect
+	}
+	return nil
+}
+
+func (x *GemDuelSkillSceneEventEffcetConfigure) GetMaxValue() int32 {
+	if x != nil {
+		return x.MaxValue
+	}
+	return 0
+}
+
+func (x *GemDuelSkillSceneEventEffcetConfigure) GetNewEventType() int32 {
+	if x != nil {
+		return x.NewEventType
+	}
+	return 0
+}
+
 var File_AllGemDuel_SkillDatas_proto protoreflect.FileDescriptor
 
 const file_AllGemDuel_SkillDatas_proto_rawDesc = "" +
 	"\n" +
-	"\x1bAllGemDuel_SkillDatas.proto\x12\x05excel\"U\n" +
+	"\x1bAllGemDuel_SkillDatas.proto\x12\x05excel\"\xe0\x04\n" +
 	"\x15AllGemDuel_SkillDatas\x12<\n" +
-	"\fGemDuelSkill\x18\x01 \x01(\v2\x18.excel.GemDuelSkillDatasR\fGemDuelSkill\"G\n" +
+	"\fGemDuelSkill\x18\x01 \x01(\v2\x18.excel.GemDuelSkillDatasR\fGemDuelSkill\x12i\n" +
+	"\x1bGemDuelSkillTargetSelection\x18\x02 \x01(\v2'.excel.GemDuelSkillTargetSelectionDatasR\x1bGemDuelSkillTargetSelection\x12c\n" +
+	"\x19GemDuelSkillTriggerEffect\x18\x03 \x01(\v2%.excel.GemDuelSkillTriggerEffectDatasR\x19GemDuelSkillTriggerEffect\x12{\n" +
+	"!GemDuelSkillConditionalComparison\x18\x04 \x01(\v2-.excel.GemDuelSkillConditionalComparisonDatasR!GemDuelSkillConditionalComparison\x12N\n" +
+	"\x12GemDuelSkillSummon\x18\x05 \x01(\v2\x1e.excel.GemDuelSkillSummonDatasR\x12GemDuelSkillSummon\x12l\n" +
+	"\x1cGemDuelSkillSceneEventEffcet\x18\x06 \x01(\v2(.excel.GemDuelSkillSceneEventEffcetDatasR\x1cGemDuelSkillSceneEventEffcet\"G\n" +
 	"\x11GemDuelSkillDatas\x122\n" +
-	"\x05Datas\x18\x01 \x03(\v2\x1c.excel.GemDuelSkillConfigureR\x05Datas\"'\n" +
+	"\x05Datas\x18\x01 \x03(\v2\x1c.excel.GemDuelSkillConfigureR\x05Datas\"\xdb\x01\n" +
 	"\x15GemDuelSkillConfigure\x12\x0e\n" +
-	"\x02ID\x18\x01 \x01(\x05R\x02IDB\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x16\n" +
+	"\x06TextID\x18\x02 \x01(\x05R\x06TextID\x12\x16\n" +
+	"\x06IconID\x18\x03 \x01(\x05R\x06IconID\x12 \n" +
+	"\vPerformance\x18\x04 \x01(\tR\vPerformance\x12\x1a\n" +
+	"\bSkillTag\x18\x05 \x01(\tR\bSkillTag\x12\x1a\n" +
+	"\bCastType\x18\x06 \x01(\x05R\bCastType\x12(\n" +
+	"\x0fTargetSelection\x18\a \x03(\x05R\x0fTargetSelection\"e\n" +
+	" GemDuelSkillTargetSelectionDatas\x12A\n" +
+	"\x05Datas\x18\x01 \x03(\v2+.excel.GemDuelSkillTargetSelectionConfigureR\x05Datas\"\xf6\x02\n" +
+	"$GemDuelSkillTargetSelectionConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12&\n" +
+	"\x0eTargetCategory\x18\x02 \x01(\x05R\x0eTargetCategory\x12\x18\n" +
+	"\aSorting\x18\x03 \x01(\x05R\aSorting\x12\x1a\n" +
+	"\bMinCount\x18\x04 \x01(\x05R\bMinCount\x12\x1a\n" +
+	"\bMaxCount\x18\x05 \x01(\x05R\bMaxCount\x12(\n" +
+	"\x0fBonusPercentage\x18\x06 \x01(\x05R\x0fBonusPercentage\x12\"\n" +
+	"\fRiggerEffect\x18\a \x03(\x05R\fRiggerEffect\x12&\n" +
+	"\x0eNewSelectScope\x18\b \x01(\x05R\x0eNewSelectScope\x12*\n" +
+	"\x10NewDefaultTarget\x18\t \x01(\x05R\x10NewDefaultTarget\x12\"\n" +
+	"\fNewAttribute\x18\n" +
+	" \x01(\x05R\fNewAttribute\"a\n" +
+	"\x1eGemDuelSkillTriggerEffectDatas\x12?\n" +
+	"\x05Datas\x18\x01 \x03(\v2).excel.GemDuelSkillTriggerEffectConfigureR\x05Datas\"\xfc\x02\n" +
+	"\"GemDuelSkillTriggerEffectConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x1e\n" +
+	"\n" +
+	"EffectType\x18\x02 \x01(\x05R\n" +
+	"EffectType\x12$\n" +
+	"\rEffectSubType\x18\x03 \x01(\x05R\rEffectSubType\x12&\n" +
+	"\x0eEffectFeedback\x18\x04 \x01(\x05R\x0eEffectFeedback\x12\"\n" +
+	"\fScriptParams\x18\x05 \x03(\x05R\fScriptParams\x12\x1a\n" +
+	"\bDuration\x18\x06 \x01(\x05R\bDuration\x12$\n" +
+	"\rTriggerTiming\x18\a \x01(\x05R\rTriggerTiming\x12.\n" +
+	"\x12TriggerProbability\x18\b \x01(\x05R\x12TriggerProbability\x12\x1c\n" +
+	"\tOverwrite\x18\t \x01(\x05R\tOverwrite\x12$\n" +
+	"\rNewDefineType\x18\n" +
+	" \x01(\x05R\rNewDefineType\"q\n" +
+	"&GemDuelSkillConditionalComparisonDatas\x12G\n" +
+	"\x05Datas\x18\x01 \x03(\v21.excel.GemDuelSkillConditionalComparisonConfigureR\x05Datas\"\xbc\x03\n" +
+	"*GemDuelSkillConditionalComparisonConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x14\n" +
+	"\x05Value\x18\x02 \x01(\x05R\x05Value\x12\x1c\n" +
+	"\tIsCombine\x18\x03 \x01(\x05R\tIsCombine\x12&\n" +
+	"\x0eWorkConditions\x18\x04 \x03(\x05R\x0eWorkConditions\x12&\n" +
+	"\x0eLoseConditions\x18\x05 \x03(\x05R\x0eLoseConditions\x12,\n" +
+	"\x11NewConditionType1\x18\x06 \x01(\x05R\x11NewConditionType1\x12,\n" +
+	"\x11NewConditionExpr1\x18\a \x01(\x05R\x11NewConditionExpr1\x12\"\n" +
+	"\fNewOperation\x18\b \x01(\x05R\fNewOperation\x12\x1e\n" +
+	"\n" +
+	"Newcompare\x18\t \x01(\x05R\n" +
+	"Newcompare\x12,\n" +
+	"\x11NewConditionType2\x18\n" +
+	" \x01(\x05R\x11NewConditionType2\x12,\n" +
+	"\x11NewConditionExpr2\x18\v \x01(\x05R\x11NewConditionExpr2\"S\n" +
+	"\x17GemDuelSkillSummonDatas\x128\n" +
+	"\x05Datas\x18\x01 \x03(\v2\".excel.GemDuelSkillSummonConfigureR\x05Datas\"\x89\x01\n" +
+	"\x1bGemDuelSkillSummonConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x16\n" +
+	"\x06Level1\x18\x02 \x01(\x05R\x06Level1\x12\x14\n" +
+	"\x05Star1\x18\x03 \x01(\x05R\x05Star1\x12,\n" +
+	"\x11EnemySkillUnlock1\x18\x04 \x03(\x05R\x11EnemySkillUnlock1\"g\n" +
+	"!GemDuelSkillSceneEventEffcetDatas\x12B\n" +
+	"\x05Datas\x18\x01 \x03(\v2,.excel.GemDuelSkillSceneEventEffcetConfigureR\x05Datas\"\x8b\x02\n" +
+	"%GemDuelSkillSceneEventEffcetConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x1a\n" +
+	"\bDuration\x18\x02 \x01(\x05R\bDuration\x12\"\n" +
+	"\fScriptParams\x18\x03 \x03(\x05R\fScriptParams\x12\"\n" +
+	"\fRiggerEffect\x18\x04 \x03(\x05R\fRiggerEffect\x12.\n" +
+	"\x12CasterRiggerEffect\x18\x05 \x03(\x05R\x12CasterRiggerEffect\x12\x1a\n" +
+	"\bMaxValue\x18\x06 \x01(\x05R\bMaxValue\x12\"\n" +
+	"\fNewEventType\x18\a \x01(\x05R\fNewEventTypeB\n" +
 	"Z\b./;excelb\x06proto3"
 
 var (
@@ -181,20 +1080,40 @@ func file_AllGemDuel_SkillDatas_proto_rawDescGZIP() []byte {
 	return file_AllGemDuel_SkillDatas_proto_rawDescData
 }
 
-var file_AllGemDuel_SkillDatas_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_AllGemDuel_SkillDatas_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_AllGemDuel_SkillDatas_proto_goTypes = []any{
-	(*AllGemDuel_SkillDatas)(nil), // 0: excel.AllGemDuel_SkillDatas
-	(*GemDuelSkillDatas)(nil),     // 1: excel.GemDuelSkillDatas
-	(*GemDuelSkillConfigure)(nil), // 2: excel.GemDuelSkillConfigure
+	(*AllGemDuel_SkillDatas)(nil),                      // 0: excel.AllGemDuel_SkillDatas
+	(*GemDuelSkillDatas)(nil),                          // 1: excel.GemDuelSkillDatas
+	(*GemDuelSkillConfigure)(nil),                      // 2: excel.GemDuelSkillConfigure
+	(*GemDuelSkillTargetSelectionDatas)(nil),           // 3: excel.GemDuelSkillTargetSelectionDatas
+	(*GemDuelSkillTargetSelectionConfigure)(nil),       // 4: excel.GemDuelSkillTargetSelectionConfigure
+	(*GemDuelSkillTriggerEffectDatas)(nil),             // 5: excel.GemDuelSkillTriggerEffectDatas
+	(*GemDuelSkillTriggerEffectConfigure)(nil),         // 6: excel.GemDuelSkillTriggerEffectConfigure
+	(*GemDuelSkillConditionalComparisonDatas)(nil),     // 7: excel.GemDuelSkillConditionalComparisonDatas
+	(*GemDuelSkillConditionalComparisonConfigure)(nil), // 8: excel.GemDuelSkillConditionalComparisonConfigure
+	(*GemDuelSkillSummonDatas)(nil),                    // 9: excel.GemDuelSkillSummonDatas
+	(*GemDuelSkillSummonConfigure)(nil),                // 10: excel.GemDuelSkillSummonConfigure
+	(*GemDuelSkillSceneEventEffcetDatas)(nil),          // 11: excel.GemDuelSkillSceneEventEffcetDatas
+	(*GemDuelSkillSceneEventEffcetConfigure)(nil),      // 12: excel.GemDuelSkillSceneEventEffcetConfigure
 }
 var file_AllGemDuel_SkillDatas_proto_depIdxs = []int32{
-	1, // 0: excel.AllGemDuel_SkillDatas.GemDuelSkill:type_name -> excel.GemDuelSkillDatas
-	2, // 1: excel.GemDuelSkillDatas.Datas:type_name -> excel.GemDuelSkillConfigure
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	1,  // 0: excel.AllGemDuel_SkillDatas.GemDuelSkill:type_name -> excel.GemDuelSkillDatas
+	3,  // 1: excel.AllGemDuel_SkillDatas.GemDuelSkillTargetSelection:type_name -> excel.GemDuelSkillTargetSelectionDatas
+	5,  // 2: excel.AllGemDuel_SkillDatas.GemDuelSkillTriggerEffect:type_name -> excel.GemDuelSkillTriggerEffectDatas
+	7,  // 3: excel.AllGemDuel_SkillDatas.GemDuelSkillConditionalComparison:type_name -> excel.GemDuelSkillConditionalComparisonDatas
+	9,  // 4: excel.AllGemDuel_SkillDatas.GemDuelSkillSummon:type_name -> excel.GemDuelSkillSummonDatas
+	11, // 5: excel.AllGemDuel_SkillDatas.GemDuelSkillSceneEventEffcet:type_name -> excel.GemDuelSkillSceneEventEffcetDatas
+	2,  // 6: excel.GemDuelSkillDatas.Datas:type_name -> excel.GemDuelSkillConfigure
+	4,  // 7: excel.GemDuelSkillTargetSelectionDatas.Datas:type_name -> excel.GemDuelSkillTargetSelectionConfigure
+	6,  // 8: excel.GemDuelSkillTriggerEffectDatas.Datas:type_name -> excel.GemDuelSkillTriggerEffectConfigure
+	8,  // 9: excel.GemDuelSkillConditionalComparisonDatas.Datas:type_name -> excel.GemDuelSkillConditionalComparisonConfigure
+	10, // 10: excel.GemDuelSkillSummonDatas.Datas:type_name -> excel.GemDuelSkillSummonConfigure
+	12, // 11: excel.GemDuelSkillSceneEventEffcetDatas.Datas:type_name -> excel.GemDuelSkillSceneEventEffcetConfigure
+	12, // [12:12] is the sub-list for method output_type
+	12, // [12:12] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_AllGemDuel_SkillDatas_proto_init() }
@@ -208,7 +1127,7 @@ func file_AllGemDuel_SkillDatas_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_AllGemDuel_SkillDatas_proto_rawDesc), len(file_AllGemDuel_SkillDatas_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

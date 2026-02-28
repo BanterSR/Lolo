@@ -164,11 +164,12 @@ type DungeonConfigure struct {
 	SceneConfig              string                 `protobuf:"bytes,32,opt,name=SceneConfig,proto3" json:"SceneConfig,omitempty"`
 	MonsterIDs               []int32                `protobuf:"varint,33,rep,packed,name=MonsterIDs,proto3" json:"MonsterIDs,omitempty"`
 	CharacterBuff            []int32                `protobuf:"varint,34,rep,packed,name=CharacterBuff,proto3" json:"CharacterBuff,omitempty"`
-	NewMissionType           int32                  `protobuf:"varint,35,opt,name=NewMissionType,proto3" json:"NewMissionType,omitempty"`
-	NewDifficultyLevel       int32                  `protobuf:"varint,36,opt,name=NewDifficultyLevel,proto3" json:"NewDifficultyLevel,omitempty"`
-	NewTreasureBoxRewardType int32                  `protobuf:"varint,37,opt,name=NewTreasureBoxRewardType,proto3" json:"NewTreasureBoxRewardType,omitempty"`
-	NewElementType           int32                  `protobuf:"varint,38,opt,name=NewElementType,proto3" json:"NewElementType,omitempty"`
-	NewConsumptionMode       int32                  `protobuf:"varint,39,opt,name=NewConsumptionMode,proto3" json:"NewConsumptionMode,omitempty"`
+	CheckQuestID             int32                  `protobuf:"varint,35,opt,name=CheckQuestID,proto3" json:"CheckQuestID,omitempty"`
+	NewMissionType           int32                  `protobuf:"varint,36,opt,name=NewMissionType,proto3" json:"NewMissionType,omitempty"`
+	NewDifficultyLevel       int32                  `protobuf:"varint,37,opt,name=NewDifficultyLevel,proto3" json:"NewDifficultyLevel,omitempty"`
+	NewTreasureBoxRewardType int32                  `protobuf:"varint,38,opt,name=NewTreasureBoxRewardType,proto3" json:"NewTreasureBoxRewardType,omitempty"`
+	NewElementType           int32                  `protobuf:"varint,39,opt,name=NewElementType,proto3" json:"NewElementType,omitempty"`
+	NewConsumptionMode       int32                  `protobuf:"varint,40,opt,name=NewConsumptionMode,proto3" json:"NewConsumptionMode,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
@@ -439,6 +440,13 @@ func (x *DungeonConfigure) GetCharacterBuff() []int32 {
 		return x.CharacterBuff
 	}
 	return nil
+}
+
+func (x *DungeonConfigure) GetCheckQuestID() int32 {
+	if x != nil {
+		return x.CheckQuestID
+	}
+	return 0
 }
 
 func (x *DungeonConfigure) GetNewMissionType() int32 {
@@ -806,7 +814,7 @@ const file_AllDungeonDatas_proto_rawDesc = "" +
 	"\rCharacterPool\x18\x02 \x01(\v2\x19.excel.CharacterPoolDatasR\rCharacterPool\x12<\n" +
 	"\fDungeonQuest\x18\x03 \x01(\v2\x18.excel.DungeonQuestDatasR\fDungeonQuest\"=\n" +
 	"\fDungeonDatas\x12-\n" +
-	"\x05Datas\x18\x01 \x03(\v2\x17.excel.DungeonConfigureR\x05Datas\"\x9c\v\n" +
+	"\x05Datas\x18\x01 \x03(\v2\x17.excel.DungeonConfigureR\x05Datas\"\xc0\v\n" +
 	"\x10DungeonConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x1c\n" +
 	"\tDungeonID\x18\x02 \x01(\x05R\tDungeonID\x12\x18\n" +
@@ -852,12 +860,13 @@ const file_AllDungeonDatas_proto_rawDesc = "" +
 	"\n" +
 	"MonsterIDs\x18! \x03(\x05R\n" +
 	"MonsterIDs\x12$\n" +
-	"\rCharacterBuff\x18\" \x03(\x05R\rCharacterBuff\x12&\n" +
-	"\x0eNewMissionType\x18# \x01(\x05R\x0eNewMissionType\x12.\n" +
-	"\x12NewDifficultyLevel\x18$ \x01(\x05R\x12NewDifficultyLevel\x12:\n" +
-	"\x18NewTreasureBoxRewardType\x18% \x01(\x05R\x18NewTreasureBoxRewardType\x12&\n" +
-	"\x0eNewElementType\x18& \x01(\x05R\x0eNewElementType\x12.\n" +
-	"\x12NewConsumptionMode\x18' \x01(\x05R\x12NewConsumptionMode\"I\n" +
+	"\rCharacterBuff\x18\" \x03(\x05R\rCharacterBuff\x12\"\n" +
+	"\fCheckQuestID\x18# \x01(\x05R\fCheckQuestID\x12&\n" +
+	"\x0eNewMissionType\x18$ \x01(\x05R\x0eNewMissionType\x12.\n" +
+	"\x12NewDifficultyLevel\x18% \x01(\x05R\x12NewDifficultyLevel\x12:\n" +
+	"\x18NewTreasureBoxRewardType\x18& \x01(\x05R\x18NewTreasureBoxRewardType\x12&\n" +
+	"\x0eNewElementType\x18' \x01(\x05R\x0eNewElementType\x12.\n" +
+	"\x12NewConsumptionMode\x18( \x01(\x05R\x12NewConsumptionMode\"I\n" +
 	"\x12CharacterPoolDatas\x123\n" +
 	"\x05Datas\x18\x01 \x03(\v2\x1d.excel.CharacterPoolConfigureR\x05Datas\"\x7f\n" +
 	"\x16CharacterPoolConfigure\x12\x0e\n" +

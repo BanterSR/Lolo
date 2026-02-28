@@ -27,6 +27,7 @@ const (
 type AllGemDuel_GemDatas struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GemDuelGem    *GemDuelGemDatas       `protobuf:"bytes,1,opt,name=GemDuelGem,proto3" json:"GemDuelGem,omitempty"`
+	GemDuelGemMod *GemDuelGemModDatas    `protobuf:"bytes,2,opt,name=GemDuelGemMod,proto3" json:"GemDuelGemMod,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -64,6 +65,13 @@ func (*AllGemDuel_GemDatas) Descriptor() ([]byte, []int) {
 func (x *AllGemDuel_GemDatas) GetGemDuelGem() *GemDuelGemDatas {
 	if x != nil {
 		return x.GemDuelGem
+	}
+	return nil
+}
+
+func (x *AllGemDuel_GemDatas) GetGemDuelGemMod() *GemDuelGemModDatas {
+	if x != nil {
+		return x.GemDuelGemMod
 	}
 	return nil
 }
@@ -172,21 +180,214 @@ func (x *GemDuelGemConfigure) GetIcon() int32 {
 	return 0
 }
 
+type GemDuelGemModDatas struct {
+	state         protoimpl.MessageState    `protogen:"open.v1"`
+	Datas         []*GemDuelGemModConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GemDuelGemModDatas) Reset() {
+	*x = GemDuelGemModDatas{}
+	mi := &file_AllGemDuel_GemDatas_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GemDuelGemModDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GemDuelGemModDatas) ProtoMessage() {}
+
+func (x *GemDuelGemModDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllGemDuel_GemDatas_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GemDuelGemModDatas.ProtoReflect.Descriptor instead.
+func (*GemDuelGemModDatas) Descriptor() ([]byte, []int) {
+	return file_AllGemDuel_GemDatas_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GemDuelGemModDatas) GetDatas() []*GemDuelGemModConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type GemDuelGemModConfigure struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Gem_1001      []int32                `protobuf:"varint,2,rep,packed,name=Gem_1001,json=Gem1001,proto3" json:"Gem_1001,omitempty"`
+	Gem_1002      []int32                `protobuf:"varint,3,rep,packed,name=Gem_1002,json=Gem1002,proto3" json:"Gem_1002,omitempty"`
+	Gem_1003      []int32                `protobuf:"varint,4,rep,packed,name=Gem_1003,json=Gem1003,proto3" json:"Gem_1003,omitempty"`
+	Gem_1004      []int32                `protobuf:"varint,5,rep,packed,name=Gem_1004,json=Gem1004,proto3" json:"Gem_1004,omitempty"`
+	Gem_1005      []int32                `protobuf:"varint,6,rep,packed,name=Gem_1005,json=Gem1005,proto3" json:"Gem_1005,omitempty"`
+	Gem_1006      []int32                `protobuf:"varint,7,rep,packed,name=Gem_1006,json=Gem1006,proto3" json:"Gem_1006,omitempty"`
+	Gem_1007      []int32                `protobuf:"varint,8,rep,packed,name=Gem_1007,json=Gem1007,proto3" json:"Gem_1007,omitempty"`
+	Gem_1008      []int32                `protobuf:"varint,9,rep,packed,name=Gem_1008,json=Gem1008,proto3" json:"Gem_1008,omitempty"`
+	Gem_1009      []int32                `protobuf:"varint,10,rep,packed,name=Gem_1009,json=Gem1009,proto3" json:"Gem_1009,omitempty"`
+	Gem_2001      []int32                `protobuf:"varint,11,rep,packed,name=Gem_2001,json=Gem2001,proto3" json:"Gem_2001,omitempty"`
+	Gem_2002      []int32                `protobuf:"varint,12,rep,packed,name=Gem_2002,json=Gem2002,proto3" json:"Gem_2002,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GemDuelGemModConfigure) Reset() {
+	*x = GemDuelGemModConfigure{}
+	mi := &file_AllGemDuel_GemDatas_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GemDuelGemModConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GemDuelGemModConfigure) ProtoMessage() {}
+
+func (x *GemDuelGemModConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllGemDuel_GemDatas_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GemDuelGemModConfigure.ProtoReflect.Descriptor instead.
+func (*GemDuelGemModConfigure) Descriptor() ([]byte, []int) {
+	return file_AllGemDuel_GemDatas_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GemDuelGemModConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *GemDuelGemModConfigure) GetGem_1001() []int32 {
+	if x != nil {
+		return x.Gem_1001
+	}
+	return nil
+}
+
+func (x *GemDuelGemModConfigure) GetGem_1002() []int32 {
+	if x != nil {
+		return x.Gem_1002
+	}
+	return nil
+}
+
+func (x *GemDuelGemModConfigure) GetGem_1003() []int32 {
+	if x != nil {
+		return x.Gem_1003
+	}
+	return nil
+}
+
+func (x *GemDuelGemModConfigure) GetGem_1004() []int32 {
+	if x != nil {
+		return x.Gem_1004
+	}
+	return nil
+}
+
+func (x *GemDuelGemModConfigure) GetGem_1005() []int32 {
+	if x != nil {
+		return x.Gem_1005
+	}
+	return nil
+}
+
+func (x *GemDuelGemModConfigure) GetGem_1006() []int32 {
+	if x != nil {
+		return x.Gem_1006
+	}
+	return nil
+}
+
+func (x *GemDuelGemModConfigure) GetGem_1007() []int32 {
+	if x != nil {
+		return x.Gem_1007
+	}
+	return nil
+}
+
+func (x *GemDuelGemModConfigure) GetGem_1008() []int32 {
+	if x != nil {
+		return x.Gem_1008
+	}
+	return nil
+}
+
+func (x *GemDuelGemModConfigure) GetGem_1009() []int32 {
+	if x != nil {
+		return x.Gem_1009
+	}
+	return nil
+}
+
+func (x *GemDuelGemModConfigure) GetGem_2001() []int32 {
+	if x != nil {
+		return x.Gem_2001
+	}
+	return nil
+}
+
+func (x *GemDuelGemModConfigure) GetGem_2002() []int32 {
+	if x != nil {
+		return x.Gem_2002
+	}
+	return nil
+}
+
 var File_AllGemDuel_GemDatas_proto protoreflect.FileDescriptor
 
 const file_AllGemDuel_GemDatas_proto_rawDesc = "" +
 	"\n" +
-	"\x19AllGemDuel_GemDatas.proto\x12\x05excel\"M\n" +
+	"\x19AllGemDuel_GemDatas.proto\x12\x05excel\"\x8e\x01\n" +
 	"\x13AllGemDuel_GemDatas\x126\n" +
 	"\n" +
 	"GemDuelGem\x18\x01 \x01(\v2\x16.excel.GemDuelGemDatasR\n" +
-	"GemDuelGem\"C\n" +
+	"GemDuelGem\x12?\n" +
+	"\rGemDuelGemMod\x18\x02 \x01(\v2\x19.excel.GemDuelGemModDatasR\rGemDuelGemMod\"C\n" +
 	"\x0fGemDuelGemDatas\x120\n" +
 	"\x05Datas\x18\x01 \x03(\v2\x1a.excel.GemDuelGemConfigureR\x05Datas\"M\n" +
 	"\x13GemDuelGemConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x12\n" +
 	"\x04Text\x18\x02 \x01(\x05R\x04Text\x12\x12\n" +
-	"\x04Icon\x18\x03 \x01(\x05R\x04IconB\n" +
+	"\x04Icon\x18\x03 \x01(\x05R\x04Icon\"I\n" +
+	"\x12GemDuelGemModDatas\x123\n" +
+	"\x05Datas\x18\x01 \x03(\v2\x1d.excel.GemDuelGemModConfigureR\x05Datas\"\xd1\x02\n" +
+	"\x16GemDuelGemModConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x19\n" +
+	"\bGem_1001\x18\x02 \x03(\x05R\aGem1001\x12\x19\n" +
+	"\bGem_1002\x18\x03 \x03(\x05R\aGem1002\x12\x19\n" +
+	"\bGem_1003\x18\x04 \x03(\x05R\aGem1003\x12\x19\n" +
+	"\bGem_1004\x18\x05 \x03(\x05R\aGem1004\x12\x19\n" +
+	"\bGem_1005\x18\x06 \x03(\x05R\aGem1005\x12\x19\n" +
+	"\bGem_1006\x18\a \x03(\x05R\aGem1006\x12\x19\n" +
+	"\bGem_1007\x18\b \x03(\x05R\aGem1007\x12\x19\n" +
+	"\bGem_1008\x18\t \x03(\x05R\aGem1008\x12\x19\n" +
+	"\bGem_1009\x18\n" +
+	" \x03(\x05R\aGem1009\x12\x19\n" +
+	"\bGem_2001\x18\v \x03(\x05R\aGem2001\x12\x19\n" +
+	"\bGem_2002\x18\f \x03(\x05R\aGem2002B\n" +
 	"Z\b./;excelb\x06proto3"
 
 var (
@@ -201,20 +402,24 @@ func file_AllGemDuel_GemDatas_proto_rawDescGZIP() []byte {
 	return file_AllGemDuel_GemDatas_proto_rawDescData
 }
 
-var file_AllGemDuel_GemDatas_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_AllGemDuel_GemDatas_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_AllGemDuel_GemDatas_proto_goTypes = []any{
-	(*AllGemDuel_GemDatas)(nil), // 0: excel.AllGemDuel_GemDatas
-	(*GemDuelGemDatas)(nil),     // 1: excel.GemDuelGemDatas
-	(*GemDuelGemConfigure)(nil), // 2: excel.GemDuelGemConfigure
+	(*AllGemDuel_GemDatas)(nil),    // 0: excel.AllGemDuel_GemDatas
+	(*GemDuelGemDatas)(nil),        // 1: excel.GemDuelGemDatas
+	(*GemDuelGemConfigure)(nil),    // 2: excel.GemDuelGemConfigure
+	(*GemDuelGemModDatas)(nil),     // 3: excel.GemDuelGemModDatas
+	(*GemDuelGemModConfigure)(nil), // 4: excel.GemDuelGemModConfigure
 }
 var file_AllGemDuel_GemDatas_proto_depIdxs = []int32{
 	1, // 0: excel.AllGemDuel_GemDatas.GemDuelGem:type_name -> excel.GemDuelGemDatas
-	2, // 1: excel.GemDuelGemDatas.Datas:type_name -> excel.GemDuelGemConfigure
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	3, // 1: excel.AllGemDuel_GemDatas.GemDuelGemMod:type_name -> excel.GemDuelGemModDatas
+	2, // 2: excel.GemDuelGemDatas.Datas:type_name -> excel.GemDuelGemConfigure
+	4, // 3: excel.GemDuelGemModDatas.Datas:type_name -> excel.GemDuelGemModConfigure
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_AllGemDuel_GemDatas_proto_init() }
@@ -228,7 +433,7 @@ func file_AllGemDuel_GemDatas_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_AllGemDuel_GemDatas_proto_rawDesc), len(file_AllGemDuel_GemDatas_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

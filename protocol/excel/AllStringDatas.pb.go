@@ -103,6 +103,12 @@ type AllStringDatas struct {
 	StringGemDuelQuest       *StringGemDuelQuestDatas       `protobuf:"bytes,75,opt,name=StringGemDuelQuest,proto3" json:"StringGemDuelQuest,omitempty"`
 	StringGemDuelMainDungeon *StringGemDuelMainDungeonDatas `protobuf:"bytes,76,opt,name=StringGemDuelMainDungeon,proto3" json:"StringGemDuelMainDungeon,omitempty"`
 	StringGemDuelBuff        *StringGemDuelBuffDatas        `protobuf:"bytes,77,opt,name=StringGemDuelBuff,proto3" json:"StringGemDuelBuff,omitempty"`
+	StringGemDuelItem        *StringGemDuelItemDatas        `protobuf:"bytes,78,opt,name=StringGemDuelItem,proto3" json:"StringGemDuelItem,omitempty"`
+	StringGemDuelGem         *StringGemDuelGemDatas         `protobuf:"bytes,79,opt,name=StringGemDuelGem,proto3" json:"StringGemDuelGem,omitempty"`
+	StringGemDuelGacha       *StringGemDuelGachaDatas       `protobuf:"bytes,80,opt,name=StringGemDuelGacha,proto3" json:"StringGemDuelGacha,omitempty"`
+	StringGemDuelShop        *StringGemDuelShopDatas        `protobuf:"bytes,81,opt,name=StringGemDuelShop,proto3" json:"StringGemDuelShop,omitempty"`
+	StringGemDuelGlobal      *StringGemDuelGlobalDatas      `protobuf:"bytes,82,opt,name=StringGemDuelGlobal,proto3" json:"StringGemDuelGlobal,omitempty"`
+	StringGemDuelPlayerLevel *StringGemDuelPlayerLevelDatas `protobuf:"bytes,83,opt,name=StringGemDuelPlayerLevel,proto3" json:"StringGemDuelPlayerLevel,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
@@ -672,6 +678,48 @@ func (x *AllStringDatas) GetStringGemDuelMainDungeon() *StringGemDuelMainDungeon
 func (x *AllStringDatas) GetStringGemDuelBuff() *StringGemDuelBuffDatas {
 	if x != nil {
 		return x.StringGemDuelBuff
+	}
+	return nil
+}
+
+func (x *AllStringDatas) GetStringGemDuelItem() *StringGemDuelItemDatas {
+	if x != nil {
+		return x.StringGemDuelItem
+	}
+	return nil
+}
+
+func (x *AllStringDatas) GetStringGemDuelGem() *StringGemDuelGemDatas {
+	if x != nil {
+		return x.StringGemDuelGem
+	}
+	return nil
+}
+
+func (x *AllStringDatas) GetStringGemDuelGacha() *StringGemDuelGachaDatas {
+	if x != nil {
+		return x.StringGemDuelGacha
+	}
+	return nil
+}
+
+func (x *AllStringDatas) GetStringGemDuelShop() *StringGemDuelShopDatas {
+	if x != nil {
+		return x.StringGemDuelShop
+	}
+	return nil
+}
+
+func (x *AllStringDatas) GetStringGemDuelGlobal() *StringGemDuelGlobalDatas {
+	if x != nil {
+		return x.StringGemDuelGlobal
+	}
+	return nil
+}
+
+func (x *AllStringDatas) GetStringGemDuelPlayerLevel() *StringGemDuelPlayerLevelDatas {
+	if x != nil {
+		return x.StringGemDuelPlayerLevel
 	}
 	return nil
 }
@@ -8084,11 +8132,587 @@ func (x *StringGemDuelBuffConfigure) GetText() []string {
 	return nil
 }
 
+type StringGemDuelItemDatas struct {
+	state         protoimpl.MessageState        `protogen:"open.v1"`
+	Datas         []*StringGemDuelItemConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StringGemDuelItemDatas) Reset() {
+	*x = StringGemDuelItemDatas{}
+	mi := &file_AllStringDatas_proto_msgTypes[155]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StringGemDuelItemDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StringGemDuelItemDatas) ProtoMessage() {}
+
+func (x *StringGemDuelItemDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllStringDatas_proto_msgTypes[155]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StringGemDuelItemDatas.ProtoReflect.Descriptor instead.
+func (*StringGemDuelItemDatas) Descriptor() ([]byte, []int) {
+	return file_AllStringDatas_proto_rawDescGZIP(), []int{155}
+}
+
+func (x *StringGemDuelItemDatas) GetDatas() []*StringGemDuelItemConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type StringGemDuelItemConfigure struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Text          []string               `protobuf:"bytes,2,rep,name=Text,proto3" json:"Text,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StringGemDuelItemConfigure) Reset() {
+	*x = StringGemDuelItemConfigure{}
+	mi := &file_AllStringDatas_proto_msgTypes[156]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StringGemDuelItemConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StringGemDuelItemConfigure) ProtoMessage() {}
+
+func (x *StringGemDuelItemConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllStringDatas_proto_msgTypes[156]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StringGemDuelItemConfigure.ProtoReflect.Descriptor instead.
+func (*StringGemDuelItemConfigure) Descriptor() ([]byte, []int) {
+	return file_AllStringDatas_proto_rawDescGZIP(), []int{156}
+}
+
+func (x *StringGemDuelItemConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *StringGemDuelItemConfigure) GetText() []string {
+	if x != nil {
+		return x.Text
+	}
+	return nil
+}
+
+type StringGemDuelGemDatas struct {
+	state         protoimpl.MessageState       `protogen:"open.v1"`
+	Datas         []*StringGemDuelGemConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StringGemDuelGemDatas) Reset() {
+	*x = StringGemDuelGemDatas{}
+	mi := &file_AllStringDatas_proto_msgTypes[157]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StringGemDuelGemDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StringGemDuelGemDatas) ProtoMessage() {}
+
+func (x *StringGemDuelGemDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllStringDatas_proto_msgTypes[157]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StringGemDuelGemDatas.ProtoReflect.Descriptor instead.
+func (*StringGemDuelGemDatas) Descriptor() ([]byte, []int) {
+	return file_AllStringDatas_proto_rawDescGZIP(), []int{157}
+}
+
+func (x *StringGemDuelGemDatas) GetDatas() []*StringGemDuelGemConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type StringGemDuelGemConfigure struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Text          []string               `protobuf:"bytes,2,rep,name=Text,proto3" json:"Text,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StringGemDuelGemConfigure) Reset() {
+	*x = StringGemDuelGemConfigure{}
+	mi := &file_AllStringDatas_proto_msgTypes[158]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StringGemDuelGemConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StringGemDuelGemConfigure) ProtoMessage() {}
+
+func (x *StringGemDuelGemConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllStringDatas_proto_msgTypes[158]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StringGemDuelGemConfigure.ProtoReflect.Descriptor instead.
+func (*StringGemDuelGemConfigure) Descriptor() ([]byte, []int) {
+	return file_AllStringDatas_proto_rawDescGZIP(), []int{158}
+}
+
+func (x *StringGemDuelGemConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *StringGemDuelGemConfigure) GetText() []string {
+	if x != nil {
+		return x.Text
+	}
+	return nil
+}
+
+type StringGemDuelGachaDatas struct {
+	state         protoimpl.MessageState         `protogen:"open.v1"`
+	Datas         []*StringGemDuelGachaConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StringGemDuelGachaDatas) Reset() {
+	*x = StringGemDuelGachaDatas{}
+	mi := &file_AllStringDatas_proto_msgTypes[159]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StringGemDuelGachaDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StringGemDuelGachaDatas) ProtoMessage() {}
+
+func (x *StringGemDuelGachaDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllStringDatas_proto_msgTypes[159]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StringGemDuelGachaDatas.ProtoReflect.Descriptor instead.
+func (*StringGemDuelGachaDatas) Descriptor() ([]byte, []int) {
+	return file_AllStringDatas_proto_rawDescGZIP(), []int{159}
+}
+
+func (x *StringGemDuelGachaDatas) GetDatas() []*StringGemDuelGachaConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type StringGemDuelGachaConfigure struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Text          []string               `protobuf:"bytes,2,rep,name=Text,proto3" json:"Text,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StringGemDuelGachaConfigure) Reset() {
+	*x = StringGemDuelGachaConfigure{}
+	mi := &file_AllStringDatas_proto_msgTypes[160]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StringGemDuelGachaConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StringGemDuelGachaConfigure) ProtoMessage() {}
+
+func (x *StringGemDuelGachaConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllStringDatas_proto_msgTypes[160]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StringGemDuelGachaConfigure.ProtoReflect.Descriptor instead.
+func (*StringGemDuelGachaConfigure) Descriptor() ([]byte, []int) {
+	return file_AllStringDatas_proto_rawDescGZIP(), []int{160}
+}
+
+func (x *StringGemDuelGachaConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *StringGemDuelGachaConfigure) GetText() []string {
+	if x != nil {
+		return x.Text
+	}
+	return nil
+}
+
+type StringGemDuelShopDatas struct {
+	state         protoimpl.MessageState        `protogen:"open.v1"`
+	Datas         []*StringGemDuelShopConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StringGemDuelShopDatas) Reset() {
+	*x = StringGemDuelShopDatas{}
+	mi := &file_AllStringDatas_proto_msgTypes[161]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StringGemDuelShopDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StringGemDuelShopDatas) ProtoMessage() {}
+
+func (x *StringGemDuelShopDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllStringDatas_proto_msgTypes[161]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StringGemDuelShopDatas.ProtoReflect.Descriptor instead.
+func (*StringGemDuelShopDatas) Descriptor() ([]byte, []int) {
+	return file_AllStringDatas_proto_rawDescGZIP(), []int{161}
+}
+
+func (x *StringGemDuelShopDatas) GetDatas() []*StringGemDuelShopConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type StringGemDuelShopConfigure struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Text          []string               `protobuf:"bytes,2,rep,name=Text,proto3" json:"Text,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StringGemDuelShopConfigure) Reset() {
+	*x = StringGemDuelShopConfigure{}
+	mi := &file_AllStringDatas_proto_msgTypes[162]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StringGemDuelShopConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StringGemDuelShopConfigure) ProtoMessage() {}
+
+func (x *StringGemDuelShopConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllStringDatas_proto_msgTypes[162]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StringGemDuelShopConfigure.ProtoReflect.Descriptor instead.
+func (*StringGemDuelShopConfigure) Descriptor() ([]byte, []int) {
+	return file_AllStringDatas_proto_rawDescGZIP(), []int{162}
+}
+
+func (x *StringGemDuelShopConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *StringGemDuelShopConfigure) GetText() []string {
+	if x != nil {
+		return x.Text
+	}
+	return nil
+}
+
+type StringGemDuelGlobalDatas struct {
+	state         protoimpl.MessageState          `protogen:"open.v1"`
+	Datas         []*StringGemDuelGlobalConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StringGemDuelGlobalDatas) Reset() {
+	*x = StringGemDuelGlobalDatas{}
+	mi := &file_AllStringDatas_proto_msgTypes[163]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StringGemDuelGlobalDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StringGemDuelGlobalDatas) ProtoMessage() {}
+
+func (x *StringGemDuelGlobalDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllStringDatas_proto_msgTypes[163]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StringGemDuelGlobalDatas.ProtoReflect.Descriptor instead.
+func (*StringGemDuelGlobalDatas) Descriptor() ([]byte, []int) {
+	return file_AllStringDatas_proto_rawDescGZIP(), []int{163}
+}
+
+func (x *StringGemDuelGlobalDatas) GetDatas() []*StringGemDuelGlobalConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type StringGemDuelGlobalConfigure struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Text          []string               `protobuf:"bytes,2,rep,name=Text,proto3" json:"Text,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StringGemDuelGlobalConfigure) Reset() {
+	*x = StringGemDuelGlobalConfigure{}
+	mi := &file_AllStringDatas_proto_msgTypes[164]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StringGemDuelGlobalConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StringGemDuelGlobalConfigure) ProtoMessage() {}
+
+func (x *StringGemDuelGlobalConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllStringDatas_proto_msgTypes[164]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StringGemDuelGlobalConfigure.ProtoReflect.Descriptor instead.
+func (*StringGemDuelGlobalConfigure) Descriptor() ([]byte, []int) {
+	return file_AllStringDatas_proto_rawDescGZIP(), []int{164}
+}
+
+func (x *StringGemDuelGlobalConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *StringGemDuelGlobalConfigure) GetText() []string {
+	if x != nil {
+		return x.Text
+	}
+	return nil
+}
+
+type StringGemDuelPlayerLevelDatas struct {
+	state         protoimpl.MessageState               `protogen:"open.v1"`
+	Datas         []*StringGemDuelPlayerLevelConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StringGemDuelPlayerLevelDatas) Reset() {
+	*x = StringGemDuelPlayerLevelDatas{}
+	mi := &file_AllStringDatas_proto_msgTypes[165]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StringGemDuelPlayerLevelDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StringGemDuelPlayerLevelDatas) ProtoMessage() {}
+
+func (x *StringGemDuelPlayerLevelDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllStringDatas_proto_msgTypes[165]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StringGemDuelPlayerLevelDatas.ProtoReflect.Descriptor instead.
+func (*StringGemDuelPlayerLevelDatas) Descriptor() ([]byte, []int) {
+	return file_AllStringDatas_proto_rawDescGZIP(), []int{165}
+}
+
+func (x *StringGemDuelPlayerLevelDatas) GetDatas() []*StringGemDuelPlayerLevelConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type StringGemDuelPlayerLevelConfigure struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Text          []string               `protobuf:"bytes,2,rep,name=Text,proto3" json:"Text,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StringGemDuelPlayerLevelConfigure) Reset() {
+	*x = StringGemDuelPlayerLevelConfigure{}
+	mi := &file_AllStringDatas_proto_msgTypes[166]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StringGemDuelPlayerLevelConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StringGemDuelPlayerLevelConfigure) ProtoMessage() {}
+
+func (x *StringGemDuelPlayerLevelConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllStringDatas_proto_msgTypes[166]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StringGemDuelPlayerLevelConfigure.ProtoReflect.Descriptor instead.
+func (*StringGemDuelPlayerLevelConfigure) Descriptor() ([]byte, []int) {
+	return file_AllStringDatas_proto_rawDescGZIP(), []int{166}
+}
+
+func (x *StringGemDuelPlayerLevelConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *StringGemDuelPlayerLevelConfigure) GetText() []string {
+	if x != nil {
+		return x.Text
+	}
+	return nil
+}
+
 var File_AllStringDatas_proto protoreflect.FileDescriptor
 
 const file_AllStringDatas_proto_rawDesc = "" +
 	"\n" +
-	"\x14AllStringDatas.proto\x12\x05excel\"\xab,\n" +
+	"\x14AllStringDatas.proto\x12\x05excel\"\x940\n" +
 	"\x0eAllStringDatas\x12B\n" +
 	"\x0eStringItemText\x18\x01 \x01(\v2\x1a.excel.StringItemTextDatasR\x0eStringItemText\x12?\n" +
 	"\rStringDungeon\x18\x02 \x01(\v2\x19.excel.StringDungeonDatasR\rStringDungeon\x12<\n" +
@@ -8181,7 +8805,13 @@ const file_AllStringDatas_proto_rawDesc = "" +
 	"\x16StringGemDuelCharacter\x18J \x01(\v2\".excel.StringGemDuelCharacterDatasR\x16StringGemDuelCharacter\x12N\n" +
 	"\x12StringGemDuelQuest\x18K \x01(\v2\x1e.excel.StringGemDuelQuestDatasR\x12StringGemDuelQuest\x12`\n" +
 	"\x18StringGemDuelMainDungeon\x18L \x01(\v2$.excel.StringGemDuelMainDungeonDatasR\x18StringGemDuelMainDungeon\x12K\n" +
-	"\x11StringGemDuelBuff\x18M \x01(\v2\x1d.excel.StringGemDuelBuffDatasR\x11StringGemDuelBuff\"K\n" +
+	"\x11StringGemDuelBuff\x18M \x01(\v2\x1d.excel.StringGemDuelBuffDatasR\x11StringGemDuelBuff\x12K\n" +
+	"\x11StringGemDuelItem\x18N \x01(\v2\x1d.excel.StringGemDuelItemDatasR\x11StringGemDuelItem\x12H\n" +
+	"\x10StringGemDuelGem\x18O \x01(\v2\x1c.excel.StringGemDuelGemDatasR\x10StringGemDuelGem\x12N\n" +
+	"\x12StringGemDuelGacha\x18P \x01(\v2\x1e.excel.StringGemDuelGachaDatasR\x12StringGemDuelGacha\x12K\n" +
+	"\x11StringGemDuelShop\x18Q \x01(\v2\x1d.excel.StringGemDuelShopDatasR\x11StringGemDuelShop\x12Q\n" +
+	"\x13StringGemDuelGlobal\x18R \x01(\v2\x1f.excel.StringGemDuelGlobalDatasR\x13StringGemDuelGlobal\x12`\n" +
+	"\x18StringGemDuelPlayerLevel\x18S \x01(\v2$.excel.StringGemDuelPlayerLevelDatasR\x18StringGemDuelPlayerLevel\"K\n" +
 	"\x13StringItemTextDatas\x124\n" +
 	"\x05Datas\x18\x01 \x03(\v2\x1e.excel.StringItemTextConfigureR\x05Datas\"=\n" +
 	"\x17StringItemTextConfigure\x12\x0e\n" +
@@ -8568,6 +9198,36 @@ const file_AllStringDatas_proto_rawDesc = "" +
 	"\x05Datas\x18\x01 \x03(\v2!.excel.StringGemDuelBuffConfigureR\x05Datas\"@\n" +
 	"\x1aStringGemDuelBuffConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x12\n" +
+	"\x04Text\x18\x02 \x03(\tR\x04Text\"Q\n" +
+	"\x16StringGemDuelItemDatas\x127\n" +
+	"\x05Datas\x18\x01 \x03(\v2!.excel.StringGemDuelItemConfigureR\x05Datas\"@\n" +
+	"\x1aStringGemDuelItemConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x12\n" +
+	"\x04Text\x18\x02 \x03(\tR\x04Text\"O\n" +
+	"\x15StringGemDuelGemDatas\x126\n" +
+	"\x05Datas\x18\x01 \x03(\v2 .excel.StringGemDuelGemConfigureR\x05Datas\"?\n" +
+	"\x19StringGemDuelGemConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x12\n" +
+	"\x04Text\x18\x02 \x03(\tR\x04Text\"S\n" +
+	"\x17StringGemDuelGachaDatas\x128\n" +
+	"\x05Datas\x18\x01 \x03(\v2\".excel.StringGemDuelGachaConfigureR\x05Datas\"A\n" +
+	"\x1bStringGemDuelGachaConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x12\n" +
+	"\x04Text\x18\x02 \x03(\tR\x04Text\"Q\n" +
+	"\x16StringGemDuelShopDatas\x127\n" +
+	"\x05Datas\x18\x01 \x03(\v2!.excel.StringGemDuelShopConfigureR\x05Datas\"@\n" +
+	"\x1aStringGemDuelShopConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x12\n" +
+	"\x04Text\x18\x02 \x03(\tR\x04Text\"U\n" +
+	"\x18StringGemDuelGlobalDatas\x129\n" +
+	"\x05Datas\x18\x01 \x03(\v2#.excel.StringGemDuelGlobalConfigureR\x05Datas\"B\n" +
+	"\x1cStringGemDuelGlobalConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x12\n" +
+	"\x04Text\x18\x02 \x03(\tR\x04Text\"_\n" +
+	"\x1dStringGemDuelPlayerLevelDatas\x12>\n" +
+	"\x05Datas\x18\x01 \x03(\v2(.excel.StringGemDuelPlayerLevelConfigureR\x05Datas\"G\n" +
+	"!StringGemDuelPlayerLevelConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x12\n" +
 	"\x04Text\x18\x02 \x03(\tR\x04TextB\n" +
 	"Z\b./;excelb\x06proto3"
 
@@ -8583,7 +9243,7 @@ func file_AllStringDatas_proto_rawDescGZIP() []byte {
 	return file_AllStringDatas_proto_rawDescData
 }
 
-var file_AllStringDatas_proto_msgTypes = make([]protoimpl.MessageInfo, 155)
+var file_AllStringDatas_proto_msgTypes = make([]protoimpl.MessageInfo, 167)
 var file_AllStringDatas_proto_goTypes = []any{
 	(*AllStringDatas)(nil),                    // 0: excel.AllStringDatas
 	(*StringItemTextDatas)(nil),               // 1: excel.StringItemTextDatas
@@ -8740,6 +9400,18 @@ var file_AllStringDatas_proto_goTypes = []any{
 	(*StringGemDuelMainDungeonConfigure)(nil), // 152: excel.StringGemDuelMainDungeonConfigure
 	(*StringGemDuelBuffDatas)(nil),            // 153: excel.StringGemDuelBuffDatas
 	(*StringGemDuelBuffConfigure)(nil),        // 154: excel.StringGemDuelBuffConfigure
+	(*StringGemDuelItemDatas)(nil),            // 155: excel.StringGemDuelItemDatas
+	(*StringGemDuelItemConfigure)(nil),        // 156: excel.StringGemDuelItemConfigure
+	(*StringGemDuelGemDatas)(nil),             // 157: excel.StringGemDuelGemDatas
+	(*StringGemDuelGemConfigure)(nil),         // 158: excel.StringGemDuelGemConfigure
+	(*StringGemDuelGachaDatas)(nil),           // 159: excel.StringGemDuelGachaDatas
+	(*StringGemDuelGachaConfigure)(nil),       // 160: excel.StringGemDuelGachaConfigure
+	(*StringGemDuelShopDatas)(nil),            // 161: excel.StringGemDuelShopDatas
+	(*StringGemDuelShopConfigure)(nil),        // 162: excel.StringGemDuelShopConfigure
+	(*StringGemDuelGlobalDatas)(nil),          // 163: excel.StringGemDuelGlobalDatas
+	(*StringGemDuelGlobalConfigure)(nil),      // 164: excel.StringGemDuelGlobalConfigure
+	(*StringGemDuelPlayerLevelDatas)(nil),     // 165: excel.StringGemDuelPlayerLevelDatas
+	(*StringGemDuelPlayerLevelConfigure)(nil), // 166: excel.StringGemDuelPlayerLevelConfigure
 }
 var file_AllStringDatas_proto_depIdxs = []int32{
 	1,   // 0: excel.AllStringDatas.StringItemText:type_name -> excel.StringItemTextDatas
@@ -8819,88 +9491,100 @@ var file_AllStringDatas_proto_depIdxs = []int32{
 	149, // 74: excel.AllStringDatas.StringGemDuelQuest:type_name -> excel.StringGemDuelQuestDatas
 	151, // 75: excel.AllStringDatas.StringGemDuelMainDungeon:type_name -> excel.StringGemDuelMainDungeonDatas
 	153, // 76: excel.AllStringDatas.StringGemDuelBuff:type_name -> excel.StringGemDuelBuffDatas
-	2,   // 77: excel.StringItemTextDatas.Datas:type_name -> excel.StringItemTextConfigure
-	4,   // 78: excel.StringDungeonDatas.Datas:type_name -> excel.StringDungeonConfigure
-	6,   // 79: excel.StringPosterDatas.Datas:type_name -> excel.StringPosterConfigure
-	8,   // 80: excel.StringFlagDatas.Datas:type_name -> excel.StringFlagConfigure
-	10,  // 81: excel.StringPlayerNameDatas.Datas:type_name -> excel.StringPlayerNameConfigure
-	12,  // 82: excel.StringCharacterNameDatas.Datas:type_name -> excel.StringCharacterNameConfigure
-	14,  // 83: excel.StringSpellDatas.Datas:type_name -> excel.StringSpellConfigure
-	16,  // 84: excel.StringNpcDatas.Datas:type_name -> excel.StringNpcConfigure
-	18,  // 85: excel.StringBattleNormalTextDatas.Datas:type_name -> excel.StringBattleNormalTextConfigure
-	20,  // 86: excel.StringBattleGuideTextDatas.Datas:type_name -> excel.StringBattleGuideTextConfigure
-	22,  // 87: excel.StringBattleWeaponTextDatas.Datas:type_name -> excel.StringBattleWeaponTextConfigure
-	24,  // 88: excel.StringBattleGatherTextDatas.Datas:type_name -> excel.StringBattleGatherTextConfigure
-	26,  // 89: excel.StringBattleDefenderTextDatas.Datas:type_name -> excel.StringBattleDefenderTextConfigure
-	28,  // 90: excel.StringQuestDatas.Datas:type_name -> excel.StringQuestConfigure
-	30,  // 91: excel.StringQuestResourceDatas.Datas:type_name -> excel.StringQuestResourceConfigure
-	32,  // 92: excel.StringCookDatas.Datas:type_name -> excel.StringCookConfigure
-	34,  // 93: excel.PassiveDescDatas.Datas:type_name -> excel.PassiveDescConfigure
-	36,  // 94: excel.StringSceneDatas.Datas:type_name -> excel.StringSceneConfigure
-	38,  // 95: excel.StringCollectFileDatas.Datas:type_name -> excel.StringCollectFileConfigure
-	40,  // 96: excel.StringCollectDataDatas.Datas:type_name -> excel.StringCollectDataConfigure
-	42,  // 97: excel.StringCollectItemDatas.Datas:type_name -> excel.StringCollectItemConfigure
-	44,  // 98: excel.StringCollectTapeDatas.Datas:type_name -> excel.StringCollectTapeConfigure
-	46,  // 99: excel.StringCollectBookDatas.Datas:type_name -> excel.StringCollectBookConfigure
-	48,  // 100: excel.StringCollectPortalDatas.Datas:type_name -> excel.StringCollectPortalConfigure
-	50,  // 101: excel.StringCollectPhotoItemDatas.Datas:type_name -> excel.StringCollectPhotoItemConfigure
-	52,  // 102: excel.StringAreaDatas.Datas:type_name -> excel.StringAreaConfigure
-	54,  // 103: excel.StringMoonStoneDatas.Datas:type_name -> excel.StringMoonStoneConfigure
-	56,  // 104: excel.StringRandomEventDatas.Datas:type_name -> excel.StringRandomEventConfigure
-	58,  // 105: excel.StringShopDatas.Datas:type_name -> excel.StringShopConfigure
-	60,  // 106: excel.StringGachaDatas.Datas:type_name -> excel.StringGachaConfigure
-	62,  // 107: excel.StringGlobalDatas.Datas:type_name -> excel.StringGlobalConfigure
-	64,  // 108: excel.StringAbilityDatas.Datas:type_name -> excel.StringAbilityConfigure
-	66,  // 109: excel.StringAchieveDatas.Datas:type_name -> excel.StringAchieveConfigure
-	68,  // 110: excel.StringRiddleDatas.Datas:type_name -> excel.StringRiddleConfigure
-	70,  // 111: excel.StringChallengeDatas.Datas:type_name -> excel.StringChallengeConfigure
-	72,  // 112: excel.StringExploreDatas.Datas:type_name -> excel.StringExploreConfigure
-	74,  // 113: excel.StringNpcQuestDatas.Datas:type_name -> excel.StringNpcQuestConfigure
-	76,  // 114: excel.StringChatDatas.Datas:type_name -> excel.StringChatConfigure
-	78,  // 115: excel.StringPlayerLevelDatas.Datas:type_name -> excel.StringPlayerLevelConfigure
-	80,  // 116: excel.StringBuffDatas.Datas:type_name -> excel.StringBuffConfigure
-	82,  // 117: excel.StringExpressionDatas.Datas:type_name -> excel.StringExpressionConfigure
-	84,  // 118: excel.StringStoryDatas.Datas:type_name -> excel.StringStoryConfigure
-	86,  // 119: excel.StringExtraChapterDatas.Datas:type_name -> excel.StringExtraChapterConfigure
-	88,  // 120: excel.StringExtraChapterTitleDatas.Datas:type_name -> excel.StringExtraChapterTitleConfigure
-	90,  // 121: excel.StringGlobalBuffDatas.Datas:type_name -> excel.StringGlobalBuffConfigure
-	92,  // 122: excel.StringDialogDatas.Datas:type_name -> excel.StringDialogConfigure
-	94,  // 123: excel.StringFishDatas.Datas:type_name -> excel.StringFishConfigure
-	96,  // 124: excel.StringMakeDatas.Datas:type_name -> excel.StringMakeConfigure
-	98,  // 125: excel.StringHandicraftDatas.Datas:type_name -> excel.StringHandicraftConfigure
-	100, // 126: excel.StringSpinDatas.Datas:type_name -> excel.StringSpinConfigure
-	102, // 127: excel.StringManualDatas.Datas:type_name -> excel.StringManualConfigure
-	104, // 128: excel.StringMailDatas.Datas:type_name -> excel.StringMailConfigure
-	106, // 129: excel.StringAbyssDatas.Datas:type_name -> excel.StringAbyssConfigure
-	108, // 130: excel.StringHeadDatas.Datas:type_name -> excel.StringHeadConfigure
-	110, // 131: excel.StringItemSourceDatas.Datas:type_name -> excel.StringItemSourceConfigure
-	112, // 132: excel.StringMiniMapDatas.Datas:type_name -> excel.StringMiniMapConfigure
-	114, // 133: excel.StringAchieveQuestDatas.Datas:type_name -> excel.StringAchieveQuestConfigure
-	116, // 134: excel.StringWorldLevelDatas.Datas:type_name -> excel.StringWorldLevelConfigure
-	118, // 135: excel.StringActivityDatas.Datas:type_name -> excel.StringActivityConfigure
-	120, // 136: excel.StringLifeGatherDatas.Datas:type_name -> excel.StringLifeGatherConfigure
-	122, // 137: excel.StringHelpDatas.Datas:type_name -> excel.StringHelpConfigure
-	124, // 138: excel.StringTeamGameplayDatas.Datas:type_name -> excel.StringTeamGameplayConfigure
-	126, // 139: excel.StringMiniGameDatas.Datas:type_name -> excel.StringMiniGameConfigure
-	128, // 140: excel.StringIntimacyDatas.Datas:type_name -> excel.StringIntimacyConfigure
-	130, // 141: excel.StringActivityTurntableDatas.Datas:type_name -> excel.StringActivityTurntableConfigure
-	132, // 142: excel.StringHomeItemThemeDatas.Datas:type_name -> excel.StringHomeItemThemeConfigure
-	134, // 143: excel.StringBossRushDatas.Datas:type_name -> excel.StringBossRushConfigure
-	136, // 144: excel.StringMusicItemDatas.Datas:type_name -> excel.StringMusicItemConfigure
-	138, // 145: excel.StringGuideDatas.Datas:type_name -> excel.StringGuideConfigure
-	140, // 146: excel.RestaurantGameItemDatas.Datas:type_name -> excel.RestaurantGameItemConfigure
-	142, // 147: excel.RestaurantGameTitleDatas.Datas:type_name -> excel.RestaurantGameTitleConfigure
-	144, // 148: excel.StringGemDuelBattleStageDatas.Datas:type_name -> excel.StringGemDuelBattleStageConfigure
-	146, // 149: excel.StringGemDuelSkillDatas.Datas:type_name -> excel.StringGemDuelSkillConfigure
-	148, // 150: excel.StringGemDuelCharacterDatas.Datas:type_name -> excel.StringGemDuelCharacterConfigure
-	150, // 151: excel.StringGemDuelQuestDatas.Datas:type_name -> excel.StringGemDuelQuestConfigure
-	152, // 152: excel.StringGemDuelMainDungeonDatas.Datas:type_name -> excel.StringGemDuelMainDungeonConfigure
-	154, // 153: excel.StringGemDuelBuffDatas.Datas:type_name -> excel.StringGemDuelBuffConfigure
-	154, // [154:154] is the sub-list for method output_type
-	154, // [154:154] is the sub-list for method input_type
-	154, // [154:154] is the sub-list for extension type_name
-	154, // [154:154] is the sub-list for extension extendee
-	0,   // [0:154] is the sub-list for field type_name
+	155, // 77: excel.AllStringDatas.StringGemDuelItem:type_name -> excel.StringGemDuelItemDatas
+	157, // 78: excel.AllStringDatas.StringGemDuelGem:type_name -> excel.StringGemDuelGemDatas
+	159, // 79: excel.AllStringDatas.StringGemDuelGacha:type_name -> excel.StringGemDuelGachaDatas
+	161, // 80: excel.AllStringDatas.StringGemDuelShop:type_name -> excel.StringGemDuelShopDatas
+	163, // 81: excel.AllStringDatas.StringGemDuelGlobal:type_name -> excel.StringGemDuelGlobalDatas
+	165, // 82: excel.AllStringDatas.StringGemDuelPlayerLevel:type_name -> excel.StringGemDuelPlayerLevelDatas
+	2,   // 83: excel.StringItemTextDatas.Datas:type_name -> excel.StringItemTextConfigure
+	4,   // 84: excel.StringDungeonDatas.Datas:type_name -> excel.StringDungeonConfigure
+	6,   // 85: excel.StringPosterDatas.Datas:type_name -> excel.StringPosterConfigure
+	8,   // 86: excel.StringFlagDatas.Datas:type_name -> excel.StringFlagConfigure
+	10,  // 87: excel.StringPlayerNameDatas.Datas:type_name -> excel.StringPlayerNameConfigure
+	12,  // 88: excel.StringCharacterNameDatas.Datas:type_name -> excel.StringCharacterNameConfigure
+	14,  // 89: excel.StringSpellDatas.Datas:type_name -> excel.StringSpellConfigure
+	16,  // 90: excel.StringNpcDatas.Datas:type_name -> excel.StringNpcConfigure
+	18,  // 91: excel.StringBattleNormalTextDatas.Datas:type_name -> excel.StringBattleNormalTextConfigure
+	20,  // 92: excel.StringBattleGuideTextDatas.Datas:type_name -> excel.StringBattleGuideTextConfigure
+	22,  // 93: excel.StringBattleWeaponTextDatas.Datas:type_name -> excel.StringBattleWeaponTextConfigure
+	24,  // 94: excel.StringBattleGatherTextDatas.Datas:type_name -> excel.StringBattleGatherTextConfigure
+	26,  // 95: excel.StringBattleDefenderTextDatas.Datas:type_name -> excel.StringBattleDefenderTextConfigure
+	28,  // 96: excel.StringQuestDatas.Datas:type_name -> excel.StringQuestConfigure
+	30,  // 97: excel.StringQuestResourceDatas.Datas:type_name -> excel.StringQuestResourceConfigure
+	32,  // 98: excel.StringCookDatas.Datas:type_name -> excel.StringCookConfigure
+	34,  // 99: excel.PassiveDescDatas.Datas:type_name -> excel.PassiveDescConfigure
+	36,  // 100: excel.StringSceneDatas.Datas:type_name -> excel.StringSceneConfigure
+	38,  // 101: excel.StringCollectFileDatas.Datas:type_name -> excel.StringCollectFileConfigure
+	40,  // 102: excel.StringCollectDataDatas.Datas:type_name -> excel.StringCollectDataConfigure
+	42,  // 103: excel.StringCollectItemDatas.Datas:type_name -> excel.StringCollectItemConfigure
+	44,  // 104: excel.StringCollectTapeDatas.Datas:type_name -> excel.StringCollectTapeConfigure
+	46,  // 105: excel.StringCollectBookDatas.Datas:type_name -> excel.StringCollectBookConfigure
+	48,  // 106: excel.StringCollectPortalDatas.Datas:type_name -> excel.StringCollectPortalConfigure
+	50,  // 107: excel.StringCollectPhotoItemDatas.Datas:type_name -> excel.StringCollectPhotoItemConfigure
+	52,  // 108: excel.StringAreaDatas.Datas:type_name -> excel.StringAreaConfigure
+	54,  // 109: excel.StringMoonStoneDatas.Datas:type_name -> excel.StringMoonStoneConfigure
+	56,  // 110: excel.StringRandomEventDatas.Datas:type_name -> excel.StringRandomEventConfigure
+	58,  // 111: excel.StringShopDatas.Datas:type_name -> excel.StringShopConfigure
+	60,  // 112: excel.StringGachaDatas.Datas:type_name -> excel.StringGachaConfigure
+	62,  // 113: excel.StringGlobalDatas.Datas:type_name -> excel.StringGlobalConfigure
+	64,  // 114: excel.StringAbilityDatas.Datas:type_name -> excel.StringAbilityConfigure
+	66,  // 115: excel.StringAchieveDatas.Datas:type_name -> excel.StringAchieveConfigure
+	68,  // 116: excel.StringRiddleDatas.Datas:type_name -> excel.StringRiddleConfigure
+	70,  // 117: excel.StringChallengeDatas.Datas:type_name -> excel.StringChallengeConfigure
+	72,  // 118: excel.StringExploreDatas.Datas:type_name -> excel.StringExploreConfigure
+	74,  // 119: excel.StringNpcQuestDatas.Datas:type_name -> excel.StringNpcQuestConfigure
+	76,  // 120: excel.StringChatDatas.Datas:type_name -> excel.StringChatConfigure
+	78,  // 121: excel.StringPlayerLevelDatas.Datas:type_name -> excel.StringPlayerLevelConfigure
+	80,  // 122: excel.StringBuffDatas.Datas:type_name -> excel.StringBuffConfigure
+	82,  // 123: excel.StringExpressionDatas.Datas:type_name -> excel.StringExpressionConfigure
+	84,  // 124: excel.StringStoryDatas.Datas:type_name -> excel.StringStoryConfigure
+	86,  // 125: excel.StringExtraChapterDatas.Datas:type_name -> excel.StringExtraChapterConfigure
+	88,  // 126: excel.StringExtraChapterTitleDatas.Datas:type_name -> excel.StringExtraChapterTitleConfigure
+	90,  // 127: excel.StringGlobalBuffDatas.Datas:type_name -> excel.StringGlobalBuffConfigure
+	92,  // 128: excel.StringDialogDatas.Datas:type_name -> excel.StringDialogConfigure
+	94,  // 129: excel.StringFishDatas.Datas:type_name -> excel.StringFishConfigure
+	96,  // 130: excel.StringMakeDatas.Datas:type_name -> excel.StringMakeConfigure
+	98,  // 131: excel.StringHandicraftDatas.Datas:type_name -> excel.StringHandicraftConfigure
+	100, // 132: excel.StringSpinDatas.Datas:type_name -> excel.StringSpinConfigure
+	102, // 133: excel.StringManualDatas.Datas:type_name -> excel.StringManualConfigure
+	104, // 134: excel.StringMailDatas.Datas:type_name -> excel.StringMailConfigure
+	106, // 135: excel.StringAbyssDatas.Datas:type_name -> excel.StringAbyssConfigure
+	108, // 136: excel.StringHeadDatas.Datas:type_name -> excel.StringHeadConfigure
+	110, // 137: excel.StringItemSourceDatas.Datas:type_name -> excel.StringItemSourceConfigure
+	112, // 138: excel.StringMiniMapDatas.Datas:type_name -> excel.StringMiniMapConfigure
+	114, // 139: excel.StringAchieveQuestDatas.Datas:type_name -> excel.StringAchieveQuestConfigure
+	116, // 140: excel.StringWorldLevelDatas.Datas:type_name -> excel.StringWorldLevelConfigure
+	118, // 141: excel.StringActivityDatas.Datas:type_name -> excel.StringActivityConfigure
+	120, // 142: excel.StringLifeGatherDatas.Datas:type_name -> excel.StringLifeGatherConfigure
+	122, // 143: excel.StringHelpDatas.Datas:type_name -> excel.StringHelpConfigure
+	124, // 144: excel.StringTeamGameplayDatas.Datas:type_name -> excel.StringTeamGameplayConfigure
+	126, // 145: excel.StringMiniGameDatas.Datas:type_name -> excel.StringMiniGameConfigure
+	128, // 146: excel.StringIntimacyDatas.Datas:type_name -> excel.StringIntimacyConfigure
+	130, // 147: excel.StringActivityTurntableDatas.Datas:type_name -> excel.StringActivityTurntableConfigure
+	132, // 148: excel.StringHomeItemThemeDatas.Datas:type_name -> excel.StringHomeItemThemeConfigure
+	134, // 149: excel.StringBossRushDatas.Datas:type_name -> excel.StringBossRushConfigure
+	136, // 150: excel.StringMusicItemDatas.Datas:type_name -> excel.StringMusicItemConfigure
+	138, // 151: excel.StringGuideDatas.Datas:type_name -> excel.StringGuideConfigure
+	140, // 152: excel.RestaurantGameItemDatas.Datas:type_name -> excel.RestaurantGameItemConfigure
+	142, // 153: excel.RestaurantGameTitleDatas.Datas:type_name -> excel.RestaurantGameTitleConfigure
+	144, // 154: excel.StringGemDuelBattleStageDatas.Datas:type_name -> excel.StringGemDuelBattleStageConfigure
+	146, // 155: excel.StringGemDuelSkillDatas.Datas:type_name -> excel.StringGemDuelSkillConfigure
+	148, // 156: excel.StringGemDuelCharacterDatas.Datas:type_name -> excel.StringGemDuelCharacterConfigure
+	150, // 157: excel.StringGemDuelQuestDatas.Datas:type_name -> excel.StringGemDuelQuestConfigure
+	152, // 158: excel.StringGemDuelMainDungeonDatas.Datas:type_name -> excel.StringGemDuelMainDungeonConfigure
+	154, // 159: excel.StringGemDuelBuffDatas.Datas:type_name -> excel.StringGemDuelBuffConfigure
+	156, // 160: excel.StringGemDuelItemDatas.Datas:type_name -> excel.StringGemDuelItemConfigure
+	158, // 161: excel.StringGemDuelGemDatas.Datas:type_name -> excel.StringGemDuelGemConfigure
+	160, // 162: excel.StringGemDuelGachaDatas.Datas:type_name -> excel.StringGemDuelGachaConfigure
+	162, // 163: excel.StringGemDuelShopDatas.Datas:type_name -> excel.StringGemDuelShopConfigure
+	164, // 164: excel.StringGemDuelGlobalDatas.Datas:type_name -> excel.StringGemDuelGlobalConfigure
+	166, // 165: excel.StringGemDuelPlayerLevelDatas.Datas:type_name -> excel.StringGemDuelPlayerLevelConfigure
+	166, // [166:166] is the sub-list for method output_type
+	166, // [166:166] is the sub-list for method input_type
+	166, // [166:166] is the sub-list for extension type_name
+	166, // [166:166] is the sub-list for extension extendee
+	0,   // [0:166] is the sub-list for field type_name
 }
 
 func init() { file_AllStringDatas_proto_init() }
@@ -8914,7 +9598,7 @@ func file_AllStringDatas_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_AllStringDatas_proto_rawDesc), len(file_AllStringDatas_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   155,
+			NumMessages:   167,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

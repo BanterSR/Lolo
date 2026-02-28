@@ -145,6 +145,7 @@ func (g *Game) newRouter() {
 		cmd.GamePlayRewardReq:        g.GamePlayReward,        //
 		cmd.AcceptQuestReq:           g.AcceptQuest,           //
 		cmd.GemDuelInfoReq:           g.GemDuelInfo,
+		cmd.GemDuelGachaListReq:      g.GemDuelGachaList,
 	}
 }
 

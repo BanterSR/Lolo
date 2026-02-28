@@ -478,14 +478,30 @@ func (g *Game) PlayerVitality(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GemDuelInfo(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.GemDuelInfoReq)
 	rsp := &proto.GemDuelInfoRsp{
-		Status:             proto.StatusCode_StatusCode_Ok,
-		GameData:           new(proto.GemDuelGameData),
-		Characters:         make([]*proto.GemDuelCharacterData, 0),
-		Items:              make([]*proto.GemDuelItem, 0),
-		BuyStaminaCount:    0,
-		Teams:              make([]*proto.GemDuelTeamData, 0),
-		PassedMainDungeons: make([]uint32, 0),
-		Arena:              new(proto.GemDuelArenaData),
+		Status:                 proto.StatusCode_StatusCode_Ok,
+		GameData:               new(proto.GemDuelGameData),
+		Characters:             make([]*proto.GemDuelCharacterData, 0),
+		Items:                  make([]*proto.GemDuelItem, 0),
+		BuyStaminaCount:        0,
+		Teams:                  make([]*proto.GemDuelTeamData, 0),
+		PassedMainDungeons:     make([]uint32, 0),
+		Arena:                  new(proto.GemDuelArenaData),
+		Quest:                  new(proto.GemDuelQuestDetail),
+		MonthCardOverDueTime:   0,
+		MonthCardRewardDays:    0,
+		MonthCardIsRewardToday: false,
+		GrowthFund:             make([]*proto.GemDuelGrowthFund, 0),
+		PlayerLevel:            0,
+		PlayerExp:              0,
+	}
+	defer g.send(s, msg.PacketId, rsp)
+}
+
+func (g *Game) GemDuelGachaList(s *model.Player, msg *alg.GameMsg) {
+	// req := msg.Body.(*proto.GemDuelGachaListReq)
+	rsp := &proto.GemDuelGachaListRsp{
+		Status: proto.StatusCode_StatusCode_Ok,
+		Gachas: make([]*proto.GemDuelGachaInfo, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 }

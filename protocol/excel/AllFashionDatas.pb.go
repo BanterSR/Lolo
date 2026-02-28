@@ -117,12 +117,13 @@ type FashionInfoConfigure struct {
 	ID              int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	ItemID          int32                  `protobuf:"varint,2,opt,name=ItemID,proto3" json:"ItemID,omitempty"`
 	OnlyCharacterID int32                  `protobuf:"varint,3,opt,name=OnlyCharacterID,proto3" json:"OnlyCharacterID,omitempty"`
-	AssetFullName   string                 `protobuf:"bytes,4,opt,name=AssetFullName,proto3" json:"AssetFullName,omitempty"`
-	HideHat         []int32                `protobuf:"varint,5,rep,packed,name=HideHat,proto3" json:"HideHat,omitempty"`
-	HideOrn         []int32                `protobuf:"varint,6,rep,packed,name=HideOrn,proto3" json:"HideOrn,omitempty"`
-	HideBraid       []int32                `protobuf:"varint,7,rep,packed,name=HideBraid,proto3" json:"HideBraid,omitempty"`
-	NewSexType      int32                  `protobuf:"varint,8,opt,name=NewSexType,proto3" json:"NewSexType,omitempty"`
-	NewFashionType  int32                  `protobuf:"varint,9,opt,name=NewFashionType,proto3" json:"NewFashionType,omitempty"`
+	IsCanSit        int32                  `protobuf:"varint,4,opt,name=IsCanSit,proto3" json:"IsCanSit,omitempty"`
+	AssetFullName   string                 `protobuf:"bytes,5,opt,name=AssetFullName,proto3" json:"AssetFullName,omitempty"`
+	HideHat         []int32                `protobuf:"varint,6,rep,packed,name=HideHat,proto3" json:"HideHat,omitempty"`
+	HideOrn         []int32                `protobuf:"varint,7,rep,packed,name=HideOrn,proto3" json:"HideOrn,omitempty"`
+	HideBraid       []int32                `protobuf:"varint,8,rep,packed,name=HideBraid,proto3" json:"HideBraid,omitempty"`
+	NewSexType      int32                  `protobuf:"varint,9,opt,name=NewSexType,proto3" json:"NewSexType,omitempty"`
+	NewFashionType  int32                  `protobuf:"varint,10,opt,name=NewFashionType,proto3" json:"NewFashionType,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -178,6 +179,13 @@ func (x *FashionInfoConfigure) GetOnlyCharacterID() int32 {
 	return 0
 }
 
+func (x *FashionInfoConfigure) GetIsCanSit() int32 {
+	if x != nil {
+		return x.IsCanSit
+	}
+	return 0
+}
+
 func (x *FashionInfoConfigure) GetAssetFullName() string {
 	if x != nil {
 		return x.AssetFullName
@@ -228,19 +236,21 @@ const file_AllFashionDatas_proto_rawDesc = "" +
 	"\x0fAllFashionDatas\x129\n" +
 	"\vFashionInfo\x18\x01 \x01(\v2\x17.excel.FashionInfoDatasR\vFashionInfo\"E\n" +
 	"\x10FashionInfoDatas\x121\n" +
-	"\x05Datas\x18\x01 \x03(\v2\x1b.excel.FashionInfoConfigureR\x05Datas\"\xa8\x02\n" +
+	"\x05Datas\x18\x01 \x03(\v2\x1b.excel.FashionInfoConfigureR\x05Datas\"\xc4\x02\n" +
 	"\x14FashionInfoConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x16\n" +
 	"\x06ItemID\x18\x02 \x01(\x05R\x06ItemID\x12(\n" +
-	"\x0fOnlyCharacterID\x18\x03 \x01(\x05R\x0fOnlyCharacterID\x12$\n" +
-	"\rAssetFullName\x18\x04 \x01(\tR\rAssetFullName\x12\x18\n" +
-	"\aHideHat\x18\x05 \x03(\x05R\aHideHat\x12\x18\n" +
-	"\aHideOrn\x18\x06 \x03(\x05R\aHideOrn\x12\x1c\n" +
-	"\tHideBraid\x18\a \x03(\x05R\tHideBraid\x12\x1e\n" +
+	"\x0fOnlyCharacterID\x18\x03 \x01(\x05R\x0fOnlyCharacterID\x12\x1a\n" +
+	"\bIsCanSit\x18\x04 \x01(\x05R\bIsCanSit\x12$\n" +
+	"\rAssetFullName\x18\x05 \x01(\tR\rAssetFullName\x12\x18\n" +
+	"\aHideHat\x18\x06 \x03(\x05R\aHideHat\x12\x18\n" +
+	"\aHideOrn\x18\a \x03(\x05R\aHideOrn\x12\x1c\n" +
+	"\tHideBraid\x18\b \x03(\x05R\tHideBraid\x12\x1e\n" +
 	"\n" +
-	"NewSexType\x18\b \x01(\x05R\n" +
+	"NewSexType\x18\t \x01(\x05R\n" +
 	"NewSexType\x12&\n" +
-	"\x0eNewFashionType\x18\t \x01(\x05R\x0eNewFashionTypeB\n" +
+	"\x0eNewFashionType\x18\n" +
+	" \x01(\x05R\x0eNewFashionTypeB\n" +
 	"Z\b./;excelb\x06proto3"
 
 var (

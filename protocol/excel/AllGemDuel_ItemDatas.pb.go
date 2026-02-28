@@ -27,6 +27,7 @@ const (
 type AllGemDuel_ItemDatas struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GemDuelItem   *GemDuelItemDatas      `protobuf:"bytes,1,opt,name=GemDuelItem,proto3" json:"GemDuelItem,omitempty"`
+	GemDuelBag    *GemDuelBagDatas       `protobuf:"bytes,2,opt,name=GemDuelBag,proto3" json:"GemDuelBag,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -64,6 +65,13 @@ func (*AllGemDuel_ItemDatas) Descriptor() ([]byte, []int) {
 func (x *AllGemDuel_ItemDatas) GetGemDuelItem() *GemDuelItemDatas {
 	if x != nil {
 		return x.GemDuelItem
+	}
+	return nil
+}
+
+func (x *AllGemDuel_ItemDatas) GetGemDuelBag() *GemDuelBagDatas {
+	if x != nil {
+		return x.GemDuelBag
 	}
 	return nil
 }
@@ -113,17 +121,22 @@ func (x *GemDuelItemDatas) GetDatas() []*GemDuelItemConfigure {
 }
 
 type GemDuelItemConfigure struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
-	TextID        int32                  `protobuf:"varint,2,opt,name=TextID,proto3" json:"TextID,omitempty"`
-	IconID        int32                  `protobuf:"varint,3,opt,name=IconID,proto3" json:"IconID,omitempty"`
-	Quality       int32                  `protobuf:"varint,4,opt,name=Quality,proto3" json:"Quality,omitempty"`
-	IsShowNum     bool                   `protobuf:"varint,5,opt,name=IsShowNum,proto3" json:"IsShowNum,omitempty"`
-	SourceID      int32                  `protobuf:"varint,6,opt,name=SourceID,proto3" json:"SourceID,omitempty"`
-	NewItemType   int32                  `protobuf:"varint,7,opt,name=NewItemType,proto3" json:"NewItemType,omitempty"`
-	NewItemTag    int32                  `protobuf:"varint,8,opt,name=NewItemTag,proto3" json:"NewItemTag,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ID             int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	TextID         int32                  `protobuf:"varint,2,opt,name=TextID,proto3" json:"TextID,omitempty"`
+	IconID         int32                  `protobuf:"varint,3,opt,name=IconID,proto3" json:"IconID,omitempty"`
+	Quality        int32                  `protobuf:"varint,4,opt,name=Quality,proto3" json:"Quality,omitempty"`
+	StackCount     int32                  `protobuf:"varint,5,opt,name=StackCount,proto3" json:"StackCount,omitempty"`
+	IsShowNum      bool                   `protobuf:"varint,6,opt,name=IsShowNum,proto3" json:"IsShowNum,omitempty"`
+	SourceID       int32                  `protobuf:"varint,7,opt,name=SourceID,proto3" json:"SourceID,omitempty"`
+	GmCount        int32                  `protobuf:"varint,8,opt,name=GmCount,proto3" json:"GmCount,omitempty"`
+	BgID           int32                  `protobuf:"varint,9,opt,name=BgID,proto3" json:"BgID,omitempty"`
+	ScriptParams   int32                  `protobuf:"varint,10,opt,name=ScriptParams,proto3" json:"ScriptParams,omitempty"`
+	NewItemType    int32                  `protobuf:"varint,11,opt,name=NewItemType,proto3" json:"NewItemType,omitempty"`
+	NewItemTag     int32                  `protobuf:"varint,12,opt,name=NewItemTag,proto3" json:"NewItemTag,omitempty"`
+	NewItemUseType int32                  `protobuf:"varint,13,opt,name=NewItemUseType,proto3" json:"NewItemUseType,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *GemDuelItemConfigure) Reset() {
@@ -184,6 +197,13 @@ func (x *GemDuelItemConfigure) GetQuality() int32 {
 	return 0
 }
 
+func (x *GemDuelItemConfigure) GetStackCount() int32 {
+	if x != nil {
+		return x.StackCount
+	}
+	return 0
+}
+
 func (x *GemDuelItemConfigure) GetIsShowNum() bool {
 	if x != nil {
 		return x.IsShowNum
@@ -194,6 +214,27 @@ func (x *GemDuelItemConfigure) GetIsShowNum() bool {
 func (x *GemDuelItemConfigure) GetSourceID() int32 {
 	if x != nil {
 		return x.SourceID
+	}
+	return 0
+}
+
+func (x *GemDuelItemConfigure) GetGmCount() int32 {
+	if x != nil {
+		return x.GmCount
+	}
+	return 0
+}
+
+func (x *GemDuelItemConfigure) GetBgID() int32 {
+	if x != nil {
+		return x.BgID
+	}
+	return 0
+}
+
+func (x *GemDuelItemConfigure) GetScriptParams() int32 {
+	if x != nil {
+		return x.ScriptParams
 	}
 	return 0
 }
@@ -212,25 +253,192 @@ func (x *GemDuelItemConfigure) GetNewItemTag() int32 {
 	return 0
 }
 
+func (x *GemDuelItemConfigure) GetNewItemUseType() int32 {
+	if x != nil {
+		return x.NewItemUseType
+	}
+	return 0
+}
+
+type GemDuelBagDatas struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Datas         []*GemDuelBagConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GemDuelBagDatas) Reset() {
+	*x = GemDuelBagDatas{}
+	mi := &file_AllGemDuel_ItemDatas_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GemDuelBagDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GemDuelBagDatas) ProtoMessage() {}
+
+func (x *GemDuelBagDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllGemDuel_ItemDatas_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GemDuelBagDatas.ProtoReflect.Descriptor instead.
+func (*GemDuelBagDatas) Descriptor() ([]byte, []int) {
+	return file_AllGemDuel_ItemDatas_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GemDuelBagDatas) GetDatas() []*GemDuelBagConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type GemDuelBagConfigure struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ID             int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	GemDuelBagItem []*GemDuelBagItem      `protobuf:"bytes,2,rep,name=GemDuelBagItem,proto3" json:"GemDuelBagItem,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *GemDuelBagConfigure) Reset() {
+	*x = GemDuelBagConfigure{}
+	mi := &file_AllGemDuel_ItemDatas_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GemDuelBagConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GemDuelBagConfigure) ProtoMessage() {}
+
+func (x *GemDuelBagConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllGemDuel_ItemDatas_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GemDuelBagConfigure.ProtoReflect.Descriptor instead.
+func (*GemDuelBagConfigure) Descriptor() ([]byte, []int) {
+	return file_AllGemDuel_ItemDatas_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GemDuelBagConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *GemDuelBagConfigure) GetGemDuelBagItem() []*GemDuelBagItem {
+	if x != nil {
+		return x.GemDuelBagItem
+	}
+	return nil
+}
+
+type GemDuelBagItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NewItemTag    int32                  `protobuf:"varint,1,opt,name=NewItemTag,proto3" json:"NewItemTag,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GemDuelBagItem) Reset() {
+	*x = GemDuelBagItem{}
+	mi := &file_AllGemDuel_ItemDatas_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GemDuelBagItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GemDuelBagItem) ProtoMessage() {}
+
+func (x *GemDuelBagItem) ProtoReflect() protoreflect.Message {
+	mi := &file_AllGemDuel_ItemDatas_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GemDuelBagItem.ProtoReflect.Descriptor instead.
+func (*GemDuelBagItem) Descriptor() ([]byte, []int) {
+	return file_AllGemDuel_ItemDatas_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GemDuelBagItem) GetNewItemTag() int32 {
+	if x != nil {
+		return x.NewItemTag
+	}
+	return 0
+}
+
 var File_AllGemDuel_ItemDatas_proto protoreflect.FileDescriptor
 
 const file_AllGemDuel_ItemDatas_proto_rawDesc = "" +
 	"\n" +
-	"\x1aAllGemDuel_ItemDatas.proto\x12\x05excel\"Q\n" +
+	"\x1aAllGemDuel_ItemDatas.proto\x12\x05excel\"\x89\x01\n" +
 	"\x14AllGemDuel_ItemDatas\x129\n" +
-	"\vGemDuelItem\x18\x01 \x01(\v2\x17.excel.GemDuelItemDatasR\vGemDuelItem\"E\n" +
+	"\vGemDuelItem\x18\x01 \x01(\v2\x17.excel.GemDuelItemDatasR\vGemDuelItem\x126\n" +
+	"\n" +
+	"GemDuelBag\x18\x02 \x01(\v2\x16.excel.GemDuelBagDatasR\n" +
+	"GemDuelBag\"E\n" +
 	"\x10GemDuelItemDatas\x121\n" +
-	"\x05Datas\x18\x01 \x03(\v2\x1b.excel.GemDuelItemConfigureR\x05Datas\"\xec\x01\n" +
+	"\x05Datas\x18\x01 \x03(\v2\x1b.excel.GemDuelItemConfigureR\x05Datas\"\x86\x03\n" +
 	"\x14GemDuelItemConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x16\n" +
 	"\x06TextID\x18\x02 \x01(\x05R\x06TextID\x12\x16\n" +
 	"\x06IconID\x18\x03 \x01(\x05R\x06IconID\x12\x18\n" +
-	"\aQuality\x18\x04 \x01(\x05R\aQuality\x12\x1c\n" +
-	"\tIsShowNum\x18\x05 \x01(\bR\tIsShowNum\x12\x1a\n" +
-	"\bSourceID\x18\x06 \x01(\x05R\bSourceID\x12 \n" +
-	"\vNewItemType\x18\a \x01(\x05R\vNewItemType\x12\x1e\n" +
+	"\aQuality\x18\x04 \x01(\x05R\aQuality\x12\x1e\n" +
 	"\n" +
-	"NewItemTag\x18\b \x01(\x05R\n" +
+	"StackCount\x18\x05 \x01(\x05R\n" +
+	"StackCount\x12\x1c\n" +
+	"\tIsShowNum\x18\x06 \x01(\bR\tIsShowNum\x12\x1a\n" +
+	"\bSourceID\x18\a \x01(\x05R\bSourceID\x12\x18\n" +
+	"\aGmCount\x18\b \x01(\x05R\aGmCount\x12\x12\n" +
+	"\x04BgID\x18\t \x01(\x05R\x04BgID\x12\"\n" +
+	"\fScriptParams\x18\n" +
+	" \x01(\x05R\fScriptParams\x12 \n" +
+	"\vNewItemType\x18\v \x01(\x05R\vNewItemType\x12\x1e\n" +
+	"\n" +
+	"NewItemTag\x18\f \x01(\x05R\n" +
+	"NewItemTag\x12&\n" +
+	"\x0eNewItemUseType\x18\r \x01(\x05R\x0eNewItemUseType\"C\n" +
+	"\x0fGemDuelBagDatas\x120\n" +
+	"\x05Datas\x18\x01 \x03(\v2\x1a.excel.GemDuelBagConfigureR\x05Datas\"d\n" +
+	"\x13GemDuelBagConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12=\n" +
+	"\x0eGemDuelBagItem\x18\x02 \x03(\v2\x15.excel.GemDuelBagItemR\x0eGemDuelBagItem\"0\n" +
+	"\x0eGemDuelBagItem\x12\x1e\n" +
+	"\n" +
+	"NewItemTag\x18\x01 \x01(\x05R\n" +
 	"NewItemTagB\n" +
 	"Z\b./;excelb\x06proto3"
 
@@ -246,20 +454,26 @@ func file_AllGemDuel_ItemDatas_proto_rawDescGZIP() []byte {
 	return file_AllGemDuel_ItemDatas_proto_rawDescData
 }
 
-var file_AllGemDuel_ItemDatas_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_AllGemDuel_ItemDatas_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_AllGemDuel_ItemDatas_proto_goTypes = []any{
 	(*AllGemDuel_ItemDatas)(nil), // 0: excel.AllGemDuel_ItemDatas
 	(*GemDuelItemDatas)(nil),     // 1: excel.GemDuelItemDatas
 	(*GemDuelItemConfigure)(nil), // 2: excel.GemDuelItemConfigure
+	(*GemDuelBagDatas)(nil),      // 3: excel.GemDuelBagDatas
+	(*GemDuelBagConfigure)(nil),  // 4: excel.GemDuelBagConfigure
+	(*GemDuelBagItem)(nil),       // 5: excel.GemDuelBagItem
 }
 var file_AllGemDuel_ItemDatas_proto_depIdxs = []int32{
 	1, // 0: excel.AllGemDuel_ItemDatas.GemDuelItem:type_name -> excel.GemDuelItemDatas
-	2, // 1: excel.GemDuelItemDatas.Datas:type_name -> excel.GemDuelItemConfigure
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	3, // 1: excel.AllGemDuel_ItemDatas.GemDuelBag:type_name -> excel.GemDuelBagDatas
+	2, // 2: excel.GemDuelItemDatas.Datas:type_name -> excel.GemDuelItemConfigure
+	4, // 3: excel.GemDuelBagDatas.Datas:type_name -> excel.GemDuelBagConfigure
+	5, // 4: excel.GemDuelBagConfigure.GemDuelBagItem:type_name -> excel.GemDuelBagItem
+	5, // [5:5] is the sub-list for method output_type
+	5, // [5:5] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_AllGemDuel_ItemDatas_proto_init() }
@@ -273,7 +487,7 @@ func file_AllGemDuel_ItemDatas_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_AllGemDuel_ItemDatas_proto_rawDesc), len(file_AllGemDuel_ItemDatas_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

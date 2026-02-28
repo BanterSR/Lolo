@@ -72,6 +72,11 @@ type AllUIDatas struct {
 	UIGemDuelCharacter   *UIGemDuelCharacterDatas   `protobuf:"bytes,44,opt,name=UIGemDuelCharacter,proto3" json:"UIGemDuelCharacter,omitempty"`
 	UIGemDuelMainDungeon *UIGemDuelMainDungeonDatas `protobuf:"bytes,45,opt,name=UIGemDuelMainDungeon,proto3" json:"UIGemDuelMainDungeon,omitempty"`
 	UIGemDuelBuff        *UIGemDuelBuffDatas        `protobuf:"bytes,46,opt,name=UIGemDuelBuff,proto3" json:"UIGemDuelBuff,omitempty"`
+	UIGemDuelGem         *UIGemDuelGemDatas         `protobuf:"bytes,47,opt,name=UIGemDuelGem,proto3" json:"UIGemDuelGem,omitempty"`
+	UIGemDuelItem        *UIGemDuelItemDatas        `protobuf:"bytes,48,opt,name=UIGemDuelItem,proto3" json:"UIGemDuelItem,omitempty"`
+	UIGemDueShop         *UIGemDueShopDatas         `protobuf:"bytes,49,opt,name=UIGemDueShop,proto3" json:"UIGemDueShop,omitempty"`
+	UIGemDueGacha        *UIGemDueGachaDatas        `protobuf:"bytes,50,opt,name=UIGemDueGacha,proto3" json:"UIGemDueGacha,omitempty"`
+	UIGemDuePlayerLevel  *UIGemDuePlayerLevelDatas  `protobuf:"bytes,51,opt,name=UIGemDuePlayerLevel,proto3" json:"UIGemDuePlayerLevel,omitempty"`
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -424,6 +429,41 @@ func (x *AllUIDatas) GetUIGemDuelMainDungeon() *UIGemDuelMainDungeonDatas {
 func (x *AllUIDatas) GetUIGemDuelBuff() *UIGemDuelBuffDatas {
 	if x != nil {
 		return x.UIGemDuelBuff
+	}
+	return nil
+}
+
+func (x *AllUIDatas) GetUIGemDuelGem() *UIGemDuelGemDatas {
+	if x != nil {
+		return x.UIGemDuelGem
+	}
+	return nil
+}
+
+func (x *AllUIDatas) GetUIGemDuelItem() *UIGemDuelItemDatas {
+	if x != nil {
+		return x.UIGemDuelItem
+	}
+	return nil
+}
+
+func (x *AllUIDatas) GetUIGemDueShop() *UIGemDueShopDatas {
+	if x != nil {
+		return x.UIGemDueShop
+	}
+	return nil
+}
+
+func (x *AllUIDatas) GetUIGemDueGacha() *UIGemDueGachaDatas {
+	if x != nil {
+		return x.UIGemDueGacha
+	}
+	return nil
+}
+
+func (x *AllUIDatas) GetUIGemDuePlayerLevel() *UIGemDuePlayerLevelDatas {
+	if x != nil {
+		return x.UIGemDuePlayerLevel
 	}
 	return nil
 }
@@ -4852,6 +4892,486 @@ func (x *UIGemDuelBuffConfigure) GetAssetFullName() []string {
 	return nil
 }
 
+type UIGemDuelGemDatas struct {
+	state         protoimpl.MessageState   `protogen:"open.v1"`
+	Datas         []*UIGemDuelGemConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UIGemDuelGemDatas) Reset() {
+	*x = UIGemDuelGemDatas{}
+	mi := &file_AllUIDatas_proto_msgTypes[93]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UIGemDuelGemDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UIGemDuelGemDatas) ProtoMessage() {}
+
+func (x *UIGemDuelGemDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllUIDatas_proto_msgTypes[93]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UIGemDuelGemDatas.ProtoReflect.Descriptor instead.
+func (*UIGemDuelGemDatas) Descriptor() ([]byte, []int) {
+	return file_AllUIDatas_proto_rawDescGZIP(), []int{93}
+}
+
+func (x *UIGemDuelGemDatas) GetDatas() []*UIGemDuelGemConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type UIGemDuelGemConfigure struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	AssetFullName []string               `protobuf:"bytes,2,rep,name=AssetFullName,proto3" json:"AssetFullName,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UIGemDuelGemConfigure) Reset() {
+	*x = UIGemDuelGemConfigure{}
+	mi := &file_AllUIDatas_proto_msgTypes[94]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UIGemDuelGemConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UIGemDuelGemConfigure) ProtoMessage() {}
+
+func (x *UIGemDuelGemConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllUIDatas_proto_msgTypes[94]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UIGemDuelGemConfigure.ProtoReflect.Descriptor instead.
+func (*UIGemDuelGemConfigure) Descriptor() ([]byte, []int) {
+	return file_AllUIDatas_proto_rawDescGZIP(), []int{94}
+}
+
+func (x *UIGemDuelGemConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *UIGemDuelGemConfigure) GetAssetFullName() []string {
+	if x != nil {
+		return x.AssetFullName
+	}
+	return nil
+}
+
+type UIGemDuelItemDatas struct {
+	state         protoimpl.MessageState    `protogen:"open.v1"`
+	Datas         []*UIGemDuelItemConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UIGemDuelItemDatas) Reset() {
+	*x = UIGemDuelItemDatas{}
+	mi := &file_AllUIDatas_proto_msgTypes[95]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UIGemDuelItemDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UIGemDuelItemDatas) ProtoMessage() {}
+
+func (x *UIGemDuelItemDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllUIDatas_proto_msgTypes[95]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UIGemDuelItemDatas.ProtoReflect.Descriptor instead.
+func (*UIGemDuelItemDatas) Descriptor() ([]byte, []int) {
+	return file_AllUIDatas_proto_rawDescGZIP(), []int{95}
+}
+
+func (x *UIGemDuelItemDatas) GetDatas() []*UIGemDuelItemConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type UIGemDuelItemConfigure struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	AssetFullName []string               `protobuf:"bytes,2,rep,name=AssetFullName,proto3" json:"AssetFullName,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UIGemDuelItemConfigure) Reset() {
+	*x = UIGemDuelItemConfigure{}
+	mi := &file_AllUIDatas_proto_msgTypes[96]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UIGemDuelItemConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UIGemDuelItemConfigure) ProtoMessage() {}
+
+func (x *UIGemDuelItemConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllUIDatas_proto_msgTypes[96]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UIGemDuelItemConfigure.ProtoReflect.Descriptor instead.
+func (*UIGemDuelItemConfigure) Descriptor() ([]byte, []int) {
+	return file_AllUIDatas_proto_rawDescGZIP(), []int{96}
+}
+
+func (x *UIGemDuelItemConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *UIGemDuelItemConfigure) GetAssetFullName() []string {
+	if x != nil {
+		return x.AssetFullName
+	}
+	return nil
+}
+
+type UIGemDueShopDatas struct {
+	state         protoimpl.MessageState   `protogen:"open.v1"`
+	Datas         []*UIGemDueShopConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UIGemDueShopDatas) Reset() {
+	*x = UIGemDueShopDatas{}
+	mi := &file_AllUIDatas_proto_msgTypes[97]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UIGemDueShopDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UIGemDueShopDatas) ProtoMessage() {}
+
+func (x *UIGemDueShopDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllUIDatas_proto_msgTypes[97]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UIGemDueShopDatas.ProtoReflect.Descriptor instead.
+func (*UIGemDueShopDatas) Descriptor() ([]byte, []int) {
+	return file_AllUIDatas_proto_rawDescGZIP(), []int{97}
+}
+
+func (x *UIGemDueShopDatas) GetDatas() []*UIGemDueShopConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type UIGemDueShopConfigure struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	AssetFullName []string               `protobuf:"bytes,2,rep,name=AssetFullName,proto3" json:"AssetFullName,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UIGemDueShopConfigure) Reset() {
+	*x = UIGemDueShopConfigure{}
+	mi := &file_AllUIDatas_proto_msgTypes[98]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UIGemDueShopConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UIGemDueShopConfigure) ProtoMessage() {}
+
+func (x *UIGemDueShopConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllUIDatas_proto_msgTypes[98]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UIGemDueShopConfigure.ProtoReflect.Descriptor instead.
+func (*UIGemDueShopConfigure) Descriptor() ([]byte, []int) {
+	return file_AllUIDatas_proto_rawDescGZIP(), []int{98}
+}
+
+func (x *UIGemDueShopConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *UIGemDueShopConfigure) GetAssetFullName() []string {
+	if x != nil {
+		return x.AssetFullName
+	}
+	return nil
+}
+
+type UIGemDueGachaDatas struct {
+	state         protoimpl.MessageState    `protogen:"open.v1"`
+	Datas         []*UIGemDueGachaConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UIGemDueGachaDatas) Reset() {
+	*x = UIGemDueGachaDatas{}
+	mi := &file_AllUIDatas_proto_msgTypes[99]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UIGemDueGachaDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UIGemDueGachaDatas) ProtoMessage() {}
+
+func (x *UIGemDueGachaDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllUIDatas_proto_msgTypes[99]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UIGemDueGachaDatas.ProtoReflect.Descriptor instead.
+func (*UIGemDueGachaDatas) Descriptor() ([]byte, []int) {
+	return file_AllUIDatas_proto_rawDescGZIP(), []int{99}
+}
+
+func (x *UIGemDueGachaDatas) GetDatas() []*UIGemDueGachaConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type UIGemDueGachaConfigure struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	AssetFullName []string               `protobuf:"bytes,2,rep,name=AssetFullName,proto3" json:"AssetFullName,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UIGemDueGachaConfigure) Reset() {
+	*x = UIGemDueGachaConfigure{}
+	mi := &file_AllUIDatas_proto_msgTypes[100]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UIGemDueGachaConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UIGemDueGachaConfigure) ProtoMessage() {}
+
+func (x *UIGemDueGachaConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllUIDatas_proto_msgTypes[100]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UIGemDueGachaConfigure.ProtoReflect.Descriptor instead.
+func (*UIGemDueGachaConfigure) Descriptor() ([]byte, []int) {
+	return file_AllUIDatas_proto_rawDescGZIP(), []int{100}
+}
+
+func (x *UIGemDueGachaConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *UIGemDueGachaConfigure) GetAssetFullName() []string {
+	if x != nil {
+		return x.AssetFullName
+	}
+	return nil
+}
+
+type UIGemDuePlayerLevelDatas struct {
+	state         protoimpl.MessageState          `protogen:"open.v1"`
+	Datas         []*UIGemDuePlayerLevelConfigure `protobuf:"bytes,1,rep,name=Datas,proto3" json:"Datas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UIGemDuePlayerLevelDatas) Reset() {
+	*x = UIGemDuePlayerLevelDatas{}
+	mi := &file_AllUIDatas_proto_msgTypes[101]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UIGemDuePlayerLevelDatas) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UIGemDuePlayerLevelDatas) ProtoMessage() {}
+
+func (x *UIGemDuePlayerLevelDatas) ProtoReflect() protoreflect.Message {
+	mi := &file_AllUIDatas_proto_msgTypes[101]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UIGemDuePlayerLevelDatas.ProtoReflect.Descriptor instead.
+func (*UIGemDuePlayerLevelDatas) Descriptor() ([]byte, []int) {
+	return file_AllUIDatas_proto_rawDescGZIP(), []int{101}
+}
+
+func (x *UIGemDuePlayerLevelDatas) GetDatas() []*UIGemDuePlayerLevelConfigure {
+	if x != nil {
+		return x.Datas
+	}
+	return nil
+}
+
+type UIGemDuePlayerLevelConfigure struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	AssetFullName []string               `protobuf:"bytes,2,rep,name=AssetFullName,proto3" json:"AssetFullName,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UIGemDuePlayerLevelConfigure) Reset() {
+	*x = UIGemDuePlayerLevelConfigure{}
+	mi := &file_AllUIDatas_proto_msgTypes[102]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UIGemDuePlayerLevelConfigure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UIGemDuePlayerLevelConfigure) ProtoMessage() {}
+
+func (x *UIGemDuePlayerLevelConfigure) ProtoReflect() protoreflect.Message {
+	mi := &file_AllUIDatas_proto_msgTypes[102]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UIGemDuePlayerLevelConfigure.ProtoReflect.Descriptor instead.
+func (*UIGemDuePlayerLevelConfigure) Descriptor() ([]byte, []int) {
+	return file_AllUIDatas_proto_rawDescGZIP(), []int{102}
+}
+
+func (x *UIGemDuePlayerLevelConfigure) GetID() int32 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
+}
+
+func (x *UIGemDuePlayerLevelConfigure) GetAssetFullName() []string {
+	if x != nil {
+		return x.AssetFullName
+	}
+	return nil
+}
+
 type UIConfigure struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
@@ -4862,7 +5382,7 @@ type UIConfigure struct {
 
 func (x *UIConfigure) Reset() {
 	*x = UIConfigure{}
-	mi := &file_AllUIDatas_proto_msgTypes[93]
+	mi := &file_AllUIDatas_proto_msgTypes[103]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4874,7 +5394,7 @@ func (x *UIConfigure) String() string {
 func (*UIConfigure) ProtoMessage() {}
 
 func (x *UIConfigure) ProtoReflect() protoreflect.Message {
-	mi := &file_AllUIDatas_proto_msgTypes[93]
+	mi := &file_AllUIDatas_proto_msgTypes[103]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4887,7 +5407,7 @@ func (x *UIConfigure) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UIConfigure.ProtoReflect.Descriptor instead.
 func (*UIConfigure) Descriptor() ([]byte, []int) {
-	return file_AllUIDatas_proto_rawDescGZIP(), []int{93}
+	return file_AllUIDatas_proto_rawDescGZIP(), []int{103}
 }
 
 func (x *UIConfigure) GetID() int32 {
@@ -4908,7 +5428,7 @@ var File_AllUIDatas_proto protoreflect.FileDescriptor
 
 const file_AllUIDatas_proto_rawDesc = "" +
 	"\n" +
-	"\x10AllUIDatas.proto\x12\x05excel\"\xcc\x16\n" +
+	"\x10AllUIDatas.proto\x12\x05excel\"\x9d\x19\n" +
 	"\n" +
 	"AllUIDatas\x12*\n" +
 	"\x04Icon\x18\x01 \x01(\v2\x16.excel.UIItemIconDatasR\x04Icon\x128\n" +
@@ -4975,7 +5495,12 @@ const file_AllUIDatas_proto_rawDesc = "" +
 	"\x0eUIGemDuelSkill\x18+ \x01(\v2\x1a.excel.UIGemDuelSkillDatasR\x0eUIGemDuelSkill\x12N\n" +
 	"\x12UIGemDuelCharacter\x18, \x01(\v2\x1e.excel.UIGemDuelCharacterDatasR\x12UIGemDuelCharacter\x12T\n" +
 	"\x14UIGemDuelMainDungeon\x18- \x01(\v2 .excel.UIGemDuelMainDungeonDatasR\x14UIGemDuelMainDungeon\x12?\n" +
-	"\rUIGemDuelBuff\x18. \x01(\v2\x19.excel.UIGemDuelBuffDatasR\rUIGemDuelBuff\"C\n" +
+	"\rUIGemDuelBuff\x18. \x01(\v2\x19.excel.UIGemDuelBuffDatasR\rUIGemDuelBuff\x12<\n" +
+	"\fUIGemDuelGem\x18/ \x01(\v2\x18.excel.UIGemDuelGemDatasR\fUIGemDuelGem\x12?\n" +
+	"\rUIGemDuelItem\x180 \x01(\v2\x19.excel.UIGemDuelItemDatasR\rUIGemDuelItem\x12<\n" +
+	"\fUIGemDueShop\x181 \x01(\v2\x18.excel.UIGemDueShopDatasR\fUIGemDueShop\x12?\n" +
+	"\rUIGemDueGacha\x182 \x01(\v2\x19.excel.UIGemDueGachaDatasR\rUIGemDueGacha\x12Q\n" +
+	"\x13UIGemDuePlayerLevel\x183 \x01(\v2\x1f.excel.UIGemDuePlayerLevelDatasR\x13UIGemDuePlayerLevel\"C\n" +
 	"\x0fUIItemIconDatas\x120\n" +
 	"\x05Datas\x18\x01 \x03(\v2\x1a.excel.UIItemIconConfigureR\x05Datas\"K\n" +
 	"\x13UIItemIconConfigure\x12\x0e\n" +
@@ -5206,6 +5731,31 @@ const file_AllUIDatas_proto_rawDesc = "" +
 	"\x05Datas\x18\x01 \x03(\v2\x1d.excel.UIGemDuelBuffConfigureR\x05Datas\"N\n" +
 	"\x16UIGemDuelBuffConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12$\n" +
+	"\rAssetFullName\x18\x02 \x03(\tR\rAssetFullName\"G\n" +
+	"\x11UIGemDuelGemDatas\x122\n" +
+	"\x05Datas\x18\x01 \x03(\v2\x1c.excel.UIGemDuelGemConfigureR\x05Datas\"M\n" +
+	"\x15UIGemDuelGemConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12$\n" +
+	"\rAssetFullName\x18\x02 \x03(\tR\rAssetFullName\"I\n" +
+	"\x12UIGemDuelItemDatas\x123\n" +
+	"\x05Datas\x18\x01 \x03(\v2\x1d.excel.UIGemDuelItemConfigureR\x05Datas\"N\n" +
+	"\x16UIGemDuelItemConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12$\n" +
+	"\rAssetFullName\x18\x02 \x03(\tR\rAssetFullName\"G\n" +
+	"\x11UIGemDueShopDatas\x122\n" +
+	"\x05Datas\x18\x01 \x03(\v2\x1c.excel.UIGemDueShopConfigureR\x05Datas\"M\n" +
+	"\x15UIGemDueShopConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12$\n" +
+	"\rAssetFullName\x18\x02 \x03(\tR\rAssetFullName\"I\n" +
+	"\x12UIGemDueGachaDatas\x123\n" +
+	"\x05Datas\x18\x01 \x03(\v2\x1d.excel.UIGemDueGachaConfigureR\x05Datas\"N\n" +
+	"\x16UIGemDueGachaConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12$\n" +
+	"\rAssetFullName\x18\x02 \x03(\tR\rAssetFullName\"U\n" +
+	"\x18UIGemDuePlayerLevelDatas\x129\n" +
+	"\x05Datas\x18\x01 \x03(\v2#.excel.UIGemDuePlayerLevelConfigureR\x05Datas\"T\n" +
+	"\x1cUIGemDuePlayerLevelConfigure\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12$\n" +
 	"\rAssetFullName\x18\x02 \x03(\tR\rAssetFullName\"C\n" +
 	"\vUIConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12$\n" +
@@ -5224,7 +5774,7 @@ func file_AllUIDatas_proto_rawDescGZIP() []byte {
 	return file_AllUIDatas_proto_rawDescData
 }
 
-var file_AllUIDatas_proto_msgTypes = make([]protoimpl.MessageInfo, 94)
+var file_AllUIDatas_proto_msgTypes = make([]protoimpl.MessageInfo, 104)
 var file_AllUIDatas_proto_goTypes = []any{
 	(*AllUIDatas)(nil),                    // 0: excel.AllUIDatas
 	(*UIItemIconDatas)(nil),               // 1: excel.UIItemIconDatas
@@ -5319,106 +5869,126 @@ var file_AllUIDatas_proto_goTypes = []any{
 	(*UIGemDuelMainDungeonConfigure)(nil), // 90: excel.UIGemDuelMainDungeonConfigure
 	(*UIGemDuelBuffDatas)(nil),            // 91: excel.UIGemDuelBuffDatas
 	(*UIGemDuelBuffConfigure)(nil),        // 92: excel.UIGemDuelBuffConfigure
-	(*UIConfigure)(nil),                   // 93: excel.UIConfigure
+	(*UIGemDuelGemDatas)(nil),             // 93: excel.UIGemDuelGemDatas
+	(*UIGemDuelGemConfigure)(nil),         // 94: excel.UIGemDuelGemConfigure
+	(*UIGemDuelItemDatas)(nil),            // 95: excel.UIGemDuelItemDatas
+	(*UIGemDuelItemConfigure)(nil),        // 96: excel.UIGemDuelItemConfigure
+	(*UIGemDueShopDatas)(nil),             // 97: excel.UIGemDueShopDatas
+	(*UIGemDueShopConfigure)(nil),         // 98: excel.UIGemDueShopConfigure
+	(*UIGemDueGachaDatas)(nil),            // 99: excel.UIGemDueGachaDatas
+	(*UIGemDueGachaConfigure)(nil),        // 100: excel.UIGemDueGachaConfigure
+	(*UIGemDuePlayerLevelDatas)(nil),      // 101: excel.UIGemDuePlayerLevelDatas
+	(*UIGemDuePlayerLevelConfigure)(nil),  // 102: excel.UIGemDuePlayerLevelConfigure
+	(*UIConfigure)(nil),                   // 103: excel.UIConfigure
 }
 var file_AllUIDatas_proto_depIdxs = []int32{
-	1,  // 0: excel.AllUIDatas.Icon:type_name -> excel.UIItemIconDatas
-	3,  // 1: excel.AllUIDatas.PlayerIcon:type_name -> excel.UIPlayerIconDatas
-	5,  // 2: excel.AllUIDatas.UISpell:type_name -> excel.UISpellDatas
-	7,  // 3: excel.AllUIDatas.PosterIcon:type_name -> excel.UIPosterIconDatas
-	9,  // 4: excel.AllUIDatas.UIDungeon:type_name -> excel.UIDungeonDatas
-	11, // 5: excel.AllUIDatas.UIAbyss:type_name -> excel.UIAbyssDatas
-	13, // 6: excel.AllUIDatas.UISceneIcon:type_name -> excel.UISceneIconDatas
-	15, // 7: excel.AllUIDatas.UINPCIcon:type_name -> excel.UINPCIconDatas
-	17, // 8: excel.AllUIDatas.CollectPhotoIcon:type_name -> excel.UICollectPhotoIconDatas
-	19, // 9: excel.AllUIDatas.CollectDataIcon:type_name -> excel.UICollectDataIconDatas
-	21, // 10: excel.AllUIDatas.PassiveIcon:type_name -> excel.UIPassiveIconDatas
-	23, // 11: excel.AllUIDatas.MoonStoneDataIcon:type_name -> excel.UIMoonStoneDataIconDatas
-	25, // 12: excel.AllUIDatas.UIShopIcon:type_name -> excel.UIShopIconDatas
-	27, // 13: excel.AllUIDatas.UIGachaIcon:type_name -> excel.UIGachaIconDatas
-	29, // 14: excel.AllUIDatas.UIAbilityIcon:type_name -> excel.UIAbilityIconDatas
-	31, // 15: excel.AllUIDatas.UIExploreIcon:type_name -> excel.UIExploreIconDatas
-	33, // 16: excel.AllUIDatas.UIChatIcon:type_name -> excel.UIChatIconDatas
-	35, // 17: excel.AllUIDatas.UIExpressionIcon:type_name -> excel.UIExpressionIconDatas
-	37, // 18: excel.AllUIDatas.UIStoryIcon:type_name -> excel.UIStoryIconDatas
-	39, // 19: excel.AllUIDatas.UIExtraChapterIcon:type_name -> excel.UIExtraChaptertIconDatas
-	41, // 20: excel.AllUIDatas.UIGlobalBuffIcon:type_name -> excel.UIGlobalBuffIconDatas
-	43, // 21: excel.AllUIDatas.UIBattleIcon:type_name -> excel.UIBattleIconDatas
-	45, // 22: excel.AllUIDatas.UIFlagIcon:type_name -> excel.UIFlagIconDatas
-	47, // 23: excel.AllUIDatas.UIRiddleIcon:type_name -> excel.UIRiddleIconDatas
-	49, // 24: excel.AllUIDatas.UIChallengeIcon:type_name -> excel.UIChallengeIconDatas
-	51, // 25: excel.AllUIDatas.UIQuestTexture:type_name -> excel.UIQuestTextureDatas
-	53, // 26: excel.AllUIDatas.UILifeSpellIcon:type_name -> excel.UILifeSpellIconDatas
-	55, // 27: excel.AllUIDatas.UIManualIcon:type_name -> excel.UIManualIconDatas
-	57, // 28: excel.AllUIDatas.UIBuffIcon:type_name -> excel.UIBuffIconDatas
-	59, // 29: excel.AllUIDatas.UIMiniMap:type_name -> excel.UIMiniMapDatas
-	61, // 30: excel.AllUIDatas.UIHead:type_name -> excel.UIHeadDatas
-	63, // 31: excel.AllUIDatas.UIAchieveQuest:type_name -> excel.UIAchieveQuestDatas
-	65, // 32: excel.AllUIDatas.UIActivity:type_name -> excel.UIActivityDatas
-	67, // 33: excel.AllUIDatas.UIHelp:type_name -> excel.UIHelpDatas
-	69, // 34: excel.AllUIDatas.UITeamGameplay:type_name -> excel.UITeamGameplayDatas
-	71, // 35: excel.AllUIDatas.UIIntimacy:type_name -> excel.UIIntimacyDatas
-	73, // 36: excel.AllUIDatas.UIHomeItemTheme:type_name -> excel.UIHomeItemThemeDatas
-	75, // 37: excel.AllUIDatas.UIBossRush:type_name -> excel.UIBossRushDatas
-	77, // 38: excel.AllUIDatas.UIMusicNote:type_name -> excel.UIMusicNoteDatas
-	79, // 39: excel.AllUIDatas.UIGuide:type_name -> excel.UIGuideDatas
-	81, // 40: excel.AllUIDatas.UIBlessingTree:type_name -> excel.UIBlessingTreeDatas
-	83, // 41: excel.AllUIDatas.UIGemDuelBattleStage:type_name -> excel.UIGemDuelBattleStageDatas
-	85, // 42: excel.AllUIDatas.UIGemDuelSkill:type_name -> excel.UIGemDuelSkillDatas
-	87, // 43: excel.AllUIDatas.UIGemDuelCharacter:type_name -> excel.UIGemDuelCharacterDatas
-	89, // 44: excel.AllUIDatas.UIGemDuelMainDungeon:type_name -> excel.UIGemDuelMainDungeonDatas
-	91, // 45: excel.AllUIDatas.UIGemDuelBuff:type_name -> excel.UIGemDuelBuffDatas
-	2,  // 46: excel.UIItemIconDatas.Datas:type_name -> excel.UIItemIconConfigure
-	4,  // 47: excel.UIPlayerIconDatas.Datas:type_name -> excel.UIPlayerIconConfigure
-	6,  // 48: excel.UISpellDatas.Datas:type_name -> excel.UISpellConfigure
-	8,  // 49: excel.UIPosterIconDatas.Datas:type_name -> excel.UIPosterIconConfigure
-	10, // 50: excel.UIDungeonDatas.Datas:type_name -> excel.UIDungeonConfigure
-	12, // 51: excel.UIAbyssDatas.Datas:type_name -> excel.UIAbyssConfigure
-	14, // 52: excel.UISceneIconDatas.Datas:type_name -> excel.UISceneIconConfigure
-	16, // 53: excel.UINPCIconDatas.Datas:type_name -> excel.UINPCIconConfigure
-	18, // 54: excel.UICollectPhotoIconDatas.Datas:type_name -> excel.UICollectPhotoIconConfigure
-	20, // 55: excel.UICollectDataIconDatas.Datas:type_name -> excel.UICollectDataIconConfigure
-	22, // 56: excel.UIPassiveIconDatas.Datas:type_name -> excel.UIPassiveIconConfigure
-	24, // 57: excel.UIMoonStoneDataIconDatas.Datas:type_name -> excel.UIMoonStoneDataIconConfigure
-	26, // 58: excel.UIShopIconDatas.Datas:type_name -> excel.UIShopIconConfigure
-	28, // 59: excel.UIGachaIconDatas.Datas:type_name -> excel.UIGachaIconConfigure
-	30, // 60: excel.UIAbilityIconDatas.Datas:type_name -> excel.UIAbilityIconConfigure
-	32, // 61: excel.UIExploreIconDatas.Datas:type_name -> excel.UIExploreIconConfigure
-	34, // 62: excel.UIChatIconDatas.Datas:type_name -> excel.UIChatIconConfigure
-	36, // 63: excel.UIExpressionIconDatas.Datas:type_name -> excel.UIExpressionIconConfigure
-	38, // 64: excel.UIStoryIconDatas.Datas:type_name -> excel.UIStoryIconConfigure
-	40, // 65: excel.UIExtraChaptertIconDatas.Datas:type_name -> excel.UIExtraChaptertIconConfigure
-	42, // 66: excel.UIGlobalBuffIconDatas.Datas:type_name -> excel.UIGlobalBuffIconConfigure
-	44, // 67: excel.UIBattleIconDatas.Datas:type_name -> excel.UIBattleIconConfigure
-	46, // 68: excel.UIFlagIconDatas.Datas:type_name -> excel.UIFlagIconConfigure
-	48, // 69: excel.UIRiddleIconDatas.Datas:type_name -> excel.UIRiddleIconConfigure
-	50, // 70: excel.UIChallengeIconDatas.Datas:type_name -> excel.UIChallengeIconConfigure
-	52, // 71: excel.UIQuestTextureDatas.Datas:type_name -> excel.UIQuestTextureConfigure
-	54, // 72: excel.UILifeSpellIconDatas.Datas:type_name -> excel.UILifeSpellIconConfigure
-	56, // 73: excel.UIManualIconDatas.Datas:type_name -> excel.UIManualIconConfigure
-	58, // 74: excel.UIBuffIconDatas.Datas:type_name -> excel.UIBuffIconConfigure
-	60, // 75: excel.UIMiniMapDatas.Datas:type_name -> excel.UIMiniMapConfigure
-	62, // 76: excel.UIHeadDatas.Datas:type_name -> excel.UIHeadConfigure
-	64, // 77: excel.UIAchieveQuestDatas.Datas:type_name -> excel.UIAchieveQuestConfigure
-	66, // 78: excel.UIActivityDatas.Datas:type_name -> excel.UIActivityConfigure
-	68, // 79: excel.UIHelpDatas.Datas:type_name -> excel.UIHelpConfigure
-	70, // 80: excel.UITeamGameplayDatas.Datas:type_name -> excel.UITeamGameplayConfigure
-	72, // 81: excel.UIIntimacyDatas.Datas:type_name -> excel.UIIntimacyConfigure
-	74, // 82: excel.UIHomeItemThemeDatas.Datas:type_name -> excel.UIHomeItemThemeConfigure
-	76, // 83: excel.UIBossRushDatas.Datas:type_name -> excel.UIBossRushConfigure
-	78, // 84: excel.UIMusicNoteDatas.Datas:type_name -> excel.UIMusicNoteConfigure
-	80, // 85: excel.UIGuideDatas.Datas:type_name -> excel.UIGuideConfigure
-	82, // 86: excel.UIBlessingTreeDatas.Datas:type_name -> excel.UIBlessingTreeConfigure
-	84, // 87: excel.UIGemDuelBattleStageDatas.Datas:type_name -> excel.UIGemDuelBattleStageConfigure
-	86, // 88: excel.UIGemDuelSkillDatas.Datas:type_name -> excel.UIGemDuelSkillConfigure
-	88, // 89: excel.UIGemDuelCharacterDatas.Datas:type_name -> excel.UIGemDuelCharacterConfigure
-	90, // 90: excel.UIGemDuelMainDungeonDatas.Datas:type_name -> excel.UIGemDuelMainDungeonConfigure
-	92, // 91: excel.UIGemDuelBuffDatas.Datas:type_name -> excel.UIGemDuelBuffConfigure
-	92, // [92:92] is the sub-list for method output_type
-	92, // [92:92] is the sub-list for method input_type
-	92, // [92:92] is the sub-list for extension type_name
-	92, // [92:92] is the sub-list for extension extendee
-	0,  // [0:92] is the sub-list for field type_name
+	1,   // 0: excel.AllUIDatas.Icon:type_name -> excel.UIItemIconDatas
+	3,   // 1: excel.AllUIDatas.PlayerIcon:type_name -> excel.UIPlayerIconDatas
+	5,   // 2: excel.AllUIDatas.UISpell:type_name -> excel.UISpellDatas
+	7,   // 3: excel.AllUIDatas.PosterIcon:type_name -> excel.UIPosterIconDatas
+	9,   // 4: excel.AllUIDatas.UIDungeon:type_name -> excel.UIDungeonDatas
+	11,  // 5: excel.AllUIDatas.UIAbyss:type_name -> excel.UIAbyssDatas
+	13,  // 6: excel.AllUIDatas.UISceneIcon:type_name -> excel.UISceneIconDatas
+	15,  // 7: excel.AllUIDatas.UINPCIcon:type_name -> excel.UINPCIconDatas
+	17,  // 8: excel.AllUIDatas.CollectPhotoIcon:type_name -> excel.UICollectPhotoIconDatas
+	19,  // 9: excel.AllUIDatas.CollectDataIcon:type_name -> excel.UICollectDataIconDatas
+	21,  // 10: excel.AllUIDatas.PassiveIcon:type_name -> excel.UIPassiveIconDatas
+	23,  // 11: excel.AllUIDatas.MoonStoneDataIcon:type_name -> excel.UIMoonStoneDataIconDatas
+	25,  // 12: excel.AllUIDatas.UIShopIcon:type_name -> excel.UIShopIconDatas
+	27,  // 13: excel.AllUIDatas.UIGachaIcon:type_name -> excel.UIGachaIconDatas
+	29,  // 14: excel.AllUIDatas.UIAbilityIcon:type_name -> excel.UIAbilityIconDatas
+	31,  // 15: excel.AllUIDatas.UIExploreIcon:type_name -> excel.UIExploreIconDatas
+	33,  // 16: excel.AllUIDatas.UIChatIcon:type_name -> excel.UIChatIconDatas
+	35,  // 17: excel.AllUIDatas.UIExpressionIcon:type_name -> excel.UIExpressionIconDatas
+	37,  // 18: excel.AllUIDatas.UIStoryIcon:type_name -> excel.UIStoryIconDatas
+	39,  // 19: excel.AllUIDatas.UIExtraChapterIcon:type_name -> excel.UIExtraChaptertIconDatas
+	41,  // 20: excel.AllUIDatas.UIGlobalBuffIcon:type_name -> excel.UIGlobalBuffIconDatas
+	43,  // 21: excel.AllUIDatas.UIBattleIcon:type_name -> excel.UIBattleIconDatas
+	45,  // 22: excel.AllUIDatas.UIFlagIcon:type_name -> excel.UIFlagIconDatas
+	47,  // 23: excel.AllUIDatas.UIRiddleIcon:type_name -> excel.UIRiddleIconDatas
+	49,  // 24: excel.AllUIDatas.UIChallengeIcon:type_name -> excel.UIChallengeIconDatas
+	51,  // 25: excel.AllUIDatas.UIQuestTexture:type_name -> excel.UIQuestTextureDatas
+	53,  // 26: excel.AllUIDatas.UILifeSpellIcon:type_name -> excel.UILifeSpellIconDatas
+	55,  // 27: excel.AllUIDatas.UIManualIcon:type_name -> excel.UIManualIconDatas
+	57,  // 28: excel.AllUIDatas.UIBuffIcon:type_name -> excel.UIBuffIconDatas
+	59,  // 29: excel.AllUIDatas.UIMiniMap:type_name -> excel.UIMiniMapDatas
+	61,  // 30: excel.AllUIDatas.UIHead:type_name -> excel.UIHeadDatas
+	63,  // 31: excel.AllUIDatas.UIAchieveQuest:type_name -> excel.UIAchieveQuestDatas
+	65,  // 32: excel.AllUIDatas.UIActivity:type_name -> excel.UIActivityDatas
+	67,  // 33: excel.AllUIDatas.UIHelp:type_name -> excel.UIHelpDatas
+	69,  // 34: excel.AllUIDatas.UITeamGameplay:type_name -> excel.UITeamGameplayDatas
+	71,  // 35: excel.AllUIDatas.UIIntimacy:type_name -> excel.UIIntimacyDatas
+	73,  // 36: excel.AllUIDatas.UIHomeItemTheme:type_name -> excel.UIHomeItemThemeDatas
+	75,  // 37: excel.AllUIDatas.UIBossRush:type_name -> excel.UIBossRushDatas
+	77,  // 38: excel.AllUIDatas.UIMusicNote:type_name -> excel.UIMusicNoteDatas
+	79,  // 39: excel.AllUIDatas.UIGuide:type_name -> excel.UIGuideDatas
+	81,  // 40: excel.AllUIDatas.UIBlessingTree:type_name -> excel.UIBlessingTreeDatas
+	83,  // 41: excel.AllUIDatas.UIGemDuelBattleStage:type_name -> excel.UIGemDuelBattleStageDatas
+	85,  // 42: excel.AllUIDatas.UIGemDuelSkill:type_name -> excel.UIGemDuelSkillDatas
+	87,  // 43: excel.AllUIDatas.UIGemDuelCharacter:type_name -> excel.UIGemDuelCharacterDatas
+	89,  // 44: excel.AllUIDatas.UIGemDuelMainDungeon:type_name -> excel.UIGemDuelMainDungeonDatas
+	91,  // 45: excel.AllUIDatas.UIGemDuelBuff:type_name -> excel.UIGemDuelBuffDatas
+	93,  // 46: excel.AllUIDatas.UIGemDuelGem:type_name -> excel.UIGemDuelGemDatas
+	95,  // 47: excel.AllUIDatas.UIGemDuelItem:type_name -> excel.UIGemDuelItemDatas
+	97,  // 48: excel.AllUIDatas.UIGemDueShop:type_name -> excel.UIGemDueShopDatas
+	99,  // 49: excel.AllUIDatas.UIGemDueGacha:type_name -> excel.UIGemDueGachaDatas
+	101, // 50: excel.AllUIDatas.UIGemDuePlayerLevel:type_name -> excel.UIGemDuePlayerLevelDatas
+	2,   // 51: excel.UIItemIconDatas.Datas:type_name -> excel.UIItemIconConfigure
+	4,   // 52: excel.UIPlayerIconDatas.Datas:type_name -> excel.UIPlayerIconConfigure
+	6,   // 53: excel.UISpellDatas.Datas:type_name -> excel.UISpellConfigure
+	8,   // 54: excel.UIPosterIconDatas.Datas:type_name -> excel.UIPosterIconConfigure
+	10,  // 55: excel.UIDungeonDatas.Datas:type_name -> excel.UIDungeonConfigure
+	12,  // 56: excel.UIAbyssDatas.Datas:type_name -> excel.UIAbyssConfigure
+	14,  // 57: excel.UISceneIconDatas.Datas:type_name -> excel.UISceneIconConfigure
+	16,  // 58: excel.UINPCIconDatas.Datas:type_name -> excel.UINPCIconConfigure
+	18,  // 59: excel.UICollectPhotoIconDatas.Datas:type_name -> excel.UICollectPhotoIconConfigure
+	20,  // 60: excel.UICollectDataIconDatas.Datas:type_name -> excel.UICollectDataIconConfigure
+	22,  // 61: excel.UIPassiveIconDatas.Datas:type_name -> excel.UIPassiveIconConfigure
+	24,  // 62: excel.UIMoonStoneDataIconDatas.Datas:type_name -> excel.UIMoonStoneDataIconConfigure
+	26,  // 63: excel.UIShopIconDatas.Datas:type_name -> excel.UIShopIconConfigure
+	28,  // 64: excel.UIGachaIconDatas.Datas:type_name -> excel.UIGachaIconConfigure
+	30,  // 65: excel.UIAbilityIconDatas.Datas:type_name -> excel.UIAbilityIconConfigure
+	32,  // 66: excel.UIExploreIconDatas.Datas:type_name -> excel.UIExploreIconConfigure
+	34,  // 67: excel.UIChatIconDatas.Datas:type_name -> excel.UIChatIconConfigure
+	36,  // 68: excel.UIExpressionIconDatas.Datas:type_name -> excel.UIExpressionIconConfigure
+	38,  // 69: excel.UIStoryIconDatas.Datas:type_name -> excel.UIStoryIconConfigure
+	40,  // 70: excel.UIExtraChaptertIconDatas.Datas:type_name -> excel.UIExtraChaptertIconConfigure
+	42,  // 71: excel.UIGlobalBuffIconDatas.Datas:type_name -> excel.UIGlobalBuffIconConfigure
+	44,  // 72: excel.UIBattleIconDatas.Datas:type_name -> excel.UIBattleIconConfigure
+	46,  // 73: excel.UIFlagIconDatas.Datas:type_name -> excel.UIFlagIconConfigure
+	48,  // 74: excel.UIRiddleIconDatas.Datas:type_name -> excel.UIRiddleIconConfigure
+	50,  // 75: excel.UIChallengeIconDatas.Datas:type_name -> excel.UIChallengeIconConfigure
+	52,  // 76: excel.UIQuestTextureDatas.Datas:type_name -> excel.UIQuestTextureConfigure
+	54,  // 77: excel.UILifeSpellIconDatas.Datas:type_name -> excel.UILifeSpellIconConfigure
+	56,  // 78: excel.UIManualIconDatas.Datas:type_name -> excel.UIManualIconConfigure
+	58,  // 79: excel.UIBuffIconDatas.Datas:type_name -> excel.UIBuffIconConfigure
+	60,  // 80: excel.UIMiniMapDatas.Datas:type_name -> excel.UIMiniMapConfigure
+	62,  // 81: excel.UIHeadDatas.Datas:type_name -> excel.UIHeadConfigure
+	64,  // 82: excel.UIAchieveQuestDatas.Datas:type_name -> excel.UIAchieveQuestConfigure
+	66,  // 83: excel.UIActivityDatas.Datas:type_name -> excel.UIActivityConfigure
+	68,  // 84: excel.UIHelpDatas.Datas:type_name -> excel.UIHelpConfigure
+	70,  // 85: excel.UITeamGameplayDatas.Datas:type_name -> excel.UITeamGameplayConfigure
+	72,  // 86: excel.UIIntimacyDatas.Datas:type_name -> excel.UIIntimacyConfigure
+	74,  // 87: excel.UIHomeItemThemeDatas.Datas:type_name -> excel.UIHomeItemThemeConfigure
+	76,  // 88: excel.UIBossRushDatas.Datas:type_name -> excel.UIBossRushConfigure
+	78,  // 89: excel.UIMusicNoteDatas.Datas:type_name -> excel.UIMusicNoteConfigure
+	80,  // 90: excel.UIGuideDatas.Datas:type_name -> excel.UIGuideConfigure
+	82,  // 91: excel.UIBlessingTreeDatas.Datas:type_name -> excel.UIBlessingTreeConfigure
+	84,  // 92: excel.UIGemDuelBattleStageDatas.Datas:type_name -> excel.UIGemDuelBattleStageConfigure
+	86,  // 93: excel.UIGemDuelSkillDatas.Datas:type_name -> excel.UIGemDuelSkillConfigure
+	88,  // 94: excel.UIGemDuelCharacterDatas.Datas:type_name -> excel.UIGemDuelCharacterConfigure
+	90,  // 95: excel.UIGemDuelMainDungeonDatas.Datas:type_name -> excel.UIGemDuelMainDungeonConfigure
+	92,  // 96: excel.UIGemDuelBuffDatas.Datas:type_name -> excel.UIGemDuelBuffConfigure
+	94,  // 97: excel.UIGemDuelGemDatas.Datas:type_name -> excel.UIGemDuelGemConfigure
+	96,  // 98: excel.UIGemDuelItemDatas.Datas:type_name -> excel.UIGemDuelItemConfigure
+	98,  // 99: excel.UIGemDueShopDatas.Datas:type_name -> excel.UIGemDueShopConfigure
+	100, // 100: excel.UIGemDueGachaDatas.Datas:type_name -> excel.UIGemDueGachaConfigure
+	102, // 101: excel.UIGemDuePlayerLevelDatas.Datas:type_name -> excel.UIGemDuePlayerLevelConfigure
+	102, // [102:102] is the sub-list for method output_type
+	102, // [102:102] is the sub-list for method input_type
+	102, // [102:102] is the sub-list for extension type_name
+	102, // [102:102] is the sub-list for extension extendee
+	0,   // [0:102] is the sub-list for field type_name
 }
 
 func init() { file_AllUIDatas_proto_init() }
@@ -5432,7 +6002,7 @@ func file_AllUIDatas_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_AllUIDatas_proto_rawDesc), len(file_AllUIDatas_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   94,
+			NumMessages:   104,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

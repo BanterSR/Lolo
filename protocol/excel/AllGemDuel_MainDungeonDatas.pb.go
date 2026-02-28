@@ -115,7 +115,9 @@ func (x *GemDuelMainDungeonDatas) GetDatas() []*GemDuelMainDungeonConfigure {
 type GemDuelMainDungeonConfigure struct {
 	state                       protoimpl.MessageState         `protogen:"open.v1"`
 	ID                          int32                          `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
-	GemDuelMainDungeonGroupInfo []*GemDuelMainDungeonGroupInfo `protobuf:"bytes,2,rep,name=GemDuelMainDungeonGroupInfo,proto3" json:"GemDuelMainDungeonGroupInfo,omitempty"`
+	ChapterIcon                 int32                          `protobuf:"varint,2,opt,name=ChapterIcon,proto3" json:"ChapterIcon,omitempty"`
+	ChapterText                 int32                          `protobuf:"varint,3,opt,name=ChapterText,proto3" json:"ChapterText,omitempty"`
+	GemDuelMainDungeonGroupInfo []*GemDuelMainDungeonGroupInfo `protobuf:"bytes,4,rep,name=GemDuelMainDungeonGroupInfo,proto3" json:"GemDuelMainDungeonGroupInfo,omitempty"`
 	unknownFields               protoimpl.UnknownFields
 	sizeCache                   protoimpl.SizeCache
 }
@@ -157,6 +159,20 @@ func (x *GemDuelMainDungeonConfigure) GetID() int32 {
 	return 0
 }
 
+func (x *GemDuelMainDungeonConfigure) GetChapterIcon() int32 {
+	if x != nil {
+		return x.ChapterIcon
+	}
+	return 0
+}
+
+func (x *GemDuelMainDungeonConfigure) GetChapterText() int32 {
+	if x != nil {
+		return x.ChapterText
+	}
+	return 0
+}
+
 func (x *GemDuelMainDungeonConfigure) GetGemDuelMainDungeonGroupInfo() []*GemDuelMainDungeonGroupInfo {
 	if x != nil {
 		return x.GemDuelMainDungeonGroupInfo
@@ -166,20 +182,18 @@ func (x *GemDuelMainDungeonConfigure) GetGemDuelMainDungeonGroupInfo() []*GemDue
 
 type GemDuelMainDungeonGroupInfo struct {
 	state                           protoimpl.MessageState `protogen:"open.v1"`
-	ChapterIcon                     int32                  `protobuf:"varint,1,opt,name=ChapterIcon,proto3" json:"ChapterIcon,omitempty"`
-	ChapterText                     int32                  `protobuf:"varint,2,opt,name=ChapterText,proto3" json:"ChapterText,omitempty"`
-	ItemID                          int32                  `protobuf:"varint,3,opt,name=ItemID,proto3" json:"ItemID,omitempty"`
-	ItemNum                         int32                  `protobuf:"varint,4,opt,name=ItemNum,proto3" json:"ItemNum,omitempty"`
-	DungeonID                       int32                  `protobuf:"varint,5,opt,name=DungeonID,proto3" json:"DungeonID,omitempty"`
-	SystemLevel                     int32                  `protobuf:"varint,6,opt,name=SystemLevel,proto3" json:"SystemLevel,omitempty"`
-	Text                            int32                  `protobuf:"varint,7,opt,name=Text,proto3" json:"Text,omitempty"`
-	BattleStage                     int32                  `protobuf:"varint,8,opt,name=BattleStage,proto3" json:"BattleStage,omitempty"`
-	PassReward                      int32                  `protobuf:"varint,9,opt,name=PassReward,proto3" json:"PassReward,omitempty"`
-	Reward                          int32                  `protobuf:"varint,10,opt,name=Reward,proto3" json:"Reward,omitempty"`
-	QuestID                         int32                  `protobuf:"varint,11,opt,name=QuestID,proto3" json:"QuestID,omitempty"`
-	QuestReward                     int32                  `protobuf:"varint,12,opt,name=QuestReward,proto3" json:"QuestReward,omitempty"`
-	PreDungeon                      int32                  `protobuf:"varint,13,opt,name=PreDungeon,proto3" json:"PreDungeon,omitempty"`
-	NewGemDuelMainDungoenDifficulty int32                  `protobuf:"varint,14,opt,name=NewGemDuelMainDungoenDifficulty,proto3" json:"NewGemDuelMainDungoenDifficulty,omitempty"`
+	DungeonID                       int32                  `protobuf:"varint,1,opt,name=DungeonID,proto3" json:"DungeonID,omitempty"`
+	ItemID                          int32                  `protobuf:"varint,2,opt,name=ItemID,proto3" json:"ItemID,omitempty"`
+	ItemNum                         int32                  `protobuf:"varint,3,opt,name=ItemNum,proto3" json:"ItemNum,omitempty"`
+	PreDungeon                      int32                  `protobuf:"varint,4,opt,name=PreDungeon,proto3" json:"PreDungeon,omitempty"`
+	SystemLevel                     int32                  `protobuf:"varint,5,opt,name=SystemLevel,proto3" json:"SystemLevel,omitempty"`
+	Text                            int32                  `protobuf:"varint,6,opt,name=Text,proto3" json:"Text,omitempty"`
+	BattleStage                     int32                  `protobuf:"varint,7,opt,name=BattleStage,proto3" json:"BattleStage,omitempty"`
+	PassReward                      int32                  `protobuf:"varint,8,opt,name=PassReward,proto3" json:"PassReward,omitempty"`
+	Reward                          int32                  `protobuf:"varint,9,opt,name=Reward,proto3" json:"Reward,omitempty"`
+	QuestID                         int32                  `protobuf:"varint,10,opt,name=QuestID,proto3" json:"QuestID,omitempty"`
+	QuestReward                     int32                  `protobuf:"varint,11,opt,name=QuestReward,proto3" json:"QuestReward,omitempty"`
+	NewGemDuelMainDungoenDifficulty int32                  `protobuf:"varint,12,opt,name=NewGemDuelMainDungoenDifficulty,proto3" json:"NewGemDuelMainDungoenDifficulty,omitempty"`
 	unknownFields                   protoimpl.UnknownFields
 	sizeCache                       protoimpl.SizeCache
 }
@@ -214,16 +228,9 @@ func (*GemDuelMainDungeonGroupInfo) Descriptor() ([]byte, []int) {
 	return file_AllGemDuel_MainDungeonDatas_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *GemDuelMainDungeonGroupInfo) GetChapterIcon() int32 {
+func (x *GemDuelMainDungeonGroupInfo) GetDungeonID() int32 {
 	if x != nil {
-		return x.ChapterIcon
-	}
-	return 0
-}
-
-func (x *GemDuelMainDungeonGroupInfo) GetChapterText() int32 {
-	if x != nil {
-		return x.ChapterText
+		return x.DungeonID
 	}
 	return 0
 }
@@ -242,9 +249,9 @@ func (x *GemDuelMainDungeonGroupInfo) GetItemNum() int32 {
 	return 0
 }
 
-func (x *GemDuelMainDungeonGroupInfo) GetDungeonID() int32 {
+func (x *GemDuelMainDungeonGroupInfo) GetPreDungeon() int32 {
 	if x != nil {
-		return x.DungeonID
+		return x.PreDungeon
 	}
 	return 0
 }
@@ -298,13 +305,6 @@ func (x *GemDuelMainDungeonGroupInfo) GetQuestReward() int32 {
 	return 0
 }
 
-func (x *GemDuelMainDungeonGroupInfo) GetPreDungeon() int32 {
-	if x != nil {
-		return x.PreDungeon
-	}
-	return 0
-}
-
 func (x *GemDuelMainDungeonGroupInfo) GetNewGemDuelMainDungoenDifficulty() int32 {
 	if x != nil {
 		return x.NewGemDuelMainDungoenDifficulty
@@ -320,30 +320,30 @@ const file_AllGemDuel_MainDungeonDatas_proto_rawDesc = "" +
 	"\x1bAllGemDuel_MainDungeonDatas\x12N\n" +
 	"\x12GemDuelMainDungeon\x18\x01 \x01(\v2\x1e.excel.GemDuelMainDungeonDatasR\x12GemDuelMainDungeon\"S\n" +
 	"\x17GemDuelMainDungeonDatas\x128\n" +
-	"\x05Datas\x18\x01 \x03(\v2\".excel.GemDuelMainDungeonConfigureR\x05Datas\"\x93\x01\n" +
+	"\x05Datas\x18\x01 \x03(\v2\".excel.GemDuelMainDungeonConfigureR\x05Datas\"\xd7\x01\n" +
 	"\x1bGemDuelMainDungeonConfigure\x12\x0e\n" +
-	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12d\n" +
-	"\x1bGemDuelMainDungeonGroupInfo\x18\x02 \x03(\v2\".excel.GemDuelMainDungeonGroupInfoR\x1bGemDuelMainDungeonGroupInfo\"\xe7\x03\n" +
-	"\x1bGemDuelMainDungeonGroupInfo\x12 \n" +
-	"\vChapterIcon\x18\x01 \x01(\x05R\vChapterIcon\x12 \n" +
-	"\vChapterText\x18\x02 \x01(\x05R\vChapterText\x12\x16\n" +
-	"\x06ItemID\x18\x03 \x01(\x05R\x06ItemID\x12\x18\n" +
-	"\aItemNum\x18\x04 \x01(\x05R\aItemNum\x12\x1c\n" +
-	"\tDungeonID\x18\x05 \x01(\x05R\tDungeonID\x12 \n" +
-	"\vSystemLevel\x18\x06 \x01(\x05R\vSystemLevel\x12\x12\n" +
-	"\x04Text\x18\a \x01(\x05R\x04Text\x12 \n" +
-	"\vBattleStage\x18\b \x01(\x05R\vBattleStage\x12\x1e\n" +
+	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12 \n" +
+	"\vChapterIcon\x18\x02 \x01(\x05R\vChapterIcon\x12 \n" +
+	"\vChapterText\x18\x03 \x01(\x05R\vChapterText\x12d\n" +
+	"\x1bGemDuelMainDungeonGroupInfo\x18\x04 \x03(\v2\".excel.GemDuelMainDungeonGroupInfoR\x1bGemDuelMainDungeonGroupInfo\"\xa3\x03\n" +
+	"\x1bGemDuelMainDungeonGroupInfo\x12\x1c\n" +
+	"\tDungeonID\x18\x01 \x01(\x05R\tDungeonID\x12\x16\n" +
+	"\x06ItemID\x18\x02 \x01(\x05R\x06ItemID\x12\x18\n" +
+	"\aItemNum\x18\x03 \x01(\x05R\aItemNum\x12\x1e\n" +
 	"\n" +
-	"PassReward\x18\t \x01(\x05R\n" +
+	"PreDungeon\x18\x04 \x01(\x05R\n" +
+	"PreDungeon\x12 \n" +
+	"\vSystemLevel\x18\x05 \x01(\x05R\vSystemLevel\x12\x12\n" +
+	"\x04Text\x18\x06 \x01(\x05R\x04Text\x12 \n" +
+	"\vBattleStage\x18\a \x01(\x05R\vBattleStage\x12\x1e\n" +
+	"\n" +
+	"PassReward\x18\b \x01(\x05R\n" +
 	"PassReward\x12\x16\n" +
-	"\x06Reward\x18\n" +
-	" \x01(\x05R\x06Reward\x12\x18\n" +
-	"\aQuestID\x18\v \x01(\x05R\aQuestID\x12 \n" +
-	"\vQuestReward\x18\f \x01(\x05R\vQuestReward\x12\x1e\n" +
-	"\n" +
-	"PreDungeon\x18\r \x01(\x05R\n" +
-	"PreDungeon\x12H\n" +
-	"\x1fNewGemDuelMainDungoenDifficulty\x18\x0e \x01(\x05R\x1fNewGemDuelMainDungoenDifficultyB\n" +
+	"\x06Reward\x18\t \x01(\x05R\x06Reward\x12\x18\n" +
+	"\aQuestID\x18\n" +
+	" \x01(\x05R\aQuestID\x12 \n" +
+	"\vQuestReward\x18\v \x01(\x05R\vQuestReward\x12H\n" +
+	"\x1fNewGemDuelMainDungoenDifficulty\x18\f \x01(\x05R\x1fNewGemDuelMainDungoenDifficultyB\n" +
 	"Z\b./;excelb\x06proto3"
 
 var (

@@ -137,8 +137,9 @@ type ActivityTurntableConfigure struct {
 	ShowCharacter       int32                  `protobuf:"varint,5,opt,name=ShowCharacter,proto3" json:"ShowCharacter,omitempty"`
 	FirstOneNeedItemNum int32                  `protobuf:"varint,6,opt,name=FirstOneNeedItemNum,proto3" json:"FirstOneNeedItemNum,omitempty"`
 	OneNeedItemNum      int32                  `protobuf:"varint,7,opt,name=OneNeedItemNum,proto3" json:"OneNeedItemNum,omitempty"`
-	ShowFashions        []int32                `protobuf:"varint,8,rep,packed,name=ShowFashions,proto3" json:"ShowFashions,omitempty"`
-	NewTurntableType    int32                  `protobuf:"varint,9,opt,name=NewTurntableType,proto3" json:"NewTurntableType,omitempty"`
+	ShowBgIndex         int32                  `protobuf:"varint,8,opt,name=ShowBgIndex,proto3" json:"ShowBgIndex,omitempty"`
+	ShowFashions        []int32                `protobuf:"varint,9,rep,packed,name=ShowFashions,proto3" json:"ShowFashions,omitempty"`
+	NewTurntableType    int32                  `protobuf:"varint,10,opt,name=NewTurntableType,proto3" json:"NewTurntableType,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -218,6 +219,13 @@ func (x *ActivityTurntableConfigure) GetFirstOneNeedItemNum() int32 {
 func (x *ActivityTurntableConfigure) GetOneNeedItemNum() int32 {
 	if x != nil {
 		return x.OneNeedItemNum
+	}
+	return 0
+}
+
+func (x *ActivityTurntableConfigure) GetShowBgIndex() int32 {
+	if x != nil {
+		return x.ShowBgIndex
 	}
 	return 0
 }
@@ -606,7 +614,7 @@ const file_AllActivityTurntableDatas_proto_rawDesc = "" +
 	"\rTurntablePool\x18\x02 \x01(\v2\x19.excel.TurntablePoolDatasR\rTurntablePool\x12E\n" +
 	"\x0fTurntableReward\x18\x03 \x01(\v2\x1b.excel.TurntableRewardDatasR\x0fTurntableReward\"Q\n" +
 	"\x16ActivityTurntableDatas\x127\n" +
-	"\x05Datas\x18\x01 \x03(\v2!.excel.ActivityTurntableConfigureR\x05Datas\"\xde\x02\n" +
+	"\x05Datas\x18\x01 \x03(\v2!.excel.ActivityTurntableConfigureR\x05Datas\"\x80\x03\n" +
 	"\x1aActivityTurntableConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12(\n" +
 	"\x0fTurntablePoolID\x18\x02 \x01(\x05R\x0fTurntablePoolID\x12\x16\n" +
@@ -616,9 +624,11 @@ const file_AllActivityTurntableDatas_proto_rawDesc = "" +
 	"CostItemID\x12$\n" +
 	"\rShowCharacter\x18\x05 \x01(\x05R\rShowCharacter\x120\n" +
 	"\x13FirstOneNeedItemNum\x18\x06 \x01(\x05R\x13FirstOneNeedItemNum\x12&\n" +
-	"\x0eOneNeedItemNum\x18\a \x01(\x05R\x0eOneNeedItemNum\x12\"\n" +
-	"\fShowFashions\x18\b \x03(\x05R\fShowFashions\x12*\n" +
-	"\x10NewTurntableType\x18\t \x01(\x05R\x10NewTurntableType\"I\n" +
+	"\x0eOneNeedItemNum\x18\a \x01(\x05R\x0eOneNeedItemNum\x12 \n" +
+	"\vShowBgIndex\x18\b \x01(\x05R\vShowBgIndex\x12\"\n" +
+	"\fShowFashions\x18\t \x03(\x05R\fShowFashions\x12*\n" +
+	"\x10NewTurntableType\x18\n" +
+	" \x01(\x05R\x10NewTurntableType\"I\n" +
 	"\x12TurntablePoolDatas\x123\n" +
 	"\x05Datas\x18\x01 \x03(\v2\x1d.excel.TurntablePoolConfigureR\x05Datas\"q\n" +
 	"\x16TurntablePoolConfigure\x12\x0e\n" +

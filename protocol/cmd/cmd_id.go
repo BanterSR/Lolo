@@ -709,8 +709,53 @@ const (
 	GemDuelArenaRefreshRivalRsp             = 2836
 	GemDuelArenaRankReq                     = 2837
 	GemDuelArenaRankRsp                     = 2838
+	GemDuelGachaListReq                     = 2841
+	GemDuelGachaListRsp                     = 2842
+	GemDuelGachaReq                         = 2843
+	GemDuelGachaRsp                         = 2844
+	GemDuelGachaFullPickReq                 = 2845
+	GemDuelGachaFullPickRsp                 = 2846
+	GemDuelGachaRecordReq                   = 2847
+	GemDuelGachaRecordRsp                   = 2848
+	GemDuelShopInfoReq                      = 2849
+	GemDuelShopInfoRsp                      = 2850
+	GemDuelShopBuyReq                       = 2851
+	GemDuelShopBuyRsp                       = 2852
+	GemDuelShopRefreshNotice                = 2854
+	GemDuelShopInitNotice                   = 2856
+	GemDuelDiamondConvertReq                = 2857
+	GemDuelDiamondConvertRsp                = 2858
+	GemDuelPaySendGoodsNotice               = 2860
+	GemDuelShopRefreshReq                   = 2861
+	GemDuelShopRefreshRsp                   = 2862
+	GemDuelItemUseReq                       = 2863
+	GemDuelItemUseRsp                       = 2864
+	GemDuelSetTeamAIPriorityPlanReq         = 2865
+	GemDuelSetTeamAIPriorityPlanRsp         = 2866
 	InheritCodeUseReq                       = 3001
 	InheritCodeUseRsp                       = 3002
+	GemDuelQuestNotice                      = 4002
+	GemDuelClaimQuestRewardReq              = 4003
+	GemDuelClaimQuestRewardRsp              = 4004
+	GemDuelClaimDailyQuestRewardReq         = 4005
+	GemDuelClaimDailyQuestRewardRsp         = 4006
+	GemDuelFastFinishQuestReq               = 4007
+	GemDuelFastFinishQuestRsp               = 4008
+	GemDuelQuestDailyUpdateNotice           = 4010
+	GemDuelMonthCardNotice                  = 4012
+	GemDuelMonthCardRewardReq               = 4013
+	GemDuelMonthCardRewardRsp               = 4014
+	GemDuelPlayerLevelExpNotice             = 4016
+	GemDuelGrowthFundRewardReq              = 4017
+	GemDuelGrowthFundRewardRsp              = 4018
+	GemDuelGrowthFundBuyNotice              = 4020
+	GemDuelBattlePassInfoNotice             = 4022
+	GemDuelBattlePassRewardReq              = 4023
+	GemDuelBattlePassRewardRsp              = 4024
+	GemDuelBattlePassBuyNotice              = 4026
+	GemDuelBattlePassBuyExpReq              = 4027
+	GemDuelBattlePassBuyExpRsp              = 4028
+	GemDuelBattlePassNotice                 = 4030
 )
 
 func (c *CmdProtoMap) registerAllMessage() {
@@ -1417,6 +1462,51 @@ func (c *CmdProtoMap) registerAllMessage() {
 	c.regMsg(GemDuelArenaRefreshRivalRsp, func() any { return new(proto.GemDuelArenaRefreshRivalRsp) })
 	c.regMsg(GemDuelArenaRankReq, func() any { return new(proto.GemDuelArenaRankReq) })
 	c.regMsg(GemDuelArenaRankRsp, func() any { return new(proto.GemDuelArenaRankRsp) })
+	c.regMsg(GemDuelGachaListReq, func() any { return new(proto.GemDuelGachaListReq) })
+	c.regMsg(GemDuelGachaListRsp, func() any { return new(proto.GemDuelGachaListRsp) })
+	c.regMsg(GemDuelGachaReq, func() any { return new(proto.GemDuelGachaReq) })
+	c.regMsg(GemDuelGachaRsp, func() any { return new(proto.GemDuelGachaRsp) })
+	c.regMsg(GemDuelGachaFullPickReq, func() any { return new(proto.GemDuelGachaFullPickReq) })
+	c.regMsg(GemDuelGachaFullPickRsp, func() any { return new(proto.GemDuelGachaFullPickRsp) })
+	c.regMsg(GemDuelGachaRecordReq, func() any { return new(proto.GemDuelGachaRecordReq) })
+	c.regMsg(GemDuelGachaRecordRsp, func() any { return new(proto.GemDuelGachaRecordRsp) })
+	c.regMsg(GemDuelShopInfoReq, func() any { return new(proto.GemDuelShopInfoReq) })
+	c.regMsg(GemDuelShopInfoRsp, func() any { return new(proto.GemDuelShopInfoRsp) })
+	c.regMsg(GemDuelShopBuyReq, func() any { return new(proto.GemDuelShopBuyReq) })
+	c.regMsg(GemDuelShopBuyRsp, func() any { return new(proto.GemDuelShopBuyRsp) })
+	c.regMsg(GemDuelShopRefreshNotice, func() any { return new(proto.GemDuelShopRefreshNotice) })
+	c.regMsg(GemDuelShopInitNotice, func() any { return new(proto.GemDuelShopInitNotice) })
+	c.regMsg(GemDuelDiamondConvertReq, func() any { return new(proto.GemDuelDiamondConvertReq) })
+	c.regMsg(GemDuelDiamondConvertRsp, func() any { return new(proto.GemDuelDiamondConvertRsp) })
+	c.regMsg(GemDuelPaySendGoodsNotice, func() any { return new(proto.GemDuelPaySendGoodsNotice) })
+	c.regMsg(GemDuelShopRefreshReq, func() any { return new(proto.GemDuelShopRefreshReq) })
+	c.regMsg(GemDuelShopRefreshRsp, func() any { return new(proto.GemDuelShopRefreshRsp) })
+	c.regMsg(GemDuelItemUseReq, func() any { return new(proto.GemDuelItemUseReq) })
+	c.regMsg(GemDuelItemUseRsp, func() any { return new(proto.GemDuelItemUseRsp) })
+	c.regMsg(GemDuelSetTeamAIPriorityPlanReq, func() any { return new(proto.GemDuelSetTeamAIPriorityPlanReq) })
+	c.regMsg(GemDuelSetTeamAIPriorityPlanRsp, func() any { return new(proto.GemDuelSetTeamAIPriorityPlanRsp) })
 	c.regMsg(InheritCodeUseReq, func() any { return new(proto.InheritCodeUseReq) })
 	c.regMsg(InheritCodeUseRsp, func() any { return new(proto.InheritCodeUseRsp) })
+	c.regMsg(GemDuelQuestNotice, func() any { return new(proto.GemDuelQuestNotice) })
+	c.regMsg(GemDuelClaimQuestRewardReq, func() any { return new(proto.GemDuelClaimQuestRewardReq) })
+	c.regMsg(GemDuelClaimQuestRewardRsp, func() any { return new(proto.GemDuelClaimQuestRewardRsp) })
+	c.regMsg(GemDuelClaimDailyQuestRewardReq, func() any { return new(proto.GemDuelClaimDailyQuestRewardReq) })
+	c.regMsg(GemDuelClaimDailyQuestRewardRsp, func() any { return new(proto.GemDuelClaimDailyQuestRewardRsp) })
+	c.regMsg(GemDuelFastFinishQuestReq, func() any { return new(proto.GemDuelFastFinishQuestReq) })
+	c.regMsg(GemDuelFastFinishQuestRsp, func() any { return new(proto.GemDuelFastFinishQuestRsp) })
+	c.regMsg(GemDuelQuestDailyUpdateNotice, func() any { return new(proto.GemDuelQuestDailyUpdateNotice) })
+	c.regMsg(GemDuelMonthCardNotice, func() any { return new(proto.GemDuelMonthCardNotice) })
+	c.regMsg(GemDuelMonthCardRewardReq, func() any { return new(proto.GemDuelMonthCardRewardReq) })
+	c.regMsg(GemDuelMonthCardRewardRsp, func() any { return new(proto.GemDuelMonthCardRewardRsp) })
+	c.regMsg(GemDuelPlayerLevelExpNotice, func() any { return new(proto.GemDuelPlayerLevelExpNotice) })
+	c.regMsg(GemDuelGrowthFundRewardReq, func() any { return new(proto.GemDuelGrowthFundRewardReq) })
+	c.regMsg(GemDuelGrowthFundRewardRsp, func() any { return new(proto.GemDuelGrowthFundRewardRsp) })
+	c.regMsg(GemDuelGrowthFundBuyNotice, func() any { return new(proto.GemDuelGrowthFundBuyNotice) })
+	c.regMsg(GemDuelBattlePassInfoNotice, func() any { return new(proto.GemDuelBattlePassInfoNotice) })
+	c.regMsg(GemDuelBattlePassRewardReq, func() any { return new(proto.GemDuelBattlePassRewardReq) })
+	c.regMsg(GemDuelBattlePassRewardRsp, func() any { return new(proto.GemDuelBattlePassRewardRsp) })
+	c.regMsg(GemDuelBattlePassBuyNotice, func() any { return new(proto.GemDuelBattlePassBuyNotice) })
+	c.regMsg(GemDuelBattlePassBuyExpReq, func() any { return new(proto.GemDuelBattlePassBuyExpReq) })
+	c.regMsg(GemDuelBattlePassBuyExpRsp, func() any { return new(proto.GemDuelBattlePassBuyExpRsp) })
+	c.regMsg(GemDuelBattlePassNotice, func() any { return new(proto.GemDuelBattlePassNotice) })
 }

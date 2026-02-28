@@ -1,12 +1,14 @@
 package sdk
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
+
 	"gucooing/lolo/config"
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/protocol/quick"
-	"net/http"
-	"time"
 )
 
 func getNoticeList(c *gin.Context) {
@@ -48,7 +50,7 @@ func regionInfo(c *gin.Context) {
 		ClientLogTcpIp:   config.GetLogServer().GetOuterIp(),
 		ClientLogTcpPort: config.GetLogServer().GetOuterPort(),
 		CurrentVersion:   gdconf.GetClientVersion(req.Version),
-		PhotoShareCdnUrl: "https://cdn-photo-of.inutan.com/cn_prod_main",
+		PhotoShareCdnUrl: "https://cdn-photo-of.inutan.com/cn_prod_main", // 图片url
 	}
 
 	c.JSONP(http.StatusOK, info)

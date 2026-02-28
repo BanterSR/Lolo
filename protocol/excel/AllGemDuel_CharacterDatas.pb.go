@@ -156,16 +156,19 @@ type GemDuelCharacterConfigure struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	Text          int32                  `protobuf:"varint,2,opt,name=Text,proto3" json:"Text,omitempty"`
-	JobTag        []int32                `protobuf:"varint,3,rep,packed,name=JobTag,proto3" json:"JobTag,omitempty"`
-	RaceTag       []int32                `protobuf:"varint,4,rep,packed,name=RaceTag,proto3" json:"RaceTag,omitempty"`
-	ColorType     []int32                `protobuf:"varint,5,rep,packed,name=ColorType,proto3" json:"ColorType,omitempty"`
-	EnergyMax     int32                  `protobuf:"varint,6,opt,name=EnergyMax,proto3" json:"EnergyMax,omitempty"`
-	Attribute     int32                  `protobuf:"varint,7,opt,name=Attribute,proto3" json:"Attribute,omitempty"`
-	Skill1ID      int32                  `protobuf:"varint,8,opt,name=Skill1ID,proto3" json:"Skill1ID,omitempty"`
-	Skill2ID      int32                  `protobuf:"varint,9,opt,name=Skill2ID,proto3" json:"Skill2ID,omitempty"`
-	Skill3ID      int32                  `protobuf:"varint,10,opt,name=Skill3ID,proto3" json:"Skill3ID,omitempty"`
-	Skill4ID      int32                  `protobuf:"varint,11,opt,name=Skill4ID,proto3" json:"Skill4ID,omitempty"`
-	SkillUnlock   int32                  `protobuf:"varint,12,opt,name=SkillUnlock,proto3" json:"SkillUnlock,omitempty"`
+	Icon          int32                  `protobuf:"varint,3,opt,name=Icon,proto3" json:"Icon,omitempty"`
+	ItemID        int32                  `protobuf:"varint,4,opt,name=ItemID,proto3" json:"ItemID,omitempty"`
+	RaceTag       int32                  `protobuf:"varint,5,opt,name=RaceTag,proto3" json:"RaceTag,omitempty"`
+	InitialStar   int32                  `protobuf:"varint,6,opt,name=InitialStar,proto3" json:"InitialStar,omitempty"`
+	JobTag        int32                  `protobuf:"varint,7,opt,name=JobTag,proto3" json:"JobTag,omitempty"`
+	ColorType     []int32                `protobuf:"varint,8,rep,packed,name=ColorType,proto3" json:"ColorType,omitempty"`
+	EnergyMax     int32                  `protobuf:"varint,9,opt,name=EnergyMax,proto3" json:"EnergyMax,omitempty"`
+	Attribute     int32                  `protobuf:"varint,10,opt,name=Attribute,proto3" json:"Attribute,omitempty"`
+	Skill1ID      int32                  `protobuf:"varint,11,opt,name=Skill1ID,proto3" json:"Skill1ID,omitempty"`
+	Skill2ID      int32                  `protobuf:"varint,12,opt,name=Skill2ID,proto3" json:"Skill2ID,omitempty"`
+	Skill3ID      int32                  `protobuf:"varint,13,opt,name=Skill3ID,proto3" json:"Skill3ID,omitempty"`
+	Skill4ID      int32                  `protobuf:"varint,14,opt,name=Skill4ID,proto3" json:"Skill4ID,omitempty"`
+	SkillUnlock   int32                  `protobuf:"varint,15,opt,name=SkillUnlock,proto3" json:"SkillUnlock,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -214,18 +217,39 @@ func (x *GemDuelCharacterConfigure) GetText() int32 {
 	return 0
 }
 
-func (x *GemDuelCharacterConfigure) GetJobTag() []int32 {
+func (x *GemDuelCharacterConfigure) GetIcon() int32 {
 	if x != nil {
-		return x.JobTag
+		return x.Icon
 	}
-	return nil
+	return 0
 }
 
-func (x *GemDuelCharacterConfigure) GetRaceTag() []int32 {
+func (x *GemDuelCharacterConfigure) GetItemID() int32 {
+	if x != nil {
+		return x.ItemID
+	}
+	return 0
+}
+
+func (x *GemDuelCharacterConfigure) GetRaceTag() int32 {
 	if x != nil {
 		return x.RaceTag
 	}
-	return nil
+	return 0
+}
+
+func (x *GemDuelCharacterConfigure) GetInitialStar() int32 {
+	if x != nil {
+		return x.InitialStar
+	}
+	return 0
+}
+
+func (x *GemDuelCharacterConfigure) GetJobTag() int32 {
+	if x != nil {
+		return x.JobTag
+	}
+	return 0
 }
 
 func (x *GemDuelCharacterConfigure) GetColorType() []int32 {
@@ -1185,21 +1209,24 @@ const file_AllGemDuel_CharacterDatas_proto_rawDesc = "" +
 	"\x1bGemDuelCharacterStarResults\x18\x05 \x01(\v2'.excel.GemDuelCharacterStarResultsDatasR\x1bGemDuelCharacterStarResults\x12i\n" +
 	"\x1bGemDuelCharacterSkillUnlock\x18\x06 \x01(\v2'.excel.GemDuelCharacterSkillUnlockDatasR\x1bGemDuelCharacterSkillUnlock\"O\n" +
 	"\x15GemDuelCharacterDatas\x126\n" +
-	"\x05Datas\x18\x01 \x03(\v2 .excel.GemDuelCharacterConfigureR\x05Datas\"\xdd\x02\n" +
+	"\x05Datas\x18\x01 \x03(\v2 .excel.GemDuelCharacterConfigureR\x05Datas\"\xab\x03\n" +
 	"\x19GemDuelCharacterConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x12\n" +
-	"\x04Text\x18\x02 \x01(\x05R\x04Text\x12\x16\n" +
-	"\x06JobTag\x18\x03 \x03(\x05R\x06JobTag\x12\x18\n" +
-	"\aRaceTag\x18\x04 \x03(\x05R\aRaceTag\x12\x1c\n" +
-	"\tColorType\x18\x05 \x03(\x05R\tColorType\x12\x1c\n" +
-	"\tEnergyMax\x18\x06 \x01(\x05R\tEnergyMax\x12\x1c\n" +
-	"\tAttribute\x18\a \x01(\x05R\tAttribute\x12\x1a\n" +
-	"\bSkill1ID\x18\b \x01(\x05R\bSkill1ID\x12\x1a\n" +
-	"\bSkill2ID\x18\t \x01(\x05R\bSkill2ID\x12\x1a\n" +
-	"\bSkill3ID\x18\n" +
-	" \x01(\x05R\bSkill3ID\x12\x1a\n" +
-	"\bSkill4ID\x18\v \x01(\x05R\bSkill4ID\x12 \n" +
-	"\vSkillUnlock\x18\f \x01(\x05R\vSkillUnlock\"a\n" +
+	"\x04Text\x18\x02 \x01(\x05R\x04Text\x12\x12\n" +
+	"\x04Icon\x18\x03 \x01(\x05R\x04Icon\x12\x16\n" +
+	"\x06ItemID\x18\x04 \x01(\x05R\x06ItemID\x12\x18\n" +
+	"\aRaceTag\x18\x05 \x01(\x05R\aRaceTag\x12 \n" +
+	"\vInitialStar\x18\x06 \x01(\x05R\vInitialStar\x12\x16\n" +
+	"\x06JobTag\x18\a \x01(\x05R\x06JobTag\x12\x1c\n" +
+	"\tColorType\x18\b \x03(\x05R\tColorType\x12\x1c\n" +
+	"\tEnergyMax\x18\t \x01(\x05R\tEnergyMax\x12\x1c\n" +
+	"\tAttribute\x18\n" +
+	" \x01(\x05R\tAttribute\x12\x1a\n" +
+	"\bSkill1ID\x18\v \x01(\x05R\bSkill1ID\x12\x1a\n" +
+	"\bSkill2ID\x18\f \x01(\x05R\bSkill2ID\x12\x1a\n" +
+	"\bSkill3ID\x18\r \x01(\x05R\bSkill3ID\x12\x1a\n" +
+	"\bSkill4ID\x18\x0e \x01(\x05R\bSkill4ID\x12 \n" +
+	"\vSkillUnlock\x18\x0f \x01(\x05R\vSkillUnlock\"a\n" +
 	"\x1eGemDuelCharacterAttributeDatas\x12?\n" +
 	"\x05Datas\x18\x01 \x03(\v2).excel.GemDuelCharacterAttributeConfigureR\x05Datas\"\xa1\x01\n" +
 	"\"GemDuelCharacterAttributeConfigure\x12\x0e\n" +

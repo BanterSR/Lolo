@@ -633,6 +633,7 @@ type ExtraQuest struct {
 	LvUnlock      int32                  `protobuf:"varint,5,opt,name=LvUnlock,proto3" json:"LvUnlock,omitempty"`
 	QuestID       int32                  `protobuf:"varint,6,opt,name=QuestID,proto3" json:"QuestID,omitempty"`
 	ReviewID      int32                  `protobuf:"varint,7,opt,name=ReviewID,proto3" json:"ReviewID,omitempty"`
+	TimeUnlock    string                 `protobuf:"bytes,8,opt,name=TimeUnlock,proto3" json:"TimeUnlock,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -716,6 +717,13 @@ func (x *ExtraQuest) GetReviewID() int32 {
 	return 0
 }
 
+func (x *ExtraQuest) GetTimeUnlock() string {
+	if x != nil {
+		return x.TimeUnlock
+	}
+	return ""
+}
+
 var File_AllStoryDatas_proto protoreflect.FileDescriptor
 
 const file_AllStoryDatas_proto_rawDesc = "" +
@@ -767,7 +775,7 @@ const file_AllStoryDatas_proto_rawDesc = "" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x121\n" +
 	"\n" +
 	"ExtraQuest\x18\x02 \x03(\v2\x11.excel.ExtraQuestR\n" +
-	"ExtraQuest\"\xc6\x01\n" +
+	"ExtraQuest\"\xe6\x01\n" +
 	"\n" +
 	"ExtraQuest\x12\x16\n" +
 	"\x06TextID\x18\x01 \x01(\x05R\x06TextID\x12\x14\n" +
@@ -776,7 +784,10 @@ const file_AllStoryDatas_proto_rawDesc = "" +
 	"\vQuestUnlock\x18\x04 \x01(\x05R\vQuestUnlock\x12\x1a\n" +
 	"\bLvUnlock\x18\x05 \x01(\x05R\bLvUnlock\x12\x18\n" +
 	"\aQuestID\x18\x06 \x01(\x05R\aQuestID\x12\x1a\n" +
-	"\bReviewID\x18\a \x01(\x05R\bReviewIDB\n" +
+	"\bReviewID\x18\a \x01(\x05R\bReviewID\x12\x1e\n" +
+	"\n" +
+	"TimeUnlock\x18\b \x01(\tR\n" +
+	"TimeUnlockB\n" +
 	"Z\b./;excelb\x06proto3"
 
 var (
