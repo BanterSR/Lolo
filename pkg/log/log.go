@@ -88,7 +88,7 @@ func NewClientLog() {
 
 func NewPacket() {
 	conf := &config.Log{
-		Level:   slog.TraceLevel,
+		Level:   slog.InfoLevel,
 		LogFile: config.GetGateWay().GetIsLogMsgPlayer(),
 		AppName: "Packet",
 	}

@@ -1,8 +1,6 @@
 package gateway
 
 import (
-	"errors"
-	"io"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -132,19 +130,20 @@ func (g *Gateway) receive(conn ofnet.Conn, userId uint32) {
 			return
 		default:
 			msg, err := conn.Read()
-			switch {
-			case err == nil:
+			if err == nil {
 				g.game.GetGameMsgChan() <- &game.GameMsg{
 					UserId:  userId,
 					UUID:    loginUUID,
 					Conn:    conn,
 					GameMsg: msg,
 				}
-			case errors.Is(err, io.EOF),
-				errors.Is(err, io.ErrClosedPipe):
-				return
-			default:
-				log.Gate.Errorf("%s", err)
+			} else {
+				// 通知game 玩家断开了网络连接
+				log.Gate.Infof("[UID:%v][UUID:%v]断开网络连接", userId, loginUUID)
+				g.game.DoPlayer() <- &game.DonePlayerCtx{
+					UserId: userId,
+					UUID:   loginUUID,
+				}
 				return
 			}
 		}

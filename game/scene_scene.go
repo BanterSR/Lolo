@@ -146,7 +146,9 @@ func (s *SceneInfo) getSceneChannel(channelId uint32) (*ChannelInfo, error) {
 func (w *WordInfo) addScenePlayer(player *model.Player) *ScenePlayer {
 	value, ok := w.allScenePlayer.Load(player.UserId)
 	if ok {
-		return value.(*ScenePlayer)
+		sp := value.(*ScenePlayer)
+		sp.NetFreeze = false
+		return sp
 	}
 	defaultSceneId := gdconf.GetConstant().DefaultSceneId
 	defaultChannelId := gdconf.GetConstant().DefaultChannelId
@@ -186,14 +188,16 @@ func (w *WordInfo) joinSceneChannel(s *model.Player) {
 		log.Game.Errorf("场景:%v不存在！err:%s", scenePlayer.SceneId, err.Error())
 		return
 	}
-	channelInfo, err := sceneInfo.getSceneChannel(scenePlayer.ChannelId)
-	if err != nil {
-		log.Game.Errorf("场景:%v,房间:%v不存在！err:%s",
-			scenePlayer.SceneId, scenePlayer.ChannelId, err.Error())
-		return
+	if scenePlayer.channelInfo == nil {
+		channelInfo, err := sceneInfo.getSceneChannel(scenePlayer.ChannelId)
+		if err != nil {
+			log.Game.Errorf("场景:%v,房间:%v不存在！err:%s",
+				scenePlayer.SceneId, scenePlayer.ChannelId, err.Error())
+			return
+		}
+		scenePlayer.channelInfo = channelInfo
 	}
-	scenePlayer.channelInfo = channelInfo
-	channelInfo.addScenePlayerChan <- scenePlayer
+	scenePlayer.channelInfo.addScenePlayerChan <- scenePlayer
 }
 
 func (w *WordInfo) killScenePlayer(player *model.Player) {

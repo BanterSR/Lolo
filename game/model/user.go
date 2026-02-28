@@ -33,10 +33,11 @@ type Player struct {
 }
 
 // 将玩家状态重置成在线
-func (s *Player) Init(conn ofnet.Conn) {
+func (s *Player) Init(conn ofnet.Conn, uuid string) {
 	s.Conn = conn
 	s.Online = true
 	s.NetFreeze = false
+	s.LoginUUID = uuid
 }
 
 func (s *Player) GetSeqId() uint32 {

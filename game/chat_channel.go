@@ -167,13 +167,12 @@ func (c *ChatChannel) channelMainLoop() {
 }
 
 func (c *ChatChannel) addUser(s *ChannelUser) {
-	if c.userMap[s.UserId] != nil {
-		return
+	if c.userMap[s.UserId] == nil {
+		s.channel = c
+		c.userMap[s.UserId] = s
+		c.userNum++
+		log.Game.Debugf("UserId:%v ChannelId:%v 进入聊天房间:%s", s.UserId, c.channelId, c.Type.String())
 	}
-	s.channel = c
-	c.userMap[s.UserId] = s
-	c.userNum++
-	log.Game.Debugf("UserId:%v ChannelId:%v 进入聊天房间:%s", s.UserId, c.channelId, c.Type.String())
 	// 进入通知
 	if c.Type == proto.ChatChannelType_ChatChannelType_ChatChannelChatRoom {
 		s.Conn.Send(0, &proto.ChangeChatChannelNotice{

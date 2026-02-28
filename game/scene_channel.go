@@ -202,12 +202,10 @@ func (c *ChannelInfo) freezeChannel() {
 
 func (c *ChannelInfo) addPlayer(scenePlayer *ScenePlayer) bool {
 	list := c.getAllPlayer()
-	if _, ok := list[scenePlayer.UserId]; ok {
-		c.SceneDataNotice(scenePlayer) // 已在场景中，说明是重连，直接发场景通知就行了
-		return false
+	if _, ok := list[scenePlayer.UserId]; !ok {
+		scenePlayer.channelInfo = c
+		list[scenePlayer.UserId] = scenePlayer
 	}
-	scenePlayer.channelInfo = c
-	list[scenePlayer.UserId] = scenePlayer
 	// 通知包
 	c.SceneDataNotice(scenePlayer)
 	c.serverSceneSync(&ServerSceneSyncCtx{

@@ -48,10 +48,9 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg
 			return
 		}
 		s = &model.Player{
-			UserId:    userId,
-			LoginUUID: uuid,
-			NickName:  basic.NickName,
-			Created:   basic.CreatedAt,
+			UserId:   userId,
+			NickName: basic.NickName,
+			Created:  basic.CreatedAt,
 		}
 		if len(dbUser.BinData) != 0 {
 			if err := sonic.Unmarshal(dbUser.BinData, s); err != nil {
@@ -76,7 +75,7 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg
 		g.userMap[userId] = s
 	}
 login:
-	s.Init(conn)
+	s.Init(conn, uuid)
 
 	basic, err := db.GetGameBasic(userId)
 	if err != nil {

@@ -21,6 +21,7 @@ import (
 type Game struct {
 	router              *gin.Engine // http 服务器
 	gameMsgChan         chan *GameMsg
+	donePlayerChan      chan *DonePlayerCtx
 	userMap             map[uint32]*model.Player
 	handlerFuncRouteMap map[uint32]HandlerFunc
 	wordInfo            *WordInfo
@@ -40,10 +41,11 @@ func NewGame(router *gin.Engine) *Game {
 	conf := config.GetGame()
 	log.NewGame()
 	g := &Game{
-		router:      router,
-		gameMsgChan: make(chan *GameMsg, conf.MsgChanSize),
-		userMap:     make(map[uint32]*model.Player, 1000),
-		doneChan:    make(chan struct{}),
+		router:         router,
+		gameMsgChan:    make(chan *GameMsg, conf.MsgChanSize),
+		donePlayerChan: make(chan *DonePlayerCtx, conf.MsgChanSize),
+		userMap:        make(map[uint32]*model.Player, 1000),
+		doneChan:       make(chan struct{}),
 	}
 	g.newRouter()
 	// 初始化场景配置
@@ -75,6 +77,8 @@ func (g *Game) gameMainLoop() {
 			g.RouteHandle(msg.Conn, msg.UserId, msg.UUID, msg.GameMsg)
 		case <-g.checkPlayerTimer.C:
 			g.checkPlayer()
+		case ctx := <-g.donePlayerChan: // gate侧通知下线
+			g.donePlayer(ctx)
 		}
 	}
 }
@@ -111,6 +115,16 @@ func (g *Game) checkPlayer() {
 	}
 }
 
+// gate侧通知下线
+func (g *Game) donePlayer(ctx *DonePlayerCtx) {
+	player := g.GetUser(ctx.UserId)
+	if player == nil || !player.Online ||
+		player.LoginUUID != ctx.UUID {
+		return
+	}
+	g.offlinePlayer(player, proto.PlayerOfflineReason_PlayerOfflineReason_None)
+}
+
 // 仅做客户端下线
 func (g *Game) offlinePlayer(player *model.Player, reason proto.PlayerOfflineReason) {
 	player2 := g.GetUser(player.UserId)
@@ -118,14 +132,22 @@ func (g *Game) offlinePlayer(player *model.Player, reason proto.PlayerOfflineRea
 		player.LoginUUID != player2.LoginUUID {
 		return
 	}
-	g.send(player, 0, &proto.PlayerOfflineRsp{
-		Status:             proto.StatusCode_StatusCode_Ok,
-		Reason:             reason,
-		ServerNextOpenTime: 0,
-	})
-	player.Conn.Close()
-	player.Conn = nil
+	if reason != proto.PlayerOfflineReason_PlayerOfflineReason_None {
+		g.send(player, 0, &proto.PlayerOfflineRsp{
+			Status:             proto.StatusCode_StatusCode_Ok,
+			Reason:             reason,
+			ServerNextOpenTime: 0,
+		})
+	}
+	if player.Conn != nil {
+		player.Conn.Close()
+		player.Conn = nil
+	}
 	player.NetFreeze = true
+	scenePlayer := g.getWordInfo().getScenePlayer(player)
+	if scenePlayer != nil {
+		scenePlayer.NetFreeze = true
+	}
 }
 
 // 彻底移除玩家
@@ -145,6 +167,15 @@ func (g *Game) kickPlayer(player *model.Player) {
 
 func (g *Game) GetGameMsgChan() chan *GameMsg {
 	return g.gameMsgChan
+}
+
+type DonePlayerCtx struct {
+	UserId uint32
+	UUID   string
+}
+
+func (g *Game) DoPlayer() chan *DonePlayerCtx {
+	return g.donePlayerChan
 }
 
 func (g *Game) Close() {
