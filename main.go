@@ -6,12 +6,13 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/contrib/gzip"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/gin-gonic/contrib/gzip"
 
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
