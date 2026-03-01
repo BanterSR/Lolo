@@ -7,7 +7,9 @@ import (
 	"github.com/gookit/slog"
 	"io"
 	"net"
+	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/golang/snappy"
 	pb "google.golang.org/protobuf/proto"
@@ -20,7 +22,8 @@ import (
 
 type tcpNet struct {
 	*netBase
-	listener net.Listener
+	listener  net.Listener
+	closeOnce sync.Once
 }
 
 func newTcpNet(addr string, log *slog.SugaredLogger) (*tcpNet, error) {
@@ -28,6 +31,9 @@ func newTcpNet(addr string, log *slog.SugaredLogger) (*tcpNet, error) {
 		netBase: &netBase{
 			blackPackId: make(map[uint32]struct{}),
 			log:         log,
+			stat: netStats{
+				startUnix: time.Now().Unix(),
+			},
 		},
 	}
 	listener, err := net.Listen("tcp", addr)
@@ -35,6 +41,7 @@ func newTcpNet(addr string, log *slog.SugaredLogger) (*tcpNet, error) {
 		return nil, err
 	}
 	x.listener = listener
+	x.statsTag = listener.Addr().String()
 	return x, nil
 }
 
@@ -51,6 +58,7 @@ func (x *tcpNet) Accept() (Conn, error) {
 		conn: conn,
 		buf:  bufio.NewReaderSize(conn, alg.PacketMaxLen),
 	}
+	x.onConnOpen()
 
 	return tconn, nil
 }
@@ -59,7 +67,12 @@ func (x *tcpNet) Close() error {
 	if x == nil {
 		return nil
 	}
-	return x.listener.Close()
+	var err error
+	x.closeOnce.Do(func() {
+		x.StopStatsLoop()
+		err = x.listener.Close()
+	})
+	return err
 }
 
 type tcpConn struct {
@@ -69,6 +82,7 @@ type tcpConn struct {
 	uid       uint32
 	seqId     uint32
 	serverTag string
+	closed    int32
 }
 
 func (x *tcpConn) GetSeqId() uint32 {
@@ -76,21 +90,17 @@ func (x *tcpConn) GetSeqId() uint32 {
 }
 
 func (x *tcpConn) Read() (*alg.GameMsg, error) {
-	atomic.AddInt64(&x.net.connNum, 1)
-	defer func() {
-		atomic.AddInt64(&x.net.connNum, -1)
-	}()
 	for {
 		// head
 		headLenByte := make([]byte, alg.TcpHeadSize)
-		_, err := x.buf.Read(headLenByte)
+		_, err := io.ReadFull(x.buf, headLenByte)
 		if err != nil {
 			return nil, err
 		}
 		headLen := binary.BigEndian.Uint16(headLenByte)
 
 		headByte := make([]byte, headLen)
-		_, err = x.buf.Read(headByte)
+		_, err = io.ReadFull(x.buf, headByte)
 		if err != nil {
 			return nil, err
 		}
@@ -103,10 +113,11 @@ func (x *tcpConn) Read() (*alg.GameMsg, error) {
 
 		// body
 		bodyByte := make([]byte, head.BodyLen)
-		_, err = x.buf.Read(bodyByte)
+		_, err = io.ReadFull(x.buf, bodyByte)
 		if err != nil {
 			return nil, err
 		}
+		x.net.recordRecvBytes(alg.TcpHeadSize + int(headLen) + int(head.BodyLen))
 		bodyByte = alg.HandleFlag(head.Flag, bodyByte)
 		protoObj := cmd.Get().GetProtoObjByCmdId(head.MsgId)
 		if protoObj == nil {
@@ -127,6 +138,7 @@ func (x *tcpConn) Read() (*alg.GameMsg, error) {
 			PacketHead: head,
 			Body:       protoObj,
 		}
+		x.net.recordRequest()
 
 		return gameMsg, nil
 	}
@@ -175,7 +187,8 @@ func (x *tcpConn) Send(packetId uint32, protoObj pb.Message) {
 	// proto数据
 	copy(bin[alg.TcpHeadSize+len(headBytes):], bodyByte)
 
-	_, err = x.conn.Write(bin)
+	n, err := x.conn.Write(bin)
+	x.net.recordSendBytes(n)
 	if err != nil && !errors.Is(err, io.ErrClosedPipe) {
 		x.net.log.Errorf("tcpConn write error: %v", err)
 		return
@@ -191,7 +204,14 @@ func (x *tcpConn) SetServerTag(serverTag string) {
 }
 
 func (x *tcpConn) Close() {
-	x.conn.Close()
+	if x == nil {
+		return
+	}
+	if !atomic.CompareAndSwapInt32(&x.closed, 0, 1) {
+		return
+	}
+	x.net.onConnClose()
+	_ = x.conn.Close()
 }
 
 func (x *tcpConn) LocalAddr() net.Addr {

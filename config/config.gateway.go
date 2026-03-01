@@ -5,15 +5,15 @@ import (
 )
 
 type GateWay struct {
-	Log            *Log     `json:"Log"`
-	OuterIp        string   `json:"OuterIp"`
-	OuterPort      int      `json:"OuterPort"`
-	OuterAddr      string   `json:"OuterAddr"`
-	MaxPlayerNum   int64    `json:"MaxPlayerNum"`
-	BlackCmd       []string `json:"BlackCmd"`
-	IsLogMsgPlayer bool     `json:"IsLogMsgPlayer"`
-	CheckToken     bool     `json:"CheckToken"`
-	CheckUrl       string   `json:"CheckUrl"`
+	Log          *Log     `json:"Log"`
+	PacketLog    *Log     `json:"PacketLog"`
+	OuterIp      string   `json:"OuterIp"`
+	OuterPort    int      `json:"OuterPort"`
+	OuterAddr    string   `json:"OuterAddr"`
+	MaxPlayerNum int64    `json:"MaxPlayerNum"`
+	BlackCmd     []string `json:"BlackCmd"`
+	CheckToken   bool     `json:"CheckToken"`
+	CheckUrl     string   `json:"CheckUrl"`
 }
 
 var defaultGateWay = &GateWay{
@@ -21,6 +21,11 @@ var defaultGateWay = &GateWay{
 		Level:   slog.InfoLevel,
 		LogFile: false,
 		AppName: "Gate",
+	},
+	PacketLog: &Log{
+		Level:   slog.InfoLevel,
+		LogFile: false,
+		AppName: "Packet",
 	},
 	OuterIp:      "127.0.0.1",
 	OuterPort:    11000,
@@ -33,9 +38,8 @@ var defaultGateWay = &GateWay{
 		"PlayerSceneRecordRsp",
 		"PlayerSceneSyncDataNotice",
 	},
-	IsLogMsgPlayer: false,
-	CheckToken:     true,
-	CheckUrl:       "http://127.0.0.1:8080/gucooing/lolo/checkSdkToken",
+	CheckToken: true,
+	CheckUrl:   "http://127.0.0.1:8080/gucooing/lolo/checkSdkToken",
 }
 
 func GetGateWay() *GateWay {
@@ -66,8 +70,8 @@ func (x *GateWay) GetBlackCmd() []string {
 	return x.BlackCmd
 }
 
-func (x *GateWay) GetIsLogMsgPlayer() bool {
-	return x.IsLogMsgPlayer
+func (x *GateWay) GetPacketLog() *Log {
+	return x.PacketLog
 }
 
 func (x *GateWay) GetCheckToken() bool {

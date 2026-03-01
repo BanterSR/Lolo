@@ -44,61 +44,43 @@ func Close() {
 
 func NewApp() {
 	conf := config.GetLog()
-	App = slog.NewStdLogger(func(sl *slog.SugaredLogger) {
-		f := sl.Formatter.(*slog.TextFormatter)
-		f.EnableColor = true
-		sl.ChannelName = conf.AppName
-		sl.Level = conf.Level
-	})
+	App = newLog(conf)
 	addHandler(App, conf)
 }
 
 func NewGate() {
 	conf := config.GetGateWay().GetLog()
-	Gate = slog.NewStdLogger(func(sl *slog.SugaredLogger) {
-		f := sl.Formatter.(*slog.TextFormatter)
-		f.EnableColor = true
-		sl.ChannelName = conf.AppName
-		sl.Level = conf.Level
-	})
+	Gate = newLog(conf)
 	addHandler(Gate, conf)
 }
 
 func NewGame() {
 	conf := config.GetGame().GetLog()
-	Game = slog.NewStdLogger(func(sl *slog.SugaredLogger) {
-		f := sl.Formatter.(*slog.TextFormatter)
-		f.EnableColor = true
-		sl.ChannelName = conf.AppName
-		sl.Level = conf.Level
-	})
+	Game = newLog(conf)
 	addHandler(Game, conf)
 }
 
 func NewClientLog() {
 	conf := config.GetLogServer().GetLog()
-	ClientLog = slog.NewStdLogger(func(sl *slog.SugaredLogger) {
-		f := sl.Formatter.(*slog.TextFormatter)
-		f.EnableColor = true
-		sl.ChannelName = conf.AppName
-		sl.Level = conf.Level
-	})
+	ClientLog = newLog(conf)
 	addHandler(ClientLog, conf)
 }
 
 func NewPacket() {
-	conf := &config.Log{
-		Level:   slog.InfoLevel,
-		LogFile: config.GetGateWay().GetIsLogMsgPlayer(),
-		AppName: "Packet",
-	}
-	Packet = slog.NewStdLogger(func(sl *slog.SugaredLogger) {
+	conf := config.GetGateWay().GetPacketLog()
+	Packet = newLog(conf)
+	addHandler(Packet, conf)
+}
+
+func newLog(conf *config.Log) *slog.SugaredLogger {
+	logger := slog.NewStdLogger(func(sl *slog.SugaredLogger) {
 		f := sl.Formatter.(*slog.TextFormatter)
 		f.EnableColor = true
 		sl.ChannelName = conf.AppName
 		sl.Level = conf.Level
 	})
-	addHandler(Packet, conf)
+
+	return logger
 }
 
 func addHandler(l *slog.SugaredLogger, conf *config.Log) {

@@ -4,11 +4,8 @@ import (
 	"time"
 
 	"github.com/bytedance/sonic"
-	"github.com/google/uuid"
-
-	"gucooing/lolo/protocol/quick"
-
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	pb "google.golang.org/protobuf/proto"
 	"resty.dev/v3"
 
@@ -18,15 +15,16 @@ import (
 	"gucooing/lolo/pkg/ofnet"
 	"gucooing/lolo/protocol/cmd"
 	"gucooing/lolo/protocol/proto"
+	"gucooing/lolo/protocol/quick"
 )
 
 type Gateway struct {
 	cfg          *config.GateWay
-	net          ofnet.Net       // 传输层
-	router       *gin.Engine     // http 服务器
-	loginChan    chan *LoginInfo // 登录通道
-	delLoginChan chan string     // 撤销登录通道 sdk uid ->
-	doneChan     chan struct{}   // 停止
+	net          ofnet.Net
+	router       *gin.Engine
+	loginChan    chan *LoginInfo
+	delLoginChan chan string
+	doneChan     chan struct{}
 	client       *resty.Client
 	game         *game.Game
 }
@@ -34,7 +32,7 @@ type Gateway struct {
 func NewGateway(router *gin.Engine) *Gateway {
 	log.NewGate()
 	log.NewPacket()
-	var err error
+
 	g := &Gateway{
 		cfg:          config.GetGateWay(),
 		router:       router,
@@ -44,10 +42,13 @@ func NewGateway(router *gin.Engine) *Gateway {
 		client:       DefaultClient(),
 		game:         game.NewGame(router),
 	}
+
+	var err error
 	g.net, err = ofnet.NewNet("tcp", g.cfg.GetOuterAddr(), log.Gate)
 	if err != nil {
 		panic(err)
 	}
+
 	g.net.SetFileLog(log.Packet)
 	g.net.SetBlackPackId(func() map[uint32]struct{} {
 		list := make(map[uint32]struct{})
@@ -57,7 +58,7 @@ func NewGateway(router *gin.Engine) *Gateway {
 		}
 		return list
 	}())
-	g.net.SetLogMsg(g.cfg.GetIsLogMsgPlayer())
+	g.net.StartStatsLoop()
 
 	go g.loginSessionManagement()
 	return g
@@ -67,16 +68,18 @@ func (g *Gateway) RunGateway() error {
 	for {
 		select {
 		case <-g.doneChan:
-			log.Gate.Infof("gate主线程停止")
+			log.Gate.Infof("gateway main loop stopped")
 			return nil
 		default:
 		}
+
 		conn, err := g.net.Accept()
 		if err != nil {
 			return err
 		}
+
 		conn.SetServerTag("GateWay")
-		log.Gate.Infof("Gateway 接受了新的连接请求:%s", conn.RemoteAddr())
+		log.Gate.Infof("Gateway accepted new connection: %s", conn.RemoteAddr())
 		go g.NewSession(conn)
 	}
 }
@@ -84,10 +87,11 @@ func (g *Gateway) RunGateway() error {
 func (g *Gateway) NewSession(conn ofnet.Conn) {
 	var message pb.Message
 	timer := time.NewTimer(10 * time.Second)
+
 	for {
 		select {
 		case <-timer.C:
-			log.Gate.Debug("登录超时")
+			log.Gate.Debug("login timeout")
 			conn.Close()
 			timer.Stop()
 			return
@@ -99,23 +103,26 @@ func (g *Gateway) NewSession(conn ofnet.Conn) {
 				log.Gate.Error(err.Error())
 				return
 			}
+
 			if msg.MsgId == cmd.VerifyLoginTokenReq {
 				message = msg.Body
-				goto ty
-			} else {
-				conn.Close()
-				timer.Stop()
-				return
+				goto verified
 			}
+
+			conn.Close()
+			timer.Stop()
+			return
 		}
 	}
-ty:
+
+verified:
 	timer.Stop()
 	req := message.(*proto.VerifyLoginTokenReq)
 	if req == nil {
 		conn.Close()
 		return
 	}
+
 	g.loginChan <- &LoginInfo{
 		VerifyLoginTokenReq: req,
 		conn:                conn,
@@ -137,28 +144,29 @@ func (g *Gateway) receive(conn ofnet.Conn, userId uint32) {
 					Conn:    conn,
 					GameMsg: msg,
 				}
-			} else {
-				// 通知game 玩家断开了网络连接
-				log.Gate.Infof("[UID:%v][UUID:%v]断开网络连接", userId, loginUUID)
-				g.game.DoPlayer() <- &game.DonePlayerCtx{
-					UserId: userId,
-					UUID:   loginUUID,
-				}
-				return
+				continue
 			}
+
+			conn.Close()
+			log.Gate.Infof("[UID:%v][UUID:%v] network connection closed", userId, loginUUID)
+			g.game.DoPlayer() <- &game.DonePlayerCtx{
+				UserId: userId,
+				UUID:   loginUUID,
+			}
+			return
 		}
 	}
 }
 
 func (g *Gateway) Close() {
+	_ = g.net.Close()
 	close(g.doneChan)
 	g.game.Close()
-	log.Gate.Infof("gate退出完成")
+	log.Gate.Infof("gateway closed")
 }
 
 func DefaultClient() *resty.Client {
 	return resty.New().
-		// 重试配置
 		SetRetryCount(10).
 		SetRetryWaitTime(50 * time.Millisecond).
 		SetRetryMaxWaitTime(2 * time.Second)
@@ -168,6 +176,7 @@ func (g *Gateway) GetToken(uid, token string) bool {
 	if !g.cfg.GetCheckToken() {
 		return true
 	}
+
 	resp, err := g.client.R().
 		SetBody(&quick.CheckSdkTokenRequest{
 			Token: token,
@@ -177,6 +186,7 @@ func (g *Gateway) GetToken(uid, token string) bool {
 	if err != nil {
 		return false
 	}
+
 	rsp := new(quick.CheckSdkTokenResponse)
 	if err = sonic.Unmarshal(resp.Bytes(), rsp); err != nil {
 		return false

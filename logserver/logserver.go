@@ -2,26 +2,26 @@ package logserver
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
-	"gucooing/lolo/pkg/alg"
 	"io"
 
+	"github.com/gin-gonic/gin"
+
 	"gucooing/lolo/config"
+	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/pkg/log"
 	"gucooing/lolo/pkg/ofnet"
 )
 
 type LogServer struct {
 	cfg                 *config.LogServer
-	net                 ofnet.Net             // 传输层
-	httpRouter          *gin.Engine           // http 服务器
-	handlerFuncRouteMap map[uint32]logHandler // 路由
+	net                 ofnet.Net
+	httpRouter          *gin.Engine
+	handlerFuncRouteMap map[uint32]logHandler
 	doneChan            chan struct{}
 	logMagChan          chan *logMessage
 }
 
 func NewLogServer(router *gin.Engine) *LogServer {
-	var err error
 	l := &LogServer{
 		cfg:        config.GetLogServer(),
 		httpRouter: router,
@@ -30,14 +30,14 @@ func NewLogServer(router *gin.Engine) *LogServer {
 	}
 	log.NewClientLog()
 
+	var err error
 	l.net, err = ofnet.NewNet("tcp", l.cfg.GetOuterAddr(), log.ClientLog)
 	if err != nil {
 		panic(err)
 	}
-	l.net.SetLogMsg(l.cfg.GetIsLogMsg())
-	l.routerInit() // 注册路由
-	go l.logMainLoop()
 
+	l.routerInit()
+	go l.logMainLoop()
 	return l
 }
 
@@ -48,7 +48,7 @@ func (g *LogServer) RunLogServer() error {
 			return err
 		}
 		conn.SetServerTag("LogServer")
-		log.ClientLog.Debugf("LogServer 接受了新的连接请求:%s", conn.RemoteAddr())
+		log.ClientLog.Debugf("LogServer accepted new connection: %s", conn.RemoteAddr())
 		go g.NewSession(conn)
 	}
 }
@@ -67,6 +67,7 @@ func (g *LogServer) NewSession(conn ofnet.Conn) {
 }
 
 func (g *LogServer) Close() {
+	_ = g.net.Close()
 	close(g.doneChan)
 }
 
@@ -88,8 +89,7 @@ func (g *LogServer) receive(conn ofnet.Conn) {
 					conn: conn,
 					msg:  msg,
 				}
-			case errors.Is(err, io.EOF),
-				errors.Is(err, io.ErrClosedPipe):
+			case errors.Is(err, io.EOF), errors.Is(err, io.ErrClosedPipe):
 				return
 			default:
 				log.ClientLog.Errorf("%s", err)
