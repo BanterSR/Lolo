@@ -75,6 +75,7 @@ func (g *GameConfig) load() {
 	g.loadNotice()
 
 	// excel
+	g.loadAchieve()
 	g.loadHead()
 	g.loadCharacter()
 	g.loadItem()
@@ -96,6 +97,8 @@ func (g *GameConfig) load() {
 	g.loadCollectionItem()
 	g.loadReward()
 	g.loadGather()
+	g.loadHomeItem()
+	g.loadMake()
 
 	// config
 	g.loadSceneConfig()
@@ -110,6 +113,7 @@ type Data struct {
 }
 
 type Excel struct {
+	Achieve        *Achieve
 	Head           *Head
 	Character      *Character
 	Item           *Item
@@ -131,6 +135,8 @@ type Excel struct {
 	CollectionItem *CollectionItem
 	Reward         *Reward
 	Gather         *Gather
+	HomeItem       *HomeItem
+	Make           *Make
 }
 
 type Config struct {
