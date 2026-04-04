@@ -823,7 +823,7 @@ func (i *ItemModel) GetFurnitureItemInfo(itemId uint32) *FurnitureItemInfo {
 
 func (i *ItemModel) FurnitureItemInfo() []*proto.BaseItem {
 	itemMap := i.GetFurnitureItemMap()
-	list := make([]*proto.BaseItem, len(itemMap))
+	list := make([]*proto.BaseItem, 0)
 	for _, v := range itemMap {
 		alg.AddList(&list, v.BaseItem())
 	}

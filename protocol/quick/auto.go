@@ -1,17 +1,22 @@
 package quick
 
 type LoginByNameRequest struct {
-	Username    string `json:"username"`
-	Password    string `json:"password"`
-	ProductCkey string `json:"product_ckey"`
-	DeviceId    string `json:"device_id"`
+	AuthToken   string `json:"authToken"`
+	ClientLang  string `json:"clientLang"`
+	DeviceId    string `json:"deviceId"`
 	Platform    int    `json:"platform"`
-	TimeStamp   string `json:"time_stamp"`
-	ChanelCkey  string `json:"chanel_ckey"`
-	SdkVer      string `json:"sdk_ver"`
-	GameVer     string `json:"game_ver"`
-	AuthToken   string `json:"auth_token"`
+	Password    string `json:"password"`
+	ProductCode string `json:"productCode"`
+	AndId       string `json:"andId"`
+	GameVersion int    `json:"gameVersion"`
+	SignMd5     string `json:"signMd5"`
+	Imei        string `json:"imei"`
+	SdkVersion  int    `json:"sdkVersion"`
+	Time        int64  `json:"time"`
 	Oaid        string `json:"oaid"`
+	IsEmt       string `json:"isEmt"`
+	Username    string `json:"username"`
+	ChannelCode string `json:"channelCode"`
 }
 
 type AutoLoginRequest struct {
