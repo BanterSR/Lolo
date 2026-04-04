@@ -896,7 +896,9 @@ type GemDuelSkillSceneEventEffcetConfigure struct {
 	RiggerEffect       []int32                `protobuf:"varint,4,rep,packed,name=RiggerEffect,proto3" json:"RiggerEffect,omitempty"`
 	CasterRiggerEffect []int32                `protobuf:"varint,5,rep,packed,name=CasterRiggerEffect,proto3" json:"CasterRiggerEffect,omitempty"`
 	MaxValue           int32                  `protobuf:"varint,6,opt,name=MaxValue,proto3" json:"MaxValue,omitempty"`
-	NewEventType       int32                  `protobuf:"varint,7,opt,name=NewEventType,proto3" json:"NewEventType,omitempty"`
+	Text               int32                  `protobuf:"varint,7,opt,name=Text,proto3" json:"Text,omitempty"`
+	Icon               int32                  `protobuf:"varint,8,opt,name=Icon,proto3" json:"Icon,omitempty"`
+	NewEventType       int32                  `protobuf:"varint,9,opt,name=NewEventType,proto3" json:"NewEventType,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -969,6 +971,20 @@ func (x *GemDuelSkillSceneEventEffcetConfigure) GetCasterRiggerEffect() []int32 
 func (x *GemDuelSkillSceneEventEffcetConfigure) GetMaxValue() int32 {
 	if x != nil {
 		return x.MaxValue
+	}
+	return 0
+}
+
+func (x *GemDuelSkillSceneEventEffcetConfigure) GetText() int32 {
+	if x != nil {
+		return x.Text
+	}
+	return 0
+}
+
+func (x *GemDuelSkillSceneEventEffcetConfigure) GetIcon() int32 {
+	if x != nil {
+		return x.Icon
 	}
 	return 0
 }
@@ -1057,15 +1073,17 @@ const file_AllGemDuel_SkillDatas_proto_rawDesc = "" +
 	"\x05Star1\x18\x03 \x01(\x05R\x05Star1\x12,\n" +
 	"\x11EnemySkillUnlock1\x18\x04 \x03(\x05R\x11EnemySkillUnlock1\"g\n" +
 	"!GemDuelSkillSceneEventEffcetDatas\x12B\n" +
-	"\x05Datas\x18\x01 \x03(\v2,.excel.GemDuelSkillSceneEventEffcetConfigureR\x05Datas\"\x8b\x02\n" +
+	"\x05Datas\x18\x01 \x03(\v2,.excel.GemDuelSkillSceneEventEffcetConfigureR\x05Datas\"\xb3\x02\n" +
 	"%GemDuelSkillSceneEventEffcetConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x1a\n" +
 	"\bDuration\x18\x02 \x01(\x05R\bDuration\x12\"\n" +
 	"\fScriptParams\x18\x03 \x03(\x05R\fScriptParams\x12\"\n" +
 	"\fRiggerEffect\x18\x04 \x03(\x05R\fRiggerEffect\x12.\n" +
 	"\x12CasterRiggerEffect\x18\x05 \x03(\x05R\x12CasterRiggerEffect\x12\x1a\n" +
-	"\bMaxValue\x18\x06 \x01(\x05R\bMaxValue\x12\"\n" +
-	"\fNewEventType\x18\a \x01(\x05R\fNewEventTypeB\n" +
+	"\bMaxValue\x18\x06 \x01(\x05R\bMaxValue\x12\x12\n" +
+	"\x04Text\x18\a \x01(\x05R\x04Text\x12\x12\n" +
+	"\x04Icon\x18\b \x01(\x05R\x04Icon\x12\"\n" +
+	"\fNewEventType\x18\t \x01(\x05R\fNewEventTypeB\n" +
 	"Z\b./;excelb\x06proto3"
 
 var (

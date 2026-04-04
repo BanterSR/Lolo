@@ -29,6 +29,7 @@ type EGemDuelShowType int32
 const (
 	EGemDuelShowType_EGemDuelShowType_None      EGemDuelShowType = 0
 	EGemDuelShowType_EGemDuelShowType_Character EGemDuelShowType = 1
+	EGemDuelShowType_EGemDuelShowType_Weapon    EGemDuelShowType = 2
 )
 
 // Enum value maps for EGemDuelShowType.
@@ -36,10 +37,12 @@ var (
 	EGemDuelShowType_name = map[int32]string{
 		0: "EGemDuelShowType_None",
 		1: "EGemDuelShowType_Character",
+		2: "EGemDuelShowType_Weapon",
 	}
 	EGemDuelShowType_value = map[string]int32{
 		"EGemDuelShowType_None":      0,
 		"EGemDuelShowType_Character": 1,
+		"EGemDuelShowType_Weapon":    2,
 	}
 )
 
@@ -74,10 +77,11 @@ var File_EGemDuelShowType_proto protoreflect.FileDescriptor
 
 const file_EGemDuelShowType_proto_rawDesc = "" +
 	"\n" +
-	"\x16EGemDuelShowType.proto\x12\x05proto*M\n" +
+	"\x16EGemDuelShowType.proto\x12\x05proto*j\n" +
 	"\x10EGemDuelShowType\x12\x19\n" +
 	"\x15EGemDuelShowType_None\x10\x00\x12\x1e\n" +
-	"\x1aEGemDuelShowType_Character\x10\x01B\n" +
+	"\x1aEGemDuelShowType_Character\x10\x01\x12\x1b\n" +
+	"\x17EGemDuelShowType_Weapon\x10\x02B\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

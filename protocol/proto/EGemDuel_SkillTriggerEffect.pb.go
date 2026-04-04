@@ -52,6 +52,13 @@ const (
 	EGemDuel_SkillTriggerEffect_EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400023 EGemDuel_SkillTriggerEffect = 22
 	EGemDuel_SkillTriggerEffect_EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400024 EGemDuel_SkillTriggerEffect = 23
 	EGemDuel_SkillTriggerEffect_EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400025 EGemDuel_SkillTriggerEffect = 24
+	EGemDuel_SkillTriggerEffect_EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400026 EGemDuel_SkillTriggerEffect = 25
+	EGemDuel_SkillTriggerEffect_EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400027 EGemDuel_SkillTriggerEffect = 26
+	EGemDuel_SkillTriggerEffect_EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400028 EGemDuel_SkillTriggerEffect = 27
+	EGemDuel_SkillTriggerEffect_EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400029 EGemDuel_SkillTriggerEffect = 28
+	EGemDuel_SkillTriggerEffect_EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400030 EGemDuel_SkillTriggerEffect = 29
+	EGemDuel_SkillTriggerEffect_EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400031 EGemDuel_SkillTriggerEffect = 30
+	EGemDuel_SkillTriggerEffect_EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400032 EGemDuel_SkillTriggerEffect = 31
 )
 
 // Enum value maps for EGemDuel_SkillTriggerEffect.
@@ -82,6 +89,13 @@ var (
 		22: "EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400023",
 		23: "EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400024",
 		24: "EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400025",
+		25: "EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400026",
+		26: "EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400027",
+		27: "EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400028",
+		28: "EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400029",
+		29: "EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400030",
+		30: "EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400031",
+		31: "EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400032",
 	}
 	EGemDuel_SkillTriggerEffect_value = map[string]int32{
 		"EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400001": 0,
@@ -109,6 +123,13 @@ var (
 		"EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400023": 22,
 		"EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400024": 23,
 		"EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400025": 24,
+		"EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400026": 25,
+		"EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400027": 26,
+		"EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400028": 27,
+		"EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400029": 28,
+		"EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400030": 29,
+		"EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400031": 30,
+		"EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400032": 31,
 	}
 )
 
@@ -143,7 +164,7 @@ var File_EGemDuel_SkillTriggerEffect_proto protoreflect.FileDescriptor
 
 const file_EGemDuel_SkillTriggerEffect_proto_rawDesc = "" +
 	"\n" +
-	"!EGemDuel_SkillTriggerEffect.proto\x12\x05proto*\xdb\f\n" +
+	"!EGemDuel_SkillTriggerEffect.proto\x12\x05proto*\xa2\x10\n" +
 	"\x1bEGemDuel_SkillTriggerEffect\x12?\n" +
 	";EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400001\x10\x00\x12?\n" +
 	";EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400002\x10\x01\x12?\n" +
@@ -170,7 +191,14 @@ const file_EGemDuel_SkillTriggerEffect_proto_rawDesc = "" +
 	";EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400022\x10\x15\x12?\n" +
 	";EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400023\x10\x16\x12?\n" +
 	";EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400024\x10\x17\x12?\n" +
-	";EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400025\x10\x18B\n" +
+	";EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400025\x10\x18\x12?\n" +
+	";EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400026\x10\x19\x12?\n" +
+	";EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400027\x10\x1a\x12?\n" +
+	";EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400028\x10\x1b\x12?\n" +
+	";EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400029\x10\x1c\x12?\n" +
+	";EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400030\x10\x1d\x12?\n" +
+	";EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400031\x10\x1e\x12?\n" +
+	";EGemDuel_SkillTriggerEffect_GemDuelSkillTriggerEffect400032\x10\x1fB\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

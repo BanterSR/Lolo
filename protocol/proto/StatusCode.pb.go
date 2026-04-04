@@ -328,6 +328,9 @@ const (
 	StatusCode_StatusCode_GemDuelBuyStaminaLimit                  StatusCode = 1782
 	StatusCode_StatusCode_GemDuelTeamNotUnlock                    StatusCode = 1783
 	StatusCode_StatusCode_GemDuelShopRefreshLimit                 StatusCode = 1784
+	StatusCode_StatusCode_GrowthFundHasBuy                        StatusCode = 1785
+	StatusCode_StatusCode_GrowthFundNotBuy                        StatusCode = 1786
+	StatusCode_StatusCode_GrowthFundLevelLimit                    StatusCode = 1787
 )
 
 // Enum value maps for StatusCode.
@@ -634,6 +637,9 @@ var (
 		1782: "StatusCode_GemDuelBuyStaminaLimit",
 		1783: "StatusCode_GemDuelTeamNotUnlock",
 		1784: "StatusCode_GemDuelShopRefreshLimit",
+		1785: "StatusCode_GrowthFundHasBuy",
+		1786: "StatusCode_GrowthFundNotBuy",
+		1787: "StatusCode_GrowthFundLevelLimit",
 	}
 	StatusCode_value = map[string]int32{
 		"StatusCode_None":                                    0,
@@ -937,6 +943,9 @@ var (
 		"StatusCode_GemDuelBuyStaminaLimit":                  1782,
 		"StatusCode_GemDuelTeamNotUnlock":                    1783,
 		"StatusCode_GemDuelShopRefreshLimit":                 1784,
+		"StatusCode_GrowthFundHasBuy":                        1785,
+		"StatusCode_GrowthFundNotBuy":                        1786,
+		"StatusCode_GrowthFundLevelLimit":                    1787,
 	}
 )
 
@@ -971,7 +980,7 @@ var File_StatusCode_proto protoreflect.FileDescriptor
 
 const file_StatusCode_proto_rawDesc = "" +
 	"\n" +
-	"\x10StatusCode.proto\x12\x05proto*\xc1S\n" +
+	"\x10StatusCode.proto\x12\x05proto*\xabT\n" +
 	"\n" +
 	"StatusCode\x12\x13\n" +
 	"\x0fStatusCode_None\x10\x00\x12\x11\n" +
@@ -1316,7 +1325,10 @@ const file_StatusCode_proto_rawDesc = "" +
 	"&StatusCode_GemDuelSkillAlreadyUnlocked\x10\xf5\r\x12&\n" +
 	"!StatusCode_GemDuelBuyStaminaLimit\x10\xf6\r\x12$\n" +
 	"\x1fStatusCode_GemDuelTeamNotUnlock\x10\xf7\r\x12'\n" +
-	"\"StatusCode_GemDuelShopRefreshLimit\x10\xf8\rB\n" +
+	"\"StatusCode_GemDuelShopRefreshLimit\x10\xf8\r\x12 \n" +
+	"\x1bStatusCode_GrowthFundHasBuy\x10\xf9\r\x12 \n" +
+	"\x1bStatusCode_GrowthFundNotBuy\x10\xfa\r\x12$\n" +
+	"\x1fStatusCode_GrowthFundLevelLimit\x10\xfb\rB\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

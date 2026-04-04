@@ -25,14 +25,16 @@ const (
 )
 
 type PlayerActivityRegular struct {
-	state         protoimpl.MessageState    `protogen:"open.v1"`
-	ActivityId    uint32                    `protobuf:"varint,1,opt,name=activity_id,json=activityId,proto3" json:"activity_id,omitempty"`
-	OpenTime      int64                     `protobuf:"varint,2,opt,name=open_time,json=openTime,proto3" json:"open_time,omitempty"`
-	CloseTime     int64                     `protobuf:"varint,3,opt,name=close_time,json=closeTime,proto3" json:"close_time,omitempty"`
-	DailyAchieve  []*ActivityRegularAchieve `protobuf:"bytes,4,rep,name=daily_achieve,json=dailyAchieve,proto3" json:"daily_achieve,omitempty"`
-	PoolAchieve   []*ActivityRegularAchieve `protobuf:"bytes,5,rep,name=pool_achieve,json=poolAchieve,proto3" json:"pool_achieve,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state               protoimpl.MessageState    `protogen:"open.v1"`
+	ActivityId          uint32                    `protobuf:"varint,1,opt,name=activity_id,json=activityId,proto3" json:"activity_id,omitempty"`
+	OpenTime            int64                     `protobuf:"varint,2,opt,name=open_time,json=openTime,proto3" json:"open_time,omitempty"`
+	CloseTime           int64                     `protobuf:"varint,3,opt,name=close_time,json=closeTime,proto3" json:"close_time,omitempty"`
+	DailyAchieve        []*ActivityRegularAchieve `protobuf:"bytes,4,rep,name=daily_achieve,json=dailyAchieve,proto3" json:"daily_achieve,omitempty"`
+	PoolAchieve         []*ActivityRegularAchieve `protobuf:"bytes,5,rep,name=pool_achieve,json=poolAchieve,proto3" json:"pool_achieve,omitempty"`
+	DailyRefreshAchieve []*ActivityRegularAchieve `protobuf:"bytes,6,rep,name=daily_refresh_achieve,json=dailyRefreshAchieve,proto3" json:"daily_refresh_achieve,omitempty"`
+	Param1              bool                      `protobuf:"varint,7,opt,name=param1,proto3" json:"param1,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *PlayerActivityRegular) Reset() {
@@ -100,11 +102,25 @@ func (x *PlayerActivityRegular) GetPoolAchieve() []*ActivityRegularAchieve {
 	return nil
 }
 
+func (x *PlayerActivityRegular) GetDailyRefreshAchieve() []*ActivityRegularAchieve {
+	if x != nil {
+		return x.DailyRefreshAchieve
+	}
+	return nil
+}
+
+func (x *PlayerActivityRegular) GetParam1() bool {
+	if x != nil {
+		return x.Param1
+	}
+	return false
+}
+
 var File_PlayerActivityRegular_proto protoreflect.FileDescriptor
 
 const file_PlayerActivityRegular_proto_rawDesc = "" +
 	"\n" +
-	"\x1bPlayerActivityRegular.proto\x12\x05proto\x1a\x1cActivityRegularAchieve.proto\"\xfa\x01\n" +
+	"\x1bPlayerActivityRegular.proto\x12\x05proto\x1a\x1cActivityRegularAchieve.proto\"\xe5\x02\n" +
 	"\x15PlayerActivityRegular\x12\x1f\n" +
 	"\vactivity_id\x18\x01 \x01(\rR\n" +
 	"activityId\x12\x1b\n" +
@@ -112,7 +128,9 @@ const file_PlayerActivityRegular_proto_rawDesc = "" +
 	"\n" +
 	"close_time\x18\x03 \x01(\x03R\tcloseTime\x12B\n" +
 	"\rdaily_achieve\x18\x04 \x03(\v2\x1d.proto.ActivityRegularAchieveR\fdailyAchieve\x12@\n" +
-	"\fpool_achieve\x18\x05 \x03(\v2\x1d.proto.ActivityRegularAchieveR\vpoolAchieveB\n" +
+	"\fpool_achieve\x18\x05 \x03(\v2\x1d.proto.ActivityRegularAchieveR\vpoolAchieve\x12Q\n" +
+	"\x15daily_refresh_achieve\x18\x06 \x03(\v2\x1d.proto.ActivityRegularAchieveR\x13dailyRefreshAchieve\x12\x16\n" +
+	"\x06param1\x18\a \x01(\bR\x06param1B\n" +
 	"Z\b./;protob\x06proto3"
 
 var (
@@ -135,11 +153,12 @@ var file_PlayerActivityRegular_proto_goTypes = []any{
 var file_PlayerActivityRegular_proto_depIdxs = []int32{
 	1, // 0: proto.PlayerActivityRegular.daily_achieve:type_name -> proto.ActivityRegularAchieve
 	1, // 1: proto.PlayerActivityRegular.pool_achieve:type_name -> proto.ActivityRegularAchieve
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	1, // 2: proto.PlayerActivityRegular.daily_refresh_achieve:type_name -> proto.ActivityRegularAchieve
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_PlayerActivityRegular_proto_init() }

@@ -137,19 +137,20 @@ type GemDuelGachaInfoConfigure struct {
 	TextID                int32                  `protobuf:"varint,5,opt,name=TextID,proto3" json:"TextID,omitempty"`
 	IconID                int32                  `protobuf:"varint,6,opt,name=IconID,proto3" json:"IconID,omitempty"`
 	IsFree                bool                   `protobuf:"varint,7,opt,name=IsFree,proto3" json:"IsFree,omitempty"`
-	ConsumeItem1ID        int32                  `protobuf:"varint,8,opt,name=ConsumeItem1ID,proto3" json:"ConsumeItem1ID,omitempty"`
-	Method1Count          int32                  `protobuf:"varint,9,opt,name=Method1Count,proto3" json:"Method1Count,omitempty"`
-	ConsumeItem1Num       int32                  `protobuf:"varint,10,opt,name=ConsumeItem1Num,proto3" json:"ConsumeItem1Num,omitempty"`
-	ConsumeItem2ID        int32                  `protobuf:"varint,11,opt,name=ConsumeItem2ID,proto3" json:"ConsumeItem2ID,omitempty"`
-	Method2Count          int32                  `protobuf:"varint,12,opt,name=Method2Count,proto3" json:"Method2Count,omitempty"`
-	ConsumeItem2Num       int32                  `protobuf:"varint,13,opt,name=ConsumeItem2Num,proto3" json:"ConsumeItem2Num,omitempty"`
-	MaxTimes              int32                  `protobuf:"varint,14,opt,name=MaxTimes,proto3" json:"MaxTimes,omitempty"`
-	OptionalNum           int32                  `protobuf:"varint,15,opt,name=OptionalNum,proto3" json:"OptionalNum,omitempty"`
-	OptionalPoolID        int32                  `protobuf:"varint,16,opt,name=OptionalPoolID,proto3" json:"OptionalPoolID,omitempty"`
-	BigGuaranteeNum       int32                  `protobuf:"varint,17,opt,name=BigGuaranteeNum,proto3" json:"BigGuaranteeNum,omitempty"`
-	BigGuaranteePoolID    int32                  `protobuf:"varint,18,opt,name=BigGuaranteePoolID,proto3" json:"BigGuaranteePoolID,omitempty"`
-	NewGemDuelShowType    int32                  `protobuf:"varint,19,opt,name=NewGemDuelShowType,proto3" json:"NewGemDuelShowType,omitempty"`
-	NewGemDuelUIGachaType int32                  `protobuf:"varint,20,opt,name=NewGemDuelUIGachaType,proto3" json:"NewGemDuelUIGachaType,omitempty"`
+	Method1ID             int32                  `protobuf:"varint,8,opt,name=Method1ID,proto3" json:"Method1ID,omitempty"`
+	ConsumeItem1ID        int32                  `protobuf:"varint,9,opt,name=ConsumeItem1ID,proto3" json:"ConsumeItem1ID,omitempty"`
+	Method1Count          int32                  `protobuf:"varint,10,opt,name=Method1Count,proto3" json:"Method1Count,omitempty"`
+	ConsumeItem1Num       int32                  `protobuf:"varint,11,opt,name=ConsumeItem1Num,proto3" json:"ConsumeItem1Num,omitempty"`
+	ConsumeItem2ID        int32                  `protobuf:"varint,12,opt,name=ConsumeItem2ID,proto3" json:"ConsumeItem2ID,omitempty"`
+	Method2Count          int32                  `protobuf:"varint,13,opt,name=Method2Count,proto3" json:"Method2Count,omitempty"`
+	ConsumeItem2Num       int32                  `protobuf:"varint,14,opt,name=ConsumeItem2Num,proto3" json:"ConsumeItem2Num,omitempty"`
+	MaxTimes              int32                  `protobuf:"varint,15,opt,name=MaxTimes,proto3" json:"MaxTimes,omitempty"`
+	OptionalNum           int32                  `protobuf:"varint,16,opt,name=OptionalNum,proto3" json:"OptionalNum,omitempty"`
+	OptionalPoolID        int32                  `protobuf:"varint,17,opt,name=OptionalPoolID,proto3" json:"OptionalPoolID,omitempty"`
+	BigGuaranteeNum       int32                  `protobuf:"varint,18,opt,name=BigGuaranteeNum,proto3" json:"BigGuaranteeNum,omitempty"`
+	BigGuaranteePoolID    int32                  `protobuf:"varint,19,opt,name=BigGuaranteePoolID,proto3" json:"BigGuaranteePoolID,omitempty"`
+	NewGemDuelShowType    int32                  `protobuf:"varint,20,opt,name=NewGemDuelShowType,proto3" json:"NewGemDuelShowType,omitempty"`
+	NewGemDuelUIGachaType int32                  `protobuf:"varint,21,opt,name=NewGemDuelUIGachaType,proto3" json:"NewGemDuelUIGachaType,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -231,6 +232,13 @@ func (x *GemDuelGachaInfoConfigure) GetIsFree() bool {
 		return x.IsFree
 	}
 	return false
+}
+
+func (x *GemDuelGachaInfoConfigure) GetMethod1ID() int32 {
+	if x != nil {
+		return x.Method1ID
+	}
+	return 0
 }
 
 func (x *GemDuelGachaInfoConfigure) GetConsumeItem1ID() int32 {
@@ -638,7 +646,7 @@ const file_AllGemDuel_GachaDatas_proto_rawDesc = "" +
 	"\x10GemDuelGachaPool\x18\x02 \x01(\v2\x1c.excel.GemDuelGachaPoolDatasR\x10GemDuelGachaPool\x12P\n" +
 	"\x11GemDuelRewardPool\x18\x03 \x01(\v2\".excel.GemDuelGachaRewardPoolDatasR\x11GemDuelRewardPool\"O\n" +
 	"\x15GemDuelGachaInfoDatas\x126\n" +
-	"\x05Datas\x18\x01 \x03(\v2 .excel.GemDuelGachaInfoConfigureR\x05Datas\"\xdf\x05\n" +
+	"\x05Datas\x18\x01 \x03(\v2 .excel.GemDuelGachaInfoConfigureR\x05Datas\"\xfd\x05\n" +
 	"\x19GemDuelGachaInfoConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x14\n" +
 	"\x05Index\x18\x02 \x01(\x05R\x05Index\x12 \n" +
@@ -646,21 +654,22 @@ const file_AllGemDuel_GachaDatas_proto_rawDesc = "" +
 	"\vClosingTime\x18\x04 \x01(\tR\vClosingTime\x12\x16\n" +
 	"\x06TextID\x18\x05 \x01(\x05R\x06TextID\x12\x16\n" +
 	"\x06IconID\x18\x06 \x01(\x05R\x06IconID\x12\x16\n" +
-	"\x06IsFree\x18\a \x01(\bR\x06IsFree\x12&\n" +
-	"\x0eConsumeItem1ID\x18\b \x01(\x05R\x0eConsumeItem1ID\x12\"\n" +
-	"\fMethod1Count\x18\t \x01(\x05R\fMethod1Count\x12(\n" +
-	"\x0fConsumeItem1Num\x18\n" +
-	" \x01(\x05R\x0fConsumeItem1Num\x12&\n" +
-	"\x0eConsumeItem2ID\x18\v \x01(\x05R\x0eConsumeItem2ID\x12\"\n" +
-	"\fMethod2Count\x18\f \x01(\x05R\fMethod2Count\x12(\n" +
-	"\x0fConsumeItem2Num\x18\r \x01(\x05R\x0fConsumeItem2Num\x12\x1a\n" +
-	"\bMaxTimes\x18\x0e \x01(\x05R\bMaxTimes\x12 \n" +
-	"\vOptionalNum\x18\x0f \x01(\x05R\vOptionalNum\x12&\n" +
-	"\x0eOptionalPoolID\x18\x10 \x01(\x05R\x0eOptionalPoolID\x12(\n" +
-	"\x0fBigGuaranteeNum\x18\x11 \x01(\x05R\x0fBigGuaranteeNum\x12.\n" +
-	"\x12BigGuaranteePoolID\x18\x12 \x01(\x05R\x12BigGuaranteePoolID\x12.\n" +
-	"\x12NewGemDuelShowType\x18\x13 \x01(\x05R\x12NewGemDuelShowType\x124\n" +
-	"\x15NewGemDuelUIGachaType\x18\x14 \x01(\x05R\x15NewGemDuelUIGachaType\"O\n" +
+	"\x06IsFree\x18\a \x01(\bR\x06IsFree\x12\x1c\n" +
+	"\tMethod1ID\x18\b \x01(\x05R\tMethod1ID\x12&\n" +
+	"\x0eConsumeItem1ID\x18\t \x01(\x05R\x0eConsumeItem1ID\x12\"\n" +
+	"\fMethod1Count\x18\n" +
+	" \x01(\x05R\fMethod1Count\x12(\n" +
+	"\x0fConsumeItem1Num\x18\v \x01(\x05R\x0fConsumeItem1Num\x12&\n" +
+	"\x0eConsumeItem2ID\x18\f \x01(\x05R\x0eConsumeItem2ID\x12\"\n" +
+	"\fMethod2Count\x18\r \x01(\x05R\fMethod2Count\x12(\n" +
+	"\x0fConsumeItem2Num\x18\x0e \x01(\x05R\x0fConsumeItem2Num\x12\x1a\n" +
+	"\bMaxTimes\x18\x0f \x01(\x05R\bMaxTimes\x12 \n" +
+	"\vOptionalNum\x18\x10 \x01(\x05R\vOptionalNum\x12&\n" +
+	"\x0eOptionalPoolID\x18\x11 \x01(\x05R\x0eOptionalPoolID\x12(\n" +
+	"\x0fBigGuaranteeNum\x18\x12 \x01(\x05R\x0fBigGuaranteeNum\x12.\n" +
+	"\x12BigGuaranteePoolID\x18\x13 \x01(\x05R\x12BigGuaranteePoolID\x12.\n" +
+	"\x12NewGemDuelShowType\x18\x14 \x01(\x05R\x12NewGemDuelShowType\x124\n" +
+	"\x15NewGemDuelUIGachaType\x18\x15 \x01(\x05R\x15NewGemDuelUIGachaType\"O\n" +
 	"\x15GemDuelGachaPoolDatas\x126\n" +
 	"\x05Datas\x18\x01 \x03(\v2 .excel.GemDuelGachaPoolConfigureR\x05Datas\"^\n" +
 	"\x19GemDuelGachaPoolConfigure\x12\x0e\n" +

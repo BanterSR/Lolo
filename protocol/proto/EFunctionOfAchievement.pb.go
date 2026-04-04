@@ -60,6 +60,8 @@ const (
 	EFunctionOfAchievement_EFunctionOfAchievement_ActivityFashion       EFunctionOfAchievement = 30
 	EFunctionOfAchievement_EFunctionOfAchievement_BossRushQuest         EFunctionOfAchievement = 31
 	EFunctionOfAchievement_EFunctionOfAchievement_MoonQuest             EFunctionOfAchievement = 32
+	EFunctionOfAchievement_EFunctionOfAchievement_ActivityInvitation    EFunctionOfAchievement = 33
+	EFunctionOfAchievement_EFunctionOfAchievement_ActivityHomecoming    EFunctionOfAchievement = 34
 )
 
 // Enum value maps for EFunctionOfAchievement.
@@ -98,6 +100,8 @@ var (
 		30: "EFunctionOfAchievement_ActivityFashion",
 		31: "EFunctionOfAchievement_BossRushQuest",
 		32: "EFunctionOfAchievement_MoonQuest",
+		33: "EFunctionOfAchievement_ActivityInvitation",
+		34: "EFunctionOfAchievement_ActivityHomecoming",
 	}
 	EFunctionOfAchievement_value = map[string]int32{
 		"EFunctionOfAchievement_AreaLevel":             0,
@@ -133,6 +137,8 @@ var (
 		"EFunctionOfAchievement_ActivityFashion":       30,
 		"EFunctionOfAchievement_BossRushQuest":         31,
 		"EFunctionOfAchievement_MoonQuest":             32,
+		"EFunctionOfAchievement_ActivityInvitation":    33,
+		"EFunctionOfAchievement_ActivityHomecoming":    34,
 	}
 )
 
@@ -167,8 +173,7 @@ var File_EFunctionOfAchievement_proto protoreflect.FileDescriptor
 
 const file_EFunctionOfAchievement_proto_rawDesc = "" +
 	"\n" +
-	"\x1cEFunctionOfAchievement.proto\x12\x05proto*\xf5\n" +
-	"\n" +
+	"\x1cEFunctionOfAchievement.proto\x12\x05proto*\xd3\v\n" +
 	"\x16EFunctionOfAchievement\x12$\n" +
 	" EFunctionOfAchievement_AreaLevel\x10\x00\x12 \n" +
 	"\x1cEFunctionOfAchievement_Quest\x10\x01\x12\"\n" +
@@ -203,7 +208,9 @@ const file_EFunctionOfAchievement_proto_rawDesc = "" +
 	"%EFunctionOfAchievement_ActivityInvite\x10\x1d\x12*\n" +
 	"&EFunctionOfAchievement_ActivityFashion\x10\x1e\x12(\n" +
 	"$EFunctionOfAchievement_BossRushQuest\x10\x1f\x12$\n" +
-	" EFunctionOfAchievement_MoonQuest\x10 B\n" +
+	" EFunctionOfAchievement_MoonQuest\x10 \x12-\n" +
+	")EFunctionOfAchievement_ActivityInvitation\x10!\x12-\n" +
+	")EFunctionOfAchievement_ActivityHomecoming\x10\"B\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

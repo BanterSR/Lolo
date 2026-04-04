@@ -27,16 +27,19 @@ const (
 type EShopOpenGridConditionType int32
 
 const (
-	EShopOpenGridConditionType_EShopOpenGridConditionType_None EShopOpenGridConditionType = 0
+	EShopOpenGridConditionType_EShopOpenGridConditionType_None        EShopOpenGridConditionType = 0
+	EShopOpenGridConditionType_EShopOpenGridConditionType_BuyMaxCount EShopOpenGridConditionType = 1
 )
 
 // Enum value maps for EShopOpenGridConditionType.
 var (
 	EShopOpenGridConditionType_name = map[int32]string{
 		0: "EShopOpenGridConditionType_None",
+		1: "EShopOpenGridConditionType_BuyMaxCount",
 	}
 	EShopOpenGridConditionType_value = map[string]int32{
-		"EShopOpenGridConditionType_None": 0,
+		"EShopOpenGridConditionType_None":        0,
+		"EShopOpenGridConditionType_BuyMaxCount": 1,
 	}
 )
 
@@ -71,9 +74,10 @@ var File_EShopOpenGridConditionType_proto protoreflect.FileDescriptor
 
 const file_EShopOpenGridConditionType_proto_rawDesc = "" +
 	"\n" +
-	" EShopOpenGridConditionType.proto\x12\x05proto*A\n" +
+	" EShopOpenGridConditionType.proto\x12\x05proto*m\n" +
 	"\x1aEShopOpenGridConditionType\x12#\n" +
-	"\x1fEShopOpenGridConditionType_None\x10\x00B\n" +
+	"\x1fEShopOpenGridConditionType_None\x10\x00\x12*\n" +
+	"&EShopOpenGridConditionType_BuyMaxCount\x10\x01B\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

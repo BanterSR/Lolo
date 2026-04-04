@@ -209,6 +209,10 @@ const (
 	EAchieveCondition_EAchieveCondition_IdleSecondsInMoonSpot             EAchieveCondition = 179
 	EAchieveCondition_EAchieveCondition_GardenLikedByOthers               EAchieveCondition = 180
 	EAchieveCondition_EAchieveCondition_FinishSideQuestEventNum           EAchieveCondition = 181
+	EAchieveCondition_EAchieveCondition_AttackTargetNum                   EAchieveCondition = 182
+	EAchieveCondition_EAchieveCondition_AttackTargetDaysNum               EAchieveCondition = 183
+	EAchieveCondition_EAchieveCondition_RecallPlayers                     EAchieveCondition = 184
+	EAchieveCondition_EAchieveCondition_RecallUsersOnlineCount            EAchieveCondition = 185
 )
 
 // Enum value maps for EAchieveCondition.
@@ -396,6 +400,10 @@ var (
 		179: "EAchieveCondition_IdleSecondsInMoonSpot",
 		180: "EAchieveCondition_GardenLikedByOthers",
 		181: "EAchieveCondition_FinishSideQuestEventNum",
+		182: "EAchieveCondition_AttackTargetNum",
+		183: "EAchieveCondition_AttackTargetDaysNum",
+		184: "EAchieveCondition_RecallPlayers",
+		185: "EAchieveCondition_RecallUsersOnlineCount",
 	}
 	EAchieveCondition_value = map[string]int32{
 		"EAchieveCondition_None":                              0,
@@ -580,6 +588,10 @@ var (
 		"EAchieveCondition_IdleSecondsInMoonSpot":             179,
 		"EAchieveCondition_GardenLikedByOthers":               180,
 		"EAchieveCondition_FinishSideQuestEventNum":           181,
+		"EAchieveCondition_AttackTargetNum":                   182,
+		"EAchieveCondition_AttackTargetDaysNum":               183,
+		"EAchieveCondition_RecallPlayers":                     184,
+		"EAchieveCondition_RecallUsersOnlineCount":            185,
 	}
 )
 
@@ -614,7 +626,7 @@ var File_EAchieveCondition_proto protoreflect.FileDescriptor
 
 const file_EAchieveCondition_proto_rawDesc = "" +
 	"\n" +
-	"\x17EAchieveCondition.proto\x12\x05proto*\xf26\n" +
+	"\x17EAchieveCondition.proto\x12\x05proto*\x9b8\n" +
 	"\x11EAchieveCondition\x12\x1a\n" +
 	"\x16EAchieveCondition_None\x10\x00\x12 \n" +
 	"\x1cEAchieveCondition_KillMonest\x10\x01\x12\x1d\n" +
@@ -798,7 +810,11 @@ const file_EAchieveCondition_proto_rawDesc = "" +
 	"!EAchieveCondition_FinishWishQuest\x10\xb2\x01\x12,\n" +
 	"'EAchieveCondition_IdleSecondsInMoonSpot\x10\xb3\x01\x12*\n" +
 	"%EAchieveCondition_GardenLikedByOthers\x10\xb4\x01\x12.\n" +
-	")EAchieveCondition_FinishSideQuestEventNum\x10\xb5\x01B\n" +
+	")EAchieveCondition_FinishSideQuestEventNum\x10\xb5\x01\x12&\n" +
+	"!EAchieveCondition_AttackTargetNum\x10\xb6\x01\x12*\n" +
+	"%EAchieveCondition_AttackTargetDaysNum\x10\xb7\x01\x12$\n" +
+	"\x1fEAchieveCondition_RecallPlayers\x10\xb8\x01\x12-\n" +
+	"(EAchieveCondition_RecallUsersOnlineCount\x10\xb9\x01B\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

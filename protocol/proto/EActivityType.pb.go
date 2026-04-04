@@ -27,17 +27,20 @@ const (
 type EActivityType int32
 
 const (
-	EActivityType_EActivityType_SevenDayQuest     EActivityType = 0
-	EActivityType_EActivityType_SevenDaySign      EActivityType = 1
-	EActivityType_EActivityType_ActivityGift      EActivityType = 2
-	EActivityType_EActivityType_BattlePass        EActivityType = 3
-	EActivityType_EActivityType_ActivityRegular   EActivityType = 4
-	EActivityType_EActivityType_ActivityOperating EActivityType = 5
-	EActivityType_EActivityType_ActivityTurntable EActivityType = 6
-	EActivityType_EActivityType_ActivityJigsaw    EActivityType = 7
-	EActivityType_EActivityType_Invite            EActivityType = 8
-	EActivityType_EActivityType_ActivityFashion   EActivityType = 9
-	EActivityType_EActivityType_SeasonalMiniGames EActivityType = 10
+	EActivityType_EActivityType_SevenDayQuest      EActivityType = 0
+	EActivityType_EActivityType_SevenDaySign       EActivityType = 1
+	EActivityType_EActivityType_ActivityGift       EActivityType = 2
+	EActivityType_EActivityType_BattlePass         EActivityType = 3
+	EActivityType_EActivityType_ActivityRegular    EActivityType = 4
+	EActivityType_EActivityType_ActivityOperating  EActivityType = 5
+	EActivityType_EActivityType_ActivityTurntable  EActivityType = 6
+	EActivityType_EActivityType_ActivityJigsaw     EActivityType = 7
+	EActivityType_EActivityType_Invite             EActivityType = 8
+	EActivityType_EActivityType_ActivityFashion    EActivityType = 9
+	EActivityType_EActivityType_ActivityInvitation EActivityType = 10
+	EActivityType_EActivityType_ActivityHomecoming EActivityType = 11
+	EActivityType_EActivityType_ActivityPile       EActivityType = 12
+	EActivityType_EActivityType_ActivityJinli      EActivityType = 13
 )
 
 // Enum value maps for EActivityType.
@@ -53,20 +56,26 @@ var (
 		7:  "EActivityType_ActivityJigsaw",
 		8:  "EActivityType_Invite",
 		9:  "EActivityType_ActivityFashion",
-		10: "EActivityType_SeasonalMiniGames",
+		10: "EActivityType_ActivityInvitation",
+		11: "EActivityType_ActivityHomecoming",
+		12: "EActivityType_ActivityPile",
+		13: "EActivityType_ActivityJinli",
 	}
 	EActivityType_value = map[string]int32{
-		"EActivityType_SevenDayQuest":     0,
-		"EActivityType_SevenDaySign":      1,
-		"EActivityType_ActivityGift":      2,
-		"EActivityType_BattlePass":        3,
-		"EActivityType_ActivityRegular":   4,
-		"EActivityType_ActivityOperating": 5,
-		"EActivityType_ActivityTurntable": 6,
-		"EActivityType_ActivityJigsaw":    7,
-		"EActivityType_Invite":            8,
-		"EActivityType_ActivityFashion":   9,
-		"EActivityType_SeasonalMiniGames": 10,
+		"EActivityType_SevenDayQuest":      0,
+		"EActivityType_SevenDaySign":       1,
+		"EActivityType_ActivityGift":       2,
+		"EActivityType_BattlePass":         3,
+		"EActivityType_ActivityRegular":    4,
+		"EActivityType_ActivityOperating":  5,
+		"EActivityType_ActivityTurntable":  6,
+		"EActivityType_ActivityJigsaw":     7,
+		"EActivityType_Invite":             8,
+		"EActivityType_ActivityFashion":    9,
+		"EActivityType_ActivityInvitation": 10,
+		"EActivityType_ActivityHomecoming": 11,
+		"EActivityType_ActivityPile":       12,
+		"EActivityType_ActivityJinli":      13,
 	}
 )
 
@@ -101,7 +110,7 @@ var File_EActivityType_proto protoreflect.FileDescriptor
 
 const file_EActivityType_proto_rawDesc = "" +
 	"\n" +
-	"\x13EActivityType.proto\x12\x05proto*\xff\x02\n" +
+	"\x13EActivityType.proto\x12\x05proto*\xe7\x03\n" +
 	"\rEActivityType\x12\x1f\n" +
 	"\x1bEActivityType_SevenDayQuest\x10\x00\x12\x1e\n" +
 	"\x1aEActivityType_SevenDaySign\x10\x01\x12\x1e\n" +
@@ -112,9 +121,12 @@ const file_EActivityType_proto_rawDesc = "" +
 	"\x1fEActivityType_ActivityTurntable\x10\x06\x12 \n" +
 	"\x1cEActivityType_ActivityJigsaw\x10\a\x12\x18\n" +
 	"\x14EActivityType_Invite\x10\b\x12!\n" +
-	"\x1dEActivityType_ActivityFashion\x10\t\x12#\n" +
-	"\x1fEActivityType_SeasonalMiniGames\x10\n" +
-	"B\n" +
+	"\x1dEActivityType_ActivityFashion\x10\t\x12$\n" +
+	" EActivityType_ActivityInvitation\x10\n" +
+	"\x12$\n" +
+	" EActivityType_ActivityHomecoming\x10\v\x12\x1e\n" +
+	"\x1aEActivityType_ActivityPile\x10\f\x12\x1f\n" +
+	"\x1bEActivityType_ActivityJinli\x10\rB\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

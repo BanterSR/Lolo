@@ -42,6 +42,17 @@ type GemDuelGameCharacter struct {
 	PlayerIndex   uint32                     `protobuf:"varint,14,opt,name=player_index,json=playerIndex,proto3" json:"player_index,omitempty"`
 	BuffSeq       uint32                     `protobuf:"varint,15,opt,name=buff_seq,json=buffSeq,proto3" json:"buff_seq,omitempty"`
 	RaceTag       uint32                     `protobuf:"varint,16,opt,name=race_tag,json=raceTag,proto3" json:"race_tag,omitempty"`
+	AttackInc     uint32                     `protobuf:"varint,17,opt,name=attack_inc,json=attackInc,proto3" json:"attack_inc,omitempty"`
+	MagicInc      uint32                     `protobuf:"varint,18,opt,name=magic_inc,json=magicInc,proto3" json:"magic_inc,omitempty"`
+	AtkDef        uint32                     `protobuf:"varint,19,opt,name=atk_def,json=atkDef,proto3" json:"atk_def,omitempty"`
+	MagDef        uint32                     `protobuf:"varint,20,opt,name=mag_def,json=magDef,proto3" json:"mag_def,omitempty"`
+	AtkDefInc     uint32                     `protobuf:"varint,21,opt,name=atk_def_inc,json=atkDefInc,proto3" json:"atk_def_inc,omitempty"`
+	MagDefInc     uint32                     `protobuf:"varint,22,opt,name=mag_def_inc,json=magDefInc,proto3" json:"mag_def_inc,omitempty"`
+	Definc        uint32                     `protobuf:"varint,23,opt,name=definc,proto3" json:"definc,omitempty"`
+	Crit          uint32                     `protobuf:"varint,24,opt,name=crit,proto3" json:"crit,omitempty"`
+	Critmg        uint32                     `protobuf:"varint,25,opt,name=critmg,proto3" json:"critmg,omitempty"`
+	DamageType    EGemDuelDamageType         `protobuf:"varint,26,opt,name=damage_type,json=damageType,proto3,enum=proto.EGemDuelDamageType" json:"damage_type,omitempty"`
+	ElementType   EGemDuelElementType        `protobuf:"varint,27,opt,name=element_type,json=elementType,proto3,enum=proto.EGemDuelElementType" json:"element_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -188,11 +199,88 @@ func (x *GemDuelGameCharacter) GetRaceTag() uint32 {
 	return 0
 }
 
+func (x *GemDuelGameCharacter) GetAttackInc() uint32 {
+	if x != nil {
+		return x.AttackInc
+	}
+	return 0
+}
+
+func (x *GemDuelGameCharacter) GetMagicInc() uint32 {
+	if x != nil {
+		return x.MagicInc
+	}
+	return 0
+}
+
+func (x *GemDuelGameCharacter) GetAtkDef() uint32 {
+	if x != nil {
+		return x.AtkDef
+	}
+	return 0
+}
+
+func (x *GemDuelGameCharacter) GetMagDef() uint32 {
+	if x != nil {
+		return x.MagDef
+	}
+	return 0
+}
+
+func (x *GemDuelGameCharacter) GetAtkDefInc() uint32 {
+	if x != nil {
+		return x.AtkDefInc
+	}
+	return 0
+}
+
+func (x *GemDuelGameCharacter) GetMagDefInc() uint32 {
+	if x != nil {
+		return x.MagDefInc
+	}
+	return 0
+}
+
+func (x *GemDuelGameCharacter) GetDefinc() uint32 {
+	if x != nil {
+		return x.Definc
+	}
+	return 0
+}
+
+func (x *GemDuelGameCharacter) GetCrit() uint32 {
+	if x != nil {
+		return x.Crit
+	}
+	return 0
+}
+
+func (x *GemDuelGameCharacter) GetCritmg() uint32 {
+	if x != nil {
+		return x.Critmg
+	}
+	return 0
+}
+
+func (x *GemDuelGameCharacter) GetDamageType() EGemDuelDamageType {
+	if x != nil {
+		return x.DamageType
+	}
+	return EGemDuelDamageType_EGemDuelDamageType_PhysicDamage
+}
+
+func (x *GemDuelGameCharacter) GetElementType() EGemDuelElementType {
+	if x != nil {
+		return x.ElementType
+	}
+	return EGemDuelElementType_EGemDuelElementType_Nomal
+}
+
 var File_GemDuelGameCharacter_proto protoreflect.FileDescriptor
 
 const file_GemDuelGameCharacter_proto_rawDesc = "" +
 	"\n" +
-	"\x1aGemDuelGameCharacter.proto\x12\x05proto\x1a\x1dGemDueGameCharacterBuff.proto\"\xe1\x03\n" +
+	"\x1aGemDuelGameCharacter.proto\x12\x05proto\x1a\x18EGemDuelDamageType.proto\x1a\x19EGemDuelElementType.proto\x1a\x1dGemDueGameCharacterBuff.proto\"\xce\x06\n" +
 	"\x14GemDuelGameCharacter\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\rR\x02id\x12\x1d\n" +
 	"\n" +
@@ -214,7 +302,20 @@ const file_GemDuelGameCharacter_proto_rawDesc = "" +
 	"\x05buffs\x18\r \x03(\v2\x1e.proto.GemDueGameCharacterBuffR\x05buffs\x12!\n" +
 	"\fplayer_index\x18\x0e \x01(\rR\vplayerIndex\x12\x19\n" +
 	"\bbuff_seq\x18\x0f \x01(\rR\abuffSeq\x12\x19\n" +
-	"\brace_tag\x18\x10 \x01(\rR\araceTagB\n" +
+	"\brace_tag\x18\x10 \x01(\rR\araceTag\x12\x1d\n" +
+	"\n" +
+	"attack_inc\x18\x11 \x01(\rR\tattackInc\x12\x1b\n" +
+	"\tmagic_inc\x18\x12 \x01(\rR\bmagicInc\x12\x17\n" +
+	"\aatk_def\x18\x13 \x01(\rR\x06atkDef\x12\x17\n" +
+	"\amag_def\x18\x14 \x01(\rR\x06magDef\x12\x1e\n" +
+	"\vatk_def_inc\x18\x15 \x01(\rR\tatkDefInc\x12\x1e\n" +
+	"\vmag_def_inc\x18\x16 \x01(\rR\tmagDefInc\x12\x16\n" +
+	"\x06definc\x18\x17 \x01(\rR\x06definc\x12\x12\n" +
+	"\x04crit\x18\x18 \x01(\rR\x04crit\x12\x16\n" +
+	"\x06critmg\x18\x19 \x01(\rR\x06critmg\x12:\n" +
+	"\vdamage_type\x18\x1a \x01(\x0e2\x19.proto.EGemDuelDamageTypeR\n" +
+	"damageType\x12=\n" +
+	"\felement_type\x18\x1b \x01(\x0e2\x1a.proto.EGemDuelElementTypeR\velementTypeB\n" +
 	"Z\b./;protob\x06proto3"
 
 var (
@@ -233,14 +334,18 @@ var file_GemDuelGameCharacter_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_GemDuelGameCharacter_proto_goTypes = []any{
 	(*GemDuelGameCharacter)(nil),    // 0: proto.GemDuelGameCharacter
 	(*GemDueGameCharacterBuff)(nil), // 1: proto.GemDueGameCharacterBuff
+	(EGemDuelDamageType)(0),         // 2: proto.EGemDuelDamageType
+	(EGemDuelElementType)(0),        // 3: proto.EGemDuelElementType
 }
 var file_GemDuelGameCharacter_proto_depIdxs = []int32{
 	1, // 0: proto.GemDuelGameCharacter.buffs:type_name -> proto.GemDueGameCharacterBuff
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	2, // 1: proto.GemDuelGameCharacter.damage_type:type_name -> proto.EGemDuelDamageType
+	3, // 2: proto.GemDuelGameCharacter.element_type:type_name -> proto.EGemDuelElementType
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_GemDuelGameCharacter_proto_init() }
@@ -248,6 +353,8 @@ func file_GemDuelGameCharacter_proto_init() {
 	if File_GemDuelGameCharacter_proto != nil {
 		return
 	}
+	file_EGemDuelDamageType_proto_init()
+	file_EGemDuelElementType_proto_init()
 	file_GemDueGameCharacterBuff_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{

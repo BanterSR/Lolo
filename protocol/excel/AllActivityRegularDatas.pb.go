@@ -121,15 +121,16 @@ func (x *ActivityRegularDatas) GetDatas() []*ActivityRegularConfigure {
 }
 
 type ActivityRegularConfigure struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
-	DailyPoolID   int32                  `protobuf:"varint,2,opt,name=DailyPoolID,proto3" json:"DailyPoolID,omitempty"`
-	RandomPoolID  int32                  `protobuf:"varint,3,opt,name=RandomPoolID,proto3" json:"RandomPoolID,omitempty"`
-	PoolID        int32                  `protobuf:"varint,4,opt,name=PoolID,proto3" json:"PoolID,omitempty"`
-	NPCID         int32                  `protobuf:"varint,5,opt,name=NPCID,proto3" json:"NPCID,omitempty"`
-	NpcShopID     int32                  `protobuf:"varint,6,opt,name=NpcShopID,proto3" json:"NpcShopID,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	ID                 int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	DailyPoolID        int32                  `protobuf:"varint,2,opt,name=DailyPoolID,proto3" json:"DailyPoolID,omitempty"`
+	DailyRefreshPoolID int32                  `protobuf:"varint,3,opt,name=DailyRefreshPoolID,proto3" json:"DailyRefreshPoolID,omitempty"`
+	RandomPoolID       int32                  `protobuf:"varint,4,opt,name=RandomPoolID,proto3" json:"RandomPoolID,omitempty"`
+	PoolID             int32                  `protobuf:"varint,5,opt,name=PoolID,proto3" json:"PoolID,omitempty"`
+	NPCID              int32                  `protobuf:"varint,6,opt,name=NPCID,proto3" json:"NPCID,omitempty"`
+	NpcShopID          int32                  `protobuf:"varint,7,opt,name=NpcShopID,proto3" json:"NpcShopID,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *ActivityRegularConfigure) Reset() {
@@ -172,6 +173,13 @@ func (x *ActivityRegularConfigure) GetID() int32 {
 func (x *ActivityRegularConfigure) GetDailyPoolID() int32 {
 	if x != nil {
 		return x.DailyPoolID
+	}
+	return 0
+}
+
+func (x *ActivityRegularConfigure) GetDailyRefreshPoolID() int32 {
+	if x != nil {
+		return x.DailyRefreshPoolID
 	}
 	return 0
 }
@@ -303,7 +311,8 @@ func (x *ActivityRegularPoolConfigure) GetActivityRegularPoolItem() []*ActivityR
 type ActivityRegularPoolItems struct {
 	state                         protoimpl.MessageState            `protogen:"open.v1"`
 	AchieveID                     int32                             `protobuf:"varint,1,opt,name=AchieveID,proto3" json:"AchieveID,omitempty"`
-	ActivityRegularPoolRewardItem []*ActivityRegularPoolRewardItems `protobuf:"bytes,2,rep,name=ActivityRegularPoolRewardItem,proto3" json:"ActivityRegularPoolRewardItem,omitempty"`
+	Days                          int32                             `protobuf:"varint,2,opt,name=Days,proto3" json:"Days,omitempty"`
+	ActivityRegularPoolRewardItem []*ActivityRegularPoolRewardItems `protobuf:"bytes,3,rep,name=ActivityRegularPoolRewardItem,proto3" json:"ActivityRegularPoolRewardItem,omitempty"`
 	unknownFields                 protoimpl.UnknownFields
 	sizeCache                     protoimpl.SizeCache
 }
@@ -341,6 +350,13 @@ func (*ActivityRegularPoolItems) Descriptor() ([]byte, []int) {
 func (x *ActivityRegularPoolItems) GetAchieveID() int32 {
 	if x != nil {
 		return x.AchieveID
+	}
+	return 0
+}
+
+func (x *ActivityRegularPoolItems) GetDays() int32 {
+	if x != nil {
+		return x.Days
 	}
 	return 0
 }
@@ -413,22 +429,24 @@ const file_AllActivityRegularDatas_proto_rawDesc = "" +
 	"\x0fActivityRegular\x18\x01 \x01(\v2\x1b.excel.ActivityRegularDatasR\x0fActivityRegular\x12Q\n" +
 	"\x13ActivityRegularPool\x18\x02 \x01(\v2\x1f.excel.ActivityRegularPoolDatasR\x13ActivityRegularPool\"M\n" +
 	"\x14ActivityRegularDatas\x125\n" +
-	"\x05Datas\x18\x01 \x03(\v2\x1f.excel.ActivityRegularConfigureR\x05Datas\"\xbc\x01\n" +
+	"\x05Datas\x18\x01 \x03(\v2\x1f.excel.ActivityRegularConfigureR\x05Datas\"\xec\x01\n" +
 	"\x18ActivityRegularConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12 \n" +
-	"\vDailyPoolID\x18\x02 \x01(\x05R\vDailyPoolID\x12\"\n" +
-	"\fRandomPoolID\x18\x03 \x01(\x05R\fRandomPoolID\x12\x16\n" +
-	"\x06PoolID\x18\x04 \x01(\x05R\x06PoolID\x12\x14\n" +
-	"\x05NPCID\x18\x05 \x01(\x05R\x05NPCID\x12\x1c\n" +
-	"\tNpcShopID\x18\x06 \x01(\x05R\tNpcShopID\"U\n" +
+	"\vDailyPoolID\x18\x02 \x01(\x05R\vDailyPoolID\x12.\n" +
+	"\x12DailyRefreshPoolID\x18\x03 \x01(\x05R\x12DailyRefreshPoolID\x12\"\n" +
+	"\fRandomPoolID\x18\x04 \x01(\x05R\fRandomPoolID\x12\x16\n" +
+	"\x06PoolID\x18\x05 \x01(\x05R\x06PoolID\x12\x14\n" +
+	"\x05NPCID\x18\x06 \x01(\x05R\x05NPCID\x12\x1c\n" +
+	"\tNpcShopID\x18\a \x01(\x05R\tNpcShopID\"U\n" +
 	"\x18ActivityRegularPoolDatas\x129\n" +
 	"\x05Datas\x18\x01 \x03(\v2#.excel.ActivityRegularPoolConfigureR\x05Datas\"\x89\x01\n" +
 	"\x1cActivityRegularPoolConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12Y\n" +
-	"\x17ActivityRegularPoolItem\x18\x02 \x03(\v2\x1f.excel.ActivityRegularPoolItemsR\x17ActivityRegularPoolItem\"\xa5\x01\n" +
+	"\x17ActivityRegularPoolItem\x18\x02 \x03(\v2\x1f.excel.ActivityRegularPoolItemsR\x17ActivityRegularPoolItem\"\xb9\x01\n" +
 	"\x18ActivityRegularPoolItems\x12\x1c\n" +
-	"\tAchieveID\x18\x01 \x01(\x05R\tAchieveID\x12k\n" +
-	"\x1dActivityRegularPoolRewardItem\x18\x02 \x03(\v2%.excel.ActivityRegularPoolRewardItemsR\x1dActivityRegularPoolRewardItem\"R\n" +
+	"\tAchieveID\x18\x01 \x01(\x05R\tAchieveID\x12\x12\n" +
+	"\x04Days\x18\x02 \x01(\x05R\x04Days\x12k\n" +
+	"\x1dActivityRegularPoolRewardItem\x18\x03 \x03(\v2%.excel.ActivityRegularPoolRewardItemsR\x1dActivityRegularPoolRewardItem\"R\n" +
 	"\x1eActivityRegularPoolRewardItems\x12\x16\n" +
 	"\x06ItemID\x18\x01 \x01(\x05R\x06ItemID\x12\x18\n" +
 	"\aItemNum\x18\x02 \x01(\x05R\aItemNumB\n" +

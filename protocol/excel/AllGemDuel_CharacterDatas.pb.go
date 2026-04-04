@@ -153,24 +153,26 @@ func (x *GemDuelCharacterDatas) GetDatas() []*GemDuelCharacterConfigure {
 }
 
 type GemDuelCharacterConfigure struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
-	Text          int32                  `protobuf:"varint,2,opt,name=Text,proto3" json:"Text,omitempty"`
-	Icon          int32                  `protobuf:"varint,3,opt,name=Icon,proto3" json:"Icon,omitempty"`
-	ItemID        int32                  `protobuf:"varint,4,opt,name=ItemID,proto3" json:"ItemID,omitempty"`
-	RaceTag       int32                  `protobuf:"varint,5,opt,name=RaceTag,proto3" json:"RaceTag,omitempty"`
-	InitialStar   int32                  `protobuf:"varint,6,opt,name=InitialStar,proto3" json:"InitialStar,omitempty"`
-	JobTag        int32                  `protobuf:"varint,7,opt,name=JobTag,proto3" json:"JobTag,omitempty"`
-	ColorType     []int32                `protobuf:"varint,8,rep,packed,name=ColorType,proto3" json:"ColorType,omitempty"`
-	EnergyMax     int32                  `protobuf:"varint,9,opt,name=EnergyMax,proto3" json:"EnergyMax,omitempty"`
-	Attribute     int32                  `protobuf:"varint,10,opt,name=Attribute,proto3" json:"Attribute,omitempty"`
-	Skill1ID      int32                  `protobuf:"varint,11,opt,name=Skill1ID,proto3" json:"Skill1ID,omitempty"`
-	Skill2ID      int32                  `protobuf:"varint,12,opt,name=Skill2ID,proto3" json:"Skill2ID,omitempty"`
-	Skill3ID      int32                  `protobuf:"varint,13,opt,name=Skill3ID,proto3" json:"Skill3ID,omitempty"`
-	Skill4ID      int32                  `protobuf:"varint,14,opt,name=Skill4ID,proto3" json:"Skill4ID,omitempty"`
-	SkillUnlock   int32                  `protobuf:"varint,15,opt,name=SkillUnlock,proto3" json:"SkillUnlock,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                       protoimpl.MessageState `protogen:"open.v1"`
+	ID                          int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Text                        int32                  `protobuf:"varint,2,opt,name=Text,proto3" json:"Text,omitempty"`
+	Icon                        int32                  `protobuf:"varint,3,opt,name=Icon,proto3" json:"Icon,omitempty"`
+	ItemID                      int32                  `protobuf:"varint,4,opt,name=ItemID,proto3" json:"ItemID,omitempty"`
+	InitialStar                 int32                  `protobuf:"varint,5,opt,name=InitialStar,proto3" json:"InitialStar,omitempty"`
+	JobTag                      int32                  `protobuf:"varint,6,opt,name=JobTag,proto3" json:"JobTag,omitempty"`
+	ColorType                   []int32                `protobuf:"varint,7,rep,packed,name=ColorType,proto3" json:"ColorType,omitempty"`
+	EnergyMax                   int32                  `protobuf:"varint,8,opt,name=EnergyMax,proto3" json:"EnergyMax,omitempty"`
+	Attribute                   int32                  `protobuf:"varint,9,opt,name=Attribute,proto3" json:"Attribute,omitempty"`
+	Skill1ID                    []int32                `protobuf:"varint,10,rep,packed,name=Skill1ID,proto3" json:"Skill1ID,omitempty"`
+	Skill2ID                    int32                  `protobuf:"varint,11,opt,name=Skill2ID,proto3" json:"Skill2ID,omitempty"`
+	Skill3ID                    int32                  `protobuf:"varint,12,opt,name=Skill3ID,proto3" json:"Skill3ID,omitempty"`
+	Skill4ID                    int32                  `protobuf:"varint,13,opt,name=Skill4ID,proto3" json:"Skill4ID,omitempty"`
+	SkillUnlock                 int32                  `protobuf:"varint,14,opt,name=SkillUnlock,proto3" json:"SkillUnlock,omitempty"`
+	NewsGemDuelDamageType       int32                  `protobuf:"varint,15,opt,name=NewsGemDuelDamageType,proto3" json:"NewsGemDuelDamageType,omitempty"`
+	NewsGemDuelElementType      int32                  `protobuf:"varint,16,opt,name=NewsGemDuelElementType,proto3" json:"NewsGemDuelElementType,omitempty"`
+	NewsGemDuelCharacterRaceTag int32                  `protobuf:"varint,17,opt,name=NewsGemDuelCharacterRaceTag,proto3" json:"NewsGemDuelCharacterRaceTag,omitempty"`
+	unknownFields               protoimpl.UnknownFields
+	sizeCache                   protoimpl.SizeCache
 }
 
 func (x *GemDuelCharacterConfigure) Reset() {
@@ -231,13 +233,6 @@ func (x *GemDuelCharacterConfigure) GetItemID() int32 {
 	return 0
 }
 
-func (x *GemDuelCharacterConfigure) GetRaceTag() int32 {
-	if x != nil {
-		return x.RaceTag
-	}
-	return 0
-}
-
 func (x *GemDuelCharacterConfigure) GetInitialStar() int32 {
 	if x != nil {
 		return x.InitialStar
@@ -273,11 +268,11 @@ func (x *GemDuelCharacterConfigure) GetAttribute() int32 {
 	return 0
 }
 
-func (x *GemDuelCharacterConfigure) GetSkill1ID() int32 {
+func (x *GemDuelCharacterConfigure) GetSkill1ID() []int32 {
 	if x != nil {
 		return x.Skill1ID
 	}
-	return 0
+	return nil
 }
 
 func (x *GemDuelCharacterConfigure) GetSkill2ID() int32 {
@@ -304,6 +299,27 @@ func (x *GemDuelCharacterConfigure) GetSkill4ID() int32 {
 func (x *GemDuelCharacterConfigure) GetSkillUnlock() int32 {
 	if x != nil {
 		return x.SkillUnlock
+	}
+	return 0
+}
+
+func (x *GemDuelCharacterConfigure) GetNewsGemDuelDamageType() int32 {
+	if x != nil {
+		return x.NewsGemDuelDamageType
+	}
+	return 0
+}
+
+func (x *GemDuelCharacterConfigure) GetNewsGemDuelElementType() int32 {
+	if x != nil {
+		return x.NewsGemDuelElementType
+	}
+	return 0
+}
+
+func (x *GemDuelCharacterConfigure) GetNewsGemDuelCharacterRaceTag() int32 {
+	if x != nil {
+		return x.NewsGemDuelCharacterRaceTag
 	}
 	return 0
 }
@@ -411,6 +427,9 @@ type GemDuelCharacterAttributeItems struct {
 	Life          int32                  `protobuf:"varint,3,opt,name=Life,proto3" json:"Life,omitempty"`
 	Shield        int32                  `protobuf:"varint,4,opt,name=Shield,proto3" json:"Shield,omitempty"`
 	Magic         int32                  `protobuf:"varint,5,opt,name=Magic,proto3" json:"Magic,omitempty"`
+	Magdef        int32                  `protobuf:"varint,6,opt,name=Magdef,proto3" json:"Magdef,omitempty"`
+	Crit          int32                  `protobuf:"varint,7,opt,name=Crit,proto3" json:"Crit,omitempty"`
+	Critdmg       int32                  `protobuf:"varint,8,opt,name=Critdmg,proto3" json:"Critdmg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -476,6 +495,27 @@ func (x *GemDuelCharacterAttributeItems) GetShield() int32 {
 func (x *GemDuelCharacterAttributeItems) GetMagic() int32 {
 	if x != nil {
 		return x.Magic
+	}
+	return 0
+}
+
+func (x *GemDuelCharacterAttributeItems) GetMagdef() int32 {
+	if x != nil {
+		return x.Magdef
+	}
+	return 0
+}
+
+func (x *GemDuelCharacterAttributeItems) GetCrit() int32 {
+	if x != nil {
+		return x.Crit
+	}
+	return 0
+}
+
+func (x *GemDuelCharacterAttributeItems) GetCritdmg() int32 {
+	if x != nil {
+		return x.Critdmg
 	}
 	return 0
 }
@@ -1209,35 +1249,40 @@ const file_AllGemDuel_CharacterDatas_proto_rawDesc = "" +
 	"\x1bGemDuelCharacterStarResults\x18\x05 \x01(\v2'.excel.GemDuelCharacterStarResultsDatasR\x1bGemDuelCharacterStarResults\x12i\n" +
 	"\x1bGemDuelCharacterSkillUnlock\x18\x06 \x01(\v2'.excel.GemDuelCharacterSkillUnlockDatasR\x1bGemDuelCharacterSkillUnlock\"O\n" +
 	"\x15GemDuelCharacterDatas\x126\n" +
-	"\x05Datas\x18\x01 \x03(\v2 .excel.GemDuelCharacterConfigureR\x05Datas\"\xab\x03\n" +
+	"\x05Datas\x18\x01 \x03(\v2 .excel.GemDuelCharacterConfigureR\x05Datas\"\xc1\x04\n" +
 	"\x19GemDuelCharacterConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x12\n" +
 	"\x04Text\x18\x02 \x01(\x05R\x04Text\x12\x12\n" +
 	"\x04Icon\x18\x03 \x01(\x05R\x04Icon\x12\x16\n" +
-	"\x06ItemID\x18\x04 \x01(\x05R\x06ItemID\x12\x18\n" +
-	"\aRaceTag\x18\x05 \x01(\x05R\aRaceTag\x12 \n" +
-	"\vInitialStar\x18\x06 \x01(\x05R\vInitialStar\x12\x16\n" +
-	"\x06JobTag\x18\a \x01(\x05R\x06JobTag\x12\x1c\n" +
-	"\tColorType\x18\b \x03(\x05R\tColorType\x12\x1c\n" +
-	"\tEnergyMax\x18\t \x01(\x05R\tEnergyMax\x12\x1c\n" +
-	"\tAttribute\x18\n" +
-	" \x01(\x05R\tAttribute\x12\x1a\n" +
-	"\bSkill1ID\x18\v \x01(\x05R\bSkill1ID\x12\x1a\n" +
-	"\bSkill2ID\x18\f \x01(\x05R\bSkill2ID\x12\x1a\n" +
-	"\bSkill3ID\x18\r \x01(\x05R\bSkill3ID\x12\x1a\n" +
-	"\bSkill4ID\x18\x0e \x01(\x05R\bSkill4ID\x12 \n" +
-	"\vSkillUnlock\x18\x0f \x01(\x05R\vSkillUnlock\"a\n" +
+	"\x06ItemID\x18\x04 \x01(\x05R\x06ItemID\x12 \n" +
+	"\vInitialStar\x18\x05 \x01(\x05R\vInitialStar\x12\x16\n" +
+	"\x06JobTag\x18\x06 \x01(\x05R\x06JobTag\x12\x1c\n" +
+	"\tColorType\x18\a \x03(\x05R\tColorType\x12\x1c\n" +
+	"\tEnergyMax\x18\b \x01(\x05R\tEnergyMax\x12\x1c\n" +
+	"\tAttribute\x18\t \x01(\x05R\tAttribute\x12\x1a\n" +
+	"\bSkill1ID\x18\n" +
+	" \x03(\x05R\bSkill1ID\x12\x1a\n" +
+	"\bSkill2ID\x18\v \x01(\x05R\bSkill2ID\x12\x1a\n" +
+	"\bSkill3ID\x18\f \x01(\x05R\bSkill3ID\x12\x1a\n" +
+	"\bSkill4ID\x18\r \x01(\x05R\bSkill4ID\x12 \n" +
+	"\vSkillUnlock\x18\x0e \x01(\x05R\vSkillUnlock\x124\n" +
+	"\x15NewsGemDuelDamageType\x18\x0f \x01(\x05R\x15NewsGemDuelDamageType\x126\n" +
+	"\x16NewsGemDuelElementType\x18\x10 \x01(\x05R\x16NewsGemDuelElementType\x12@\n" +
+	"\x1bNewsGemDuelCharacterRaceTag\x18\x11 \x01(\x05R\x1bNewsGemDuelCharacterRaceTag\"a\n" +
 	"\x1eGemDuelCharacterAttributeDatas\x12?\n" +
 	"\x05Datas\x18\x01 \x03(\v2).excel.GemDuelCharacterAttributeConfigureR\x05Datas\"\xa1\x01\n" +
 	"\"GemDuelCharacterAttributeConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12k\n" +
-	"\x1dGemDuelCharacterAttributeItem\x18\x02 \x03(\v2%.excel.GemDuelCharacterAttributeItemsR\x1dGemDuelCharacterAttributeItem\"\x90\x01\n" +
+	"\x1dGemDuelCharacterAttributeItem\x18\x02 \x03(\v2%.excel.GemDuelCharacterAttributeItemsR\x1dGemDuelCharacterAttributeItem\"\xd6\x01\n" +
 	"\x1eGemDuelCharacterAttributeItems\x12\x14\n" +
 	"\x05Level\x18\x01 \x01(\x05R\x05Level\x12\x16\n" +
 	"\x06Attack\x18\x02 \x01(\x05R\x06Attack\x12\x12\n" +
 	"\x04Life\x18\x03 \x01(\x05R\x04Life\x12\x16\n" +
 	"\x06Shield\x18\x04 \x01(\x05R\x06Shield\x12\x14\n" +
-	"\x05Magic\x18\x05 \x01(\x05R\x05Magic\"W\n" +
+	"\x05Magic\x18\x05 \x01(\x05R\x05Magic\x12\x16\n" +
+	"\x06Magdef\x18\x06 \x01(\x05R\x06Magdef\x12\x12\n" +
+	"\x04Crit\x18\a \x01(\x05R\x04Crit\x12\x18\n" +
+	"\aCritdmg\x18\b \x01(\x05R\aCritdmg\"W\n" +
 	"\x19GemDuelCharacterLvUpDatas\x12:\n" +
 	"\x05Datas\x18\x01 \x03(\v2$.excel.GemDuelCharacterLvUpConfigureR\x05Datas\"\xb3\x02\n" +
 	"\x1dGemDuelCharacterLvUpConfigure\x12\x0e\n" +

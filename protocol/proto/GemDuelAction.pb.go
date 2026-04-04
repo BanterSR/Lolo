@@ -42,6 +42,7 @@ type GemDuelAction struct {
 	Value            uint32                   `protobuf:"varint,15,opt,name=value,proto3" json:"value,omitempty"`
 	Character        *GemDuelGameCharacter    `protobuf:"bytes,16,opt,name=character,proto3" json:"character,omitempty"`
 	Buff             *GemDueGameCharacterBuff `protobuf:"bytes,17,opt,name=buff,proto3" json:"buff,omitempty"`
+	QuestCondition   []*GemDuelCondition      `protobuf:"bytes,18,rep,name=quest_condition,json=questCondition,proto3" json:"quest_condition,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -188,11 +189,18 @@ func (x *GemDuelAction) GetBuff() *GemDueGameCharacterBuff {
 	return nil
 }
 
+func (x *GemDuelAction) GetQuestCondition() []*GemDuelCondition {
+	if x != nil {
+		return x.QuestCondition
+	}
+	return nil
+}
+
 var File_GemDuelAction_proto protoreflect.FileDescriptor
 
 const file_GemDuelAction_proto_rawDesc = "" +
 	"\n" +
-	"\x13GemDuelAction.proto\x12\x05proto\x1a\x1dGemDueGameCharacterBuff.proto\x1a\x17GemDuelActionMove.proto\x1a\x17GemDuelActionType.proto\x1a\x1aGemDuelGameCharacter.proto\x1a\x11GemDuelGrid.proto\x1a\x18GemDuelSkillEffect.proto\"\xcf\x05\n" +
+	"\x13GemDuelAction.proto\x12\x05proto\x1a\x1dGemDueGameCharacterBuff.proto\x1a\x17GemDuelActionMove.proto\x1a\x17GemDuelActionType.proto\x1a\x16GemDuelCondition.proto\x1a\x1aGemDuelGameCharacter.proto\x1a\x11GemDuelGrid.proto\x1a\x18GemDuelSkillEffect.proto\"\x91\x06\n" +
 	"\rGemDuelAction\x129\n" +
 	"\vaction_type\x18\x01 \x01(\x0e2\x18.proto.GemDuelActionTypeR\n" +
 	"actionType\x12&\n" +
@@ -211,7 +219,8 @@ const file_GemDuelAction_proto_rawDesc = "" +
 	"\x11skill_effect_list\x18\r \x03(\v2\x19.proto.GemDuelSkillEffectR\x0fskillEffectList\x12\x14\n" +
 	"\x05value\x18\x0f \x01(\rR\x05value\x129\n" +
 	"\tcharacter\x18\x10 \x01(\v2\x1b.proto.GemDuelGameCharacterR\tcharacter\x122\n" +
-	"\x04buff\x18\x11 \x01(\v2\x1e.proto.GemDueGameCharacterBuffR\x04buffB\n" +
+	"\x04buff\x18\x11 \x01(\v2\x1e.proto.GemDueGameCharacterBuffR\x04buff\x12@\n" +
+	"\x0fquest_condition\x18\x12 \x03(\v2\x17.proto.GemDuelConditionR\x0equestConditionB\n" +
 	"Z\b./;protob\x06proto3"
 
 var (
@@ -235,6 +244,7 @@ var file_GemDuelAction_proto_goTypes = []any{
 	(*GemDuelSkillEffect)(nil),      // 4: proto.GemDuelSkillEffect
 	(*GemDuelGameCharacter)(nil),    // 5: proto.GemDuelGameCharacter
 	(*GemDueGameCharacterBuff)(nil), // 6: proto.GemDueGameCharacterBuff
+	(*GemDuelCondition)(nil),        // 7: proto.GemDuelCondition
 }
 var file_GemDuelAction_proto_depIdxs = []int32{
 	1, // 0: proto.GemDuelAction.action_type:type_name -> proto.GemDuelActionType
@@ -244,11 +254,12 @@ var file_GemDuelAction_proto_depIdxs = []int32{
 	4, // 4: proto.GemDuelAction.skill_effect_list:type_name -> proto.GemDuelSkillEffect
 	5, // 5: proto.GemDuelAction.character:type_name -> proto.GemDuelGameCharacter
 	6, // 6: proto.GemDuelAction.buff:type_name -> proto.GemDueGameCharacterBuff
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	7, // 7: proto.GemDuelAction.quest_condition:type_name -> proto.GemDuelCondition
+	8, // [8:8] is the sub-list for method output_type
+	8, // [8:8] is the sub-list for method input_type
+	8, // [8:8] is the sub-list for extension type_name
+	8, // [8:8] is the sub-list for extension extendee
+	0, // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_GemDuelAction_proto_init() }
@@ -259,6 +270,7 @@ func file_GemDuelAction_proto_init() {
 	file_GemDueGameCharacterBuff_proto_init()
 	file_GemDuelActionMove_proto_init()
 	file_GemDuelActionType_proto_init()
+	file_GemDuelCondition_proto_init()
 	file_GemDuelGameCharacter_proto_init()
 	file_GemDuelGrid_proto_init()
 	file_GemDuelSkillEffect_proto_init()

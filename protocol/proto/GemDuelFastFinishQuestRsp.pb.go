@@ -27,7 +27,7 @@ const (
 type GemDuelFastFinishQuestRsp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Status        StatusCode             `protobuf:"varint,1,opt,name=status,proto3,enum=proto.StatusCode" json:"status,omitempty"`
-	Quest         []*GemDuelQuest        `protobuf:"bytes,2,rep,name=quest,proto3" json:"quest,omitempty"`
+	Quest         *GemDuelQuest          `protobuf:"bytes,2,opt,name=quest,proto3" json:"quest,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -69,7 +69,7 @@ func (x *GemDuelFastFinishQuestRsp) GetStatus() StatusCode {
 	return StatusCode_StatusCode_None
 }
 
-func (x *GemDuelFastFinishQuestRsp) GetQuest() []*GemDuelQuest {
+func (x *GemDuelFastFinishQuestRsp) GetQuest() *GemDuelQuest {
 	if x != nil {
 		return x.Quest
 	}
@@ -83,7 +83,7 @@ const file_GemDuelFastFinishQuestRsp_proto_rawDesc = "" +
 	"\x1fGemDuelFastFinishQuestRsp.proto\x12\x05proto\x1a\x12GemDuelQuest.proto\x1a\x10StatusCode.proto\"q\n" +
 	"\x19GemDuelFastFinishQuestRsp\x12)\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x11.proto.StatusCodeR\x06status\x12)\n" +
-	"\x05quest\x18\x02 \x03(\v2\x13.proto.GemDuelQuestR\x05questB\n" +
+	"\x05quest\x18\x02 \x01(\v2\x13.proto.GemDuelQuestR\x05questB\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

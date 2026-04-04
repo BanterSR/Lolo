@@ -42,6 +42,7 @@ const (
 	EGemDuel_ConditionExpr_EGemDuel_ConditionExpr_EffectType    EGemDuel_ConditionExpr = 12
 	EGemDuel_ConditionExpr_EGemDuel_ConditionExpr_EffectSubType EGemDuel_ConditionExpr = 13
 	EGemDuel_ConditionExpr_EGemDuel_ConditionExpr_Effect        EGemDuel_ConditionExpr = 14
+	EGemDuel_ConditionExpr_EGemDuel_ConditionExpr_MaxHp         EGemDuel_ConditionExpr = 15
 )
 
 // Enum value maps for EGemDuel_ConditionExpr.
@@ -62,6 +63,7 @@ var (
 		12: "EGemDuel_ConditionExpr_EffectType",
 		13: "EGemDuel_ConditionExpr_EffectSubType",
 		14: "EGemDuel_ConditionExpr_Effect",
+		15: "EGemDuel_ConditionExpr_MaxHp",
 	}
 	EGemDuel_ConditionExpr_value = map[string]int32{
 		"EGemDuel_ConditionExpr_None":          0,
@@ -79,6 +81,7 @@ var (
 		"EGemDuel_ConditionExpr_EffectType":    12,
 		"EGemDuel_ConditionExpr_EffectSubType": 13,
 		"EGemDuel_ConditionExpr_Effect":        14,
+		"EGemDuel_ConditionExpr_MaxHp":         15,
 	}
 )
 
@@ -113,7 +116,7 @@ var File_EGemDuel_ConditionExpr_proto protoreflect.FileDescriptor
 
 const file_EGemDuel_ConditionExpr_proto_rawDesc = "" +
 	"\n" +
-	"\x1cEGemDuel_ConditionExpr.proto\x12\x05proto*\xa8\x04\n" +
+	"\x1cEGemDuel_ConditionExpr.proto\x12\x05proto*\xca\x04\n" +
 	"\x16EGemDuel_ConditionExpr\x12\x1f\n" +
 	"\x1bEGemDuel_ConditionExpr_None\x10\x00\x12\x1e\n" +
 	"\x1aEGemDuel_ConditionExpr_Att\x10\x01\x12\x1e\n" +
@@ -130,7 +133,8 @@ const file_EGemDuel_ConditionExpr_proto_rawDesc = "" +
 	"\x1eEGemDuel_ConditionExpr_Gem2001\x10\v\x12%\n" +
 	"!EGemDuel_ConditionExpr_EffectType\x10\f\x12(\n" +
 	"$EGemDuel_ConditionExpr_EffectSubType\x10\r\x12!\n" +
-	"\x1dEGemDuel_ConditionExpr_Effect\x10\x0eB\n" +
+	"\x1dEGemDuel_ConditionExpr_Effect\x10\x0e\x12 \n" +
+	"\x1cEGemDuel_ConditionExpr_MaxHp\x10\x0fB\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

@@ -27,28 +27,64 @@ const (
 type EGemDuel_SkillAttribute int32
 
 const (
-	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_None EGemDuel_SkillAttribute = 0
-	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Hp   EGemDuel_SkillAttribute = 1
-	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Att  EGemDuel_SkillAttribute = 2
-	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Arm  EGemDuel_SkillAttribute = 3
-	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Mag  EGemDuel_SkillAttribute = 4
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_None      EGemDuel_SkillAttribute = 0
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Phyatk    EGemDuel_SkillAttribute = 1
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Magatk    EGemDuel_SkillAttribute = 2
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Phydef    EGemDuel_SkillAttribute = 3
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Magdef    EGemDuel_SkillAttribute = 4
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Hp        EGemDuel_SkillAttribute = 5
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Maxhp     EGemDuel_SkillAttribute = 6
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Mp        EGemDuel_SkillAttribute = 7
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Maxmp     EGemDuel_SkillAttribute = 8
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Phyatkinc EGemDuel_SkillAttribute = 9
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Magatkinc EGemDuel_SkillAttribute = 10
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Phydefinc EGemDuel_SkillAttribute = 11
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Magdefinc EGemDuel_SkillAttribute = 12
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Definc    EGemDuel_SkillAttribute = 13
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Crit      EGemDuel_SkillAttribute = 14
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Critdmg   EGemDuel_SkillAttribute = 15
+	EGemDuel_SkillAttribute_EGemDuel_SkillAttribute_Shield    EGemDuel_SkillAttribute = 16
 )
 
 // Enum value maps for EGemDuel_SkillAttribute.
 var (
 	EGemDuel_SkillAttribute_name = map[int32]string{
-		0: "EGemDuel_SkillAttribute_None",
-		1: "EGemDuel_SkillAttribute_Hp",
-		2: "EGemDuel_SkillAttribute_Att",
-		3: "EGemDuel_SkillAttribute_Arm",
-		4: "EGemDuel_SkillAttribute_Mag",
+		0:  "EGemDuel_SkillAttribute_None",
+		1:  "EGemDuel_SkillAttribute_Phyatk",
+		2:  "EGemDuel_SkillAttribute_Magatk",
+		3:  "EGemDuel_SkillAttribute_Phydef",
+		4:  "EGemDuel_SkillAttribute_Magdef",
+		5:  "EGemDuel_SkillAttribute_Hp",
+		6:  "EGemDuel_SkillAttribute_Maxhp",
+		7:  "EGemDuel_SkillAttribute_Mp",
+		8:  "EGemDuel_SkillAttribute_Maxmp",
+		9:  "EGemDuel_SkillAttribute_Phyatkinc",
+		10: "EGemDuel_SkillAttribute_Magatkinc",
+		11: "EGemDuel_SkillAttribute_Phydefinc",
+		12: "EGemDuel_SkillAttribute_Magdefinc",
+		13: "EGemDuel_SkillAttribute_Definc",
+		14: "EGemDuel_SkillAttribute_Crit",
+		15: "EGemDuel_SkillAttribute_Critdmg",
+		16: "EGemDuel_SkillAttribute_Shield",
 	}
 	EGemDuel_SkillAttribute_value = map[string]int32{
-		"EGemDuel_SkillAttribute_None": 0,
-		"EGemDuel_SkillAttribute_Hp":   1,
-		"EGemDuel_SkillAttribute_Att":  2,
-		"EGemDuel_SkillAttribute_Arm":  3,
-		"EGemDuel_SkillAttribute_Mag":  4,
+		"EGemDuel_SkillAttribute_None":      0,
+		"EGemDuel_SkillAttribute_Phyatk":    1,
+		"EGemDuel_SkillAttribute_Magatk":    2,
+		"EGemDuel_SkillAttribute_Phydef":    3,
+		"EGemDuel_SkillAttribute_Magdef":    4,
+		"EGemDuel_SkillAttribute_Hp":        5,
+		"EGemDuel_SkillAttribute_Maxhp":     6,
+		"EGemDuel_SkillAttribute_Mp":        7,
+		"EGemDuel_SkillAttribute_Maxmp":     8,
+		"EGemDuel_SkillAttribute_Phyatkinc": 9,
+		"EGemDuel_SkillAttribute_Magatkinc": 10,
+		"EGemDuel_SkillAttribute_Phydefinc": 11,
+		"EGemDuel_SkillAttribute_Magdefinc": 12,
+		"EGemDuel_SkillAttribute_Definc":    13,
+		"EGemDuel_SkillAttribute_Crit":      14,
+		"EGemDuel_SkillAttribute_Critdmg":   15,
+		"EGemDuel_SkillAttribute_Shield":    16,
 	}
 )
 
@@ -83,13 +119,26 @@ var File_EGemDuel_SkillAttribute_proto protoreflect.FileDescriptor
 
 const file_EGemDuel_SkillAttribute_proto_rawDesc = "" +
 	"\n" +
-	"\x1dEGemDuel_SkillAttribute.proto\x12\x05proto*\xbe\x01\n" +
+	"\x1dEGemDuel_SkillAttribute.proto\x12\x05proto*\xfc\x04\n" +
 	"\x17EGemDuel_SkillAttribute\x12 \n" +
-	"\x1cEGemDuel_SkillAttribute_None\x10\x00\x12\x1e\n" +
-	"\x1aEGemDuel_SkillAttribute_Hp\x10\x01\x12\x1f\n" +
-	"\x1bEGemDuel_SkillAttribute_Att\x10\x02\x12\x1f\n" +
-	"\x1bEGemDuel_SkillAttribute_Arm\x10\x03\x12\x1f\n" +
-	"\x1bEGemDuel_SkillAttribute_Mag\x10\x04B\n" +
+	"\x1cEGemDuel_SkillAttribute_None\x10\x00\x12\"\n" +
+	"\x1eEGemDuel_SkillAttribute_Phyatk\x10\x01\x12\"\n" +
+	"\x1eEGemDuel_SkillAttribute_Magatk\x10\x02\x12\"\n" +
+	"\x1eEGemDuel_SkillAttribute_Phydef\x10\x03\x12\"\n" +
+	"\x1eEGemDuel_SkillAttribute_Magdef\x10\x04\x12\x1e\n" +
+	"\x1aEGemDuel_SkillAttribute_Hp\x10\x05\x12!\n" +
+	"\x1dEGemDuel_SkillAttribute_Maxhp\x10\x06\x12\x1e\n" +
+	"\x1aEGemDuel_SkillAttribute_Mp\x10\a\x12!\n" +
+	"\x1dEGemDuel_SkillAttribute_Maxmp\x10\b\x12%\n" +
+	"!EGemDuel_SkillAttribute_Phyatkinc\x10\t\x12%\n" +
+	"!EGemDuel_SkillAttribute_Magatkinc\x10\n" +
+	"\x12%\n" +
+	"!EGemDuel_SkillAttribute_Phydefinc\x10\v\x12%\n" +
+	"!EGemDuel_SkillAttribute_Magdefinc\x10\f\x12\"\n" +
+	"\x1eEGemDuel_SkillAttribute_Definc\x10\r\x12 \n" +
+	"\x1cEGemDuel_SkillAttribute_Crit\x10\x0e\x12#\n" +
+	"\x1fEGemDuel_SkillAttribute_Critdmg\x10\x0f\x12\"\n" +
+	"\x1eEGemDuel_SkillAttribute_Shield\x10\x10B\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

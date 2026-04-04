@@ -161,7 +161,8 @@ type InfoConfigure struct {
 	ClosingTime   string                      `protobuf:"bytes,5,opt,name=ClosingTime,proto3" json:"ClosingTime,omitempty"`
 	Path          string                      `protobuf:"bytes,6,opt,name=Path,proto3" json:"Path,omitempty"`
 	Prefab        string                      `protobuf:"bytes,7,opt,name=Prefab,proto3" json:"Prefab,omitempty"`
-	Funcs         []*NPCInfoConfigureFuncItem `protobuf:"bytes,8,rep,name=Funcs,proto3" json:"Funcs,omitempty"`
+	IsCanAttack   int32                       `protobuf:"varint,8,opt,name=IsCanAttack,proto3" json:"IsCanAttack,omitempty"`
+	Funcs         []*NPCInfoConfigureFuncItem `protobuf:"bytes,9,rep,name=Funcs,proto3" json:"Funcs,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -243,6 +244,13 @@ func (x *InfoConfigure) GetPrefab() string {
 		return x.Prefab
 	}
 	return ""
+}
+
+func (x *InfoConfigure) GetIsCanAttack() int32 {
+	if x != nil {
+		return x.IsCanAttack
+	}
+	return 0
 }
 
 func (x *InfoConfigure) GetFuncs() []*NPCInfoConfigureFuncItem {
@@ -1161,7 +1169,7 @@ const file_AllNPCDatas_proto_rawDesc = "" +
 	"\bTalkInfo\x18\x05 \x01(\v2\x14.excel.TalkInfoDatasR\bTalkInfo\x12-\n" +
 	"\aNpcShop\x18\x06 \x01(\v2\x13.excel.NpcShopDatasR\aNpcShop\"7\n" +
 	"\tInfoDatas\x12*\n" +
-	"\x05Datas\x18\x01 \x03(\v2\x14.excel.InfoConfigureR\x05Datas\"\xfc\x01\n" +
+	"\x05Datas\x18\x01 \x03(\v2\x14.excel.InfoConfigureR\x05Datas\"\x9e\x02\n" +
 	"\rInfoConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x16\n" +
 	"\x06TextID\x18\x02 \x01(\x05R\x06TextID\x12\x1c\n" +
@@ -1169,8 +1177,9 @@ const file_AllNPCDatas_proto_rawDesc = "" +
 	"\vOpeningTime\x18\x04 \x01(\tR\vOpeningTime\x12 \n" +
 	"\vClosingTime\x18\x05 \x01(\tR\vClosingTime\x12\x12\n" +
 	"\x04Path\x18\x06 \x01(\tR\x04Path\x12\x16\n" +
-	"\x06Prefab\x18\a \x01(\tR\x06Prefab\x125\n" +
-	"\x05Funcs\x18\b \x03(\v2\x1f.excel.NPCInfoConfigureFuncItemR\x05Funcs\"b\n" +
+	"\x06Prefab\x18\a \x01(\tR\x06Prefab\x12 \n" +
+	"\vIsCanAttack\x18\b \x01(\x05R\vIsCanAttack\x125\n" +
+	"\x05Funcs\x18\t \x03(\v2\x1f.excel.NPCInfoConfigureFuncItemR\x05Funcs\"b\n" +
 	"\x18NPCInfoConfigureFuncItem\x12&\n" +
 	"\x0eNewNPCFunction\x18\x01 \x01(\x05R\x0eNewNPCFunction\x12\x1e\n" +
 	"\n" +

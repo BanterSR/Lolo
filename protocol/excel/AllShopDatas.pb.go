@@ -623,8 +623,10 @@ type ShopPoolConfigureItem struct {
 	ClosingTime      string                 `protobuf:"bytes,11,opt,name=ClosingTime,proto3" json:"ClosingTime,omitempty"`
 	Discount         float32                `protobuf:"fixed32,12,opt,name=Discount,proto3" json:"Discount,omitempty"`
 	ShowDiscount     float32                `protobuf:"fixed32,13,opt,name=ShowDiscount,proto3" json:"ShowDiscount,omitempty"`
-	IsHideInBag      bool                   `protobuf:"varint,14,opt,name=IsHideInBag,proto3" json:"IsHideInBag,omitempty"`
-	ShopCurrencyItem []*ShopCurrencyItems   `protobuf:"bytes,15,rep,name=ShopCurrencyItem,proto3" json:"ShopCurrencyItem,omitempty"`
+	WishlistPrice    int32                  `protobuf:"varint,14,opt,name=WishlistPrice,proto3" json:"WishlistPrice,omitempty"`
+	WishlistDiscount float32                `protobuf:"fixed32,15,opt,name=WishlistDiscount,proto3" json:"WishlistDiscount,omitempty"`
+	IsHideInBag      bool                   `protobuf:"varint,16,opt,name=IsHideInBag,proto3" json:"IsHideInBag,omitempty"`
+	ShopCurrencyItem []*ShopCurrencyItems   `protobuf:"bytes,17,rep,name=ShopCurrencyItem,proto3" json:"ShopCurrencyItem,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -746,6 +748,20 @@ func (x *ShopPoolConfigureItem) GetDiscount() float32 {
 func (x *ShopPoolConfigureItem) GetShowDiscount() float32 {
 	if x != nil {
 		return x.ShowDiscount
+	}
+	return 0
+}
+
+func (x *ShopPoolConfigureItem) GetWishlistPrice() int32 {
+	if x != nil {
+		return x.WishlistPrice
+	}
+	return 0
+}
+
+func (x *ShopPoolConfigureItem) GetWishlistDiscount() float32 {
+	if x != nil {
+		return x.WishlistDiscount
 	}
 	return 0
 }
@@ -1303,7 +1319,7 @@ const file_AllShopDatas_proto_rawDesc = "" +
 	"\x05Datas\x18\x01 \x03(\v2\x18.excel.ShopPoolConfigureR\x05Datas\"W\n" +
 	"\x11ShopPoolConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x122\n" +
-	"\x05Items\x18\x02 \x03(\v2\x1c.excel.ShopPoolConfigureItemR\x05Items\"\xff\x03\n" +
+	"\x05Items\x18\x02 \x03(\v2\x1c.excel.ShopPoolConfigureItemR\x05Items\"\xd1\x04\n" +
 	"\x15ShopPoolConfigureItem\x12\x16\n" +
 	"\x06ItemID\x18\x01 \x01(\x05R\x06ItemID\x12(\n" +
 	"\x0fIsRepeatedInBag\x18\x02 \x01(\bR\x0fIsRepeatedInBag\x12\x18\n" +
@@ -1320,9 +1336,11 @@ const file_AllShopDatas_proto_rawDesc = "" +
 	" \x01(\tR\vOpeningTime\x12 \n" +
 	"\vClosingTime\x18\v \x01(\tR\vClosingTime\x12\x1a\n" +
 	"\bDiscount\x18\f \x01(\x02R\bDiscount\x12\"\n" +
-	"\fShowDiscount\x18\r \x01(\x02R\fShowDiscount\x12 \n" +
-	"\vIsHideInBag\x18\x0e \x01(\bR\vIsHideInBag\x12D\n" +
-	"\x10ShopCurrencyItem\x18\x0f \x03(\v2\x18.excel.ShopCurrencyItemsR\x10ShopCurrencyItem\"m\n" +
+	"\fShowDiscount\x18\r \x01(\x02R\fShowDiscount\x12$\n" +
+	"\rWishlistPrice\x18\x0e \x01(\x05R\rWishlistPrice\x12*\n" +
+	"\x10WishlistDiscount\x18\x0f \x01(\x02R\x10WishlistDiscount\x12 \n" +
+	"\vIsHideInBag\x18\x10 \x01(\bR\vIsHideInBag\x12D\n" +
+	"\x10ShopCurrencyItem\x18\x11 \x03(\v2\x18.excel.ShopCurrencyItemsR\x10ShopCurrencyItem\"m\n" +
 	"\x11ShopCurrencyItems\x12\x1e\n" +
 	"\n" +
 	"CurrencyID\x18\x01 \x01(\x05R\n" +

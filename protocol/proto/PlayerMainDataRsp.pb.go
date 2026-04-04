@@ -68,6 +68,7 @@ type PlayerMainDataRsp struct {
 	SpCheckStatus         bool                     `protobuf:"varint,40,opt,name=sp_check_status,json=spCheckStatus,proto3" json:"sp_check_status,omitempty"`
 	PlacedCharacters      []uint32                 `protobuf:"varint,41,rep,packed,name=placed_characters,json=placedCharacters,proto3" json:"placed_characters,omitempty"`
 	PhoneCase             uint32                   `protobuf:"varint,42,opt,name=phone_case,json=phoneCase,proto3" json:"phone_case,omitempty"`
+	RecallEndTime         int64                    `protobuf:"varint,43,opt,name=recall_end_time,json=recallEndTime,proto3" json:"recall_end_time,omitempty"`
 	InheritCode           string                   `protobuf:"bytes,80,opt,name=inherit_code,json=inheritCode,proto3" json:"inherit_code,omitempty"`
 	HasInheritGift        bool                     `protobuf:"varint,81,opt,name=has_inherit_gift,json=hasInheritGift,proto3" json:"has_inherit_gift,omitempty"`
 	unknownFields         protoimpl.UnknownFields
@@ -398,6 +399,13 @@ func (x *PlayerMainDataRsp) GetPhoneCase() uint32 {
 	return 0
 }
 
+func (x *PlayerMainDataRsp) GetRecallEndTime() int64 {
+	if x != nil {
+		return x.RecallEndTime
+	}
+	return 0
+}
+
 func (x *PlayerMainDataRsp) GetInheritCode() string {
 	if x != nil {
 		return x.InheritCode
@@ -417,7 +425,7 @@ var File_PlayerMainDataRsp_proto protoreflect.FileDescriptor
 const file_PlayerMainDataRsp_proto_rawDesc = "" +
 	"\n" +
 	"\x17PlayerMainDataRsp.proto\x12\x05proto\x1a\x0eBaseItem.proto\x1a\x0fCharacter.proto\x1a\x0eESexType.proto\x1a\x13ForbiddenInfo.proto\x1a\x16PlayerAppearance.proto\x1a\x10PlayerBuff.proto\x1a\x15PlayerDailyTask.proto\x1a\x18PlayerDropRateInfo.proto\x1a\x1dPlayerQuestionnaireInfo.proto\x1a\x11QuestDetail.proto\x1a\x10StatusCode.proto\x1a\n" +
-	"Team.proto\x1a\x1bUnSaveOutfitDyeScheme.proto\"\xef\x0e\n" +
+	"Team.proto\x1a\x1bUnSaveOutfitDyeScheme.proto\"\x97\x0f\n" +
 	"\x11PlayerMainDataRsp\x12)\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x11.proto.StatusCodeR\x06status\x12\x1b\n" +
 	"\tplayer_id\x18\x02 \x01(\rR\bplayerId\x12\x1f\n" +
@@ -472,7 +480,8 @@ const file_PlayerMainDataRsp_proto_rawDesc = "" +
 	"\x0fsp_check_status\x18( \x01(\bR\rspCheckStatus\x12+\n" +
 	"\x11placed_characters\x18) \x03(\rR\x10placedCharacters\x12\x1d\n" +
 	"\n" +
-	"phone_case\x18* \x01(\rR\tphoneCase\x12!\n" +
+	"phone_case\x18* \x01(\rR\tphoneCase\x12&\n" +
+	"\x0frecall_end_time\x18+ \x01(\x03R\rrecallEndTime\x12!\n" +
 	"\finherit_code\x18P \x01(\tR\vinheritCode\x12(\n" +
 	"\x10has_inherit_gift\x18Q \x01(\bR\x0ehasInheritGiftB\n" +
 	"Z\b./;protob\x06proto3"

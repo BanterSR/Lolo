@@ -27,29 +27,31 @@ const (
 type GemDuelActionType int32
 
 const (
-	GemDuelActionType_GemDuelActionType_None              GemDuelActionType = 0
-	GemDuelActionType_GemDuelActionType_Move              GemDuelActionType = 1
-	GemDuelActionType_GemDuelActionType_Clear             GemDuelActionType = 2
-	GemDuelActionType_GemDuelActionType_CastSkill         GemDuelActionType = 3
-	GemDuelActionType_GemDuelActionType_Round             GemDuelActionType = 4
-	GemDuelActionType_GemDuelActionType_Spawn             GemDuelActionType = 5
-	GemDuelActionType_GemDuelActionType_Destroy           GemDuelActionType = 6
-	GemDuelActionType_GemDuelActionType_Attack            GemDuelActionType = 7
-	GemDuelActionType_GemDuelActionType_GetEnergy         GemDuelActionType = 8
-	GemDuelActionType_GemDuelActionType_Win               GemDuelActionType = 9
-	GemDuelActionType_GemDuelActionType_ResetGrids        GemDuelActionType = 10
-	GemDuelActionType_GemDuelActionType_Recommend         GemDuelActionType = 11
-	GemDuelActionType_GemDuelActionType_HealthChange      GemDuelActionType = 12
-	GemDuelActionType_GemDuelActionType_ChangeGemType     GemDuelActionType = 13
-	GemDuelActionType_GemDuelActionType_ChangeHealthMax   GemDuelActionType = 14
-	GemDuelActionType_GemDuelActionType_PassiveSkill      GemDuelActionType = 15
-	GemDuelActionType_GemDuelActionType_ChangeGemDefRatio GemDuelActionType = 16
-	GemDuelActionType_GemDuelActionType_ShieldChange      GemDuelActionType = 17
-	GemDuelActionType_GemDuelActionType_AddBuff           GemDuelActionType = 18
-	GemDuelActionType_GemDuelActionType_DelBuff           GemDuelActionType = 19
-	GemDuelActionType_GemDuelActionType_AddCharacter      GemDuelActionType = 20
-	GemDuelActionType_GemDuelActionType_EnergyChange      GemDuelActionType = 21
-	GemDuelActionType_GemDuelActionType_BuffChangeNum     GemDuelActionType = 22
+	GemDuelActionType_GemDuelActionType_None                 GemDuelActionType = 0
+	GemDuelActionType_GemDuelActionType_Move                 GemDuelActionType = 1
+	GemDuelActionType_GemDuelActionType_Clear                GemDuelActionType = 2
+	GemDuelActionType_GemDuelActionType_CastSkill            GemDuelActionType = 3
+	GemDuelActionType_GemDuelActionType_Round                GemDuelActionType = 4
+	GemDuelActionType_GemDuelActionType_Spawn                GemDuelActionType = 5
+	GemDuelActionType_GemDuelActionType_Destroy              GemDuelActionType = 6
+	GemDuelActionType_GemDuelActionType_Attack               GemDuelActionType = 7
+	GemDuelActionType_GemDuelActionType_GetEnergy            GemDuelActionType = 8
+	GemDuelActionType_GemDuelActionType_Win                  GemDuelActionType = 9
+	GemDuelActionType_GemDuelActionType_ResetGrids           GemDuelActionType = 10
+	GemDuelActionType_GemDuelActionType_Recommend            GemDuelActionType = 11
+	GemDuelActionType_GemDuelActionType_HealthChange         GemDuelActionType = 12
+	GemDuelActionType_GemDuelActionType_ChangeGemType        GemDuelActionType = 13
+	GemDuelActionType_GemDuelActionType_ChangeHealthMax      GemDuelActionType = 14
+	GemDuelActionType_GemDuelActionType_PassiveSkill         GemDuelActionType = 15
+	GemDuelActionType_GemDuelActionType_ChangeGemDefRatio    GemDuelActionType = 16
+	GemDuelActionType_GemDuelActionType_ShieldChange         GemDuelActionType = 17
+	GemDuelActionType_GemDuelActionType_AddBuff              GemDuelActionType = 18
+	GemDuelActionType_GemDuelActionType_DelBuff              GemDuelActionType = 19
+	GemDuelActionType_GemDuelActionType_AddCharacter         GemDuelActionType = 20
+	GemDuelActionType_GemDuelActionType_EnergyChange         GemDuelActionType = 21
+	GemDuelActionType_GemDuelActionType_BuffChangeNum        GemDuelActionType = 22
+	GemDuelActionType_GemDuelActionType_QuestConditionChange GemDuelActionType = 23
+	GemDuelActionType_GemDuelActionType_Skip                 GemDuelActionType = 24
 )
 
 // Enum value maps for GemDuelActionType.
@@ -78,31 +80,35 @@ var (
 		20: "GemDuelActionType_AddCharacter",
 		21: "GemDuelActionType_EnergyChange",
 		22: "GemDuelActionType_BuffChangeNum",
+		23: "GemDuelActionType_QuestConditionChange",
+		24: "GemDuelActionType_Skip",
 	}
 	GemDuelActionType_value = map[string]int32{
-		"GemDuelActionType_None":              0,
-		"GemDuelActionType_Move":              1,
-		"GemDuelActionType_Clear":             2,
-		"GemDuelActionType_CastSkill":         3,
-		"GemDuelActionType_Round":             4,
-		"GemDuelActionType_Spawn":             5,
-		"GemDuelActionType_Destroy":           6,
-		"GemDuelActionType_Attack":            7,
-		"GemDuelActionType_GetEnergy":         8,
-		"GemDuelActionType_Win":               9,
-		"GemDuelActionType_ResetGrids":        10,
-		"GemDuelActionType_Recommend":         11,
-		"GemDuelActionType_HealthChange":      12,
-		"GemDuelActionType_ChangeGemType":     13,
-		"GemDuelActionType_ChangeHealthMax":   14,
-		"GemDuelActionType_PassiveSkill":      15,
-		"GemDuelActionType_ChangeGemDefRatio": 16,
-		"GemDuelActionType_ShieldChange":      17,
-		"GemDuelActionType_AddBuff":           18,
-		"GemDuelActionType_DelBuff":           19,
-		"GemDuelActionType_AddCharacter":      20,
-		"GemDuelActionType_EnergyChange":      21,
-		"GemDuelActionType_BuffChangeNum":     22,
+		"GemDuelActionType_None":                 0,
+		"GemDuelActionType_Move":                 1,
+		"GemDuelActionType_Clear":                2,
+		"GemDuelActionType_CastSkill":            3,
+		"GemDuelActionType_Round":                4,
+		"GemDuelActionType_Spawn":                5,
+		"GemDuelActionType_Destroy":              6,
+		"GemDuelActionType_Attack":               7,
+		"GemDuelActionType_GetEnergy":            8,
+		"GemDuelActionType_Win":                  9,
+		"GemDuelActionType_ResetGrids":           10,
+		"GemDuelActionType_Recommend":            11,
+		"GemDuelActionType_HealthChange":         12,
+		"GemDuelActionType_ChangeGemType":        13,
+		"GemDuelActionType_ChangeHealthMax":      14,
+		"GemDuelActionType_PassiveSkill":         15,
+		"GemDuelActionType_ChangeGemDefRatio":    16,
+		"GemDuelActionType_ShieldChange":         17,
+		"GemDuelActionType_AddBuff":              18,
+		"GemDuelActionType_DelBuff":              19,
+		"GemDuelActionType_AddCharacter":         20,
+		"GemDuelActionType_EnergyChange":         21,
+		"GemDuelActionType_BuffChangeNum":        22,
+		"GemDuelActionType_QuestConditionChange": 23,
+		"GemDuelActionType_Skip":                 24,
 	}
 )
 
@@ -137,7 +143,7 @@ var File_GemDuelActionType_proto protoreflect.FileDescriptor
 
 const file_GemDuelActionType_proto_rawDesc = "" +
 	"\n" +
-	"\x17GemDuelActionType.proto\x12\x05proto*\x8b\x06\n" +
+	"\x17GemDuelActionType.proto\x12\x05proto*\xd3\x06\n" +
 	"\x11GemDuelActionType\x12\x1a\n" +
 	"\x16GemDuelActionType_None\x10\x00\x12\x1a\n" +
 	"\x16GemDuelActionType_Move\x10\x01\x12\x1b\n" +
@@ -162,7 +168,9 @@ const file_GemDuelActionType_proto_rawDesc = "" +
 	"\x19GemDuelActionType_DelBuff\x10\x13\x12\"\n" +
 	"\x1eGemDuelActionType_AddCharacter\x10\x14\x12\"\n" +
 	"\x1eGemDuelActionType_EnergyChange\x10\x15\x12#\n" +
-	"\x1fGemDuelActionType_BuffChangeNum\x10\x16B\n" +
+	"\x1fGemDuelActionType_BuffChangeNum\x10\x16\x12*\n" +
+	"&GemDuelActionType_QuestConditionChange\x10\x17\x12\x1a\n" +
+	"\x16GemDuelActionType_Skip\x10\x18B\n" +
 	"Z\b./;protob\x06proto3"
 
 var (
