@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"net"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -14,7 +13,6 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	pb "google.golang.org/protobuf/proto"
 
-	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/protocol/cmd"
 	"gucooing/lolo/protocol/proto"
 )
@@ -84,11 +82,23 @@ func formatSize(value float64, withPerSecond bool) string {
 
 func NewNet(network, addr string, log *slog.SugaredLogger) (Net, error) {
 	log.Infof("协议:%s,启动在%s 上", network, addr)
+	base := newNetBase(log)
 	switch network {
 	case "tcp":
-		return newTcpNet(addr, log)
+		return newTcpNet(addr, base)
 	}
 	return nil, errors.New("network not support")
+}
+
+func newNetBase(log *slog.SugaredLogger) *netBase {
+	return &netBase{
+		blackPackId: make(map[uint32]struct{}),
+		log:         log,
+		stat: netStats{
+			startUnix: time.Now().Unix(),
+		},
+		conn: newConn(),
+	}
 }
 
 type netBase struct {
@@ -101,6 +111,7 @@ type netBase struct {
 	statsTag    string
 	statsDone   chan struct{}
 	statsStop   sync.Once
+	conn        *conn
 }
 
 type netStats struct {
@@ -264,17 +275,6 @@ func (c *netBase) netStatsLoop() {
 			c.log.Infof("[NetStat] %s", c.Stats())
 		}
 	}
-}
-
-type Conn interface {
-	Read() (*alg.GameMsg, error)
-	Send(packetId uint32, protoObj pb.Message)
-	SetUID(uint32)
-	GetSeqId() uint32
-	SetServerTag(serverTag string)
-	Close()
-	LocalAddr() net.Addr
-	RemoteAddr() net.Addr
 }
 
 const (

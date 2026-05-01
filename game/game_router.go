@@ -126,31 +126,30 @@ func (g *Game) newRouter() {
 		cmd.DungeonFinishReq:  g.DungeonFinish,  // 副本结算
 		cmd.DungeonExitReq:    g.DungeonExit,    // 退出副本
 
-		cmd.PlayerVitalityReq:        g.PlayerVitality,
-		cmd.BossRushInfoReq:          g.BossRushInfo,
-		cmd.FriendIntervalInitReq:    g.FriendIntervalInit,
-		cmd.SelfIntervalInitReq:      g.SelfIntervalInit,
-		cmd.ExploreInitReq:           g.ExploreInit,
-		cmd.NpcTalkReq:               g.NpcTalk,  // npc对话
-		cmd.TutorialReq:              g.Tutorial, // 开始教程
-		cmd.ChallengeFriendRankReq:   g.ChallengeFriendRank,
-		cmd.AbilityBadgeListReq:      g.AbilityBadgeList,
-		cmd.SceneProcessListReq:      g.SceneProcessList,
-		cmd.WishListByFriendIdReq:    g.WishListByFriendId,
-		cmd.GetLifeInfoReq:           g.GetLifeInfo,
-		cmd.GetAchieveOneGroupReq:    g.GetAchieveOneGroup,
-		cmd.GetAchieveGroupListReq:   g.GetAchieveGroupList,
-		cmd.GenericGameAReq:          g.GenericGameA,
-		cmd.GenericGameBReq:          g.GenericGameB,
-		cmd.ManualListReq:            g.ManualList,            // 获取手册列表
-		cmd.PlayerAbilityListReq:     g.PlayerAbilityList,     //
-		cmd.WorldLevelAchieveListReq: g.WorldLevelAchieveList, //
-		cmd.SupplyBoxInfoReq:         g.SupplyBoxInfo,         //
-		cmd.GetAllCharacterEquipReq:  g.GetAllCharacterEquip,  //
-		cmd.GamePlayRewardReq:        g.GamePlayReward,        //
-		cmd.AcceptQuestReq:           g.AcceptQuest,           //
-		cmd.GemDuelInfoReq:           g.GemDuelInfo,
-		cmd.GemDuelGachaListReq:      g.GemDuelGachaList,
+		cmd.PlayerVitalityReq:           g.PlayerVitality,
+		cmd.BossRushInfoReq:             g.BossRushInfo,
+		cmd.FriendIntervalInitReq:       g.FriendIntervalInit,
+		cmd.SelfIntervalInitReq:         g.SelfIntervalInit,
+		cmd.ExploreInitReq:              g.ExploreInit,
+		cmd.NpcTalkReq:                  g.NpcTalk,  // npc对话
+		cmd.TutorialReq:                 g.Tutorial, // 开始教程
+		cmd.ChallengeFriendRankReq:      g.ChallengeFriendRank,
+		cmd.AbilityBadgeListReq:         g.AbilityBadgeList,
+		cmd.SceneProcessListReq:         g.SceneProcessList,
+		cmd.WishListByFriendIdReq:       g.WishListByFriendId,
+		cmd.GetLifeInfoReq:              g.GetLifeInfo,
+		cmd.GetAchieveOneGroupReq:       g.GetAchieveOneGroup,
+		cmd.GetAchieveGroupListReq:      g.GetAchieveGroupList,
+		cmd.GenericGameAReq:             g.GenericGameA,
+		cmd.GenericGameBReq:             g.GenericGameB,
+		cmd.ManualListReq:               g.ManualList,            // 获取手册列表
+		cmd.PlayerAbilityListReq:        g.PlayerAbilityList,     //
+		cmd.WorldLevelAchieveListReq:    g.WorldLevelAchieveList, //
+		cmd.SupplyBoxInfoReq:            g.SupplyBoxInfo,         //
+		cmd.GetAllCharacterEquipReq:     g.GetAllCharacterEquip,  //
+		cmd.GamePlayRewardReq:           g.GamePlayReward,        //
+		cmd.AcceptQuestReq:              g.AcceptQuest,           //
+		cmd.TreasureIllustrationInfoReq: g.TreasureIllustrationInfo,
 	}
 }
 

@@ -69,10 +69,10 @@ func clientHotUpdate(c *gin.Context) {
 	info := &quick.GMClientConfig{
 		Status:               true,
 		Message:              "success",
-		HotOssUrl:            "http://cdn-of.inutan.com/Resources;https://cdn-of.inutan.com/Resources",
+		HotOssUrl:            "http://cdn3-of.inutan.com/Resources;https://cdn3-of.inutan.com/Resources",
 		CurrentVersion:       gdconf.GetClientVersion(req.Version),
 		Server:               "cn_prod_main",
-		SsAppId:              "c969ebf346794cc797ed6eb6c3eac089",
+		SsAppId:              "",
 		SsServerUrl:          "https://te-of.inutan.com",
 		OpenGm:               true,
 		OpenErrorLog:         true,
