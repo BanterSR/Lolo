@@ -97,6 +97,7 @@ func (g *GameConfig) load() {
 	g.loadCollectionItem()
 	g.loadReward()
 	g.loadGather()
+	g.loadDungeon()
 	g.loadHomeItem()
 	g.loadMake()
 
@@ -135,6 +136,7 @@ type Excel struct {
 	CollectionItem *CollectionItem
 	Reward         *Reward
 	Gather         *Gather
+	Dungeon        *Dungeon
 	HomeItem       *HomeItem
 	Make           *Make
 }

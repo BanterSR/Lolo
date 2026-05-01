@@ -4,12 +4,10 @@ import (
 	"bufio"
 	"encoding/binary"
 	"errors"
-	"github.com/gookit/slog"
 	"io"
 	"net"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/golang/snappy"
 	pb "google.golang.org/protobuf/proto"
@@ -26,15 +24,9 @@ type tcpNet struct {
 	closeOnce sync.Once
 }
 
-func newTcpNet(addr string, log *slog.SugaredLogger) (*tcpNet, error) {
+func newTcpNet(addr string, base *netBase) (*tcpNet, error) {
 	x := &tcpNet{
-		netBase: &netBase{
-			blackPackId: make(map[uint32]struct{}),
-			log:         log,
-			stat: netStats{
-				startUnix: time.Now().Unix(),
-			},
-		},
+		netBase: base,
 	}
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -76,6 +68,7 @@ func (x *tcpNet) Close() error {
 }
 
 type tcpConn struct {
+	base      *conn
 	net       *tcpNet
 	conn      net.Conn
 	buf       *bufio.Reader

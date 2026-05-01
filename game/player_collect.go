@@ -160,13 +160,197 @@ func (g *Game) Gather(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) TreasureBoxOpen(s *model.Player, msg *alg.GameMsg) {
-	// req := msg.Body.(*proto.TreasureBoxOpenReq)
+	req := msg.Body.(*proto.TreasureBoxOpenReq)
 	rsp := &proto.TreasureBoxOpenRsp{
 		Status:          proto.StatusCode_StatusCode_Ok,
 		Items:           make([]*proto.ItemDetail, 0),
 		NextRefreshTime: 0,
 	}
 	defer g.send(s, msg.PacketId, rsp)
+
+	if req.GetLocType() != proto.TreasureBoxLocType_TreasureBoxLocType_Dungeon {
+		return
+	}
+
+	scenePlayer := g.getWordInfo().getScenePlayer(s)
+	if scenePlayer == nil {
+		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
+		return
+	}
+	runtime := g.getDungeonRuntime(scenePlayer)
+	if runtime == nil || !runtime.InDungeon {
+		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInDungeon
+		return
+	}
+	if runtime.TreasureBoxes == nil {
+		runtime.TreasureBoxes = g.newDungeonTreasureBoxes(runtime.DungeonId)
+	}
+
+	boxIndex := req.GetTreasureBoxIndex()
+	if boxIndex == 0 {
+		boxIndex = 2
+	}
+	box, ok := runtime.TreasureBoxes[boxIndex]
+	if !ok {
+		box = &proto.TreasureBoxData{
+			Index:           boxIndex,
+			BoxId:           runtime.DungeonId*100 + boxIndex,
+			Type:            proto.ETreasureBoxType_ETreasureBoxType_Normal,
+			State:           proto.TreasureBoxState_TreasureBoxState_Close,
+			NextRefreshTime: 0,
+			Rewards:         make([]*proto.ItemDetail, 0),
+		}
+		runtime.TreasureBoxes[boxIndex] = box
+	}
+	box.State = proto.TreasureBoxState_TreasureBoxState_Open
+	if len(box.Rewards) == 0 {
+		box.Rewards = g.buildDungeonOpenRewards(runtime.DungeonId)
+	}
+	rsp.Items = append(rsp.Items, box.GetRewards()...)
+	rsp.NextRefreshTime = box.GetNextRefreshTime()
+
+	if !runtime.FinalBoxOpened {
+		runtime.FinalBoxOpened = true
+		g.send(s, 0, &proto.DungeonOpenFinalBoxNotice{
+			Status:    proto.StatusCode_StatusCode_Ok,
+			DungeonId: runtime.DungeonId,
+		})
+	}
+}
+
+func (g *Game) TreasureBoxPickup(s *model.Player, msg *alg.GameMsg) {
+	req := msg.Body.(*proto.TreasureBoxPickupReq)
+	rsp := &proto.TreasureBoxPickupRsp{
+		Status: proto.StatusCode_StatusCode_Ok,
+		Items:  make([]*proto.ItemDetail, 0),
+	}
+	defer g.send(s, msg.PacketId, rsp)
+
+	if req.GetLocType() != proto.TreasureBoxLocType_TreasureBoxLocType_Dungeon {
+		return
+	}
+
+	scenePlayer := g.getWordInfo().getScenePlayer(s)
+	if scenePlayer == nil {
+		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
+		return
+	}
+	runtime := g.getDungeonRuntime(scenePlayer)
+	if runtime == nil || !runtime.InDungeon {
+		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInDungeon
+		return
+	}
+	if runtime.TreasureBoxes == nil {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		return
+	}
+	if runtime.PickedBoxes == nil {
+		runtime.PickedBoxes = make(map[uint32]bool)
+	}
+
+	boxIndex := req.GetBoxIndex()
+	if boxIndex == 0 {
+		boxIndex = 2
+	}
+	box := runtime.TreasureBoxes[boxIndex]
+	if box == nil {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		return
+	}
+	if runtime.PickedBoxes[boxIndex] {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		return
+	}
+	if len(box.Rewards) == 0 {
+		box.State = proto.TreasureBoxState_TreasureBoxState_Open
+		box.Rewards = g.buildDungeonOpenRewards(runtime.DungeonId)
+		if !runtime.FinalBoxOpened {
+			runtime.FinalBoxOpened = true
+			g.send(s, 0, &proto.DungeonOpenFinalBoxNotice{
+				Status:    proto.StatusCode_StatusCode_Ok,
+				DungeonId: runtime.DungeonId,
+			})
+		}
+	}
+
+	packItems := make([]*proto.ItemDetail, 0, len(box.Rewards))
+	for _, reward := range box.Rewards {
+		if reward == nil || reward.GetMainItem() == nil {
+			continue
+		}
+		itemId := reward.GetMainItem().GetItemId()
+		if itemId == 0 {
+			continue
+		}
+		num := int64(1)
+		if base := reward.GetMainItem().GetBaseItem(); base != nil && base.GetNum() > 0 {
+			num = base.GetNum()
+		}
+
+		addCtx := s.AddAllTypeItem(itemId, num)
+		if addCtx == nil || addCtx.EBagItemTag == nil {
+			continue
+		}
+		if item := addCtx.AddItemDetail(); item != nil {
+			alg.AddList(&rsp.Items, item)
+		}
+		if item := addCtx.EBagItemTag.ItemDetail(); item != nil {
+			alg.AddList(&packItems, item)
+		}
+	}
+	if len(packItems) > 0 {
+		g.PackNoticeByItems(s, packItems)
+	}
+	runtime.PickedBoxes[boxIndex] = true
+}
+
+func (g *Game) buildDungeonOpenRewards(dungeonId uint32) []*proto.ItemDetail {
+	conf := gdconf.GetDungeonConfigure(dungeonId)
+	rewards := make([]*proto.ItemDetail, 0)
+	if conf != nil {
+		rewardId := uint32(conf.GetRewardID())
+		if rewardId != 0 && gdconf.GetRewardPool(rewardId) != nil {
+			for _, reward := range gdconf.GetRewardItemPoolByRewardId(rewardId) {
+				itemId := uint32(reward.GetItemID())
+				num := scaleDungeonRewardNum(reward)
+				item := g.buildTempRewardItemDetail(itemId, num)
+				if item != nil {
+					alg.AddList(&rewards, item)
+				}
+			}
+		}
+	}
+
+	// 保底一份，确保副本最终箱子至少有可拾取奖励。
+	if len(rewards) == 0 {
+		if item := g.buildTempRewardItemDetail(6039, 4); item != nil {
+			alg.AddList(&rewards, item)
+		}
+	}
+	return rewards
+}
+
+func (g *Game) buildTempRewardItemDetail(itemId uint32, num int64) *proto.ItemDetail {
+	if itemId == 0 || num <= 0 {
+		return nil
+	}
+	itemConf := gdconf.GetItemConfigure(itemId)
+	if itemConf == nil {
+		return nil
+	}
+	return &proto.ItemDetail{
+		MainItem: &proto.ItemInfo{
+			ItemId:  itemId,
+			ItemTag: proto.EBagItemTag(itemConf.GetNewBagItemTag()),
+			Item: &proto.ItemInfo_BaseItem{
+				BaseItem: &proto.BaseItem{
+					ItemId: itemId,
+					Num:    num,
+				},
+			},
+		},
+		PackType: proto.PackType_PackType_TempStorageArea,
+	}
 }
 
 func (g *Game) GetCollectMoonInfo(s *model.Player, msg *alg.GameMsg) {

@@ -27,6 +27,7 @@ type Game struct {
 	wordInfo            *WordInfo
 	chatInfo            *ChatInfo
 	checkPlayerTimer    *time.Timer
+	gmChan              chan bool
 	doneChan            chan struct{}
 }
 
