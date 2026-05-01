@@ -543,6 +543,7 @@ func (c *ChannelInfo) GetPbSceneData(scenePlayer *ScenePlayer) (info *proto.Scen
 	for _, chaiInfo := range c.chaiInfoMap {
 		alg.AddList(&info.ChairInfoList, chaiInfo)
 	}
+	// 副本
 	return
 }
 

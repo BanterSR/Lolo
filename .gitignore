@@ -27,6 +27,5 @@ go.work.sum
 /Build
 /.build
 /test
-/tools
 *.proto
 /bin

@@ -116,10 +116,15 @@ func (g *Game) newRouter() {
 		cmd.CollectionRewardReq:   g.CollectionReward,   // 领取收集奖励
 		cmd.GatherReq:             g.Gather,             // 收集请求
 		cmd.TreasureBoxOpenReq:    g.TreasureBoxOpen,    // 打开宝箱
+		cmd.TreasureBoxPickupReq:  g.TreasureBoxPickup,  // 拾取宝箱奖励
 		cmd.GetCollectMoonInfoReq: g.GetCollectMoonInfo, // 获取星云树信息
 		cmd.CollectMoonReq:        g.CollectMoon,        // 收集月亮请求
 		// 副本
-		cmd.DungeonEnterReq: g.DungeonEnter, // 进入副本
+		cmd.DungeonViewReq:    g.DungeonView,    // 副本信息
+		cmd.DungeonEnterReq:   g.DungeonEnter,   // 进入副本
+		cmd.DungeonOperateReq: g.DungeonOperate, // 副本开始/结束
+		cmd.DungeonFinishReq:  g.DungeonFinish,  // 副本结算
+		cmd.DungeonExitReq:    g.DungeonExit,    // 退出副本
 
 		cmd.PlayerVitalityReq:        g.PlayerVitality,
 		cmd.BossRushInfoReq:          g.BossRushInfo,
@@ -137,7 +142,7 @@ func (g *Game) newRouter() {
 		cmd.GetAchieveGroupListReq:   g.GetAchieveGroupList,
 		cmd.GenericGameAReq:          g.GenericGameA,
 		cmd.GenericGameBReq:          g.GenericGameB,
-		cmd.ManualListReq:            g.ManualList,
+		cmd.ManualListReq:            g.ManualList,            // 获取手册列表
 		cmd.PlayerAbilityListReq:     g.PlayerAbilityList,     //
 		cmd.WorldLevelAchieveListReq: g.WorldLevelAchieveList, //
 		cmd.SupplyBoxInfoReq:         g.SupplyBoxInfo,         //

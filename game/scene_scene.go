@@ -51,6 +51,15 @@ type ScenePlayer struct {
 
 // 副本信息
 type PlayerDungeon struct {
+	DungeonId      uint32
+	InDungeon      bool
+	StartTimeMs    int64
+	ConsumeTime    uint64
+	Data           *proto.DungeonData
+	TaskDataLst    []*proto.Achieve
+	TreasureBoxes  map[uint32]*proto.TreasureBoxData
+	PickedBoxes    map[uint32]bool
+	FinalBoxOpened bool
 }
 
 func (g *Game) getWordInfo() *WordInfo {
