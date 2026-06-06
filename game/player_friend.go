@@ -156,9 +156,9 @@ func (g *Game) OtherPlayerInfo(s *model.Player, msg *alg.GameMsg) {
 		log.Game.Warnf("UserId:%v db.GetFiend:%v", s.UserId, err)
 		return
 	}
-	basic, err := db.GetGameBasic(req.PlayerId)
-	if err != nil {
-		log.Game.Warnf("GetGameBasic:%v func db.GetGameBasic:%v", req.PlayerId, err)
+	basic, ok := db.GetGameBasic(req.PlayerId)
+	if !ok {
+		log.Game.Warnf("GetGameBasic:%v func OtherPlayerInfo 玩家不存在", req.PlayerId)
 		return
 	}
 	rsp.OtherInfo = g.PlayerBriefInfo(basic)
@@ -186,10 +186,10 @@ func (g *Game) FriendSearch(s *model.Player, msg *alg.GameMsg) {
 		log.Game.Warnf("UserId:%v db.GetFiend:%v", s.UserId, err)
 		return
 	}
-	basic, err := db.GetGameBasic(userId)
-	if err != nil {
+	basic, ok := db.GetGameBasic(userId)
+	if !ok {
 		rsp.Status = proto.StatusCode_StatusCode_FriendNotExist
-		log.Game.Warnf("GetGameBasic:%v func db.GetGameBasic:%v", userId, err)
+		log.Game.Warnf("GetGameBasic:%v func FriendSearch 玩家不存在", userId)
 		return
 	}
 	rsp.Data = g.PlayerBriefInfo(basic)

@@ -24,9 +24,9 @@ func (s *Player) GetUnlockFunctions() []uint32 {
 }
 
 func GetPlayerAppearance(userId uint32) *proto.PlayerAppearance {
-	basic, err := db.GetGameBasic(userId)
-	if err != nil {
-		log.Game.Errorf("userId:%v func db.GetGameBasic err:%v", userId, err)
+	basic, ok := db.GetGameBasic(userId)
+	if !ok {
+		log.Game.Errorf("userId:%v func GetPlayerAppearance 玩家不存在", userId)
 		return nil
 	}
 	return &proto.PlayerAppearance{

@@ -30,7 +30,7 @@ type Player struct {
 	Garden        *GardenModel    `json:"garden,omitempty"`        // 花园
 	Shop          *ShopModel      `json:"shop,omitempty"`          // 商店
 	Scene         *SceneModel     `json:"scene,omitempty"`         // 场景信息
-	Dungeon       *DungeonModel   `json:"dungeon,omitempty"`       // 地牢
+	Dungeon       *DungeonModel   `json:"dungeon,omitempty"`       // 副本
 }
 
 // 将玩家状态重置成在线

@@ -58,9 +58,9 @@ func (c *ChatModel) AddUnExpression(expression uint32) Expression {
 
 func (s *Player) GetPrivateChatOffline(private *db.OFChatPrivate) *proto.PrivateChatOffline {
 	userId := private.GetSubUserID(s.UserId)
-	basic, err := db.GetGameBasic(userId)
-	if err != nil {
-		log.Game.Warnf("UserId:%v func db.GetGameBasic err:%v", userId, err)
+	basic, ok := db.GetGameBasic(userId)
+	if !ok {
+		log.Game.Warnf("UserId:%v func GetPrivateChatOffline 玩家不存在", userId)
 		return nil
 	}
 	return &proto.PrivateChatOffline{
@@ -73,9 +73,9 @@ func (s *Player) GetPrivateChatOffline(private *db.OFChatPrivate) *proto.Private
 }
 
 func GetUserChatMsgData(chatMsg *db.OFChatMsg, userId uint32) *proto.ChatMsgData {
-	basic, err := db.GetGameBasic(userId)
-	if err != nil {
-		log.Game.Warnf("UserId:%v func db.GetGameBasic err:%v", userId, err)
+	basic, ok := db.GetGameBasic(userId)
+	if !ok {
+		log.Game.Warnf("UserId:%v func GetUserChatMsgData 玩家不存在", userId)
 		return nil
 	}
 	return &proto.ChatMsgData{

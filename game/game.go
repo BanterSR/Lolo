@@ -62,12 +62,15 @@ func (g *Game) gameMainLoop() {
 	runtime.LockOSThread()
 	g.checkPlayerTimer = time.NewTimer(3 * time.Minute) // 3分钟检查一次玩家
 	defer func() {
-		log.Game.Infof("game主线程停止")
+		log.Game.Errorf("game主线程停止")
 		runtime.UnlockOSThread()
 		if err := recover(); err != nil {
+			log.Game.Error("----------------------------------------------------------------------------")
+			log.Game.Error("出现未知错误请将当前控制台信息粘贴到 https://github.com/BanterSR/Lolo/issues 进行反馈")
 			log.Game.Error("!!! GAME MAIN LOOP PANIC !!!")
 			log.Game.Errorf("error: %s", err)
 			log.Game.Errorf("Stack trace: %s", string(debug.Stack()))
+			log.Game.Error("----------------------------------------------------------------------------")
 		}
 	}()
 	for {

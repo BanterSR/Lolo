@@ -8,8 +8,9 @@ import (
 )
 
 type SceneConfig struct {
-	all      *config.SceneConfig
-	SceneMap map[int32]*SceneInfo
+	all             *config.SceneConfig
+	SceneMap        map[uint32]*SceneInfo        // 场景id
+	DungeonSceneMap map[uint32]*DungeonSceneInfo // 副本id
 }
 
 type SceneInfo struct {
@@ -18,10 +19,16 @@ type SceneInfo struct {
 	GatherPointIndex map[uint32]*config.GatherPointInfo
 }
 
+// 副本场景信息
+type DungeonSceneInfo struct {
+	Info *config.SceneInfo
+}
+
 func (g *GameConfig) loadSceneConfig() {
 	info := &SceneConfig{
-		all:      new(config.SceneConfig),
-		SceneMap: make(map[int32]*SceneInfo),
+		all:             new(config.SceneConfig),
+		SceneMap:        make(map[uint32]*SceneInfo),
+		DungeonSceneMap: make(map[uint32]*DungeonSceneInfo),
 	}
 	g.Config.SceneConfig = info
 	name := "ScenesConfigAsset.json"
@@ -33,7 +40,7 @@ func (g *GameConfig) loadSceneConfig() {
 			TreasureInfos:    make(map[uint32]*config.CollectionTreasureInfo),
 			GatherPointIndex: make(map[uint32]*config.GatherPointInfo),
 		}
-		info.SceneMap[scene.ID] = sceneInfo
+		info.SceneMap[uint32(scene.ID)] = sceneInfo
 		// 宝箱信息
 		//for _, v := range scene.GetCollectionTreasureInfos() {
 		//
@@ -51,22 +58,37 @@ func (g *GameConfig) loadSceneConfig() {
 			}
 		}
 	}
+	// 副本信息
+	for _, scene := range info.all.GetDungeons() {
+		dungeonInfo := &DungeonSceneInfo{
+			Info: scene,
+		}
+		info.DungeonSceneMap[uint32(scene.ID)] = dungeonInfo
+	}
 }
 
 func GetSceneInfo(sceneId uint32) *SceneInfo {
-	info := cc.Config.SceneConfig.SceneMap[int32(sceneId)]
+	info := cc.Config.SceneConfig.SceneMap[sceneId]
 	if info == nil {
 		return nil
 	}
 	return info
 }
 
-func (s *SceneInfo) GetSceneInfoRandomBorn() (*config.Vector3, *config.Vector4) {
-	n := len(s.Info.GetBorn())
+func GetDungeonSceneInfo(dungeonId uint32) *DungeonSceneInfo {
+	info := cc.Config.SceneConfig.DungeonSceneMap[dungeonId]
+	if info == nil {
+		return nil
+	}
+	return info
+}
+
+func GetSceneInfoRandomBorn(borns []*config.BornInfo) (*config.Vector3, *config.Vector4) {
+	n := len(borns)
 	if n == 0 {
 		return nil, nil
 	}
-	bornInfo := s.Info.GetBorn()[rand.Intn(n)]
+	bornInfo := borns[rand.Intn(n)]
 	return bornInfo.Position, bornInfo.Rotation
 }
 

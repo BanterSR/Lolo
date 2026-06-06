@@ -41,7 +41,7 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg
 			log.Game.Warnf("数据库拉取玩家:%v数据失败:%s", userId, err.Error())
 			return
 		}
-		basic, err := db.GetGameBasic(userId)
+		basic, err := db.GetGameBasicOrCreate(userId)
 		if err != nil {
 			log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败:%s", userId, err.Error())
 			rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
@@ -77,7 +77,7 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg
 login:
 	s.Init(conn, uuid)
 
-	basic, err := db.GetGameBasic(userId)
+	basic, err := db.GetGameBasicOrCreate(userId)
 	if err != nil {
 		log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败:%s", s.UserId, err.Error())
 		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
@@ -134,9 +134,9 @@ func (g *Game) PlayerMainData(s *model.Player, msg *alg.GameMsg) {
 	}()
 	// 基础信息
 	{
-		basic, err := db.GetGameBasic(s.UserId)
-		if err != nil {
-			log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败:%s", s.UserId, err.Error())
+		basic, ok := db.GetGameBasic(s.UserId)
+		if !ok {
+			log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败 玩家不存在", s.UserId)
 			rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
 			return
 		}
@@ -424,8 +424,21 @@ func (g *Game) ManualList(s *model.Player, msg *alg.GameMsg) {
 		Status: proto.StatusCode_StatusCode_Ok,
 		Flags:  make([]*proto.ManualFlag, 0),
 	}
-	jsonStr := "{\n  \"flags\": [\n    {\n      \"dungeon_task_finish_num\": 2,\n      \"flag_id\": 55001,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 15301,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 525007,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 35014,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 25003,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 15005,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 25201,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 3,\n      \"flag_id\": 525002,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 15101,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 15105,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 525004,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 525001,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 35013,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 35007,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 15015,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 35301,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 15003,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 525008,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 35015,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 25202,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 15010,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 25103,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 55015,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 15001,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 35011,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 35005,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 25007,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 55005,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 15106,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 25005,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 15009,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 55011,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 25006,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 35010,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 35012,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 35001,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 525005,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 55002,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 25008,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 25004,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 25013,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 525006,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 15104,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 535002,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 25020,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 515003,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 35303,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 25105,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 515004,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 15013,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 515005,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 15004,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 55013,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 15007,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 55003,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 55004,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 515002,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 25101,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 2,\n      \"flag_id\": 525009,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 35006,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 25102,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 25016,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 25001,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 55014,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 35008,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 25010,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 15102,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 525010,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 15012,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 15002,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 55008,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 15008,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 35009,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 515001,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 55012,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 535001,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 55009,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 25104,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 525003,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 2,\n      \"flag_id\": 35002,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 15006,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 25009,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 55007,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 35302,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 55006,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 35003,\n      \"status\": 1\n    },\n    {\n      \"flag_id\": 15103,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 25011,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 35004,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 1,\n      \"flag_id\": 55010,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 25015,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 25002,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 25012,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 15014,\n      \"status\": 1\n    },\n    {\n      \"dungeon_task_finish_num\": 4,\n      \"flag_id\": 15011,\n      \"status\": 1\n    }\n  ],\n  \"status\": 1\n}"
-	sonic.UnmarshalString(jsonStr, rsp)
+	add := func(flagID uint32) {
+		if flagID != 0 {
+			alg.AddLists(&rsp.Flags, &proto.ManualFlag{
+				FlagId:               flagID,
+				Status:               proto.RewardStatus_RewardStatus_Reward,
+				DungeonTaskFinishNum: 1,
+			})
+		}
+	}
+	for _, item := range gdconf.GetManualItemMap() {
+		add(uint32(item.FlagID))
+	}
+	for _, item := range gdconf.GetManualDungeonItemMap() {
+		add(uint32(item.FlagID))
+	}
 	defer g.send(s, msg.PacketId, rsp)
 }
 

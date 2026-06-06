@@ -151,7 +151,7 @@ func (g *Game) GardenPlaceCharacter(s *model.Player, msg *alg.GameMsg) {
 	} else {
 		if !garden.AddPlacedCharacter(&proto.ScenePlacedCharacter{
 			CharacterId:  req.CharacterId,
-			OutfitPreset: scenePlayer.GetPbSceneCharacterOutfitPreset(characterInfo),
+			OutfitPreset: scenePlayer.Team.GetPbSceneCharacterOutfitPreset(characterInfo),
 			FurnitureId:  req.FurnitureId,
 			SeatId:       req.SeatId,
 		}) {

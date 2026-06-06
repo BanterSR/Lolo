@@ -38,8 +38,8 @@ func (g *Game) PlayerSceneRecord(s *model.Player, msg *alg.GameMsg) {
 	if charRecorderDataLst := req.Data.CharRecorderDataLst; charRecorderDataLst != nil {
 		for _, v := range charRecorderDataLst {
 			if v.Rot != nil && v.Pos != nil {
-				scenePlayer.Rot = v.Rot
-				scenePlayer.Pos = v.Pos
+				scenePlayer.Team.Rot = v.Rot
+				scenePlayer.Team.Pos = v.Pos
 			}
 		}
 	}
@@ -113,15 +113,15 @@ func (g *Game) ChangeSceneChannel(s *model.Player, msg *alg.GameMsg) {
 			rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
 			return
 		}
-		pos = model.CopyVector3(targetPlayer.Pos)
-		rot = model.CopyVector3(targetPlayer.Rot)
+		pos = model.CopyVector3(targetPlayer.Team.Pos)
+		rot = model.CopyVector3(targetPlayer.Team.Rot)
 		sceneId = targetPlayer.SceneId
 		channelId = targetPlayer.ChannelId
 	} else { // 切换场景
 		if pos == nil && rot == nil {
 			sceneConf := gdconf.GetSceneInfo(sceneId)
 			if sceneConf != nil {
-				posr, rotr := sceneConf.GetSceneInfoRandomBorn()
+				posr, rotr := gdconf.GetSceneInfoRandomBorn(sceneConf.Info.GetBorn())
 				pos = gdconf.ConfigVector3ToProtoVector3(posr)
 				rot = gdconf.ConfigVector4ToProtoVector3(rotr)
 			}
@@ -139,8 +139,8 @@ func (g *Game) ChangeSceneChannel(s *model.Player, msg *alg.GameMsg) {
 
 	alg.NoZero(&scenePlayer.SceneId, sceneId)
 	alg.NoZero(&scenePlayer.ChannelId, channelId)
-	alg.NoZero(&scenePlayer.Pos, pos)
-	alg.NoZero(&scenePlayer.Rot, rot)
+	alg.NoZero(&scenePlayer.Team.Pos, pos)
+	alg.NoZero(&scenePlayer.Team.Rot, rot)
 
 	newChannelInfo, err := g.getWordInfo().getChannel(scenePlayer.SceneId, scenePlayer.ChannelId)
 	if err != nil {

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"time"
 
 	"gucooing/lolo/pkg/cache"
@@ -33,8 +34,7 @@ type OFGameBasic struct {
 	HideValue       uint32            `gorm:"default:0"`      // 隐藏信息
 }
 
-// 获取玩家基础信息
-func GetGameBasic(userId uint32) (*OFGameBasic, error) {
+func GetGameBasicOrCreate(userId uint32) (*OFGameBasic, error) {
 	if basic, ok := basicCache.Get(userId); ok {
 		return basic, nil
 	}
@@ -49,16 +49,28 @@ func GetGameBasic(userId uint32) (*OFGameBasic, error) {
 	return basic, nil
 }
 
+// 获取玩家基础信息
+func GetGameBasic(userId uint32) (*OFGameBasic, bool) {
+	if basic, ok := basicCache.Get(userId); ok {
+		return basic, true
+	}
+	basic := &OFGameBasic{
+		UserId: userId,
+	}
+	err := db.First(basic).Error
+	return basic, err == nil
+}
+
 // 更新基础信息
 func UpGameBasic(userId uint32, fx func(basic *OFGameBasic) bool) error {
-	basic, err := GetGameBasic(userId)
-	if err != nil {
-		return err
+	basic, ok := GetGameBasic(userId)
+	if !ok {
+		return errors.New("玩家不存在")
 	}
 	if !fx(basic) {
 		return nil
 	}
-	if err = db.Save(basic).Error; err != nil {
+	if err := db.Save(basic).Error; err != nil {
 		return err
 	}
 	basicCache.Set(userId, basic)

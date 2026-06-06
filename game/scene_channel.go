@@ -291,17 +291,17 @@ func (c *ChannelInfo) serverSceneSync(ctx *ServerSceneSyncCtx) {
 	case proto.SceneActionType_SceneActionType_Leave: // 退出场景
 	case proto.SceneActionType_SceneActionType_UpdateEquip: /*更新装备*/
 		sceneCharacter := ctx.NewTeamSceneCharacter(serverData)
-		ctx.ScenePlayer.UpdateCharacterEquip(sceneCharacter)
+		ctx.ScenePlayer.Team.UpdateCharacterEquip(sceneCharacter)
 	case proto.SceneActionType_SceneActionType_UpdateFashion, /*更新服装*/
 		proto.SceneActionType_SceneActionType_UpdateTeam,       /*更新队伍*/
 		proto.SceneActionType_SceneActionType_UpdateAppearance: /*更新外观*/
 		serverData.Player = &proto.ScenePlayer{
-			Team: c.GetPbSceneTeam(ctx.ScenePlayer),
+			Team: ctx.ScenePlayer.Team.GetPbSceneTeam(),
 		}
 	case proto.SceneActionType_SceneActionType_UpdateNickname: // 更新昵称
-		basic, err := db.GetGameBasic(ctx.ScenePlayer.UserId)
-		if err != nil {
-			log.Game.Errorf("UserId:%v获取玩家基础数据失败:%s", ctx.ScenePlayer.UserId, err.Error())
+		basic, ok := db.GetGameBasic(ctx.ScenePlayer.UserId)
+		if !ok {
+			log.Game.Errorf("UserId:%v func serverSceneSync 获取玩家基础数据失败:玩家不存在", ctx.ScenePlayer.UserId)
 			return
 		}
 		serverData.Player = &proto.ScenePlayer{
@@ -316,7 +316,7 @@ func (c *ChannelInfo) serverSceneSync(ctx *ServerSceneSyncCtx) {
 		proto.SceneActionType_SceneActionType_UpdateCharacterBreakLv, // 角色突破升阶
 		proto.SceneActionType_SceneActionType_UpdateCharacterStar:    // 角色升星
 		sceneCharacter := ctx.NewTeamSceneCharacter(serverData)
-		ctx.ScenePlayer.UpdateCharacterBasic(sceneCharacter)
+		ctx.ScenePlayer.Team.UpdateCharacterBasic(sceneCharacter)
 	}
 }
 
@@ -495,9 +495,9 @@ func (c *ChannelInfo) GetPbSceneData(scenePlayer *ScenePlayer) (info *proto.Scen
 		RegionVoices:         make([]uint32, 0),
 		BonFires:             make([]*proto.Bonfire, 0),
 		SoccerPosition:       new(proto.SoccerPosition),
-		ChairInfoList:        make([]*proto.ChairInfo, 0),   // ok
-		Dungeons:             make([]*proto.DungeonData, 0), // TODO 地牢
-		FlagIds:              make([]uint32, 0),
+		ChairInfoList:        make([]*proto.ChairInfo, 0),         // ok
+		Dungeons:             make([]*proto.DungeonData, 0),       // TODO 地牢
+		FlagIds:              make([]uint32, 0),                   // ok
 		SceneGardenData:      c.sceneGardenData.SceneGardenData(), // ok
 		CurrentGatherGroupId: 0,
 		Players:              make([]*proto.ScenePlayer, 0), // ok
@@ -545,43 +545,26 @@ func (c *ChannelInfo) GetPbSceneData(scenePlayer *ScenePlayer) (info *proto.Scen
 		alg.AddList(&info.ChairInfoList, chaiInfo)
 	}
 	// 副本
-	if c.SceneInfo.SceneId == 1 {
-		info.FlagIds = []uint32{16004, 15009, 10002, 11010, 10001, 10003, 10004, 15001, 15002, 15003, 15004, 15005, 15006, 15007, 15008, 15010, 15011, 15012, 15013, 15014, 15015, 15101, 15102, 15103, 15104, 15105, 15106, 15301, 25101}
-	}
 	for _, dungeonInfo := range gdconf.GetSceneInfo(c.SceneInfo.SceneId).Info.DungeonInfos {
-		alg.AddList(&info.Dungeons, &proto.DungeonData{
-			DungeonId:        uint32(dungeonInfo.ID),
-			AllTaskFinished:  false,
-			EnterTimes:       0,
-			ExitTimes:        0,
-			FinishTimes:      0,
-			Coins:            nil,
-			LastFinishTime:   0,
-			TaskFinishReward: 0,
-			StarReward:       0,
-			Monsters:         nil,
-			Char1:            0,
-			Char2:            0,
-			Char3:            0,
-			LastEnterTime:    0,
-			Pos:              nil,
-			Rot:              nil,
-			IsOpenSecretBox:  false,
-		})
+		alg.AddList(&info.Dungeons, scenePlayer.GetDungeonModel().GetDungeonInfo(uint32(dungeonInfo.ID)).DungeonData())
+	}
+	// 解锁id TODO 目前直接解锁全部
+	for _, flagConfigure := range gdconf.GetSceneFlagConfigure(c.SceneInfo.SceneId) {
+		alg.AddLists(&info.FlagIds, uint32(flagConfigure.ID))
 	}
 	return
 }
 
 func (c *ChannelInfo) GetPbScenePlayer(scenePlayer *ScenePlayer) (info *proto.ScenePlayer) {
-	basic, err := db.GetGameBasic(scenePlayer.UserId)
-	if err != nil {
-		log.Game.Errorf("UserId:%v获取玩家基础数据失败:%s", scenePlayer.UserId, err.Error())
+	basic, ok := db.GetGameBasic(scenePlayer.UserId)
+	if !ok {
+		log.Game.Errorf("UserId:%v func GetPbScenePlayer 获取玩家基础数据失败:玩家不存在", scenePlayer.UserId)
 		return
 	}
 	info = &proto.ScenePlayer{
 		PlayerId:              scenePlayer.UserId,
 		PlayerName:            scenePlayer.NickName,
-		Team:                  c.GetPbSceneTeam(scenePlayer),
+		Team:                  scenePlayer.Team.GetPbSceneTeam(),
 		Status:                new(proto.ScenePlayerActionStatus),
 		FoodBuffIds:           make([]uint32, 0),
 		GlobalBuffIds:         make([]uint32, 0),
@@ -607,155 +590,6 @@ func (s *ScenePlayer) UpdateMusicalItem(info *proto.ScenePlayer) {
 	info.MusicalItemSource = s.MusicalItemSource         // 音乐来源
 	info.MusicalItemInstanceId = s.MusicalItemInstanceId // 音乐实例id
 	info.PlayingMusicNote = s.PlayingMusicNote           // 演奏音符
-}
-
-func (c *ChannelInfo) GetPbSceneTeam(scenePlayer *ScenePlayer) (info *proto.SceneTeam) {
-	teamInfo := scenePlayer.GetTeamModel().GetTeamInfo()
-	info = &proto.SceneTeam{
-		Char1: scenePlayer.GetPbSceneCharacter(teamInfo.Char1),
-		Char2: scenePlayer.GetPbSceneCharacter(teamInfo.Char2),
-		Char3: scenePlayer.GetPbSceneCharacter(teamInfo.Char3),
-	}
-	return
-}
-
-func (s *ScenePlayer) GetPbSceneCharacter(characterId uint32) (info *proto.SceneCharacter) {
-	characterInfo := s.GetCharacterModel().GetCharacterInfo(characterId)
-	if characterInfo == nil {
-		log.Game.Debugf("玩家:%v队伍角色:%v不存在", s.UserId, characterId)
-		return nil
-	}
-	info = &proto.SceneCharacter{
-		Pos:                 s.Pos,
-		Rot:                 s.Rot,
-		CharId:              characterInfo.CharacterId,
-		CharLv:              0, // ok
-		CharBreakLv:         0, // ok
-		CharStar:            0, // ok
-		CharacterAppearance: characterInfo.GetPbCharacterAppearance(),
-		OutfitPreset:        s.GetPbSceneCharacterOutfitPreset(characterInfo),
-		WeaponId:            0, // ok
-		WeaponStar:          0, // ok
-		Armors:              make([]*proto.BaseArmor, 0),
-		Posters:             make([]*proto.BasePoster, 0),
-		GatherWeapon:        0, // ok
-		IsDead:              false,
-		InscriptionId:       0,
-		InscriptionLv:       0,
-		MpGameWeapon:        0,
-	}
-	// 基础
-	s.UpdateCharacterBasic(info)
-	// 装备
-	s.UpdateCharacterEquip(info)
-	// 装备
-	{
-		equipmentPreset := characterInfo.GetEquipmentPreset(characterInfo.InUseEquipmentPresetIndex)
-		if equipmentPreset == nil {
-			log.Game.Warnf("玩家:%v角色:%v装备序号:%v缺少",
-				s.UserId, characterInfo.CharacterId, characterInfo.InUseEquipmentPresetIndex)
-		} else {
-			// 盔甲
-			for _, armor := range equipmentPreset.Armors {
-				item := s.GetItemModel().GetItemArmorInfo(armor.InstanceId)
-				alg.AddList(&info.Armors, item.BaseArmor())
-			}
-			// 海报
-			for _, poster := range equipmentPreset.Posters {
-				item := s.GetItemModel().GetItemPosterInfo(poster.InstanceId)
-				alg.AddList(&info.Posters, item.BasePoster())
-			}
-		}
-
-	}
-
-	return
-}
-
-func (s *ScenePlayer) UpdateCharacterBasic(info *proto.SceneCharacter) {
-	characterInfo := s.GetCharacterModel().GetCharacterInfo(info.GetCharId())
-	if characterInfo == nil || info == nil {
-		return
-	}
-	info.CharLv = characterInfo.Level
-	info.CharBreakLv = characterInfo.BreakLevel
-	info.CharStar = characterInfo.Star
-	info.CharLv = characterInfo.Level
-}
-
-func (s *ScenePlayer) UpdateCharacterEquip(info *proto.SceneCharacter) {
-	characterInfo := s.GetCharacterModel().GetCharacterInfo(info.GetCharId())
-	if characterInfo == nil || info == nil {
-		return
-	}
-	info.GatherWeapon = characterInfo.GatherWeapon
-	equipmentPreset := characterInfo.GetEquipmentPreset(characterInfo.InUseEquipmentPresetIndex)
-	if equipmentPreset == nil {
-		log.Game.Warnf("玩家:%v角色:%v装备序号:%v缺少",
-			s.UserId, characterInfo.CharacterId, characterInfo.InUseEquipmentPresetIndex)
-	} else {
-		// 武器
-		weaponInfo := s.GetItemModel().GetItemWeaponInfo(equipmentPreset.WeaponInstanceId)
-		if weaponInfo == nil {
-			log.Game.Warnf("玩家:%v角色:%v装备-武器:%v缺少",
-				s.UserId, characterInfo.CharacterId, equipmentPreset.WeaponInstanceId)
-		} else {
-			info.WeaponStar = weaponInfo.Star
-			info.WeaponId = weaponInfo.WeaponId
-		}
-	}
-}
-
-func (s *ScenePlayer) GetPbSceneCharacterOutfitPreset(characterInfo *model.CharacterInfo) *proto.SceneCharacterOutfitPreset {
-	outfit := characterInfo.GetOutfitPreset(characterInfo.InUseOutfitPresetIndex)
-	if outfit == nil {
-		log.Game.Warnf("玩家:%v角色:%v外貌序号:%v缺少",
-			s.UserId, characterInfo.CharacterId, characterInfo.InUseOutfitPresetIndex)
-		return nil
-	}
-	getODS := func(id, index uint32) *proto.OutfitDyeScheme {
-		fashionInfo := s.GetItemModel().GetItemFashionInfo(id)
-		if fashionInfo == nil ||
-			fashionInfo.GetDyeScheme(index) == nil {
-			return &proto.OutfitDyeScheme{
-				SchemeIndex: 0,
-				Colors:      make([]*proto.PosColor, 0),
-				IsUnLock:    false,
-			}
-		}
-		return fashionInfo.GetDyeScheme(index).OutfitDyeScheme()
-	}
-	info := &proto.SceneCharacterOutfitPreset{
-		Hat:                    outfit.Hat,
-		HatDyeScheme:           getODS(outfit.Hat, outfit.HatDyeSchemeIndex),
-		Hair:                   outfit.Hair,
-		HairDyeScheme:          getODS(outfit.Hair, outfit.HairDyeSchemeIndex),
-		Clothes:                outfit.Clothes,
-		ClothDyeScheme:         getODS(outfit.Clothes, outfit.ClothesDyeSchemeIndex),
-		Ornament:               outfit.Ornament,
-		OrnDyeScheme:           getODS(outfit.Ornament, outfit.OrnamentDyeSchemeIndex),
-		HideInfo:               outfit.OutfitHideInfo.OutfitHideInfo(),
-		PendTop:                outfit.PendTop,
-		PendTopDyeScheme:       getODS(outfit.PendTop, outfit.PendTopDyeSchemeIndex),
-		PendChest:              outfit.PendChest,
-		PendChestDyeScheme:     getODS(outfit.PendChest, outfit.PendChestDyeSchemeIndex),
-		PendPelvis:             outfit.PendPelvis,
-		PendPelvisDyeScheme:    getODS(outfit.PendPelvis, outfit.PendPelvisDyeSchemeIndex),
-		PendUpFace:             outfit.PendUpFace,
-		PendUpFaceDyeScheme:    getODS(outfit.PendUpFace, outfit.PendUpFaceDyeSchemeIndex),
-		PendDownFace:           outfit.PendDownFace,
-		PendDownFaceDyeScheme:  getODS(outfit.PendDownFace, outfit.PendDownFaceDyeSchemeIndex),
-		PendLeftHand:           outfit.PendLeftHand,
-		PendLeftHandDyeScheme:  getODS(outfit.PendLeftHand, outfit.PendLeftHandDyeSchemeIndex),
-		PendRightHand:          outfit.PendRightHand,
-		PendRightHandDyeScheme: getODS(outfit.PendRightHand, outfit.PendRightHandDyeSchemeIndex),
-		PendLeftFoot:           outfit.PendLeftFoot,
-		PendLeftFootDyeScheme:  getODS(outfit.PendLeftFoot, outfit.PendLeftFootDyeSchemeIndex),
-		PendRightFoot:          outfit.PendRightFoot,
-		PendRightFootDyeScheme: getODS(outfit.PendRightFoot, outfit.PendRightFootDyeSchemeIndex),
-	}
-
-	return info
 }
 
 func (c *ChannelInfo) SceneWeatherChangeNotice() {
