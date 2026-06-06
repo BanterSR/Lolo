@@ -187,7 +187,12 @@ func (g *Game) Close() {
 	close(g.doneChan)
 	g.checkPlayer()
 	for _, player := range g.userMap {
-		g.offlinePlayer(player, proto.PlayerOfflineReason_PlayerOfflineReason_ServerShutdown)
+		g.send(player, 0, &proto.PlayerOfflineRsp{
+			Status:             proto.StatusCode_StatusCode_Ok,
+			Reason:             proto.PlayerOfflineReason_PlayerOfflineReason_ServerShutdown,
+			ServerNextOpenTime: 0,
+		})
+		g.kickPlayer(player)
 	}
 	log.Game.Infof("game退出完成")
 }
