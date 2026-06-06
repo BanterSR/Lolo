@@ -113,15 +113,16 @@ func (x *GiftBagDatas) GetDatas() []*GiftBagConfigure {
 }
 
 type GiftBagConfigure struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ID            int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
-	PlayerLv      int32                  `protobuf:"varint,2,opt,name=PlayerLv,proto3" json:"PlayerLv,omitempty"`
-	UseItemID     int32                  `protobuf:"varint,3,opt,name=UseItemID,proto3" json:"UseItemID,omitempty"`
-	UseItemCount  int32                  `protobuf:"varint,4,opt,name=UseItemCount,proto3" json:"UseItemCount,omitempty"`
-	AssetPath     string                 `protobuf:"bytes,5,opt,name=AssetPath,proto3" json:"AssetPath,omitempty"`
-	GiftBagGroup  []*GiftBagGroupInfo    `protobuf:"bytes,6,rep,name=GiftBagGroup,proto3" json:"GiftBagGroup,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	ID                int32                  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	PlayerLv          int32                  `protobuf:"varint,2,opt,name=PlayerLv,proto3" json:"PlayerLv,omitempty"`
+	UseItemID         int32                  `protobuf:"varint,3,opt,name=UseItemID,proto3" json:"UseItemID,omitempty"`
+	UseItemCount      int32                  `protobuf:"varint,4,opt,name=UseItemCount,proto3" json:"UseItemCount,omitempty"`
+	AssetPath         string                 `protobuf:"bytes,5,opt,name=AssetPath,proto3" json:"AssetPath,omitempty"`
+	GiftBagGroup      []*GiftBagGroupInfo    `protobuf:"bytes,6,rep,name=GiftBagGroup,proto3" json:"GiftBagGroup,omitempty"`
+	NewSpecialGiftBag int32                  `protobuf:"varint,7,opt,name=NewSpecialGiftBag,proto3" json:"NewSpecialGiftBag,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *GiftBagConfigure) Reset() {
@@ -196,6 +197,13 @@ func (x *GiftBagConfigure) GetGiftBagGroup() []*GiftBagGroupInfo {
 	return nil
 }
 
+func (x *GiftBagConfigure) GetNewSpecialGiftBag() int32 {
+	if x != nil {
+		return x.NewSpecialGiftBag
+	}
+	return 0
+}
+
 type GiftBagGroupInfo struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	RewardPoolGroupID int32                  `protobuf:"varint,1,opt,name=RewardPoolGroupID,proto3" json:"RewardPoolGroupID,omitempty"`
@@ -248,14 +256,15 @@ const file_AllGiftBagDatas_proto_rawDesc = "" +
 	"\x0fAllGiftBagDatas\x12-\n" +
 	"\aGiftBag\x18\x01 \x01(\v2\x13.excel.GiftBagDatasR\aGiftBag\"=\n" +
 	"\fGiftBagDatas\x12-\n" +
-	"\x05Datas\x18\x01 \x03(\v2\x17.excel.GiftBagConfigureR\x05Datas\"\xdb\x01\n" +
+	"\x05Datas\x18\x01 \x03(\v2\x17.excel.GiftBagConfigureR\x05Datas\"\x89\x02\n" +
 	"\x10GiftBagConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x1a\n" +
 	"\bPlayerLv\x18\x02 \x01(\x05R\bPlayerLv\x12\x1c\n" +
 	"\tUseItemID\x18\x03 \x01(\x05R\tUseItemID\x12\"\n" +
 	"\fUseItemCount\x18\x04 \x01(\x05R\fUseItemCount\x12\x1c\n" +
 	"\tAssetPath\x18\x05 \x01(\tR\tAssetPath\x12;\n" +
-	"\fGiftBagGroup\x18\x06 \x03(\v2\x17.excel.GiftBagGroupInfoR\fGiftBagGroup\"@\n" +
+	"\fGiftBagGroup\x18\x06 \x03(\v2\x17.excel.GiftBagGroupInfoR\fGiftBagGroup\x12,\n" +
+	"\x11NewSpecialGiftBag\x18\a \x01(\x05R\x11NewSpecialGiftBag\"@\n" +
 	"\x10GiftBagGroupInfo\x12,\n" +
 	"\x11RewardPoolGroupID\x18\x01 \x01(\x05R\x11RewardPoolGroupIDB\n" +
 	"Z\b./;excelb\x06proto3"

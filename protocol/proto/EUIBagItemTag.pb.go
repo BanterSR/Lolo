@@ -27,40 +27,49 @@ const (
 type EUIBagItemTag int32
 
 const (
-	EUIBagItemTag_EUIBagItemTag_None      EUIBagItemTag = 0
-	EUIBagItemTag_EUIBagItemTag_Item      EUIBagItemTag = 1
-	EUIBagItemTag_EUIBagItemTag_Weapon    EUIBagItemTag = 2
-	EUIBagItemTag_EUIBagItemTag_Armor     EUIBagItemTag = 3
-	EUIBagItemTag_EUIBagItemTag_Character EUIBagItemTag = 4
-	EUIBagItemTag_EUIBagItemTag_Poster    EUIBagItemTag = 5
-	EUIBagItemTag_EUIBagItemTag_SpellCard EUIBagItemTag = 6
-	EUIBagItemTag_EUIBagItemTag_Material  EUIBagItemTag = 7
-	EUIBagItemTag_EUIBagItemTag_Quest     EUIBagItemTag = 8
+	EUIBagItemTag_EUIBagItemTag_None        EUIBagItemTag = 0
+	EUIBagItemTag_EUIBagItemTag_Item        EUIBagItemTag = 1
+	EUIBagItemTag_EUIBagItemTag_Weapon      EUIBagItemTag = 2
+	EUIBagItemTag_EUIBagItemTag_Armor       EUIBagItemTag = 3
+	EUIBagItemTag_EUIBagItemTag_Character   EUIBagItemTag = 4
+	EUIBagItemTag_EUIBagItemTag_Poster      EUIBagItemTag = 5
+	EUIBagItemTag_EUIBagItemTag_SpellCard   EUIBagItemTag = 6
+	EUIBagItemTag_EUIBagItemTag_Material    EUIBagItemTag = 7
+	EUIBagItemTag_EUIBagItemTag_Quest       EUIBagItemTag = 8
+	EUIBagItemTag_EUIBagItemTag_Pet         EUIBagItemTag = 9
+	EUIBagItemTag_EUIBagItemTag_PetMaterial EUIBagItemTag = 10
+	EUIBagItemTag_EUIBagItemTag_Catcher     EUIBagItemTag = 11
 )
 
 // Enum value maps for EUIBagItemTag.
 var (
 	EUIBagItemTag_name = map[int32]string{
-		0: "EUIBagItemTag_None",
-		1: "EUIBagItemTag_Item",
-		2: "EUIBagItemTag_Weapon",
-		3: "EUIBagItemTag_Armor",
-		4: "EUIBagItemTag_Character",
-		5: "EUIBagItemTag_Poster",
-		6: "EUIBagItemTag_SpellCard",
-		7: "EUIBagItemTag_Material",
-		8: "EUIBagItemTag_Quest",
+		0:  "EUIBagItemTag_None",
+		1:  "EUIBagItemTag_Item",
+		2:  "EUIBagItemTag_Weapon",
+		3:  "EUIBagItemTag_Armor",
+		4:  "EUIBagItemTag_Character",
+		5:  "EUIBagItemTag_Poster",
+		6:  "EUIBagItemTag_SpellCard",
+		7:  "EUIBagItemTag_Material",
+		8:  "EUIBagItemTag_Quest",
+		9:  "EUIBagItemTag_Pet",
+		10: "EUIBagItemTag_PetMaterial",
+		11: "EUIBagItemTag_Catcher",
 	}
 	EUIBagItemTag_value = map[string]int32{
-		"EUIBagItemTag_None":      0,
-		"EUIBagItemTag_Item":      1,
-		"EUIBagItemTag_Weapon":    2,
-		"EUIBagItemTag_Armor":     3,
-		"EUIBagItemTag_Character": 4,
-		"EUIBagItemTag_Poster":    5,
-		"EUIBagItemTag_SpellCard": 6,
-		"EUIBagItemTag_Material":  7,
-		"EUIBagItemTag_Quest":     8,
+		"EUIBagItemTag_None":        0,
+		"EUIBagItemTag_Item":        1,
+		"EUIBagItemTag_Weapon":      2,
+		"EUIBagItemTag_Armor":       3,
+		"EUIBagItemTag_Character":   4,
+		"EUIBagItemTag_Poster":      5,
+		"EUIBagItemTag_SpellCard":   6,
+		"EUIBagItemTag_Material":    7,
+		"EUIBagItemTag_Quest":       8,
+		"EUIBagItemTag_Pet":         9,
+		"EUIBagItemTag_PetMaterial": 10,
+		"EUIBagItemTag_Catcher":     11,
 	}
 )
 
@@ -95,7 +104,7 @@ var File_EUIBagItemTag_proto protoreflect.FileDescriptor
 
 const file_EUIBagItemTag_proto_rawDesc = "" +
 	"\n" +
-	"\x13EUIBagItemTag.proto\x12\x05proto*\xfb\x01\n" +
+	"\x13EUIBagItemTag.proto\x12\x05proto*\xcc\x02\n" +
 	"\rEUIBagItemTag\x12\x16\n" +
 	"\x12EUIBagItemTag_None\x10\x00\x12\x16\n" +
 	"\x12EUIBagItemTag_Item\x10\x01\x12\x18\n" +
@@ -105,7 +114,11 @@ const file_EUIBagItemTag_proto_rawDesc = "" +
 	"\x14EUIBagItemTag_Poster\x10\x05\x12\x1b\n" +
 	"\x17EUIBagItemTag_SpellCard\x10\x06\x12\x1a\n" +
 	"\x16EUIBagItemTag_Material\x10\a\x12\x17\n" +
-	"\x13EUIBagItemTag_Quest\x10\bB\n" +
+	"\x13EUIBagItemTag_Quest\x10\b\x12\x15\n" +
+	"\x11EUIBagItemTag_Pet\x10\t\x12\x1d\n" +
+	"\x19EUIBagItemTag_PetMaterial\x10\n" +
+	"\x12\x19\n" +
+	"\x15EUIBagItemTag_Catcher\x10\vB\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

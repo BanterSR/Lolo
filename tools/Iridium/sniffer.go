@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -20,7 +19,6 @@ import (
 	"github.com/google/gopacket/pcap"
 	"github.com/google/gopacket/pcapgo"
 	"github.com/google/gopacket/tcpassembly"
-	"github.com/google/gopacket/tcpassembly/tcpreader"
 	"google.golang.org/protobuf/proto"
 
 	pb "gucooing/lolo/protocol/proto"
@@ -35,41 +33,55 @@ type Packet struct {
 	Raw        []byte      `json:"raw"`
 }
 
-type session struct {
-	netFlow       gopacket.Flow
-	transportFlow gopacket.Flow
-	fromServer    bool
-	data          []byte
-	lastSeen      time.Time
-	mutex         sync.Mutex
-}
-
-type streamFactory struct {
-	sessions    map[string]*session
-	sessionLock sync.RWMutex
-}
+type streamFactory struct{}
 
 type tcpStream struct {
-	net, transport gopacket.Flow
-	r              tcpreader.ReaderStream
-	factory        *streamFactory
-	session        *session
+	netFlow       gopacket.Flow
+	transportFlow gopacket.Flow
+	flowKey       string
+	fromServer    bool
+	decoder       packetDecoder
+}
+
+type packetDecoder struct {
+	buffer     []byte
+	recovering bool
+	dropBytes  int
+	flowKey    string
 }
 
 var (
-	captureHandler        *pcap.Handle
-	packetFilter          = make(map[string]bool)
-	pcapFile              *os.File
-	assembler             *tcpassembly.Assembler
-	packetDumpFile        *os.File
-	packetDumpFilePath    = "packet_dump.ndjson"
-	packetDumpFileMutex   sync.Mutex
-	streamFactoryInstance = &streamFactory{
-		sessions: make(map[string]*session),
-	}
+	captureHandler      *pcap.Handle
+	packetFilter        = make(map[string]bool)
+	pcapFile            *os.File
+	packetDumpFile      *os.File
+	packetDumpFilePath  = "packet_dump.ndjson"
+	packetDumpFileMutex sync.Mutex
 )
 
-const tcpHeadSize = 2
+const (
+	tcpHeadSize         = 2
+	liveCaptureSnapshot = 65535
+	maxPacketHeadSize   = 64
+	maxPacketBodySize   = 512000
+)
+
+type packetFrame struct {
+	head      *pb.PacketHead
+	totalSize int
+	bodyStart int
+	bodyEnd   int
+}
+
+type tcpFlowState struct {
+	truncatedLogged bool
+}
+
+type packetAssembler struct {
+	assembler      *tcpassembly.Assembler
+	pcapWriter     *pcapgo.NgWriter
+	truncatedFlows map[string]*tcpFlowState
+}
 
 func getSessionKey(netFlow, transportFlow gopacket.Flow) string {
 	return fmt.Sprintf("%s:%s->%s:%s",
@@ -87,112 +99,140 @@ func isFromServer(transportFlow gopacket.Flow) bool {
 	return (int64(config.MinPort) <= srcPort) && (srcPort <= int64(config.MaxPort))
 }
 
-func (f *streamFactory) getOrCreateSession(netFlow, transportFlow gopacket.Flow) *session {
-	key := getSessionKey(netFlow, transportFlow)
-
-	f.sessionLock.Lock()
-	defer f.sessionLock.Unlock()
-
-	if s, exists := f.sessions[key]; exists {
-		return s
+func (f *streamFactory) New(net, transport gopacket.Flow) tcpassembly.Stream {
+	flowKey := getSessionKey(net, transport)
+	s := &tcpStream{
+		netFlow:       net,
+		transportFlow: transport,
+		flowKey:       flowKey,
+		fromServer:    isFromServer(transport),
+		decoder: packetDecoder{
+			flowKey: flowKey,
+		},
 	}
-
-	s := &session{
-		netFlow:       netFlow,
-		transportFlow: transportFlow,
-		fromServer:    isFromServer(transportFlow),
-		data:          make([]byte, 0),
-		lastSeen:      time.Now(),
-	}
-	f.sessions[key] = s
 	return s
 }
 
-func (f *streamFactory) cleanupOldSessions(timeout time.Duration) {
-	f.sessionLock.Lock()
-	defer f.sessionLock.Unlock()
+func (s *tcpStream) Reassembled(reassemblies []tcpassembly.Reassembly) {
+	for _, reassembly := range reassemblies {
+		if reassembly.Start {
+			s.decoder.reset()
+		}
 
-	now := time.Now()
-	for key, sess := range f.sessions {
-		if now.Sub(sess.lastSeen) > timeout {
-			delete(f.sessions, key)
+		if reassembly.Skip != 0 {
+			s.decoder.markLoss(reassembly.Skip)
+		}
+
+		if len(reassembly.Bytes) > 0 {
+			s.decoder.append(reassembly.Bytes, s.fromServer, reassembly.Seen)
+		}
+
+		if reassembly.End {
+			s.decoder.reset()
 		}
 	}
 }
 
-func (f *streamFactory) New(net, transport gopacket.Flow) tcpassembly.Stream {
-	s := &tcpStream{
-		net:       net,
-		transport: transport,
-		factory:   f,
-	}
-	s.r = tcpreader.NewReaderStream()
-	s.session = f.getOrCreateSession(net, transport)
-
-	go s.processStream()
-
-	return &s.r
+func (s *tcpStream) ReassemblyComplete() {
+	s.decoder.reset()
 }
 
-func (s *tcpStream) processStream() {
-	buf := make([]byte, math.MaxUint32)
+func (d *packetDecoder) reset() {
+	d.buffer = d.buffer[:0]
+	d.recovering = false
+	d.dropBytes = 0
+}
 
-	for {
-		n, err := s.r.Read(buf)
-		if n > 0 {
-			s.session.mutex.Lock()
-			s.session.data = append(s.session.data, buf[:n]...)
-			s.session.lastSeen = time.Now()
-			s.processSessionData()
+func (d *packetDecoder) markLoss(skip int) {
+	if skip < 0 {
+		log.Printf("TCP stream %s starts mid-stream; trying to recover at next application frame boundary\n", d.flowKey)
+		d.buffer = d.buffer[:0]
+		d.dropBytes = 0
+		d.recovering = true
+		return
+	}
 
-			s.session.mutex.Unlock()
+	if d.dropBytes > 0 {
+		if skip > d.dropBytes {
+			log.Printf("TCP stream %s lost %d bytes beyond the packet being dropped; trying to recover at next frame boundary\n", d.flowKey, skip)
+			d.buffer = d.buffer[:0]
+			d.dropBytes = 0
+			d.recovering = true
+			return
 		}
+		d.dropBytes -= skip
+		return
+	}
+
+	frame, complete, err := parsePacketFrame(d.buffer)
+	if err != nil || complete || frame == nil {
+		log.Printf("TCP stream %s lost %d bytes without a pending frame boundary; trying to recover at next frame boundary\n", d.flowKey, skip)
+		d.buffer = d.buffer[:0]
+		d.dropBytes = 0
+		d.recovering = true
+		return
+	}
+
+	missingInFrame := frame.totalSize - len(d.buffer)
+	if skip > missingInFrame {
+		log.Printf("TCP stream %s lost %d bytes beyond current packet; trying to recover at next frame boundary\n", d.flowKey, skip)
+		d.buffer = d.buffer[:0]
+		d.dropBytes = 0
+		d.recovering = true
+		return
+	}
+
+	d.dropBytes = missingInFrame - skip
+	d.recovering = false
+	log.Printf("TCP stream %s lost %d bytes inside packet; dropping current packet and %d following bytes\n",
+		d.flowKey,
+		skip,
+		d.dropBytes,
+	)
+	d.buffer = d.buffer[:0]
+}
+
+func (d *packetDecoder) append(data []byte, fromServer bool, timestamp time.Time) {
+	if d.dropBytes > 0 {
+		if len(data) <= d.dropBytes {
+			d.dropBytes -= len(data)
+			return
+		}
+		data = data[d.dropBytes:]
+		d.dropBytes = 0
+	}
+
+	if d.recovering {
+		d.buffer = d.buffer[:0]
+		if _, _, err := parsePacketFrame(data); err != nil {
+			log.Printf("TCP stream %s skipped %d bytes while recovering frame boundary: %v\n", d.flowKey, len(data), err)
+			return
+		}
+		d.recovering = false
+	}
+
+	d.buffer = append(d.buffer, data...)
+
+	for len(d.buffer) >= tcpHeadSize {
+		frame, complete, err := parsePacketFrame(d.buffer)
 		if err != nil {
-			break
+			log.Printf("TCP stream %s lost frame sync: %v; trying to recover at next frame boundary\n", d.flowKey, err)
+			d.buffer = d.buffer[:0]
+			d.recovering = true
+			return
 		}
-	}
-}
-
-// 处理会话数据
-func (s *tcpStream) processSessionData() {
-	se := s.session
-
-	for len(se.data) >= tcpHeadSize {
-		// 解析头部长度
-		headLen := binary.BigEndian.Uint16(se.data[:tcpHeadSize])
-
-		// 检查是否收到完整的头部
-		if len(se.data) < int(headLen)+tcpHeadSize {
-			break
-		}
-
-		headBin := se.data[tcpHeadSize : int(headLen)+tcpHeadSize]
-
-		// 解析PacketHead
-		head := new(pb.PacketHead)
-		err := proto.Unmarshal(headBin, head)
-		if err != nil {
-			log.Printf("Could not parse PacketHead proto Error:%s\n", err)
-			continue
-		}
-
-		// 检查是否收到完整的包
-		totalSize := uint32(headLen) + head.BodyLen + tcpHeadSize
-		if uint32(len(se.data)) < totalSize {
+		if !complete {
 			break
 		}
 
 		// 提取包体数据
-		bodyStart := uint32(headLen) + tcpHeadSize
-		bodyEnd := bodyStart + head.BodyLen
-		bodyBin := se.data[bodyStart:bodyEnd]
+		head := frame.head
+		bodyBin := d.buffer[frame.bodyStart:frame.bodyEnd]
 
 		// 处理压缩标志
 		bodyBin = handleFlag(head.Flag, bodyBin)
 
 		// 解析协议内容
-		timestamp := time.Now()
-
 		objectJson, err := parseProtoToInterface(head.MsgId, bodyBin)
 		if err != nil {
 			// 尝试动态解析
@@ -200,19 +240,160 @@ func (s *tcpStream) processSessionData() {
 			if err != nil {
 				log.Printf("Failed to parse body:%s\n", base64.StdEncoding.EncodeToString(bodyBin))
 			} else {
-				buildPacketToSend(head, bodyBin, se.fromServer, timestamp, bodyPb)
+				buildPacketToSend(head, bodyBin, fromServer, timestamp, bodyPb)
 			}
 		} else {
-			buildPacketToSend(head, bodyBin, se.fromServer, timestamp, objectJson)
+			buildPacketToSend(head, bodyBin, fromServer, timestamp, objectJson)
 		}
 
 		// 从缓冲区移除已处理的数据
-		se.data = se.data[totalSize:]
+		d.buffer = d.buffer[frame.totalSize:]
 	}
+}
+
+func parsePacketFrame(data []byte) (*packetFrame, bool, error) {
+	if len(data) < tcpHeadSize {
+		return nil, false, nil
+	}
+
+	headLen := int(binary.BigEndian.Uint16(data[:tcpHeadSize]))
+	if headLen <= 0 || headLen > maxPacketHeadSize {
+		return nil, false, fmt.Errorf("invalid PacketHead length %d", headLen)
+	}
+
+	headEnd := tcpHeadSize + headLen
+	if len(data) < headEnd {
+		return nil, false, nil
+	}
+
+	head := new(pb.PacketHead)
+	if err := proto.Unmarshal(data[tcpHeadSize:headEnd], head); err != nil {
+		return nil, false, fmt.Errorf("cannot parse PacketHead: %w", err)
+	}
+	if err := validatePacketHead(head); err != nil {
+		return nil, false, err
+	}
+
+	bodyStart := headEnd
+	bodyEnd := bodyStart + int(head.BodyLen)
+	if len(data) < bodyEnd {
+		return &packetFrame{
+			head:      head,
+			totalSize: bodyEnd,
+			bodyStart: bodyStart,
+			bodyEnd:   bodyEnd,
+		}, false, nil
+	}
+
+	return &packetFrame{
+		head:      head,
+		totalSize: bodyEnd,
+		bodyStart: bodyStart,
+		bodyEnd:   bodyEnd,
+	}, true, nil
+}
+
+func validatePacketHead(head *pb.PacketHead) error {
+	if head.MsgId == 0 {
+		return fmt.Errorf("invalid msg_id %d", head.MsgId)
+	}
+	if head.Flag > 1 {
+		return fmt.Errorf("unsupported PacketHead flag %d", head.Flag)
+	}
+	if head.BodyLen > maxPacketBodySize {
+		return fmt.Errorf("body_len %d exceeds max %d", head.BodyLen, maxPacketBodySize)
+	}
+	return nil
+}
+
+func newPacketAssembler(linkType layers.LinkType) (*packetAssembler, error) {
+	pa := &packetAssembler{
+		assembler:      tcpassembly.NewAssembler(tcpassembly.NewStreamPool(&streamFactory{})),
+		truncatedFlows: make(map[string]*tcpFlowState),
+	}
+	pa.assembler.MaxBufferedPagesTotal = 1000
+	pa.assembler.MaxBufferedPagesPerConnection = 100
+
+	if pcapFile == nil {
+		return pa, nil
+	}
+
+	writer, err := pcapgo.NewNgWriter(pcapFile, linkType)
+	if err != nil {
+		return nil, err
+	}
+	pa.pcapWriter = writer
+	return pa, nil
+}
+
+func (pa *packetAssembler) flushOlderThan(t time.Time) {
+	pa.assembler.FlushOlderThan(t)
+}
+
+func (pa *packetAssembler) flushAll() {
+	pa.assembler.FlushAll()
+	if pa.pcapWriter != nil {
+		pa.pcapWriter.Flush()
+	}
+}
+
+func (pa *packetAssembler) handlePacket(packet gopacket.Packet) {
+	if packet == nil {
+		return
+	}
+
+	captureInfo := packet.Metadata().CaptureInfo
+	tcpLayer := packet.Layer(layers.LayerTypeTCP)
+	if tcpLayer == nil {
+		return
+	}
+	tcp := tcpLayer.(*layers.TCP)
+	dstPort := tcp.DstPort
+	srcPort := tcp.SrcPort
+
+	if (srcPort < config.MinPort || srcPort > config.MaxPort) &&
+		(dstPort < config.MinPort || dstPort > config.MaxPort) {
+		return
+	}
+
+	netLayer := packet.NetworkLayer()
+	if netLayer == nil {
+		return
+	}
+
+	flowKey := getSessionKey(netLayer.NetworkFlow(), tcp.TransportFlow())
+	if captureInfo.CaptureLength < captureInfo.Length {
+		state := pa.truncatedFlows[flowKey]
+		if state == nil {
+			state = &tcpFlowState{}
+			pa.truncatedFlows[flowKey] = state
+		}
+		if !state.truncatedLogged {
+			log.Printf("TCP stream %s has truncated packets; TCP reassembly will report the loss caplen=%d len=%d\n",
+				flowKey,
+				captureInfo.CaptureLength,
+				captureInfo.Length,
+			)
+			state.truncatedLogged = true
+		}
+	}
+
+	if pa.pcapWriter != nil {
+		if err := pa.pcapWriter.WritePacket(captureInfo, packet.Data()); err != nil {
+			log.Println("Could not write packet to pcap file", err)
+		}
+	}
+
+	pa.assembler.AssembleWithTimestamp(
+		netLayer.NetworkFlow(),
+		tcp,
+		captureInfo.Timestamp,
+	)
 }
 
 func openPcap(fileName string) {
 	var err error
+	log.Printf("Opening pcap file %s\n", fileName)
 	captureHandler, err = pcap.OpenOffline(fileName)
 	if err != nil {
 		log.Println("Could not open pcap file", err)
@@ -223,7 +404,8 @@ func openPcap(fileName string) {
 
 func openCapture() {
 	var err error
-	captureHandler, err = pcap.OpenLive(config.DeviceName, 1500, true, pcap.BlockForever)
+	log.Printf("Opening live capture device=%s snaplen=%d\n", config.DeviceName, liveCaptureSnapshot)
+	captureHandler, err = pcap.OpenLive(config.DeviceName, liveCaptureSnapshot, true, pcap.BlockForever)
 	if err != nil {
 		log.Println("Could not open capture", err)
 		return
@@ -233,6 +415,8 @@ func openCapture() {
 		pcapFile, err = os.Create(time.Now().Format("2006-01-02_15-04-05") + ".pcapng")
 		if err != nil {
 			log.Println("Could not create pcapng file", err)
+		} else {
+			log.Printf("Saving live capture to %s\n", pcapFile.Name())
 		}
 	}
 
@@ -248,9 +432,6 @@ func closeHandle() {
 		pcapFile.Close()
 		pcapFile = nil
 	}
-	if assembler != nil {
-		assembler.FlushAll()
-	}
 	packetDumpFileMutex.Lock()
 	defer packetDumpFileMutex.Unlock()
 	if packetDumpFile != nil {
@@ -262,7 +443,6 @@ func closeHandle() {
 func startSniffer() {
 	defer closeHandle()
 
-	var err error
 	// expr := fmt.Sprintf("tcp portrange %v-%v", int64(config.MinPort), int64(config.MaxPort))
 	// expr = "tcp"
 	// err := captureHandler.SetBPFFilter(expr)
@@ -271,25 +451,15 @@ func startSniffer() {
 	// 	return
 	// }
 
-	assembler = tcpassembly.NewAssembler(tcpassembly.NewStreamPool(streamFactoryInstance))
-
-	assembler.MaxBufferedPagesTotal = 1000
-	assembler.MaxBufferedPagesPerConnection = 100
-
 	packetSource := gopacket.NewPacketSource(captureHandler, captureHandler.LinkType())
 	packetSource.NoCopy = true
 
-	var pcapWriter *pcapgo.NgWriter
-	if pcapFile != nil {
-		pcapWriter, err = pcapgo.NewNgWriter(pcapFile, captureHandler.LinkType())
-		if err != nil {
-			log.Println("Could not create pcapng writer", err)
-		}
-		defer pcapWriter.Flush()
+	pa, err := newPacketAssembler(captureHandler.LinkType())
+	if err != nil {
+		log.Println("Could not create packet assembler", err)
+		return
 	}
-
-	cleanupTicker := time.NewTicker(30 * time.Second)
-	defer cleanupTicker.Stop()
+	defer pa.flushAll()
 
 	flushTicker := time.NewTicker(1 * time.Minute)
 	defer flushTicker.Stop()
@@ -303,44 +473,10 @@ func startSniffer() {
 				log.Println("Packet channel closed")
 				return
 			}
-
-			if packet == nil {
-				continue
-			}
-			switch packet.TransportLayer().(type) {
-			case *layers.TCP:
-				dstPort := packet.TransportLayer().(*layers.TCP).DstPort
-				srcPort := packet.TransportLayer().(*layers.TCP).SrcPort
-
-				if (srcPort < config.MinPort || srcPort > config.MaxPort) &&
-					(dstPort < config.MinPort || dstPort > config.MaxPort) {
-					continue
-				}
-
-				if pcapWriter != nil {
-					err := pcapWriter.WritePacket(packet.Metadata().CaptureInfo, packet.Data())
-					if err != nil {
-						log.Println("Could not write packet to pcap file", err)
-					}
-				}
-
-				if netLayer := packet.NetworkLayer(); netLayer != nil {
-					if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
-						tcp := tcpLayer.(*layers.TCP)
-						assembler.AssembleWithTimestamp(
-							netLayer.NetworkFlow(),
-							tcp,
-							packet.Metadata().Timestamp,
-						)
-					}
-				}
-			}
-
-		case <-cleanupTicker.C:
-			streamFactoryInstance.cleanupOldSessions(2 * time.Minute)
+			pa.handlePacket(packet)
 
 		case <-flushTicker.C:
-			assembler.FlushOlderThan(time.Now().Add(-1 * time.Minute))
+			pa.flushOlderThan(time.Now().Add(-5 * time.Minute))
 		}
 	}
 }

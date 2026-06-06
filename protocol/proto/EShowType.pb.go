@@ -30,6 +30,7 @@ const (
 	EShowType_EShowType_None      EShowType = 0
 	EShowType_EShowType_Character EShowType = 1
 	EShowType_EShowType_Fashion   EShowType = 2
+	EShowType_EShowType_Poster    EShowType = 3
 )
 
 // Enum value maps for EShowType.
@@ -38,11 +39,13 @@ var (
 		0: "EShowType_None",
 		1: "EShowType_Character",
 		2: "EShowType_Fashion",
+		3: "EShowType_Poster",
 	}
 	EShowType_value = map[string]int32{
 		"EShowType_None":      0,
 		"EShowType_Character": 1,
 		"EShowType_Fashion":   2,
+		"EShowType_Poster":    3,
 	}
 )
 
@@ -77,11 +80,12 @@ var File_EShowType_proto protoreflect.FileDescriptor
 
 const file_EShowType_proto_rawDesc = "" +
 	"\n" +
-	"\x0fEShowType.proto\x12\x05proto*O\n" +
+	"\x0fEShowType.proto\x12\x05proto*e\n" +
 	"\tEShowType\x12\x12\n" +
 	"\x0eEShowType_None\x10\x00\x12\x17\n" +
 	"\x13EShowType_Character\x10\x01\x12\x15\n" +
-	"\x11EShowType_Fashion\x10\x02B\n" +
+	"\x11EShowType_Fashion\x10\x02\x12\x14\n" +
+	"\x10EShowType_Poster\x10\x03B\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

@@ -199,21 +199,27 @@ const (
 	EAchieveCondition_EAchieveCondition_TotalPayMoneyNum                  EAchieveCondition = 169
 	EAchieveCondition_EAchieveCondition_InviteTotal                       EAchieveCondition = 170
 	EAchieveCondition_EAchieveCondition_InviteeReachLevel                 EAchieveCondition = 171
-	EAchieveCondition_EAchieveCondition_InviteePay                        EAchieveCondition = 172
-	EAchieveCondition_EAchieveCondition_Challenge0                        EAchieveCondition = 173
-	EAchieveCondition_EAchieveCondition_FinishChallenge01                 EAchieveCondition = 174
-	EAchieveCondition_EAchieveCondition_GardenLike                        EAchieveCondition = 175
-	EAchieveCondition_EAchieveCondition_AddFriend                         EAchieveCondition = 176
-	EAchieveCondition_EAchieveCondition_BossRushScore                     EAchieveCondition = 177
-	EAchieveCondition_EAchieveCondition_FinishWishQuest                   EAchieveCondition = 178
-	EAchieveCondition_EAchieveCondition_IdleSecondsInMoonSpot             EAchieveCondition = 179
-	EAchieveCondition_EAchieveCondition_GardenLikedByOthers               EAchieveCondition = 180
-	EAchieveCondition_EAchieveCondition_FinishSideQuestEventNum           EAchieveCondition = 181
-	EAchieveCondition_EAchieveCondition_AttackTargetNum                   EAchieveCondition = 182
-	EAchieveCondition_EAchieveCondition_AttackTargetDaysNum               EAchieveCondition = 183
-	EAchieveCondition_EAchieveCondition_RecallPlayers                     EAchieveCondition = 184
-	EAchieveCondition_EAchieveCondition_RecallUsersOnlineCount            EAchieveCondition = 185
-	EAchieveCondition_EAchieveCondition_TreasureMapDig                    EAchieveCondition = 186
+	EAchieveCondition_EAchieveCondition_Xxxxxxxx                          EAchieveCondition = 172
+	EAchieveCondition_EAchieveCondition_InviteePay                        EAchieveCondition = 173
+	EAchieveCondition_EAchieveCondition_Challenge0                        EAchieveCondition = 174
+	EAchieveCondition_EAchieveCondition_FinishChallenge01                 EAchieveCondition = 175
+	EAchieveCondition_EAchieveCondition_GardenLike                        EAchieveCondition = 176
+	EAchieveCondition_EAchieveCondition_AddFriend                         EAchieveCondition = 177
+	EAchieveCondition_EAchieveCondition_BossRushScore                     EAchieveCondition = 178
+	EAchieveCondition_EAchieveCondition_FinishWishQuest                   EAchieveCondition = 179
+	EAchieveCondition_EAchieveCondition_IdleSecondsInMoonSpot             EAchieveCondition = 180
+	EAchieveCondition_EAchieveCondition_GardenLikedByOthers               EAchieveCondition = 181
+	EAchieveCondition_EAchieveCondition_FinishSideQuestEventNum           EAchieveCondition = 182
+	EAchieveCondition_EAchieveCondition_AttackTargetNum                   EAchieveCondition = 183
+	EAchieveCondition_EAchieveCondition_AttackTargetDaysNum               EAchieveCondition = 184
+	EAchieveCondition_EAchieveCondition_RecallPlayers                     EAchieveCondition = 185
+	EAchieveCondition_EAchieveCondition_RecallUsersOnlineCount            EAchieveCondition = 186
+	EAchieveCondition_EAchieveCondition_TreasureMapDig                    EAchieveCondition = 187
+	EAchieveCondition_EAchieveCondition_CollectionTreasureMapKindCount    EAchieveCondition = 188
+	EAchieveCondition_EAchieveCondition_CollectionShovelKindCount         EAchieveCondition = 189
+	EAchieveCondition_EAchieveCondition_CollectionFurnitureKindCount      EAchieveCondition = 190
+	EAchieveCondition_EAchieveCondition_CollectionUtensilKindCount        EAchieveCondition = 191
+	EAchieveCondition_EAchieveCondition_CollectionBookKindCount           EAchieveCondition = 192
 )
 
 // Enum value maps for EAchieveCondition.
@@ -391,21 +397,27 @@ var (
 		169: "EAchieveCondition_TotalPayMoneyNum",
 		170: "EAchieveCondition_InviteTotal",
 		171: "EAchieveCondition_InviteeReachLevel",
-		172: "EAchieveCondition_InviteePay",
-		173: "EAchieveCondition_Challenge0",
-		174: "EAchieveCondition_FinishChallenge01",
-		175: "EAchieveCondition_GardenLike",
-		176: "EAchieveCondition_AddFriend",
-		177: "EAchieveCondition_BossRushScore",
-		178: "EAchieveCondition_FinishWishQuest",
-		179: "EAchieveCondition_IdleSecondsInMoonSpot",
-		180: "EAchieveCondition_GardenLikedByOthers",
-		181: "EAchieveCondition_FinishSideQuestEventNum",
-		182: "EAchieveCondition_AttackTargetNum",
-		183: "EAchieveCondition_AttackTargetDaysNum",
-		184: "EAchieveCondition_RecallPlayers",
-		185: "EAchieveCondition_RecallUsersOnlineCount",
-		186: "EAchieveCondition_TreasureMapDig",
+		172: "EAchieveCondition_Xxxxxxxx",
+		173: "EAchieveCondition_InviteePay",
+		174: "EAchieveCondition_Challenge0",
+		175: "EAchieveCondition_FinishChallenge01",
+		176: "EAchieveCondition_GardenLike",
+		177: "EAchieveCondition_AddFriend",
+		178: "EAchieveCondition_BossRushScore",
+		179: "EAchieveCondition_FinishWishQuest",
+		180: "EAchieveCondition_IdleSecondsInMoonSpot",
+		181: "EAchieveCondition_GardenLikedByOthers",
+		182: "EAchieveCondition_FinishSideQuestEventNum",
+		183: "EAchieveCondition_AttackTargetNum",
+		184: "EAchieveCondition_AttackTargetDaysNum",
+		185: "EAchieveCondition_RecallPlayers",
+		186: "EAchieveCondition_RecallUsersOnlineCount",
+		187: "EAchieveCondition_TreasureMapDig",
+		188: "EAchieveCondition_CollectionTreasureMapKindCount",
+		189: "EAchieveCondition_CollectionShovelKindCount",
+		190: "EAchieveCondition_CollectionFurnitureKindCount",
+		191: "EAchieveCondition_CollectionUtensilKindCount",
+		192: "EAchieveCondition_CollectionBookKindCount",
 	}
 	EAchieveCondition_value = map[string]int32{
 		"EAchieveCondition_None":                              0,
@@ -580,21 +592,27 @@ var (
 		"EAchieveCondition_TotalPayMoneyNum":                  169,
 		"EAchieveCondition_InviteTotal":                       170,
 		"EAchieveCondition_InviteeReachLevel":                 171,
-		"EAchieveCondition_InviteePay":                        172,
-		"EAchieveCondition_Challenge0":                        173,
-		"EAchieveCondition_FinishChallenge01":                 174,
-		"EAchieveCondition_GardenLike":                        175,
-		"EAchieveCondition_AddFriend":                         176,
-		"EAchieveCondition_BossRushScore":                     177,
-		"EAchieveCondition_FinishWishQuest":                   178,
-		"EAchieveCondition_IdleSecondsInMoonSpot":             179,
-		"EAchieveCondition_GardenLikedByOthers":               180,
-		"EAchieveCondition_FinishSideQuestEventNum":           181,
-		"EAchieveCondition_AttackTargetNum":                   182,
-		"EAchieveCondition_AttackTargetDaysNum":               183,
-		"EAchieveCondition_RecallPlayers":                     184,
-		"EAchieveCondition_RecallUsersOnlineCount":            185,
-		"EAchieveCondition_TreasureMapDig":                    186,
+		"EAchieveCondition_Xxxxxxxx":                          172,
+		"EAchieveCondition_InviteePay":                        173,
+		"EAchieveCondition_Challenge0":                        174,
+		"EAchieveCondition_FinishChallenge01":                 175,
+		"EAchieveCondition_GardenLike":                        176,
+		"EAchieveCondition_AddFriend":                         177,
+		"EAchieveCondition_BossRushScore":                     178,
+		"EAchieveCondition_FinishWishQuest":                   179,
+		"EAchieveCondition_IdleSecondsInMoonSpot":             180,
+		"EAchieveCondition_GardenLikedByOthers":               181,
+		"EAchieveCondition_FinishSideQuestEventNum":           182,
+		"EAchieveCondition_AttackTargetNum":                   183,
+		"EAchieveCondition_AttackTargetDaysNum":               184,
+		"EAchieveCondition_RecallPlayers":                     185,
+		"EAchieveCondition_RecallUsersOnlineCount":            186,
+		"EAchieveCondition_TreasureMapDig":                    187,
+		"EAchieveCondition_CollectionTreasureMapKindCount":    188,
+		"EAchieveCondition_CollectionShovelKindCount":         189,
+		"EAchieveCondition_CollectionFurnitureKindCount":      190,
+		"EAchieveCondition_CollectionUtensilKindCount":        191,
+		"EAchieveCondition_CollectionBookKindCount":           192,
 	}
 )
 
@@ -629,7 +647,7 @@ var File_EAchieveCondition_proto protoreflect.FileDescriptor
 
 const file_EAchieveCondition_proto_rawDesc = "" +
 	"\n" +
-	"\x17EAchieveCondition.proto\x12\x05proto*\xc28\n" +
+	"\x17EAchieveCondition.proto\x12\x05proto*\xe4:\n" +
 	"\x11EAchieveCondition\x12\x1a\n" +
 	"\x16EAchieveCondition_None\x10\x00\x12 \n" +
 	"\x1cEAchieveCondition_KillMonest\x10\x01\x12\x1d\n" +
@@ -803,22 +821,28 @@ const file_EAchieveCondition_proto_rawDesc = "" +
 	"\x1cEAchieveCondition_CookingNum\x10\xa8\x01\x12'\n" +
 	"\"EAchieveCondition_TotalPayMoneyNum\x10\xa9\x01\x12\"\n" +
 	"\x1dEAchieveCondition_InviteTotal\x10\xaa\x01\x12(\n" +
-	"#EAchieveCondition_InviteeReachLevel\x10\xab\x01\x12!\n" +
-	"\x1cEAchieveCondition_InviteePay\x10\xac\x01\x12!\n" +
-	"\x1cEAchieveCondition_Challenge0\x10\xad\x01\x12(\n" +
-	"#EAchieveCondition_FinishChallenge01\x10\xae\x01\x12!\n" +
-	"\x1cEAchieveCondition_GardenLike\x10\xaf\x01\x12 \n" +
-	"\x1bEAchieveCondition_AddFriend\x10\xb0\x01\x12$\n" +
-	"\x1fEAchieveCondition_BossRushScore\x10\xb1\x01\x12&\n" +
-	"!EAchieveCondition_FinishWishQuest\x10\xb2\x01\x12,\n" +
-	"'EAchieveCondition_IdleSecondsInMoonSpot\x10\xb3\x01\x12*\n" +
-	"%EAchieveCondition_GardenLikedByOthers\x10\xb4\x01\x12.\n" +
-	")EAchieveCondition_FinishSideQuestEventNum\x10\xb5\x01\x12&\n" +
-	"!EAchieveCondition_AttackTargetNum\x10\xb6\x01\x12*\n" +
-	"%EAchieveCondition_AttackTargetDaysNum\x10\xb7\x01\x12$\n" +
-	"\x1fEAchieveCondition_RecallPlayers\x10\xb8\x01\x12-\n" +
-	"(EAchieveCondition_RecallUsersOnlineCount\x10\xb9\x01\x12%\n" +
-	" EAchieveCondition_TreasureMapDig\x10\xba\x01B\n" +
+	"#EAchieveCondition_InviteeReachLevel\x10\xab\x01\x12\x1f\n" +
+	"\x1aEAchieveCondition_Xxxxxxxx\x10\xac\x01\x12!\n" +
+	"\x1cEAchieveCondition_InviteePay\x10\xad\x01\x12!\n" +
+	"\x1cEAchieveCondition_Challenge0\x10\xae\x01\x12(\n" +
+	"#EAchieveCondition_FinishChallenge01\x10\xaf\x01\x12!\n" +
+	"\x1cEAchieveCondition_GardenLike\x10\xb0\x01\x12 \n" +
+	"\x1bEAchieveCondition_AddFriend\x10\xb1\x01\x12$\n" +
+	"\x1fEAchieveCondition_BossRushScore\x10\xb2\x01\x12&\n" +
+	"!EAchieveCondition_FinishWishQuest\x10\xb3\x01\x12,\n" +
+	"'EAchieveCondition_IdleSecondsInMoonSpot\x10\xb4\x01\x12*\n" +
+	"%EAchieveCondition_GardenLikedByOthers\x10\xb5\x01\x12.\n" +
+	")EAchieveCondition_FinishSideQuestEventNum\x10\xb6\x01\x12&\n" +
+	"!EAchieveCondition_AttackTargetNum\x10\xb7\x01\x12*\n" +
+	"%EAchieveCondition_AttackTargetDaysNum\x10\xb8\x01\x12$\n" +
+	"\x1fEAchieveCondition_RecallPlayers\x10\xb9\x01\x12-\n" +
+	"(EAchieveCondition_RecallUsersOnlineCount\x10\xba\x01\x12%\n" +
+	" EAchieveCondition_TreasureMapDig\x10\xbb\x01\x125\n" +
+	"0EAchieveCondition_CollectionTreasureMapKindCount\x10\xbc\x01\x120\n" +
+	"+EAchieveCondition_CollectionShovelKindCount\x10\xbd\x01\x123\n" +
+	".EAchieveCondition_CollectionFurnitureKindCount\x10\xbe\x01\x121\n" +
+	",EAchieveCondition_CollectionUtensilKindCount\x10\xbf\x01\x12.\n" +
+	")EAchieveCondition_CollectionBookKindCount\x10\xc0\x01B\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

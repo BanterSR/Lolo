@@ -85,6 +85,7 @@ const (
 	EBagItemTag_EBagItemTag_Catcher               EBagItemTag = 55
 	EBagItemTag_EBagItemTag_Pet                   EBagItemTag = 56
 	EBagItemTag_EBagItemTag_PetGrid               EBagItemTag = 57
+	EBagItemTag_EBagItemTag_PetMmaterials         EBagItemTag = 58
 )
 
 // Enum value maps for EBagItemTag.
@@ -148,6 +149,7 @@ var (
 		55: "EBagItemTag_Catcher",
 		56: "EBagItemTag_Pet",
 		57: "EBagItemTag_PetGrid",
+		58: "EBagItemTag_PetMmaterials",
 	}
 	EBagItemTag_value = map[string]int32{
 		"EBagItemTag_None":                  0,
@@ -208,6 +210,7 @@ var (
 		"EBagItemTag_Catcher":               55,
 		"EBagItemTag_Pet":                   56,
 		"EBagItemTag_PetGrid":               57,
+		"EBagItemTag_PetMmaterials":         58,
 	}
 )
 
@@ -242,7 +245,7 @@ var File_EBagItemTag_proto protoreflect.FileDescriptor
 
 const file_EBagItemTag_proto_rawDesc = "" +
 	"\n" +
-	"\x11EBagItemTag.proto\x12\x05proto*\x9e\f\n" +
+	"\x11EBagItemTag.proto\x12\x05proto*\xbd\f\n" +
 	"\vEBagItemTag\x12\x14\n" +
 	"\x10EBagItemTag_None\x10\x00\x12\x14\n" +
 	"\x10EBagItemTag_Gift\x10\x01\x12\x16\n" +
@@ -302,7 +305,8 @@ const file_EBagItemTag_proto_rawDesc = "" +
 	"\x1bEBagItemTag_TreasureMapFrag\x106\x12\x17\n" +
 	"\x13EBagItemTag_Catcher\x107\x12\x13\n" +
 	"\x0fEBagItemTag_Pet\x108\x12\x17\n" +
-	"\x13EBagItemTag_PetGrid\x109B\n" +
+	"\x13EBagItemTag_PetGrid\x109\x12\x1d\n" +
+	"\x19EBagItemTag_PetMmaterials\x10:B\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

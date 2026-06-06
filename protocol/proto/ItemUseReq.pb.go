@@ -28,6 +28,7 @@ type ItemUseReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ItemId        uint32                 `protobuf:"varint,1,opt,name=item_id,json=itemId,proto3" json:"item_id,omitempty"`
 	Num           uint32                 `protobuf:"varint,2,opt,name=num,proto3" json:"num,omitempty"`
+	ChooseItemId  uint32                 `protobuf:"varint,3,opt,name=choose_item_id,json=chooseItemId,proto3" json:"choose_item_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -76,15 +77,23 @@ func (x *ItemUseReq) GetNum() uint32 {
 	return 0
 }
 
+func (x *ItemUseReq) GetChooseItemId() uint32 {
+	if x != nil {
+		return x.ChooseItemId
+	}
+	return 0
+}
+
 var File_ItemUseReq_proto protoreflect.FileDescriptor
 
 const file_ItemUseReq_proto_rawDesc = "" +
 	"\n" +
-	"\x10ItemUseReq.proto\x12\x05proto\"7\n" +
+	"\x10ItemUseReq.proto\x12\x05proto\"]\n" +
 	"\n" +
 	"ItemUseReq\x12\x17\n" +
 	"\aitem_id\x18\x01 \x01(\rR\x06itemId\x12\x10\n" +
-	"\x03num\x18\x02 \x01(\rR\x03numB\n" +
+	"\x03num\x18\x02 \x01(\rR\x03num\x12$\n" +
+	"\x0echoose_item_id\x18\x03 \x01(\rR\fchooseItemIdB\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

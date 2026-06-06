@@ -1,6 +1,7 @@
 package game
 
 import (
+	"gucooing/lolo/gdconf"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -487,15 +488,15 @@ func (c *ChannelInfo) GetPbSceneData(scenePlayer *ScenePlayer) (info *proto.Scen
 		Collections:          make([]*proto.CollectionData, 0), // ok
 		Challenges:           make([]*proto.ChallengeData, 0),
 		TreasureBoxes:        make([]*proto.TreasureBoxData, 0), // ok
-		Riddles:              make([]*proto.RiddleData, 0),
+		Riddles:              make([]*proto.RiddleData, 0),      // TODO 解谜
 		Monsters:             make([]*proto.MonsterData, 0),
 		EncounterData:        make([]*proto.BattleEncounterData, 0),
 		Flags:                make([]*proto.FlagBattleData, 0),
 		RegionVoices:         make([]uint32, 0),
 		BonFires:             make([]*proto.Bonfire, 0),
 		SoccerPosition:       new(proto.SoccerPosition),
-		ChairInfoList:        make([]*proto.ChairInfo, 0), // ok
-		Dungeons:             make([]*proto.DungeonData, 0),
+		ChairInfoList:        make([]*proto.ChairInfo, 0),   // ok
+		Dungeons:             make([]*proto.DungeonData, 0), // TODO 地牢
 		FlagIds:              make([]uint32, 0),
 		SceneGardenData:      c.sceneGardenData.SceneGardenData(), // ok
 		CurrentGatherGroupId: 0,
@@ -544,6 +545,30 @@ func (c *ChannelInfo) GetPbSceneData(scenePlayer *ScenePlayer) (info *proto.Scen
 		alg.AddList(&info.ChairInfoList, chaiInfo)
 	}
 	// 副本
+	if c.SceneInfo.SceneId == 1 {
+		info.FlagIds = []uint32{16004, 15009, 10002, 11010, 10001, 10003, 10004, 15001, 15002, 15003, 15004, 15005, 15006, 15007, 15008, 15010, 15011, 15012, 15013, 15014, 15015, 15101, 15102, 15103, 15104, 15105, 15106, 15301, 25101}
+	}
+	for _, dungeonInfo := range gdconf.GetSceneInfo(c.SceneInfo.SceneId).Info.DungeonInfos {
+		alg.AddList(&info.Dungeons, &proto.DungeonData{
+			DungeonId:        uint32(dungeonInfo.ID),
+			AllTaskFinished:  false,
+			EnterTimes:       0,
+			ExitTimes:        0,
+			FinishTimes:      0,
+			Coins:            nil,
+			LastFinishTime:   0,
+			TaskFinishReward: 0,
+			StarReward:       0,
+			Monsters:         nil,
+			Char1:            0,
+			Char2:            0,
+			Char3:            0,
+			LastEnterTime:    0,
+			Pos:              nil,
+			Rot:              nil,
+			IsOpenSecretBox:  false,
+		})
+	}
 	return
 }
 

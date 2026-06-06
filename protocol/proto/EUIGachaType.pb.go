@@ -27,12 +27,13 @@ const (
 type EUIGachaType int32
 
 const (
-	EUIGachaType_EUIGachaType_None    EUIGachaType = 0
-	EUIGachaType_EUIGachaType_New     EUIGachaType = 1
-	EUIGachaType_EUIGachaType_Default EUIGachaType = 2
-	EUIGachaType_EUIGachaType_Limit   EUIGachaType = 3
-	EUIGachaType_EUIGachaType_Poster  EUIGachaType = 4
-	EUIGachaType_EUIGachaType_Fashion EUIGachaType = 5
+	EUIGachaType_EUIGachaType_None     EUIGachaType = 0
+	EUIGachaType_EUIGachaType_New      EUIGachaType = 1
+	EUIGachaType_EUIGachaType_Default  EUIGachaType = 2
+	EUIGachaType_EUIGachaType_Limit    EUIGachaType = 3
+	EUIGachaType_EUIGachaType_Poster   EUIGachaType = 4
+	EUIGachaType_EUIGachaType_Fashion  EUIGachaType = 5
+	EUIGachaType_EUIGachaType_Optional EUIGachaType = 6
 )
 
 // Enum value maps for EUIGachaType.
@@ -44,14 +45,16 @@ var (
 		3: "EUIGachaType_Limit",
 		4: "EUIGachaType_Poster",
 		5: "EUIGachaType_Fashion",
+		6: "EUIGachaType_Optional",
 	}
 	EUIGachaType_value = map[string]int32{
-		"EUIGachaType_None":    0,
-		"EUIGachaType_New":     1,
-		"EUIGachaType_Default": 2,
-		"EUIGachaType_Limit":   3,
-		"EUIGachaType_Poster":  4,
-		"EUIGachaType_Fashion": 5,
+		"EUIGachaType_None":     0,
+		"EUIGachaType_New":      1,
+		"EUIGachaType_Default":  2,
+		"EUIGachaType_Limit":    3,
+		"EUIGachaType_Poster":   4,
+		"EUIGachaType_Fashion":  5,
+		"EUIGachaType_Optional": 6,
 	}
 )
 
@@ -86,14 +89,15 @@ var File_EUIGachaType_proto protoreflect.FileDescriptor
 
 const file_EUIGachaType_proto_rawDesc = "" +
 	"\n" +
-	"\x12EUIGachaType.proto\x12\x05proto*\xa0\x01\n" +
+	"\x12EUIGachaType.proto\x12\x05proto*\xbb\x01\n" +
 	"\fEUIGachaType\x12\x15\n" +
 	"\x11EUIGachaType_None\x10\x00\x12\x14\n" +
 	"\x10EUIGachaType_New\x10\x01\x12\x18\n" +
 	"\x14EUIGachaType_Default\x10\x02\x12\x16\n" +
 	"\x12EUIGachaType_Limit\x10\x03\x12\x17\n" +
 	"\x13EUIGachaType_Poster\x10\x04\x12\x18\n" +
-	"\x14EUIGachaType_Fashion\x10\x05B\n" +
+	"\x14EUIGachaType_Fashion\x10\x05\x12\x19\n" +
+	"\x15EUIGachaType_Optional\x10\x06B\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

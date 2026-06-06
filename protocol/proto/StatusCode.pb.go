@@ -333,6 +333,7 @@ const (
 	StatusCode_StatusCode_GrowthFundLevelLimit                    StatusCode = 1787
 	StatusCode_StatusCode_ShopGridUnlocked                        StatusCode = 1801
 	StatusCode_StatusCode_PetNotFound                             StatusCode = 1811
+	StatusCode_StatusCode_PetGridFull                             StatusCode = 1812
 )
 
 // Enum value maps for StatusCode.
@@ -644,6 +645,7 @@ var (
 		1787: "StatusCode_GrowthFundLevelLimit",
 		1801: "StatusCode_ShopGridUnlocked",
 		1811: "StatusCode_PetNotFound",
+		1812: "StatusCode_PetGridFull",
 	}
 	StatusCode_value = map[string]int32{
 		"StatusCode_None":                                    0,
@@ -952,6 +954,7 @@ var (
 		"StatusCode_GrowthFundLevelLimit":                    1787,
 		"StatusCode_ShopGridUnlocked":                        1801,
 		"StatusCode_PetNotFound":                             1811,
+		"StatusCode_PetGridFull":                             1812,
 	}
 )
 
@@ -986,7 +989,7 @@ var File_StatusCode_proto protoreflect.FileDescriptor
 
 const file_StatusCode_proto_rawDesc = "" +
 	"\n" +
-	"\x10StatusCode.proto\x12\x05proto*\xeaT\n" +
+	"\x10StatusCode.proto\x12\x05proto*\x87U\n" +
 	"\n" +
 	"StatusCode\x12\x13\n" +
 	"\x0fStatusCode_None\x10\x00\x12\x11\n" +
@@ -1336,7 +1339,8 @@ const file_StatusCode_proto_rawDesc = "" +
 	"\x1bStatusCode_GrowthFundNotBuy\x10\xfa\r\x12$\n" +
 	"\x1fStatusCode_GrowthFundLevelLimit\x10\xfb\r\x12 \n" +
 	"\x1bStatusCode_ShopGridUnlocked\x10\x89\x0e\x12\x1b\n" +
-	"\x16StatusCode_PetNotFound\x10\x93\x0eB\n" +
+	"\x16StatusCode_PetNotFound\x10\x93\x0e\x12\x1b\n" +
+	"\x16StatusCode_PetGridFull\x10\x94\x0eB\n" +
 	"Z\b./;protob\x06proto3"
 
 var (
