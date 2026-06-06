@@ -125,6 +125,8 @@ func (g *Game) newRouter() {
 		cmd.DungeonOperateReq: g.DungeonOperate, // 副本开始/结束
 		cmd.DungeonFinishReq:  g.DungeonFinish,  // 副本结算
 		cmd.DungeonExitReq:    g.DungeonExit,    // 退出副本
+		// 宠物
+		cmd.GetPetReq: g.GetPetReq, // 获取宠物列表
 
 		cmd.PlayerVitalityReq:           g.PlayerVitality,
 		cmd.BossRushInfoReq:             g.BossRushInfo,

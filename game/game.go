@@ -62,7 +62,7 @@ func (g *Game) gameMainLoop() {
 	runtime.LockOSThread()
 	g.checkPlayerTimer = time.NewTimer(3 * time.Minute) // 3分钟检查一次玩家
 	defer func() {
-		log.Game.Errorf("game主线程停止")
+		log.Game.Info("game主线程停止")
 		runtime.UnlockOSThread()
 		if err := recover(); err != nil {
 			log.Game.Error("----------------------------------------------------------------------------")
@@ -71,6 +71,7 @@ func (g *Game) gameMainLoop() {
 			log.Game.Errorf("error: %s", err)
 			log.Game.Errorf("Stack trace: %s", string(debug.Stack()))
 			log.Game.Error("----------------------------------------------------------------------------")
+			g.Close()
 		}
 	}()
 	for {
@@ -185,5 +186,8 @@ func (g *Game) DoPlayer() chan *DonePlayerCtx {
 func (g *Game) Close() {
 	close(g.doneChan)
 	g.checkPlayer()
+	for _, player := range g.userMap {
+		g.offlinePlayer(player, proto.PlayerOfflineReason_PlayerOfflineReason_ServerShutdown)
+	}
 	log.Game.Infof("game退出完成")
 }
