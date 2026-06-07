@@ -20,11 +20,20 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg
 	req := msg.Body.(*proto.PlayerLoginReq)
 	rsp := &proto.PlayerLoginRsp{
 		Status:           proto.StatusCode_StatusCode_Ok,
-		IsReconnect:      req.IsReconnect, // 是否重新连接
+		IsReconnect:      req.IsReconnect,
 		ReconnectSuccess: req.IsReconnect, // 重新连接是否成功
 	}
 	// 重复登录检查
 	s := g.GetUser(userId)
+	if req.IsReconnect { // 是否重新连接 无玩家缓存时拒绝重新连接
+		rsp.IsReconnect = s != nil
+		rsp.ReconnectSuccess = s != nil
+
+		if !rsp.IsReconnect {
+			conn.Send(msg.PacketId, rsp)
+			return
+		}
+	}
 	if s != nil {
 		if s.LoginUUID == uuid { // uuid相同代表同一连接，直接跳出初始化
 			goto login
@@ -85,7 +94,7 @@ login:
 	}
 	defer func() {
 		g.send(s, msg.PacketId, rsp)
-		if req.IsReconnect {
+		if rsp.IsReconnect {
 			g.loginGame(s)
 		}
 	}()
