@@ -38,7 +38,7 @@ type session struct {
 	done   chan struct{}
 }
 
-func NewGateway(router *gin.Engine) *Gateway {
+func NewGateway(router *gin.Engine, gs *game.Game) *Gateway {
 	log.NewGate()
 	log.NewPacket()
 
@@ -49,7 +49,7 @@ func NewGateway(router *gin.Engine) *Gateway {
 		delLoginChan: make(chan string, 1000),
 		doneChan:     make(chan struct{}),
 		client:       DefaultClient(),
-		game:         game.NewGame(router),
+		game:         gs,
 		sessionMap:   cache.New[uint32, *session](0),
 	}
 

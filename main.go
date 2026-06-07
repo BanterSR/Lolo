@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"gucooing/lolo/game"
 	"net/http"
 	"os"
 	"os/signal"
@@ -126,8 +127,10 @@ func newLolo() error {
 	ginRouter, httpServer, httpsServer := NewGin()
 	// 初始化sdk
 	s := sdk.New(ginRouter)
+	// 初始化game
+	gs := game.NewGame(ginRouter)
 	// 初始化gateWay
-	g := gateway.NewGateway(ginRouter)
+	g := gateway.NewGateway(ginRouter, gs)
 	// 初始化logserver
 	l := logserver.NewLogServer(ginRouter)
 

@@ -125,6 +125,13 @@ func (s *Player) AddAllTypeItem(id uint32, num int64) *AddItemCtx {
 		proto.EBagItemTag_EBagItemTag_MonthlyGiftCard,
 		proto.EBagItemTag_EBagItemTag_BattlePassGiftCard,
 		proto.EBagItemTag_EBagItemTag_SeasonalMiniGamesItem:
+		//EBagItemTag_Vehicle = 52;
+		//EBagItemTag_TreasureMap = 53;
+		//EBagItemTag_TreasureMapFrag = 54;
+		//EBagItemTag_Catcher = 55;
+		//EBagItemTag_Pet = 56;
+		//EBagItemTag_PetGrid = 57;
+		//EBagItemTag_PetMmaterials = 58;
 		ctx.EBagItemTag = i.AddItemBase(id, num)
 	case proto.EBagItemTag_EBagItemTag_Card: // 角色
 		ctx.EBagItemTag = s.AddCharacter(id)

@@ -1,5 +1,4 @@
 package game
 
-func (g *Game) routeGm() {
-
+type CommandInterface interface {
 }

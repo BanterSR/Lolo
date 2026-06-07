@@ -28,6 +28,7 @@ type Game struct {
 	checkPlayerTimer    *time.Timer
 	gmChan              chan bool
 	doneChan            chan struct{}
+	ChatCmdFunc         func(userId uint32, chat string) CommandInterface // 解析聊天指令函数
 }
 
 type GateTask interface {

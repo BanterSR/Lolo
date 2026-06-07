@@ -93,7 +93,7 @@ func (g *Game) SendChatMsg(s *model.Player, msg *alg.GameMsg) {
 		Text:       req.Text,
 		Expression: req.Expression,
 	}
-	chatMsgData := model.GetUserChatMsgData(chatMsg, req.PlayerId)
+	chatMsgData := model.GetUserChatMsgData(chatMsg, s.UserId)
 	switch req.Type {
 	case proto.ChatChannelType_ChatChannelType_ChatChannelDefault: // 默认消息是房间消息
 		scenePlayer := g.getWordInfo().getScenePlayer(s)
