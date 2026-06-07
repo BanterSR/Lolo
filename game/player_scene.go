@@ -38,8 +38,8 @@ func (g *Game) PlayerSceneRecord(s *model.Player, msg *alg.GameMsg) {
 	if charRecorderDataLst := req.Data.CharRecorderDataLst; charRecorderDataLst != nil {
 		for _, v := range charRecorderDataLst {
 			if v.Rot != nil && v.Pos != nil {
-				scenePlayer.Team.Rot = v.Rot
-				scenePlayer.Team.Pos = v.Pos
+				scenePlayer.CurScene.SetRot(v.Rot)
+				scenePlayer.CurScene.SetPos(v.Pos)
 			}
 		}
 	}
@@ -113,9 +113,9 @@ func (g *Game) ChangeSceneChannel(s *model.Player, msg *alg.GameMsg) {
 			rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
 			return
 		}
-		pos = model.CopyVector3(targetPlayer.Team.Pos)
-		rot = model.CopyVector3(targetPlayer.Team.Rot)
-		sceneId = targetPlayer.SceneId
+		pos = model.CopyVector3(targetPlayer.CurScene.GetPos())
+		rot = model.CopyVector3(targetPlayer.CurScene.GetRot())
+		sceneId = targetPlayer.CurScene.GetSceneId()
 		channelId = targetPlayer.ChannelId
 	} else { // 切换场景
 		if pos == nil && rot == nil {
@@ -135,26 +135,42 @@ func (g *Game) ChangeSceneChannel(s *model.Player, msg *alg.GameMsg) {
 		log.Game.Warnf("玩家:%v没有加入房间", s.UserId)
 		return
 	}
-	oldChannelInfo := scenePlayer.channelInfo
-
-	alg.NoZero(&scenePlayer.SceneId, sceneId)
-	alg.NoZero(&scenePlayer.ChannelId, channelId)
-	alg.NoZero(&scenePlayer.Team.Pos, pos)
-	alg.NoZero(&scenePlayer.Team.Rot, rot)
-
-	newChannelInfo, err := g.getWordInfo().getChannel(scenePlayer.SceneId, scenePlayer.ChannelId)
-	if err != nil {
-		scenePlayer.SceneId = oldChannelInfo.SceneInfo.SceneId
-		scenePlayer.ChannelId = oldChannelInfo.ChannelId
-		rsp.Status = proto.StatusCode_StatusCode_SceneChannelNotExist
-		log.Game.Warnf("场景:%v没有目标房间:%v err:%s", scenePlayer.SceneId, scenePlayer.ChannelId, err)
-		return
+	if pos == nil {
+		pos = model.CopyVector3(scenePlayer.CurScene.GetPos())
 	}
-	if oldChannelInfo != newChannelInfo {
-		log.Game.Debugf("玩家:%v切换场景%v房间%v",
-			s.UserId, scenePlayer.SceneId, scenePlayer.ChannelId)
-		oldChannelInfo.delScenePlayerChan <- scenePlayer // 退出旧房间
-		newChannelInfo.addScenePlayerChan <- scenePlayer // 加入新房间
+	if rot == nil {
+		rot = model.CopyVector3(scenePlayer.CurScene.GetRot())
+	}
+	if sceneId == 0 {
+		sceneId = scenePlayer.CurScene.GetSceneId()
+	}
+	if channelId == 0 {
+		channelId = scenePlayer.ChannelId
+	}
+	newCurScene := model.NewScenePlayerInfo(s, new(sceneId), scenePlayer.CurScene.GetTeam(), pos, rot)
+	g.toScene(scenePlayer, channelId, newCurScene)
+}
+
+// 传送到指定场景中
+func (g *Game) toScene(s *ScenePlayer, channelId uint32, newCurScene PlayerSceneInterface) {
+	oldChannelInfo := s.channelInfo
+	newChannelInfo, _ := g.getWordInfo().getChannel(newCurScene.GetSceneId(), channelId)
+	if oldChannelInfo != newChannelInfo { // 这里不做异常判断的目的是兼容特殊场景 比如 副本 这种在场景配置中找不到的场景
+		log.Game.Debugf("玩家:%v切换到场景%v房间%v",
+			s.UserId, newCurScene.GetSceneId(), channelId)
+		s.ChannelId = channelId
+		s.channelInfo = newChannelInfo
+	}
+
+	if s.CurScene.GetSceneId() != newCurScene.GetSceneId() { // 场景切换。更新场景
+		s.LastScene = s.CurScene
+		s.CurScene = newCurScene
+	}
+	if newChannelInfo != nil {
+		newChannelInfo.addScenePlayerChan <- s // 加入新房间
+	}
+	if oldChannelInfo != nil {
+		oldChannelInfo.delScenePlayerChan <- s // 退出旧房间
 	}
 }
 
@@ -438,7 +454,7 @@ func (g *Game) AreaUnlock(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_BadReq
 		return
 	}
-	areas := s.GetSceneModel().GetSceneInfo(scenePlayer.SceneId).GetAreaDatas()
+	areas := s.GetSceneModel().GetSceneInfo(scenePlayer.CurScene.GetSceneId()).GetAreaDatas()
 	areaInfo, ok := areas[req.AreaId]
 	if !ok {
 		areaInfo = &model.AreaData{

@@ -41,7 +41,7 @@ func (g *Game) Collecting(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_BadReq
 		return
 	}
-	info := s.GetSceneModel().GetSceneInfo(scenePlayer.SceneId).
+	info := s.GetSceneModel().GetSceneInfo(scenePlayer.CurScene.GetSceneId()).
 		GetCollectionInfo(proto.ECollectionType(conf.NewCollectionType))
 	if info == nil {
 		rsp.Status = proto.StatusCode_StatusCode_BadReq
@@ -81,7 +81,7 @@ func (g *Game) CollectionReward(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_BadReq
 		return
 	}
-	info := s.GetSceneModel().GetSceneInfo(scenePlayer.SceneId).
+	info := s.GetSceneModel().GetSceneInfo(scenePlayer.CurScene.GetSceneId()).
 		GetCollectionInfo(proto.ECollectionType(conf.NewCollectionType))
 	if info == nil {
 		rsp.Status = proto.StatusCode_StatusCode_BadReq
@@ -122,7 +122,7 @@ func (g *Game) Gather(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_BadReq
 		return
 	}
-	conf := gdconf.GetSceneInfo(scenePlayer.SceneId).GatherPointInfo(req.GetGatherItem().GetIndex())
+	conf := gdconf.GetSceneInfo(scenePlayer.CurScene.GetSceneId()).GatherPointInfo(req.GetGatherItem().GetIndex())
 	gatherConf := gdconf.GetGatherConfigure(uint32(conf.GetGatherID()))
 	rewardConf := gdconf.GetGatherRewardConfigure(req.GetGatherItem().GetReward())
 	if gatherConf == nil || rewardConf == nil {
@@ -151,7 +151,7 @@ func (g *Game) Gather(s *model.Player, msg *alg.GameMsg) {
 	}
 	g.PackNoticeByItems(s, packItems)
 
-	sceneInfo := s.GetSceneModel().GetSceneInfo(scenePlayer.SceneId)
+	sceneInfo := s.GetSceneModel().GetSceneInfo(scenePlayer.CurScene.GetSceneId())
 	info := sceneInfo.GetGatherLimit(t)
 	info.GatherNum++
 
@@ -220,7 +220,7 @@ func (g *Game) CollectMoon(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_BadReq
 		return
 	}
-	info := s.GetSceneModel().GetSceneInfo(scenePlayer.SceneId).
+	info := s.GetSceneModel().GetSceneInfo(scenePlayer.CurScene.GetSceneId()).
 		GetCollectionInfo(proto.ECollectionType(conf.NewCollectionType))
 	// 判断
 	if slices.Contains(info.CollectedMoonIds, req.MoonId) {

@@ -108,7 +108,7 @@ login:
 	}
 	// 场景
 	{
-		rsp.SceneId = scenePlayer.SceneId
+		rsp.SceneId = scenePlayer.CurScene.GetSceneId()
 		rsp.ChannelId = scenePlayer.ChannelId
 	}
 	// 其他信息
@@ -167,7 +167,7 @@ func (g *Game) PlayerMainData(s *model.Player, msg *alg.GameMsg) {
 	{
 		rsp.ChannelId = scenePlayer.ChannelId
 		rsp.ChannelLabel = scenePlayer.ChannelId // 房间标签
-		rsp.SceneId = scenePlayer.SceneId
+		rsp.SceneId = scenePlayer.CurScene.GetSceneId()
 	}
 	// 队伍
 	{

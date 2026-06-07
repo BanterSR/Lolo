@@ -291,12 +291,12 @@ func (c *ChannelInfo) serverSceneSync(ctx *ServerSceneSyncCtx) {
 	case proto.SceneActionType_SceneActionType_Leave: // 退出场景
 	case proto.SceneActionType_SceneActionType_UpdateEquip: /*更新装备*/
 		sceneCharacter := ctx.NewTeamSceneCharacter(serverData)
-		ctx.ScenePlayer.Team.UpdateCharacterEquip(sceneCharacter)
+		ctx.ScenePlayer.CurScene.GetScenePlayerInfo().UpdateCharacterEquip(sceneCharacter)
 	case proto.SceneActionType_SceneActionType_UpdateFashion, /*更新服装*/
 		proto.SceneActionType_SceneActionType_UpdateTeam,       /*更新队伍*/
 		proto.SceneActionType_SceneActionType_UpdateAppearance: /*更新外观*/
 		serverData.Player = &proto.ScenePlayer{
-			Team: ctx.ScenePlayer.Team.GetPbSceneTeam(),
+			Team: ctx.ScenePlayer.CurScene.GetScenePlayerInfo().GetPbSceneTeam(),
 		}
 	case proto.SceneActionType_SceneActionType_UpdateNickname: // 更新昵称
 		basic, ok := db.GetGameBasic(ctx.ScenePlayer.UserId)
@@ -316,7 +316,7 @@ func (c *ChannelInfo) serverSceneSync(ctx *ServerSceneSyncCtx) {
 		proto.SceneActionType_SceneActionType_UpdateCharacterBreakLv, // 角色突破升阶
 		proto.SceneActionType_SceneActionType_UpdateCharacterStar:    // 角色升星
 		sceneCharacter := ctx.NewTeamSceneCharacter(serverData)
-		ctx.ScenePlayer.Team.UpdateCharacterBasic(sceneCharacter)
+		ctx.ScenePlayer.CurScene.GetScenePlayerInfo().UpdateCharacterBasic(sceneCharacter)
 	}
 }
 
@@ -564,7 +564,7 @@ func (c *ChannelInfo) GetPbScenePlayer(scenePlayer *ScenePlayer) (info *proto.Sc
 	info = &proto.ScenePlayer{
 		PlayerId:              scenePlayer.UserId,
 		PlayerName:            scenePlayer.NickName,
-		Team:                  scenePlayer.Team.GetPbSceneTeam(),
+		Team:                  scenePlayer.CurScene.GetScenePlayerInfo().GetPbSceneTeam(),
 		Status:                new(proto.ScenePlayerActionStatus),
 		FoodBuffIds:           make([]uint32, 0),
 		GlobalBuffIds:         make([]uint32, 0),

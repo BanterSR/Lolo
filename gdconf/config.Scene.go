@@ -1,8 +1,6 @@
 package gdconf
 
 import (
-	"math/rand"
-
 	"gucooing/lolo/protocol/config"
 	"gucooing/lolo/protocol/proto"
 )
@@ -88,7 +86,9 @@ func GetSceneInfoRandomBorn(borns []*config.BornInfo) (*config.Vector3, *config.
 	if n == 0 {
 		return nil, nil
 	}
-	bornInfo := borns[rand.Intn(n)]
+	// rn := rand.Intn(n)
+	rn := 0
+	bornInfo := borns[rn]
 	return bornInfo.Position, bornInfo.Rotation
 }
 

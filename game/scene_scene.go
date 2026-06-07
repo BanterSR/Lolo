@@ -34,8 +34,9 @@ type SceneInfo struct {
 type ScenePlayer struct {
 	*model.Player
 	// 基础信息
-	Team        *model.SceneTeamInfo // 队伍场景信息
-	SceneId     uint32
+	CurScene  PlayerSceneInterface // 当前所在场景
+	LastScene PlayerSceneInterface // 上一个场景
+	//SceneId     uint32
 	ChannelId   uint32
 	channelInfo *ChannelInfo // 绑定的房间
 	NetFreeze   bool         // 冻结收发包
@@ -44,13 +45,19 @@ type ScenePlayer struct {
 	MusicalItemSource     proto.MusicalItemSource
 	MusicalItemInstanceId int64
 	PlayingMusicNote      *proto.PlayingMusicNote
-	// 特殊场景接口
-	Special CurPlayerScene
 }
 
 // 当前玩家场景接口
-type CurPlayerScene interface {
-	GetSceneTeamInfo() *model.SceneTeamInfo
+type PlayerSceneInterface interface {
+	GetScenePlayerInfo() *model.ScenePlayerInfo
+	GetSceneId() uint32
+	SetSceneId(id uint32)
+	GetPos() *proto.Vector3
+	SetPos(pos *proto.Vector3)
+	GetRot() *proto.Vector3
+	SetRot(rot *proto.Vector3)
+	GetTeam() *model.TeamInfo
+	SetTeam(team model.TeamInfo)
 }
 
 func (g *Game) getWordInfo() *WordInfo {
@@ -150,12 +157,16 @@ func (w *WordInfo) addScenePlayer(player *model.Player) *ScenePlayer {
 		sp.NetFreeze = false
 		return sp
 	}
-	defaultSceneId := gdconf.GetConstant().DefaultSceneId
 	defaultChannelId := gdconf.GetConstant().DefaultChannelId
 
-	sceneInfo, err := w.getSceneInfo(defaultSceneId)
+	curScene := model.NewScenePlayerInfo(player, nil, nil, nil, nil)
+	if curScene == nil {
+		return nil
+	}
+	// TODO 上行确认了场景这里应该改成房间选择
+	sceneInfo, err := w.getSceneInfo(curScene.SceneId)
 	if err != nil {
-		log.Game.Errorf("默认场景不存在！请检查默认场景配置是否正确err:%s", err.Error())
+		log.Game.Errorf("SceneID:%v 场景不存在！请检查默认场景配置是否正确err:%s", curScene.SceneId, err.Error())
 		return nil
 	}
 	_, err = sceneInfo.getSceneChannel(defaultChannelId)
@@ -163,17 +174,10 @@ func (w *WordInfo) addScenePlayer(player *model.Player) *ScenePlayer {
 		log.Game.Error(err.Error())
 		return nil
 	}
-	pos, rot := gdconf.GetSceneInfoRandomBorn(sceneInfo.cfg.Info.GetBorn())
 
 	info := &ScenePlayer{
-		Player: player,
-		Team: &model.SceneTeamInfo{
-			Player: player,
-			Pos:    gdconf.ConfigVector3ToProtoVector3(pos),
-			Rot:    gdconf.ConfigVector4ToProtoVector3(rot),
-			Team:   player.GetTeamModel().GetTeamInfo(),
-		},
-		SceneId:   defaultSceneId,   // 默认场景
+		Player:    player,
+		CurScene:  curScene,
 		ChannelId: defaultChannelId, // 默认房间
 	}
 	w.allScenePlayer.Store(player.UserId, info)
@@ -187,16 +191,16 @@ func (w *WordInfo) joinSceneChannel(s *model.Player) {
 		log.Game.Warnf("玩家:%v没有准备好加入房间", s.UserId)
 		return
 	}
-	sceneInfo, err := w.getSceneInfo(scenePlayer.SceneId)
+	sceneInfo, err := w.getSceneInfo(scenePlayer.CurScene.GetSceneId())
 	if sceneInfo == nil {
-		log.Game.Errorf("场景:%v不存在！err:%s", scenePlayer.SceneId, err.Error())
+		log.Game.Errorf("场景:%v不存在！err:%s", scenePlayer.CurScene.GetSceneId(), err.Error())
 		return
 	}
 	if scenePlayer.channelInfo == nil {
 		channelInfo, err := sceneInfo.getSceneChannel(scenePlayer.ChannelId)
 		if err != nil {
 			log.Game.Errorf("场景:%v,房间:%v不存在！err:%s",
-				scenePlayer.SceneId, scenePlayer.ChannelId, err.Error())
+				scenePlayer.CurScene.GetSceneId(), scenePlayer.ChannelId, err.Error())
 			return
 		}
 		scenePlayer.channelInfo = channelInfo
