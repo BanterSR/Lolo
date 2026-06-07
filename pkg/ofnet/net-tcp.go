@@ -8,6 +8,7 @@ import (
 	"net"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/golang/snappy"
 	pb "google.golang.org/protobuf/proto"
@@ -84,6 +85,7 @@ func (x *tcpConn) GetSeqId() uint32 {
 
 func (x *tcpConn) Read() (*alg.GameMsg, error) {
 	for {
+		x.conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 		// head
 		headLenByte := make([]byte, alg.TcpHeadSize)
 		_, err := io.ReadFull(x.buf, headLenByte)

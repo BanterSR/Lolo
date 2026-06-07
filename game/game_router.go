@@ -155,7 +155,7 @@ func (g *Game) newRouter() {
 	}
 }
 
-func (g *Game) RouteHandle(conn ofnet.Conn, userId uint32, uuid string, msg *alg.GameMsg) {
+func (g *Game) routeHandle(conn ofnet.Conn, userId uint32, uuid string, msg *alg.GameMsg) {
 	if msg.MsgId == cmd.PlayerLoginReq {
 		g.PlayerLogin(conn, userId, uuid, msg)
 		return

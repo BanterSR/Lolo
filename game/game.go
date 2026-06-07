@@ -20,8 +20,7 @@ import (
 
 type Game struct {
 	router              *gin.Engine // http 服务器
-	gameMsgChan         chan *GameMsg
-	donePlayerChan      chan *DonePlayerCtx
+	gateTaskChan        chan GateTask
 	userMap             map[uint32]*model.Player
 	handlerFuncRouteMap map[uint32]HandlerFunc
 	wordInfo            *WordInfo
@@ -31,22 +30,38 @@ type Game struct {
 	doneChan            chan struct{}
 }
 
-type GameMsg struct {
+type GateTask interface {
+	UserID() uint32
+}
+
+// 玩家消息
+type PlayerMsg struct {
 	UserId uint32
 	UUID   string
 	Conn   ofnet.Conn
 	*alg.GameMsg
 }
 
+func (p *PlayerMsg) UserID() uint32 { return p.UserId }
+
+// 下线指定玩家
+type KillPlayer struct {
+	UserId     uint32
+	UUID       string
+	Reason     proto.PlayerOfflineReason // 下线原因
+	KillPlayer bool                      // 是否完整下线玩家
+}
+
+func (k *KillPlayer) UserID() uint32 { return k.UserId }
+
 func NewGame(router *gin.Engine) *Game {
 	conf := config.GetGame()
 	log.NewGame()
 	g := &Game{
-		router:         router,
-		gameMsgChan:    make(chan *GameMsg, conf.MsgChanSize),
-		donePlayerChan: make(chan *DonePlayerCtx, conf.MsgChanSize),
-		userMap:        make(map[uint32]*model.Player, 1000),
-		doneChan:       make(chan struct{}),
+		router:       router,
+		gateTaskChan: make(chan GateTask, conf.MsgChanSize),
+		userMap:      make(map[uint32]*model.Player, 1000),
+		doneChan:     make(chan struct{}),
 	}
 	g.newRouter()
 	// 初始化场景配置
@@ -78,13 +93,20 @@ func (g *Game) gameMainLoop() {
 		select {
 		case <-g.doneChan:
 			return
-		case msg := <-g.gameMsgChan:
-			g.RouteHandle(msg.Conn, msg.UserId, msg.UUID, msg.GameMsg)
+		case task := <-g.gateTaskChan:
+			g.gateTask(task)
 		case <-g.checkPlayerTimer.C:
 			g.checkPlayer()
-		case ctx := <-g.donePlayerChan: // gate侧通知下线
-			g.donePlayer(ctx)
 		}
+	}
+}
+
+func (g *Game) gateTask(task GateTask) {
+	switch t := task.(type) {
+	case *PlayerMsg:
+		g.routeHandle(t.Conn, t.UserId, t.UUID, t.GameMsg)
+	case *KillPlayer:
+		g.donePlayer(t)
 	}
 }
 
@@ -121,13 +143,21 @@ func (g *Game) checkPlayer() {
 }
 
 // gate侧通知下线
-func (g *Game) donePlayer(ctx *DonePlayerCtx) {
-	player := g.GetUser(ctx.UserId)
+func (g *Game) donePlayer(k *KillPlayer) {
+	player := g.GetUser(k.UserId)
 	if player == nil || !player.Online ||
-		player.LoginUUID != ctx.UUID {
+		player.LoginUUID != k.UUID {
 		return
 	}
-	g.offlinePlayer(player, proto.PlayerOfflineReason_PlayerOfflineReason_None)
+	g.offlinePlayer(player, k.Reason)
+	if k.KillPlayer {
+		player.Online = false
+		// 退出世界
+		g.getWordInfo().killScenePlayer(player)
+		// 退出聊天频道
+		g.getChatInfo().killChannelUser(player)
+		log.Game.Debugf("玩家:%v 离线", player.UserId)
+	}
 }
 
 // 仅做客户端下线
@@ -170,17 +200,8 @@ func (g *Game) kickPlayer(player *model.Player) {
 	log.Game.Debugf("玩家:%v 离线", player.UserId)
 }
 
-func (g *Game) GetGameMsgChan() chan *GameMsg {
-	return g.gameMsgChan
-}
-
-type DonePlayerCtx struct {
-	UserId uint32
-	UUID   string
-}
-
-func (g *Game) DoPlayer() chan *DonePlayerCtx {
-	return g.donePlayerChan
+func (g *Game) GetGateTask() chan GateTask {
+	return g.gateTaskChan
 }
 
 func (g *Game) Close() {

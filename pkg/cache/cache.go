@@ -36,7 +36,9 @@ func New[K Key, V any](cacheTime time.Duration) *Cache[K, V] {
 		dict:      sync.Map{},
 		cacheTime: cacheTime,
 	}
-	go c.check()
+	if cacheTime > 0 {
+		go c.check()
+	}
 
 	return c
 }

@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"gucooing/lolo/db"
+	"gucooing/lolo/game"
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/pkg/log"
 	"gucooing/lolo/pkg/ofnet"
@@ -11,6 +12,7 @@ import (
 type LoginInfo struct {
 	*proto.VerifyLoginTokenReq
 	conn ofnet.Conn
+	uuid string
 }
 
 func (g *Gateway) loginSessionManagement() {
@@ -18,22 +20,19 @@ func (g *Gateway) loginSessionManagement() {
 	for {
 		select {
 		case login := <-g.loginChan:
-			if _, ok := loginMap[login.SdkUid]; ok {
-				continue
-			}
-			loginMap[login.SdkUid] = login
+			loginMap[login.uuid] = login
 			g.VerifyLoginToken(login)
-		case sdkUid := <-g.delLoginChan:
-			delete(loginMap, sdkUid)
+		case uuidS := <-g.delLoginChan:
+			delete(loginMap, uuidS)
 		}
 	}
 }
 
-func (g *Gateway) VerifyLoginToken(req *LoginInfo) {
+func (g *Gateway) VerifyLoginToken(login *LoginInfo) {
 	rsp := &proto.VerifyLoginTokenRsp{
-		AccountType: req.AccountType,
-		SdkUid:      req.SdkUid,
-		DeviceUuid:  req.DeviceUuid,
+		AccountType: login.AccountType,
+		SdkUid:      login.SdkUid,
+		DeviceUuid:  login.DeviceUuid,
 		Status:      proto.StatusCode_StatusCode_Ok,
 		TimeLeft:    4294967295,
 		Text:        "",
@@ -45,23 +44,23 @@ func (g *Gateway) VerifyLoginToken(req *LoginInfo) {
 	}
 	verified := false
 	defer func() {
-		req.conn.Send(0, rsp)
+		login.conn.Send(0, rsp)
 		if !verified {
-			req.conn.Close()
+			login.conn.Close()
 		}
-		g.delLoginChan <- req.SdkUid
+		g.delLoginChan <- login.uuid
 	}()
 
-	sdkUid := alg.S2U32(req.SdkUid)
-	if !g.GetToken(req.SdkUid, req.LoginToken) {
-		log.Gate.Debugf("SdkUid:%s,token verification failed", req.SdkUid)
+	sdkUid := alg.S2U32(login.SdkUid)
+	if !g.GetToken(login.SdkUid, login.LoginToken) {
+		log.Gate.Debugf("SdkUid:%s,token verification failed", login.SdkUid)
 		return
 	}
 
 	ofUser, err := db.GetOFUserBySdkUid(sdkUid)
 	if err != nil {
 		rsp.Status = proto.StatusCode_StatusCode_AccountUnauth
-		log.Gate.Debugf("SdkUid:%s,get account failed err:%s", req.SdkUid, err.Error())
+		log.Gate.Debugf("SdkUid:%s,get account failed err:%s", login.SdkUid, err.Error())
 		return
 	}
 
@@ -71,13 +70,32 @@ func (g *Gateway) VerifyLoginToken(req *LoginInfo) {
 	if ofUser.Ban {
 		rsp.Text = ofUser.BanText
 		rsp.BanEndTime = ofUser.BanTime.Unix()
-		log.Gate.Debugf("SdkUid:%s,ban login denied reason:%s", req.SdkUid, ofUser.BanText)
+		log.Gate.Debugf("SdkUid:%s,ban login denied reason:%s", login.SdkUid, ofUser.BanText)
 		return
 	}
 
-	req.conn.SetUID(ofUser.UserId)
-	log.Gate.Infof("UserId:%v platform:%s verify success, logging in...", ofUser.UserId, proto.AccountType(req.AccountType).String())
+	login.conn.SetUID(ofUser.UserId)
+	log.Gate.Infof("UserId:%v platform:%s verify success, logging in...", ofUser.UserId, proto.AccountType(login.AccountType).String())
 
 	verified = true
-	go g.receive(req.conn, ofUser.UserId)
+	se, ok := g.sessionMap.Get(ofUser.UserId)
+	if ok {
+		g.game.GetGateTask() <- &game.KillPlayer{
+			UserId:     se.userId,
+			UUID:       se.uuid,
+			Reason:     proto.PlayerOfflineReason_PlayerOfflineReason_AnotherLogin,
+			KillPlayer: false,
+		}
+		close(se.done)
+		g.sessionMap.Del(ofUser.UserId)
+	}
+	se = &session{
+		userId: ofUser.UserId,
+		uuid:   login.uuid,
+		conn:   login.conn,
+		done:   make(chan struct{}),
+	}
+	g.sessionMap.Set(se.userId, se)
+
+	go g.receive(se)
 }

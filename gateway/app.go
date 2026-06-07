@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"gucooing/lolo/pkg/cache"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -27,6 +28,14 @@ type Gateway struct {
 	doneChan     chan struct{}
 	client       *resty.Client
 	game         *game.Game
+	sessionMap   *cache.Cache[uint32, *session] // userid
+}
+
+type session struct {
+	userId uint32
+	uuid   string
+	conn   ofnet.Conn
+	done   chan struct{}
 }
 
 func NewGateway(router *gin.Engine) *Gateway {
@@ -41,6 +50,7 @@ func NewGateway(router *gin.Engine) *Gateway {
 		doneChan:     make(chan struct{}),
 		client:       DefaultClient(),
 		game:         game.NewGame(router),
+		sessionMap:   cache.New[uint32, *session](0),
 	}
 
 	var err error
@@ -126,34 +136,38 @@ verified:
 	g.loginChan <- &LoginInfo{
 		VerifyLoginTokenReq: req,
 		conn:                conn,
+		uuid:                uuid.NewString(),
 	}
 }
 
-func (g *Gateway) receive(conn ofnet.Conn, userId uint32) {
-	loginUUID := uuid.NewString()
+func (g *Gateway) receive(se *session) {
+	defer func() {
+		log.Gate.Debugf("[UID:%v][UUID:%v] network connection closed", se.userId, se.uuid)
+
+		ose, ok := g.sessionMap.Get(se.userId)
+		if ok && ose.uuid == se.uuid {
+			g.sessionMap.Del(se.userId)
+		}
+		se.conn.Close()
+	}()
 	for {
 		select {
 		case <-g.doneChan:
 			return
-		default:
-			msg, err := conn.Read()
-			if err == nil {
-				g.game.GetGameMsgChan() <- &game.GameMsg{
-					UserId:  userId,
-					UUID:    loginUUID,
-					Conn:    conn,
-					GameMsg: msg,
-				}
-				continue
-			}
-
-			conn.Close()
-			log.Gate.Infof("[UID:%v][UUID:%v] network connection closed", userId, loginUUID)
-			g.game.DoPlayer() <- &game.DonePlayerCtx{
-				UserId: userId,
-				UUID:   loginUUID,
-			}
+		case <-se.done:
 			return
+		default:
+			msg, err := se.conn.Read()
+			if err != nil {
+				return
+			}
+			g.game.GetGateTask() <- &game.PlayerMsg{
+				UserId:  se.userId,
+				UUID:    se.uuid,
+				Conn:    se.conn,
+				GameMsg: msg,
+			}
+			continue
 		}
 	}
 }
