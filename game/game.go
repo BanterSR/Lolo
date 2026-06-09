@@ -1,8 +1,10 @@
 package game
 
 import (
+	"gucooing/lolo/pkg/cache"
 	"runtime"
 	"runtime/debug"
+	"sync/atomic"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -23,12 +25,13 @@ type Game struct {
 	gateTaskChan        chan GateTask
 	userMap             map[uint32]*model.Player
 	handlerFuncRouteMap map[uint32]HandlerFunc
+	botCache            *cache.Cache[uint32, BotInterface]
+	onlyUserId          atomic.Uint32
 	wordInfo            *WordInfo
 	chatInfo            *ChatInfo
 	checkPlayerTimer    *time.Timer
 	gmChan              chan bool
 	doneChan            chan struct{}
-	ChatCmdFunc         func(userId uint32, chat string) CommandInterface // 解析聊天指令函数
 }
 
 type GateTask interface {
@@ -63,6 +66,7 @@ func NewGame(router *gin.Engine) *Game {
 		gateTaskChan: make(chan GateTask, conf.MsgChanSize),
 		userMap:      make(map[uint32]*model.Player, 1000),
 		doneChan:     make(chan struct{}),
+		botCache:     cache.New[uint32, BotInterface](0),
 	}
 	g.newRouter()
 	// 初始化场景配置

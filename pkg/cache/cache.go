@@ -79,3 +79,9 @@ func (c *Cache[K, V]) Set(k K, v V) bool {
 func (c *Cache[K, V]) Del(k K) {
 	c.dict.Delete(k)
 }
+
+func (c *Cache[K, V]) Range(f func(key K, value V) bool) {
+	c.dict.Range(func(k, v any) bool {
+		return f(k.(K), v.(*valueInterface).v.(V))
+	})
+}

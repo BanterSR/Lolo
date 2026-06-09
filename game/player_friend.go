@@ -24,6 +24,11 @@ func (g *Game) Friend(s *model.Player, msg *alg.GameMsg) {
 		friendStatus = proto.FriendStatus_FriendStatus_Apply
 	case proto.FriendListType_FriendListType_Friend:
 		friendStatus = proto.FriendStatus_FriendStatus_Friend
+		// 添加bot
+		g.botCache.Range(func(_ uint32, bot BotInterface) bool {
+			alg.AddList(&rsp.Info, bot.GetBotInfo().GetFriendBriefInfo())
+			return true
+		})
 	case proto.FriendListType_FriendListType_Black:
 		friendStatus = proto.FriendStatus_FriendStatus_Black
 	}

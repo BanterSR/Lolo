@@ -33,6 +33,11 @@ func (g *Game) PrivateChatOfflineNotice(s *model.Player) {
 	for _, private := range privates {
 		alg.AddList(&notice.OfflineMsg, s.GetPrivateChatOffline(private))
 	}
+	// 添加bot
+	g.botCache.Range(func(_ uint32, bot BotInterface) bool {
+		alg.AddList(&notice.OfflineMsg, bot.GetBotInfo().GetPrivateChatOffline())
+		return true
+	})
 }
 
 func (g *Game) PrivateChatMsgRecord(s *model.Player, msg *alg.GameMsg) {
@@ -110,6 +115,15 @@ func (g *Game) SendChatMsg(s *model.Player, msg *alg.GameMsg) {
 		}
 		chatChannel.channel.allSendMsgChan <- chatMsgData
 	case proto.ChatChannelType_ChatChannelType_ChatChannelPrivate: // 私聊
+		// bot判断
+		bot, ok := g.botCache.Get(req.PlayerId)
+		if ok {
+			if req.Text == "" {
+				return
+			}
+			g.ChatPrivateMsgNotice(s, bot.GetBotInfo().GetUserChatMsgData(bot.Handle(s, req.Text)))
+			return
+		}
 		// 好友判断
 		if count, err := db.GetIsFiend(s.UserId, req.PlayerId); err != nil {
 			log.Game.Warnf("UserId:%v db.GetIsFiend err:%v", s.UserId, err)
