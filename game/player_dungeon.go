@@ -46,8 +46,6 @@ func (g *Game) DungeonEnter(s *model.Player, msg *alg.GameMsg) {
 		return
 	}
 	dungeonInfo := s.GetDungeonModel().GetDungeonInfo(req.DungeonId)
-	// 更新场景
-	scenePlayer.channelInfo.delScenePlayerChan <- scenePlayer // 退出旧房间
 
 	// 写入坐标
 	dungeonInfo.Rot = req.Rot
