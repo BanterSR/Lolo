@@ -161,6 +161,10 @@ func (g *Game) toScene(s *ScenePlayer, channelId uint32, newCurScene PlayerScene
 		s.ChannelId = channelId
 		s.channelInfo = newChannelInfo
 	}
+	if oldChannelInfo == newChannelInfo &&
+		s.CurScene.GetSceneId() == newCurScene.GetSceneId() {
+		return
+	}
 
 	if s.CurScene.GetSceneId() != newCurScene.GetSceneId() { // 场景切换。更新场景
 		s.LastScene = s.CurScene
