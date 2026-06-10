@@ -169,7 +169,7 @@ func (g *Game) donePlayer(k *KillPlayer) {
 func (g *Game) offlinePlayer(player *model.Player, reason proto.PlayerOfflineReason) {
 	player2 := g.GetUser(player.UserId)
 	if player2 == nil || !player2.Online ||
-		player.LoginUUID != player2.LoginUUID {
+		player.LoginUUID != player2.LoginUUID || player.NetFreeze {
 		return
 	}
 	if reason != proto.PlayerOfflineReason_PlayerOfflineReason_None {

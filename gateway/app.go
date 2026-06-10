@@ -143,7 +143,12 @@ verified:
 func (g *Gateway) receive(se *session) {
 	defer func() {
 		log.Gate.Debugf("[UID:%v][UUID:%v] network connection closed", se.userId, se.uuid)
-
+		g.game.GetGateTask() <- &game.KillPlayer{
+			UserId:     se.userId,
+			UUID:       se.uuid,
+			Reason:     proto.PlayerOfflineReason_PlayerOfflineReason_None,
+			KillPlayer: false,
+		}
 		ose, ok := g.sessionMap.Get(se.userId)
 		if ok && ose.uuid == se.uuid {
 			g.sessionMap.Del(se.userId)

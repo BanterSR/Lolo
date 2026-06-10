@@ -70,7 +70,8 @@ func (a *AiBot) Handle(s *model.Player, text string) {
 			sessionInfo = &aiMessage{
 				sync: sync.Mutex{},
 				messages: []*messageInfo{
-					{userId: 0, time: time.Now(), message: openai.SystemMessage(a.cfg.System)},
+					{userId: 0, time: time.Now(),
+						message: openai.SystemMessage(fmt.Sprintf("你现在对话的玩家名称是:%s,%s", s.NickName, a.cfg.System))},
 				},
 			}
 			a.session.Set(s.UserId, sessionInfo)
