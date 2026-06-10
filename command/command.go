@@ -1,46 +1,38 @@
 package command
 
 import (
-	"gucooing/lolo/game"
-	"gucooing/lolo/game/model"
-
 	"github.com/gin-gonic/gin"
+	"gucooing/lolo/config"
+	"gucooing/lolo/game"
 )
 
+type Command struct {
+	gs *game.Game
+}
+
 func NewCommand(router *gin.Engine, gs *game.Game) {
-	gpt := newGpt()
-	gs.RegisterBot(gpt)
-}
-
-type AiBot struct {
-	uuid string
-	*game.BotInfo
-}
-
-func (a AiBot) UUID() string {
-	return a.uuid
-}
-
-func (a AiBot) GetBotInfo() *game.BotInfo {
-	return a.BotInfo
-}
-
-func (a AiBot) Handle(s *model.Player, text string) string {
-	return text
-}
-
-func newGpt() *AiBot {
-	gpt := &AiBot{
-		uuid: "1",
-		BotInfo: &game.BotInfo{
-			Head:        41101,
-			Badge:       5000,
-			NickName:    "GPT-5.5",
-			AvatarFrame: 0,
-			Sing:        "我会稳稳的接住",
-			GuildName:   "",
-			Level:       50,
-		},
+	c := &Command{
+		gs: gs,
 	}
-	return gpt
+	for _, cfg := range config.GetGame().GetBotList() {
+		switch cfg.Type {
+		//case config.BotTypeCommand:
+		case config.BotTypeChat:
+			ai := c.NewAiBot(cfg)
+			c.gs.RegisterBot(ai)
+		}
+	}
+
+}
+
+func CfgToBotInfo(cfg *config.Bot) *game.BotInfo {
+	return &game.BotInfo{
+		Head:        cfg.Head,
+		Badge:       cfg.Badge,
+		NickName:    cfg.NickName,
+		AvatarFrame: cfg.AvatarFrame,
+		Sing:        cfg.Sing,
+		GuildName:   cfg.GuildName,
+		Level:       cfg.Level,
+	}
 }

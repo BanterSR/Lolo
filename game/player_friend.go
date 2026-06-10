@@ -156,6 +156,12 @@ func (g *Game) OtherPlayerInfo(s *model.Player, msg *alg.GameMsg) {
 		FriendBackground: 0,
 	}
 	defer g.send(s, msg.PacketId, rsp)
+	// bot 判断
+	if bot, ok := g.botCache.Get(req.PlayerId); ok {
+		rsp.OtherInfo = bot.GetBotInfo().GetPlayerBriefInfo()
+		rsp.FriendStatus = proto.FriendStatus_FriendStatus_Friend
+		return
+	}
 	friend, err := db.GetFiend(s.UserId, req.PlayerId)
 	if err != nil {
 		log.Game.Warnf("UserId:%v db.GetFiend:%v", s.UserId, err)

@@ -47,6 +47,11 @@ func (g *Game) PrivateChatMsgRecord(s *model.Player, msg *alg.GameMsg) {
 		MsgRecord: make([]*proto.ChatMsgData, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
+	// bot判断
+	if bot, ok := g.botCache.Get(req.TargetPlayerId); ok {
+		rsp.MsgRecord = bot.GetBotInfo().MsgRecords(s, bot.GetMsgRecords(s.UserId))
+		return
+	}
 	// 好友判断
 	if count, err := db.GetIsFiend(s.UserId, req.TargetPlayerId); err != nil {
 		log.Game.Warnf("UserId:%v db.GetIsFiend err:%v", s.UserId, err)
@@ -87,12 +92,17 @@ func (g *Game) ChangeChatChannel(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) SendChatMsg(s *model.Player, msg *alg.GameMsg) {
+	var isBot bool
 	req := msg.Body.(*proto.SendChatMsgReq)
 	rsp := &proto.SendChatMsgRsp{
 		Status: proto.StatusCode_StatusCode_Ok,
 		Text:   req.Text,
 	}
-	defer g.send(s, msg.PacketId, rsp)
+	defer func() {
+		if !isBot {
+			g.send(s, msg.PacketId, rsp)
+		}
+	}()
 	chatMsg := &db.OFChatMsg{
 		SendTime:   time.Now().UnixMilli(),
 		Text:       req.Text,
@@ -121,7 +131,9 @@ func (g *Game) SendChatMsg(s *model.Player, msg *alg.GameMsg) {
 			if req.Text == "" {
 				return
 			}
-			g.ChatPrivateMsgNotice(s, bot.GetBotInfo().GetUserChatMsgData(bot.Handle(s, req.Text)))
+			isBot = true
+			g.send(s, msg.PacketId, rsp)
+			bot.Handle(s, req.Text)
 			return
 		}
 		// 好友判断

@@ -2,6 +2,7 @@ package game
 
 import (
 	"errors"
+	"gucooing/lolo/db"
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/protocol/proto"
 	"time"
@@ -9,12 +10,19 @@ import (
 
 // bot 接口实现
 type BotInterface interface {
-	UUID() string                               // 唯一id,将通过这个值确定bot 请保持唯一且不变
-	GetBotInfo() *BotInfo                       // bot 基础信息
-	Handle(s *model.Player, text string) string // chat 消息处理函数
+	UUID() string                                     // 唯一id,将通过这个值确定bot 请保持唯一且不变
+	GetBotInfo() *BotInfo                             // bot 基础信息
+	Handle(s *model.Player, text string)              // chat 消息处理函数
+	GetMsgRecords(userId uint32) []MsgRecordInterface // 历史消息
 }
 
 type CommandInterface interface {
+}
+
+type MsgRecordInterface interface {
+	GetUserId() uint32
+	GetTime() time.Time
+	GetText() string
 }
 
 // 注册bot 传出bot的userid
@@ -96,7 +104,7 @@ func (b *BotInfo) GetPlayerBriefInfo() *proto.PlayerBriefInfo {
 	}
 }
 
-func (b *BotInfo) GetUserChatMsgData(text string) *proto.ChatMsgData {
+func (b *BotInfo) GetUserChatMsgData(text string, time time.Time) *proto.ChatMsgData {
 	return &proto.ChatMsgData{
 		PlayerId:    b.userId,
 		Head:        b.Head,
@@ -104,7 +112,24 @@ func (b *BotInfo) GetUserChatMsgData(text string) *proto.ChatMsgData {
 		Name:        b.NickName,
 		Text:        text,
 		Expression:  0,
-		SendTime:    time.Now().Add(500 * time.Millisecond).Unix(),
+		SendTime:    time.Unix(),
 		AvatarFrame: b.AvatarFrame,
 	}
+}
+
+func (b *BotInfo) MsgRecords(s *model.Player, messages []MsgRecordInterface) []*proto.ChatMsgData {
+	list := make([]*proto.ChatMsgData, 0)
+
+	for _, msg := range messages {
+		if msg.GetText() == "" {
+			continue
+		}
+		if msg.GetUserId() != s.UserId {
+			list = append(list, b.GetUserChatMsgData(msg.GetText(), msg.GetTime()))
+		} else {
+			list = append(list, model.GetUserChatMsgData(&db.OFChatMsg{SendTime: msg.GetTime().Unix(), Text: msg.GetText()}, s.UserId))
+		}
+	}
+
+	return list
 }

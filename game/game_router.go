@@ -167,11 +167,11 @@ func (g *Game) routeHandle(conn ofnet.Conn, userId uint32, uuid string, msg *alg
 	}
 	player := g.GetUser(userId)
 	if player == nil {
-		log.Game.Errorf("player is nil, userId: %v", userId)
+		log.Game.Debugf("player is nil, userId: %v", userId)
 		return
 	}
 	if !player.Online {
-		log.Game.Errorf("player not online, userId: %v", userId)
+		log.Game.Debugf("player not online, userId: %v", userId)
 		return
 	}
 	if player.NetFreeze || player.LoginUUID != uuid { // 玩家冻结或脏数据过滤
