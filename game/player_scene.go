@@ -193,15 +193,16 @@ func (g *Game) GenericSceneB(s *model.Player, msg *alg.GameMsg) {
 		log.Game.Warnf("玩家:%v没有加入房间", s.UserId)
 		return
 	}
-	h := scenePlayer.channelInfo.getTodTimeH()
+	h := g.worldTask.Hour()
 
 	for i := int64(0); i < 12; i++ {
 		value := (h + i) % 24
+		weather := g.worldTask.CalcWeather(g.worldTask.Day(i), value)
 		alg.AddList(&rsp.Params, &proto.CommonParam{
 			ParamType: proto.CommonParamType_CommonParamType_None,
 			IntValue:  value,
 			StringValue: func() string {
-				if value/12 == 0 {
+				if weather == proto.WeatherType_WeatherType_Sunny {
 					return ""
 				}
 				return "1"

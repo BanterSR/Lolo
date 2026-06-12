@@ -99,6 +99,15 @@ func (a *AiBot) Handle(s *model.Player, text string) {
 			PromptCacheKey:       openai.String(fmt.Sprintf("lolo-ai-chat-%s-%d", a.uuid, s.UserId)),
 			PromptCacheRetention: openai.ChatCompletionNewParamsPromptCacheRetention24h,
 		}
+		params.SetExtraFields(map[string]interface{}{
+			"thinking": map[string]string{
+				"type": "enabled",
+			},
+			"web_search": map[string]bool{
+				"enabled": true,
+			},
+			"tool_choice": "auto",
+		})
 		completion, err := a.openAi.Chat.Completions.New(ctx, params)
 		if err != nil {
 			a.Command.gs.ChatPrivateMsgNotice(s, a.GetUserChatMsgData(err.Error(), time.Now()))

@@ -3,11 +3,69 @@ package model
 import (
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/pkg/log"
+	"gucooing/lolo/pkg/world"
 	"time"
 
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/protocol/proto"
 )
+
+var (
+	ChannelTick   = 50 * time.Millisecond // 50 毫秒
+	OneSTickCount int64
+)
+
+// 全服配置
+type WorldTask struct {
+	seed        int64
+	tickCount   int64
+	curDay      int64 // 当前天数
+	weatherType proto.WeatherType
+}
+
+func NewWorldTask() *WorldTask {
+	return &WorldTask{
+		seed:        time.Now().Unix(),
+		tickCount:   0,
+		curDay:      0,
+		weatherType: proto.WeatherType_WeatherType_Sunny,
+	}
+}
+
+func (w *WorldTask) Tick() {
+	w.tickCount++
+	// 时间帧递进
+	if w.tickCount != 0 && w.tickCount%(OneSTickCount*61) == 0 {
+		if w.Hour() == 0 {
+			w.curDay++
+		}
+		w.weatherType = world.CalcWeather(w.seed, w.curDay, w.Hour())
+	}
+}
+
+func (w *WorldTask) TodTime() uint32 {
+	return uint32(w.tickCount/OneSTickCount*48) % (28 * 61 * 48)
+}
+
+func (w *WorldTask) Hour() int64 {
+	return (w.tickCount / OneSTickCount / 61) % 24
+}
+
+func (w *WorldTask) Day(h int64) int64 {
+	return w.curDay + (w.Hour()+h)/24
+}
+
+func (w *WorldTask) Weather() proto.WeatherType {
+	return w.weatherType
+}
+
+func (w *WorldTask) CalcWeather(day, h int64) proto.WeatherType {
+	return world.CalcWeather(w.seed, day, h)
+}
+
+func (w *WorldTask) TodSeq() int64 {
+	return w.tickCount / (OneSTickCount * 61)
+}
 
 func CopyVector3(rot *proto.Vector3) *proto.Vector3 {
 	return &proto.Vector3{

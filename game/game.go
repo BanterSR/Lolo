@@ -28,6 +28,7 @@ type Game struct {
 	botCache            *cache.Cache[uint32, BotInterface]
 	onlyUserId          atomic.Uint32
 	wordInfo            *WordInfo
+	worldTask           *model.WorldTask
 	chatInfo            *ChatInfo
 	checkPlayerTimer    *time.Timer
 	gmChan              chan bool
@@ -63,6 +64,7 @@ func NewGame(router *gin.Engine) *Game {
 	log.NewGame()
 	g := &Game{
 		router:       router,
+		worldTask:    model.NewWorldTask(),
 		gateTaskChan: make(chan GateTask, conf.MsgChanSize),
 		userMap:      make(map[uint32]*model.Player, 1000),
 		doneChan:     make(chan struct{}),
@@ -70,8 +72,8 @@ func NewGame(router *gin.Engine) *Game {
 	}
 	g.newRouter()
 	// 初始化场景配置
-	channelTick = time.Duration(alg.MaxInt(int(channelTick.Milliseconds()), gdconf.GetConstant().ChannelTick)) * time.Millisecond
-	oneSTickCount = int(time.Second / channelTick)
+	model.ChannelTick = time.Duration(alg.MaxInt(int(model.ChannelTick.Milliseconds()), gdconf.GetConstant().ChannelTick)) * time.Millisecond
+	model.OneSTickCount = int64(time.Second / model.ChannelTick)
 
 	go g.gameMainLoop()
 	return g
@@ -81,6 +83,7 @@ func NewGame(router *gin.Engine) *Game {
 func (g *Game) gameMainLoop() {
 	runtime.LockOSThread()
 	g.checkPlayerTimer = time.NewTimer(3 * time.Minute) // 3分钟检查一次玩家
+	syncWorldTimer := time.NewTimer(model.ChannelTick)
 	defer func() {
 		log.Game.Info("game主线程停止")
 		runtime.UnlockOSThread()
@@ -98,6 +101,9 @@ func (g *Game) gameMainLoop() {
 		select {
 		case <-g.doneChan:
 			return
+		case <-syncWorldTimer.C:
+			g.worldTask.Tick()
+			syncWorldTimer.Reset(model.ChannelTick)
 		case task := <-g.gateTaskChan:
 			g.gateTask(task)
 		case <-g.checkPlayerTimer.C:

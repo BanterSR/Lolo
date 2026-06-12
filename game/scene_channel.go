@@ -14,11 +14,6 @@ import (
 	"gucooing/lolo/protocol/proto"
 )
 
-var (
-	channelTick   time.Duration = 50 * time.Millisecond // 50 毫秒
-	oneSTickCount int
-)
-
 type ChannelInfo struct {
 	game             *Game
 	channelType      int                                   // 房间类型
@@ -26,7 +21,7 @@ type ChannelInfo struct {
 	ChannelId        uint32                                // 房间号
 	allPlayer        map[uint32]*ScenePlayer               // 当前房间的全部玩家
 	weatherType      proto.WeatherType                     // 天气
-	tickCount        int                                   // 已经过去的时刻数量
+	todSeq           int64                                 // 时间段
 	doneChan         chan struct{}                         // done
 	sceneSyncDatas   []*proto.SceneSyncData                // 一个tick中待同步的内容
 	sceneServerDatas map[uint32]*proto.ServerSceneSyncData // 一个tick中玩家变动内容
@@ -101,17 +96,9 @@ func (c *ChannelInfo) sendPlayer(player *ScenePlayer, packetId uint32, payloadMs
 	player.Conn.Send(packetId, payloadMsg)
 }
 
-func (c *ChannelInfo) getTodTime() uint32 {
-	return uint32(c.tickCount/oneSTickCount*48) % (28 * 61 * 48)
-}
-
-func (c *ChannelInfo) getTodTimeH() int64 {
-	return int64((c.tickCount / oneSTickCount / 61) % 24)
-}
-
 // 房间主线程
 func (c *ChannelInfo) channelMainLoop() {
-	syncTimer := time.NewTimer(channelTick) // 0.2s 同步一次
+	syncTimer := time.NewTimer(model.ChannelTick) // 0.2s 同步一次
 	defer func() {
 		syncTimer.Stop()
 		log.Game.Debugf("场景:%v房间:%v退出", c.SceneInfo.SceneId, c.ChannelId)
@@ -120,7 +107,7 @@ func (c *ChannelInfo) channelMainLoop() {
 		select {
 		case <-syncTimer.C: // 定时同步
 			c.channelTick()
-			syncTimer.Reset(channelTick)
+			syncTimer.Reset(model.ChannelTick)
 		case scenePlayer := <-c.addScenePlayerChan: // 玩家进入
 			c.addPlayer(scenePlayer)
 		case scenePlayer := <-c.delScenePlayerChan: // 玩家退出
@@ -144,19 +131,17 @@ func (c *ChannelInfo) channelMainLoop() {
 }
 
 func (c *ChannelInfo) channelTick() {
-	c.tickCount++
-	// 时间帧递进
-	if c.tickCount != 0 && c.tickCount%(oneSTickCount*61) == 0 {
-		log.Game.Debugf("场景%v房间%v时间%vH 天气%s",
-			c.SceneInfo.SceneId, c.ChannelId, c.getTodTimeH(), c.weatherType.String())
+	// 天气更新 按小时更新
+	if weather := c.game.worldTask.Weather(); weather != c.weatherType {
+		c.weatherType = weather
+		c.SceneWeatherChangeNotice()
+	}
+	// 时间更新
+	if todSeq := c.game.worldTask.TodSeq(); todSeq != c.todSeq {
+		c.todSeq = todSeq
 		c.serverSceneSync(&ServerSceneSyncCtx{
 			ActionType: proto.SceneActionType_SceneActionType_TodUpdate,
 		})
-	}
-	// 天气更新
-	if proto.WeatherType(c.getTodTimeH()/12) != c.weatherType {
-		c.weatherType = proto.WeatherType(c.getTodTimeH() / 12)
-		c.SceneWeatherChangeNotice()
 	}
 
 	// 场景自动化更新
@@ -291,7 +276,7 @@ func (c *ChannelInfo) serverSceneSync(ctx *ServerSceneSyncCtx) {
 			PlayerName: basic.NickName,
 		}
 	case proto.SceneActionType_SceneActionType_TodUpdate: /* 时间更新*/
-		serverData.TodTime = c.getTodTime()
+		serverData.TodTime = c.game.worldTask.TodTime()
 	case proto.SceneActionType_SceneActionType_UpdateMusicalItem: // 乐器更新
 		ctx.ScenePlayer.UpdateMusicalItem(serverData.Player)
 	case proto.SceneActionType_SceneActionType_UpdateCharacterLv, // 角色升级
@@ -484,7 +469,7 @@ func (c *ChannelInfo) GetPbSceneData(scenePlayer *ScenePlayer) (info *proto.Scen
 		CurrentGatherGroupId: 0,
 		Players:              make([]*proto.ScenePlayer, 0), // ok
 		ChannelId:            c.ChannelId,                   // ok
-		TodTime:              c.getTodTime(),                // ok
+		TodTime:              c.game.worldTask.TodTime(),    // ok
 		CampFires:            make([]*proto.CampFire, 0),
 		WeatherType:          c.weatherType, // ok
 		ChannelLabel:         c.ChannelId,   // ok
