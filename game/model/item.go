@@ -21,6 +21,7 @@ type ItemModel struct {
 	ItemArmorMap       map[uint32]*ItemArmorInfo       `json:"itemArmorMap,omitempty"`   // 盔甲
 	ItemPosterMap      map[uint32]*ItemPosterInfo      `json:"itemPosterMap,omitempty"`  // 海报
 	ItemInscriptionMap map[uint32]*ItemInscriptionInfo `json:"itemInscriptionMap,omitempty"`
+	ItemPetInfoMap     map[uint32]*ItemPetInfo         `json:"itemPetInfoMap,omitempty"`   // 宠物
 	ItemHeadMap        map[uint32]*ItemHeadInfo        `json:"itemHeadMap,omitempty"`      // 头像
 	FurnitureItemMap   map[uint32]*FurnitureItemInfo   `json:"furnitureItemMap,omitempty"` // 已摆放家具信息
 }
@@ -124,14 +125,13 @@ func (s *Player) AddAllTypeItem(id uint32, num int64) *AddItemCtx {
 		proto.EBagItemTag_EBagItemTag_BattlePassCard,
 		proto.EBagItemTag_EBagItemTag_MonthlyGiftCard,
 		proto.EBagItemTag_EBagItemTag_BattlePassGiftCard,
-		proto.EBagItemTag_EBagItemTag_SeasonalMiniGamesItem:
-		//EBagItemTag_Vehicle = 52;
+		proto.EBagItemTag_EBagItemTag_SeasonalMiniGamesItem,
+		//EBagItemTag_Vehicle = 52; // 车
 		//EBagItemTag_TreasureMap = 53;
 		//EBagItemTag_TreasureMapFrag = 54;
-		//EBagItemTag_Catcher = 55;
-		//EBagItemTag_Pet = 56;
-		//EBagItemTag_PetGrid = 57;
-		//EBagItemTag_PetMmaterials = 58;
+		proto.EBagItemTag_EBagItemTag_Catcher:
+		//EBagItemTag_PetGrid = 57; // 宠物格子
+		//EBagItemTag_PetMmaterials = 58; // 宠物材料
 		ctx.EBagItemTag = i.AddItemBase(id, num)
 	case proto.EBagItemTag_EBagItemTag_Card: // 角色
 		ctx.EBagItemTag = s.AddCharacter(id)
@@ -161,6 +161,8 @@ func (s *Player) AddAllTypeItem(id uint32, num int64) *AddItemCtx {
 		ctx.EBagItemTag = i.AddItemPoster(id)
 	case proto.EBagItemTag_EBagItemTag_Inscription:
 		ctx.EBagItemTag = i.AddItemInscription(id)
+	case proto.EBagItemTag_EBagItemTag_Pet:
+		ctx.EBagItemTag = i.AddItemPet(id)
 	default:
 		log.Game.Warnf("未知的物品类型Type:%s", tag.String())
 		return nil
@@ -747,6 +749,103 @@ func (i *ItemInscriptionInfo) GetPbInscription() *proto.Inscription {
 		WeaponInstanceId: i.WeaponInstanceId,
 	}
 	return info
+}
+
+type ItemPetInfo struct {
+	ItemId       uint32              `json:"itemId,omitempty"`         // 宠物的id
+	InstanceId   uint32              `json:"instanceId,omitempty"`     // 索引id
+	Name         string              `json:"name,omitempty"`           // 宠物昵称
+	Level        uint32              `json:"level,omitempty"`          // 等级
+	NatureId     uint32              `json:"natureId,omitempty"`       // 习性id
+	SpecialColor bool                `json:"special_color,omitempty"`  // 是否异色
+	IntegrityId  uint32              `json:"integrityId,omitempty"`    // 完整度id // 完美无瑕 非常好 残缺
+	Integrity    []*PetIntegrityData `json:"integrity,omitempty"`      // 宠物属性
+	Star         uint32              `json:"star,omitempty"`           // 星级
+	CatchSceneId uint32              `json:"catch_scene_id,omitempty"` // 捕捉的场景
+	CatchAreaId  uint32              `json:"catch_area_id,omitempty"`  // 捕捉的区域
+	CatchTime    int64               `json:"catch_time,omitempty"`     // 捕捉的时间
+	Size         uint32              `json:"size,omitempty"`           // 大小
+	Weight       uint32              `json:"weight,omitempty"`         // 重量
+	BadgeId      uint32              `json:"badgeId,omitempty"`        // 佩戴徽章id
+	BadgeIds     []uint32            `json:"badgeIds,omitempty"`       // 解锁的 徽章ids
+}
+
+type PetIntegrityData struct{}
+
+func (i *ItemModel) GetItemPetInfoMap() map[uint32]*ItemPetInfo {
+	if i == nil {
+		return nil
+	}
+	if i.ItemPetInfoMap == nil {
+		i.ItemPetInfoMap = make(map[uint32]*ItemPetInfo)
+	}
+	return i.ItemPetInfoMap
+}
+
+func (i *ItemModel) AddItemPet(petId uint32) *ItemPetInfo {
+	//conf := gdconf.GetInscriptionAllInfo(petId)
+	list := i.GetItemPetInfoMap()
+	//if conf == nil || list == nil {
+	//	log.Game.Warnf("添加Pet失败,数据异常或不存在PetId:%v", petId)
+	//	return nil
+	//}
+	instanceId := i.NextInstanceIndex()
+	info := &ItemPetInfo{
+		ItemId:       petId,
+		InstanceId:   instanceId,
+		Name:         "",
+		Level:        1,
+		NatureId:     131,
+		SpecialColor: true,
+		IntegrityId:  100020,
+		Integrity:    make([]*PetIntegrityData, 0),
+		Star:         1,
+		CatchSceneId: 1,
+		CatchAreaId:  0,
+		CatchTime:    time.Now().Unix(),
+		Size:         500,
+		Weight:       391869,
+		BadgeId:      0,
+		BadgeIds:     make([]uint32, 0),
+	}
+	list[instanceId] = info
+
+	return info
+}
+
+func (i *ItemPetInfo) ItemDetail() *proto.ItemDetail {
+	info := &proto.ItemDetail{
+		MainItem: &proto.ItemInfo{
+			ItemId:  i.ItemId,
+			ItemTag: proto.EBagItemTag_EBagItemTag_Pet,
+			Item: &proto.ItemInfo_Pet{
+				Pet: i.GetPbPetInstance(),
+			},
+		},
+		PackType: proto.PackType_PackType_Inventory,
+	}
+	return info
+}
+
+func (i *ItemPetInfo) GetPbPetInstance() *proto.PetInstance {
+	return &proto.PetInstance{
+		ItemId:       i.ItemId,
+		InstanceId:   i.InstanceId,
+		Name:         i.Name,
+		Level:        i.Level,
+		NatureId:     i.NatureId,
+		SpecialColor: i.SpecialColor,
+		IntegrityId:  i.IntegrityId,
+		Integrity:    make([]*proto.PetIntegrityData, 0),
+		Star:         i.Star,
+		CatchSceneId: i.CatchSceneId,
+		CatchAreaId:  i.CatchAreaId,
+		CatchTime:    i.CatchTime,
+		Size:         i.Size,
+		Weight:       i.Weight,
+		BadgeId:      i.BadgeId,
+		BadgeIds:     i.BadgeIds,
+	}
 }
 
 type ItemHeadInfo struct {

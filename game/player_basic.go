@@ -162,6 +162,9 @@ func (g *Game) PlayerMainData(s *model.Player, msg *alg.GameMsg) {
 		rsp.PhoneBackground = basic.PhoneBackground
 		rsp.Appearance = model.GetPlayerAppearance(s.UserId)
 		rsp.WorldLevel = 5
+		rsp.MonthCardOverDueTime = 0
+		rsp.MonthCardRewardDays = 0
+		rsp.PetInstanceId = s.GetSceneModel().CurPetInstanceId
 	}
 	// 已获得的角色
 	{

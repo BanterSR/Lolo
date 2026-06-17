@@ -14,10 +14,11 @@ func (g *Game) AllPackNotice(s *model.Player) {
 	armorMap := itemModel.GetItemArmorMap()
 	posterMap := itemModel.GetItemPosterMap()
 	inscriptionMap := itemModel.GetItemInscriptionMap()
+	petMap := itemModel.GetItemPetInfoMap()
 
 	notice := &proto.PackNotice{
 		Status:          proto.StatusCode_StatusCode_Ok,
-		Items:           make([]*proto.ItemDetail, 0, len(baseMap)+len(fashionMap)+len(weaponMap)+len(armorMap)+len(posterMap)+len(inscriptionMap)),
+		Items:           make([]*proto.ItemDetail, 0, len(baseMap)+len(fashionMap)+len(weaponMap)+len(armorMap)+len(posterMap)+len(inscriptionMap)+len(petMap)),
 		TempPackMaxSize: 30,
 		IsClearTempPack: false,
 	}
@@ -39,6 +40,9 @@ func (g *Game) AllPackNotice(s *model.Player) {
 		notice.Items = append(notice.Items, v.ItemDetail())
 	}
 	for _, v := range inscriptionMap {
+		notice.Items = append(notice.Items, v.ItemDetail())
+	}
+	for _, v := range petMap {
 		notice.Items = append(notice.Items, v.ItemDetail())
 	}
 }

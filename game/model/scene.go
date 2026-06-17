@@ -76,7 +76,8 @@ func CopyVector3(rot *proto.Vector3) *proto.Vector3 {
 }
 
 type SceneModel struct {
-	SceneMap map[uint32]*SceneInfo `json:"sceneMap,omitempty"`
+	CurPetInstanceId uint32                `json:"cur_pet_instance_id,omitempty"` // 当前携带的宠物索引
+	SceneMap         map[uint32]*SceneInfo `json:"sceneMap,omitempty"`
 }
 
 func (s *Player) GetSceneModel() *SceneModel {
@@ -84,6 +85,10 @@ func (s *Player) GetSceneModel() *SceneModel {
 		s.Scene = new(SceneModel)
 	}
 	return s.Scene
+}
+
+func (sm *SceneModel) GetCurPetInstanceId() uint32 {
+	return sm.CurPetInstanceId
 }
 
 func (sm *SceneModel) GetSceneMap() map[uint32]*SceneInfo {

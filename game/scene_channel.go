@@ -284,6 +284,8 @@ func (c *ChannelInfo) serverSceneSync(ctx *ServerSceneSyncCtx) {
 		proto.SceneActionType_SceneActionType_UpdateCharacterStar:    // 角色升星
 		sceneCharacter := ctx.NewTeamSceneCharacter(serverData)
 		ctx.ScenePlayer.CurScene.GetScenePlayerInfo().UpdateCharacterBasic(sceneCharacter)
+	case proto.SceneActionType_SceneActionType_UpdataPet: // 更新宠物
+		ctx.ScenePlayer.UpdatePet(serverData.Player)
 	}
 }
 
@@ -544,8 +546,11 @@ func (c *ChannelInfo) GetPbScenePlayer(scenePlayer *ScenePlayer) (info *proto.Sc
 		PlayingMusicNote:      nil, // ok
 		PhoneCase:             0,
 		VehicleItemId:         0,
+		PetItemId:             0,  // ok
+		PetName:               "", // ok
 	}
 	scenePlayer.UpdateMusicalItem(info) // 赋值音乐物品
+	scenePlayer.UpdatePet(info)         // 赋值宠物
 	return
 }
 
@@ -557,6 +562,15 @@ func (s *ScenePlayer) UpdateMusicalItem(info *proto.ScenePlayer) {
 	info.MusicalItemSource = s.MusicalItemSource         // 音乐来源
 	info.MusicalItemInstanceId = s.MusicalItemInstanceId // 音乐实例id
 	info.PlayingMusicNote = s.PlayingMusicNote           // 演奏音符
+}
+
+func (s *ScenePlayer) UpdatePet(info *proto.ScenePlayer) {
+	petInfo, ok := s.GetItemModel().GetItemPetInfoMap()[s.GetSceneModel().GetCurPetInstanceId()]
+	if info == nil || !ok {
+		return
+	}
+	info.PetItemId = petInfo.ItemId // 宠物id
+	info.PetName = petInfo.Name     // 宠物昵称
 }
 
 func (c *ChannelInfo) SceneWeatherChangeNotice() {
