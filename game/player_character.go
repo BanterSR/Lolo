@@ -375,17 +375,17 @@ func (g *Game) UpdateCharacterAppearance(s *model.Player, msg *alg.GameMsg) {
 		log.Game.Warnf("保存角色外观失败,角色%v不存在", req.CharId)
 		return
 	}
-	characterInfo.CharacterAppearance = &model.CharacterAppearance{
-		Badge:                      req.Appearance.Badge,
-		UmbrellaId:                 req.Appearance.UmbrellaId,
-		InsectNetInstanceId:        req.Appearance.InsectNetInstanceId,
-		LoggingAxeInstanceId:       req.Appearance.LoggingAxeInstanceId,
-		WaterBottleInstanceId:      req.Appearance.WaterBottleInstanceId,
-		MiningHammerInstanceId:     req.Appearance.MiningHammerInstanceId,
-		CollectionGlovesInstanceId: req.Appearance.CollectionGlovesInstanceId,
-		FishingRodInstanceId:       req.Appearance.FishingRodInstanceId,
-		VehicleInstanceId:          req.Appearance.VehicleInstanceId,
-	}
+	alg.NoZero(&characterInfo.CharacterAppearance.Badge, req.Appearance.Badge)
+	alg.NoZero(&characterInfo.CharacterAppearance.UmbrellaId, req.Appearance.UmbrellaId)
+	alg.NoZero(&characterInfo.CharacterAppearance.InsectNetInstanceId, req.Appearance.InsectNetInstanceId)
+	alg.NoZero(&characterInfo.CharacterAppearance.LoggingAxeInstanceId, req.Appearance.LoggingAxeInstanceId)
+	alg.NoZero(&characterInfo.CharacterAppearance.WaterBottleInstanceId, req.Appearance.WaterBottleInstanceId)
+	alg.NoZero(&characterInfo.CharacterAppearance.MiningHammerInstanceId, req.Appearance.MiningHammerInstanceId)
+	alg.NoZero(&characterInfo.CharacterAppearance.CollectionGlovesInstanceId, req.Appearance.CollectionGlovesInstanceId)
+	alg.NoZero(&characterInfo.CharacterAppearance.FishingRodInstanceId, req.Appearance.FishingRodInstanceId)
+	alg.NoZero(&characterInfo.CharacterAppearance.VehicleInstanceId, req.Appearance.VehicleInstanceId)
+	alg.NoZero(&characterInfo.CharacterAppearance.ShovelInstanceId, req.Appearance.ShovelInstanceId)
+
 	rsp.Appearance = characterInfo.GetPbCharacterAppearance()
 
 	// 更新基础信息

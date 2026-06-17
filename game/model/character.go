@@ -225,6 +225,7 @@ type CharacterAppearance struct {
 	CollectionGlovesInstanceId uint32 `json:"collectionGlovesInstanceId,omitempty"`
 	FishingRodInstanceId       uint32 `json:"fishingRodInstanceId,omitempty"`
 	VehicleInstanceId          uint32 `json:"vehicleInstanceId,omitempty"` // 车
+	ShovelInstanceId           uint32 `json:"shovelInstanceId,omitempty"`  // 铲子
 }
 
 func newCharacterAppearance(characterId uint32) *CharacterAppearance {
@@ -237,6 +238,8 @@ func newCharacterAppearance(characterId uint32) *CharacterAppearance {
 		MiningHammerInstanceId:     0,
 		CollectionGlovesInstanceId: 0,
 		FishingRodInstanceId:       0,
+		VehicleInstanceId:          0,
+		ShovelInstanceId:           0,
 	}
 
 	return info
@@ -257,6 +260,7 @@ func (c *CharacterInfo) GetPbCharacterAppearance() *proto.CharacterAppearance {
 		CollectionGlovesInstanceId: info.CollectionGlovesInstanceId,
 		FishingRodInstanceId:       info.FishingRodInstanceId,
 		VehicleInstanceId:          info.VehicleInstanceId,
+		ShovelInstanceId:           info.ShovelInstanceId,
 	}
 
 	return pbInfo

@@ -28,10 +28,11 @@ func newProxy(r *gin.Engine) {
 		if err != nil {
 			return
 		}
+		fmt.Printf("region_info: %+v\n", rsp)
 		ip := rsp.GateTcpIp
 		port := rsp.GateTcpPort
 		go runTcpProxy(ip, port)
-		rsp.GateTcpIp = "10.0.0.4"
+		rsp.GateTcpIp = "192.168.3.23"
 		rsp.GateTcpPort = 21001
 		c.JSON(http.StatusOK, rsp)
 	})
