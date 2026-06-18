@@ -6,7 +6,6 @@ import (
 
 	"github.com/bytedance/sonic"
 
-	"gucooing/lolo/config"
 	"gucooing/lolo/db"
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/gdconf"
@@ -77,9 +76,6 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg
 				s.AddCharacter(characterId)
 			}
 			s.GetItemModel().InitItem()
-			if config.GetMode() == config.ModeDev {
-				s.AllItemModel()
-			}
 		}
 		g.userMap[userId] = s
 	}

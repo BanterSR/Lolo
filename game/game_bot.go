@@ -16,9 +16,6 @@ type BotInterface interface {
 	GetMsgRecords(userId uint32) []MsgRecordInterface // 历史消息
 }
 
-type CommandInterface interface {
-}
-
 type MsgRecordInterface interface {
 	GetUserId() uint32
 	GetTime() time.Time

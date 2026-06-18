@@ -50,12 +50,6 @@ func (i *ItemModel) NextInstanceIndex() uint32 {
 	return i.InstanceIndex
 }
 
-func (s *Player) AllItemModel() {
-	for _, conf := range gdconf.GetAllItemConfigure() {
-		s.AddAllTypeItem(uint32(conf.ID), 99999999)
-	}
-}
-
 type AddItemCtx struct {
 	EBagItemTag
 	Num int64
@@ -127,11 +121,11 @@ func (s *Player) AddAllTypeItem(id uint32, num int64) *AddItemCtx {
 		proto.EBagItemTag_EBagItemTag_BattlePassGiftCard,
 		proto.EBagItemTag_EBagItemTag_SeasonalMiniGamesItem,
 		//EBagItemTag_Vehicle = 52; // 车
-		//EBagItemTag_TreasureMap = 53;
-		//EBagItemTag_TreasureMapFrag = 54;
-		proto.EBagItemTag_EBagItemTag_Catcher:
-		//EBagItemTag_PetGrid = 57; // 宠物格子
-		//EBagItemTag_PetMmaterials = 58; // 宠物材料
+		proto.EBagItemTag_EBagItemTag_TreasureMap,
+		proto.EBagItemTag_EBagItemTag_TreasureMapFrag,
+		proto.EBagItemTag_EBagItemTag_Catcher,
+		proto.EBagItemTag_EBagItemTag_PetGrid,       // 宠物捕捉器
+		proto.EBagItemTag_EBagItemTag_PetMmaterials: // 宠物材料
 		ctx.EBagItemTag = i.AddItemBase(id, num)
 	case proto.EBagItemTag_EBagItemTag_Card: // 角色
 		ctx.EBagItemTag = s.AddCharacter(id)

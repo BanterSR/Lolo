@@ -128,6 +128,8 @@ func (g *Game) newRouter() {
 		// 宠物
 		cmd.GetPetReq:    g.GetPetReq, // 获取宠物列表
 		cmd.ChangePetReq: g.ChangePet, // 宠物携带
+		// Gm
+		cmd.GmCodeReq: g.GmCode, // gm code
 
 		cmd.PlayerVitalityReq:           g.PlayerVitality,
 		cmd.BossRushInfoReq:             g.BossRushInfo,
