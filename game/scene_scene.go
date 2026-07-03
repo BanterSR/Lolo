@@ -58,6 +58,7 @@ type PlayerSceneInterface interface {
 	SetRot(rot *proto.Vector3)
 	GetTeam() *model.TeamInfo
 	SetTeam(team model.TeamInfo)
+	GetTempPack() *model.SceneTempPack
 }
 
 func (g *Game) getWordInfo() *WordInfo {

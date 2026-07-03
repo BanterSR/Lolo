@@ -69,6 +69,10 @@ func (g *Game) DungeonEnter(s *model.Player, msg *alg.GameMsg) {
 
 	rsp.Team = newCurScene.GetPbSceneTeam()
 	rsp.DungeonData = dungeonInfo.DungeonData()
+	// 写入宝箱
+	for _, tb := range dungeonInfo.GetTreasureBoxes() {
+		alg.AddLists(&rsp.TreasureBoxes, tb.TreasureBoxData())
+	}
 }
 
 func (g *Game) DungeonOperate(s *model.Player, msg *alg.GameMsg) {

@@ -105,6 +105,8 @@ func (g *Game) newRouter() {
 		cmd.BattleEncounterInfoReq:        g.BattleEncounterInfo,        // 获取遭遇战斗信息
 		cmd.BattleEncounterStateUpdateReq: g.BattleEncounterStateUpdate, // 遭遇战斗更新请求
 		cmd.MonsterDeadReq:                g.MonsterDead,                // 怪物死亡
+		cmd.FlagBattleStateUpdateReq:      g.FlagBattleStateUpdate,      // 更新flag战斗状态
+		cmd.PickupReq:                     g.Pickup,                     // 捡起掉落物请求
 		// 深渊
 		cmd.AbyssInfoReq: g.AbyssInfo, // 深渊信息请求
 		// 邮箱

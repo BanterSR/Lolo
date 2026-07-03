@@ -2,37 +2,17 @@ package model
 
 import (
 	"gucooing/lolo/db"
-	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/pkg/log"
 	"gucooing/lolo/protocol/proto"
 )
 
-type Expression uint32
-
-func (e Expression) ItemDetail() *proto.ItemDetail {
-	info := &proto.ItemDetail{
-		MainItem: &proto.ItemInfo{
-			ItemId:  uint32(e),
-			ItemTag: proto.EBagItemTag_EBagItemTag_Expression,
-			Item: &proto.ItemInfo_BaseItem{
-				BaseItem: &proto.BaseItem{
-					ItemId: uint32(e),
-					Num:    1,
-				},
-			},
-		},
-		PackType: proto.PackType_PackType_Inventory,
-	}
-	return info
-}
-
 type ChatModel struct {
-	UnLockExpression []uint32 // 已解锁的表情
+	UnLockExpression map[uint32]*ItemBaseInfo `json:"unLockExpression,omitempty"` // 已解锁的表情
 }
 
 func DefaultChatModel() *ChatModel {
 	info := &ChatModel{
-		UnLockExpression: make([]uint32, 0),
+		UnLockExpression: make(map[uint32]*ItemBaseInfo),
 	}
 	return info
 }
@@ -46,14 +26,27 @@ func (s *Player) GetChatModel() *ChatModel {
 
 func (c *ChatModel) GetUnLockExpression() []uint32 {
 	if c.UnLockExpression == nil {
-		c.UnLockExpression = make([]uint32, 0)
+		c.UnLockExpression = make(map[uint32]*ItemBaseInfo)
 	}
-	return c.UnLockExpression
+	list := make([]uint32, 0, len(c.UnLockExpression))
+	for _, v := range c.UnLockExpression {
+		list = append(list, v.ItemId)
+	}
+	return list
 }
 
-func (c *ChatModel) AddUnExpression(expression uint32) Expression {
-	alg.AddSlice(&c.UnLockExpression, expression)
-	return Expression(expression)
+func (c *ChatModel) AddUnExpression(expression uint32) *ItemBaseInfo {
+	item, ok := c.UnLockExpression[expression]
+	if !ok {
+		item = &ItemBaseInfo{
+			ItemId:   expression,
+			Num:      1,
+			ItemType: proto.EBagItemTag_EBagItemTag_Expression,
+			PackType: proto.PackType_PackType_Inventory,
+		}
+		c.UnLockExpression[expression] = item
+	}
+	return item
 }
 
 func (s *Player) GetPrivateChatOffline(private *db.OFChatPrivate) *proto.PrivateChatOffline {

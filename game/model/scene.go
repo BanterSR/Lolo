@@ -76,6 +76,7 @@ func CopyVector3(rot *proto.Vector3) *proto.Vector3 {
 }
 
 type SceneModel struct {
+	WorldLevel       uint32                `json:"worldLevel,omitempty"`          // 世界等级
 	CurPetInstanceId uint32                `json:"cur_pet_instance_id,omitempty"` // 当前携带的宠物索引
 	SceneMap         map[uint32]*SceneInfo `json:"sceneMap,omitempty"`
 }
@@ -85,6 +86,10 @@ func (s *Player) GetSceneModel() *SceneModel {
 		s.Scene = new(SceneModel)
 	}
 	return s.Scene
+}
+
+func (sm *SceneModel) GetWorldLevel() uint32 {
+	return sm.WorldLevel
 }
 
 func (sm *SceneModel) GetCurPetInstanceId() uint32 {
@@ -265,34 +270,14 @@ func (si *SceneInfo) GetGatherLimit(t uint32) *GatherLimit {
 	return info
 }
 
-type TreasureBox struct {
-	Index           uint32                 `json:"index,omitempty"`           // 序号
-	BoxId           uint32                 `json:"boxId,omitempty"`           // id
-	Type            proto.ETreasureBoxType `json:"type,omitempty"`            // 类型
-	State           proto.TreasureBoxState `json:"state,omitempty"`           // 状态
-	NextRefreshTime int64                  `json:"nextRefreshTime,omitempty"` // 下次更新时间
-}
-
-func (t *TreasureBox) TreasureBoxData() *proto.TreasureBoxData {
-	info := &proto.TreasureBoxData{
-		Index:           t.Index,
-		BoxId:           t.BoxId,
-		Type:            t.Type,
-		State:           t.State,
-		NextRefreshTime: t.NextRefreshTime,
-		Rewards:         make([]*proto.ItemDetail, 0),
-	}
-
-	return info
-}
-
 // 队伍场景信息
 type ScenePlayerInfo struct {
-	*Player // 玩家主体
-	Pos     *proto.Vector3
-	Rot     *proto.Vector3
-	Team    *TeamInfo
-	SceneId uint32
+	*Player  // 玩家主体
+	Pos      *proto.Vector3
+	Rot      *proto.Vector3
+	Team     *TeamInfo
+	SceneId  uint32
+	TempPack *SceneTempPack // 临时背包
 }
 
 func (p *ScenePlayerInfo) GetScenePlayerInfo() *ScenePlayerInfo {
@@ -333,6 +318,10 @@ func (p *ScenePlayerInfo) SetTeam(team TeamInfo) {
 	p.Team = &team
 }
 
+func (p *ScenePlayerInfo) GetTempPack() *SceneTempPack {
+	return p.TempPack
+}
+
 func NewScenePlayerInfo(p *Player, sceneID *uint32, team *TeamInfo, pos, rot *proto.Vector3) *ScenePlayerInfo {
 	if sceneID == nil {
 		sceneID = new(gdconf.GetConstant().DefaultSceneId)
@@ -352,11 +341,12 @@ func NewScenePlayerInfo(p *Player, sceneID *uint32, team *TeamInfo, pos, rot *pr
 	}
 
 	sp := &ScenePlayerInfo{
-		Player:  p,
-		Pos:     pos,
-		Rot:     rot,
-		Team:    team,
-		SceneId: *sceneID,
+		Player:   p,
+		Pos:      pos,
+		Rot:      rot,
+		Team:     team,
+		SceneId:  *sceneID,
+		TempPack: newSceneTempPack(),
 	}
 	return sp
 }

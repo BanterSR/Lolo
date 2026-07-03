@@ -157,7 +157,7 @@ func (g *Game) PlayerMainData(s *model.Player, msg *alg.GameMsg) {
 		rsp.IsHideBirthday = basic.IsHideBirthday
 		rsp.PhoneBackground = basic.PhoneBackground
 		rsp.Appearance = model.GetPlayerAppearance(s.UserId)
-		rsp.WorldLevel = 5
+		rsp.WorldLevel = s.GetSceneModel().GetWorldLevel()
 		rsp.MonthCardOverDueTime = 0
 		rsp.MonthCardRewardDays = 0
 		rsp.PetInstanceId = s.GetSceneModel().CurPetInstanceId

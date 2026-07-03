@@ -3,6 +3,7 @@ package gdconf
 import (
 	"gucooing/lolo/protocol/excel"
 	"gucooing/lolo/protocol/proto"
+	"math/rand"
 )
 
 type Item struct {
@@ -41,6 +42,11 @@ func GetItemByNewBagItemTagAll() map[proto.EBagItemTag][]*excel.ItemConfigure {
 
 func GetItemByNewBagItemTag(tag proto.EBagItemTag) []*excel.ItemConfigure {
 	return cc.Excel.Item.ItemByNewBagItemTag[tag]
+}
+
+func RandItemByNewBagItemTag(tag proto.EBagItemTag) *excel.ItemConfigure {
+	list := cc.Excel.Item.ItemByNewBagItemTag[tag]
+	return list[rand.Intn(len(list))]
 }
 
 func GetAllItemConfigure() []*excel.ItemConfigure {

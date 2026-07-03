@@ -38,9 +38,13 @@ func AddList[T any](list *[]*T, n ...*T) {
 	*list = append(*list, n...)
 }
 
-func AddLists[T any](list *[]T, n T) {
+func AddLists[T comparable](list *[]T, n T) {
 	if list == nil {
 		list = new([]T)
+	}
+	var zero T
+	if n == zero {
+		return
 	}
 	*list = append(*list, n)
 }
@@ -76,6 +80,21 @@ func NoZero[T comparable](a *T, b T) {
 
 type orSlice interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 | ~string | ~bool
+	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64
+}
+
+func MaxSlice[T orSlice](a, b T) T {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func MinSlice[T orSlice](a, b T) T {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func AddSlice[T orSlice](a *[]T, b T) {

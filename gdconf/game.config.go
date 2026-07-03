@@ -102,6 +102,8 @@ func (g *GameConfig) load() {
 	g.loadManual()
 	g.loadHomeItem()
 	g.loadMake()
+	g.loadTreasureBox()
+	g.loadMonster()
 
 	// config
 	g.loadSceneConfig()
@@ -143,6 +145,8 @@ type Excel struct {
 	Manual         *Manual
 	HomeItem       *HomeItem
 	Make           *Make
+	TreasureBox    *TreasureBox
+	Monster        *Monster
 }
 
 type Config struct {

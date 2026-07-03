@@ -166,12 +166,18 @@ func (s *Player) AddAllTypeItem(id uint32, num int64) *AddItemCtx {
 
 type EBagItemTag interface {
 	ItemDetail() *proto.ItemDetail
+	SetPackType(packType proto.PackType)
 }
 
 type ItemBaseInfo struct {
 	ItemId   uint32            `json:"itemId,omitempty"`
 	Num      int64             `json:"num,omitempty"`
 	ItemType proto.EBagItemTag `json:"itemType,omitempty"`
+	PackType proto.PackType    `json:"packType,omitempty"`
+}
+
+func (i *ItemBaseInfo) SetPackType(packType proto.PackType) {
+	i.PackType = packType
 }
 
 func (i *ItemModel) GetItemBaseMap() map[uint32]*ItemBaseInfo {
@@ -206,6 +212,7 @@ func (i *ItemModel) AddItemBase(itemId uint32, num int64) *ItemBaseInfo {
 			ItemId:   itemId,
 			Num:      0,
 			ItemType: proto.EBagItemTag(conf.NewBagItemTag),
+			PackType: proto.PackType_PackType_Inventory,
 		}
 		list[itemId] = info
 	}
@@ -225,13 +232,13 @@ func (i *ItemBaseInfo) ItemDetail() *proto.ItemDetail {
 				},
 			},
 		},
-		PackType: proto.PackType_PackType_Inventory,
+		PackType: i.PackType,
 	}
 	return info
 }
 
 type ItemWeaponInfo struct {
-	ItemId           uint32                  `json:"itemId,omitempty"`           // 在背包中的id
+	*ItemBaseInfo
 	WeaponId         uint32                  `json:"weaponId,omitempty"`         // 武器id
 	InstanceId       uint32                  `json:"instanceId,omitempty"`       // 索引id
 	WeaponSystemType proto.EWeaponSystemType `json:"weaponSystemType,omitempty"` // 装备类型
@@ -293,7 +300,11 @@ func (i *ItemModel) AddItemWeapon(weaponId uint32) *ItemWeaponInfo {
 	}
 	instanceId := i.NextInstanceIndex()
 	info := &ItemWeaponInfo{
-		ItemId:           uint32(conf.WeaponInfo.GetItemID()),
+		ItemBaseInfo: &ItemBaseInfo{
+			ItemType: proto.EBagItemTag_EBagItemTag_Weapon,
+			PackType: proto.PackType_PackType_Inventory,
+			ItemId:   uint32(conf.WeaponInfo.GetItemID()),
+		},
 		WeaponId:         conf.WeaponId,
 		InstanceId:       instanceId,
 		WeaponSystemType: proto.EWeaponSystemType(conf.WeaponInfo.NewWeaponSystemType),
@@ -321,12 +332,12 @@ func (i *ItemWeaponInfo) ItemDetail() *proto.ItemDetail {
 	info := &proto.ItemDetail{
 		MainItem: &proto.ItemInfo{
 			ItemId:  i.ItemId,
-			ItemTag: proto.EBagItemTag_EBagItemTag_Weapon,
+			ItemTag: i.ItemType,
 			Item: &proto.ItemInfo_Weapon{
 				Weapon: i.WeaponInstance(),
 			},
 		},
-		PackType: proto.PackType_PackType_Inventory,
+		PackType: i.PackType,
 	}
 	return info
 }
@@ -359,7 +370,7 @@ func (i *ItemWeaponInfo) WeaponInstance() *proto.WeaponInstance {
 }
 
 type ItemFashionInfo struct {
-	ItemId     uint32                      `json:"itemId,omitempty"`
+	*ItemBaseInfo
 	OutfitId   uint32                      `json:"outfitId,omitempty"`
 	DyeSchemes map[uint32]*OutfitDyeScheme `json:"dyeSchemes,omitempty"`
 }
@@ -437,7 +448,11 @@ func (i *ItemModel) AddItemFashion(fashionId uint32) *ItemFashionInfo {
 
 func newItemFashionInfo(conf *gdconf.FashionAllInfo) *ItemFashionInfo {
 	info := &ItemFashionInfo{
-		ItemId:     uint32(conf.FashionInfo.GetItemID()),
+		ItemBaseInfo: &ItemBaseInfo{
+			ItemId:   uint32(conf.FashionInfo.GetItemID()),
+			ItemType: proto.EBagItemTag_EBagItemTag_Fashion,
+			PackType: proto.PackType_PackType_Inventory,
+		},
 		OutfitId:   conf.FashionId,
 		DyeSchemes: make(map[uint32]*OutfitDyeScheme),
 	}
@@ -461,7 +476,7 @@ func (f *ItemFashionInfo) ItemDetail() *proto.ItemDetail {
 	info := &proto.ItemDetail{
 		MainItem: &proto.ItemInfo{
 			ItemId:  f.ItemId,
-			ItemTag: proto.EBagItemTag_EBagItemTag_Fashion,
+			ItemTag: f.ItemType,
 			Item: &proto.ItemInfo_Outfit{
 				Outfit: &proto.Outfit{
 					OutfitId: f.OutfitId,
@@ -475,14 +490,14 @@ func (f *ItemFashionInfo) ItemDetail() *proto.ItemDetail {
 				},
 			},
 		},
-		PackType: proto.PackType_PackType_Inventory,
+		PackType: f.PackType,
 	}
 	return info
 }
 
 type ItemArmorInfo struct {
+	*ItemBaseInfo
 	WeaponSystemType proto.EWeaponSystemType `json:"weaponSystemType,omitempty"` //  装备类型
-	ItemId           uint32                  `json:"itemId,omitempty"`
 	ArmorId          uint32                  `json:"armorId,omitempty"`
 	Star             uint32                  `json:"star,omitempty"`
 	InstanceId       uint32                  `json:"instanceId,omitempty"`
@@ -526,8 +541,12 @@ func (i *ItemModel) AddItemArmor(armorId uint32) *ItemArmorInfo {
 	}
 	instanceId := i.NextInstanceIndex()
 	info := &ItemArmorInfo{
+		ItemBaseInfo: &ItemBaseInfo{
+			ItemId:   uint32(conf.ArmorInfo.GetItemID()),
+			ItemType: proto.EBagItemTag_EBagItemTag_Armor,
+			PackType: proto.PackType_PackType_Inventory,
+		},
 		WeaponSystemType: proto.EWeaponSystemType(conf.ArmorInfo.NewWeaponSystemType),
-		ItemId:           uint32(conf.ArmorInfo.GetItemID()),
 		ArmorId:          conf.ArmorId,
 		Star:             0,
 		InstanceId:       instanceId,
@@ -554,12 +573,12 @@ func (a *ItemArmorInfo) ItemDetail() *proto.ItemDetail {
 	info := &proto.ItemDetail{
 		MainItem: &proto.ItemInfo{
 			ItemId:  a.ItemId,
-			ItemTag: proto.EBagItemTag_EBagItemTag_Armor,
+			ItemTag: a.ItemType,
 			Item: &proto.ItemInfo_Armor{
 				Armor: a.ArmorInstance(),
 			},
 		},
-		PackType: proto.PackType_PackType_Inventory,
+		PackType: a.PackType,
 	}
 	return info
 }
@@ -593,8 +612,8 @@ func (a *ItemArmorInfo) BaseArmor() *proto.BaseArmor {
 }
 
 type ItemPosterInfo struct {
+	*ItemBaseInfo
 	PosterId    uint32 `json:"posterId,omitempty"`
-	ItemId      uint32 `json:"itemId,omitempty"`
 	InstanceId  uint32 `json:"instanceId,omitempty"`
 	WearerId    uint32 `json:"wearerId,omitempty"`
 	WearerIndex uint32 `json:"wearerIndex,omitempty"`
@@ -637,8 +656,12 @@ func (i *ItemModel) AddItemPoster(posterId uint32) *ItemPosterInfo {
 
 func newItemPosterInfo(conf *gdconf.PosterAllInfo, instanceId uint32) *ItemPosterInfo {
 	return &ItemPosterInfo{
+		ItemBaseInfo: &ItemBaseInfo{
+			ItemId:   uint32(conf.PosterInfo.GetItemID()),
+			ItemType: proto.EBagItemTag_EBagItemTag_Poster,
+			PackType: proto.PackType_PackType_Inventory,
+		},
 		PosterId:   conf.PosterId,
-		ItemId:     uint32(conf.PosterInfo.GetItemID()),
 		InstanceId: instanceId,
 		WearerId:   0,
 		Star:       1,
@@ -654,12 +677,12 @@ func (p *ItemPosterInfo) ItemDetail() *proto.ItemDetail {
 	info := &proto.ItemDetail{
 		MainItem: &proto.ItemInfo{
 			ItemId:  p.ItemId,
-			ItemTag: proto.EBagItemTag_EBagItemTag_Poster,
+			ItemTag: p.ItemType,
 			Item: &proto.ItemInfo_Poster{
 				Poster: p.PosterInstance(),
 			},
 		},
-		PackType: proto.PackType_PackType_Inventory,
+		PackType: p.PackType,
 	}
 	return info
 }
@@ -685,7 +708,7 @@ func (p *ItemPosterInfo) BasePoster() *proto.BasePoster {
 }
 
 type ItemInscriptionInfo struct {
-	ItemId           uint32 `json:"itemId,omitempty"`
+	*ItemBaseInfo
 	InscriptionId    uint32 `json:"inscriptionId,omitempty"`
 	Level            uint32 `json:"level,omitempty"`
 	WeaponInstanceId uint32 `json:"weaponInstanceId,omitempty"`
@@ -712,7 +735,11 @@ func (i *ItemModel) AddItemInscription(inscriptionId uint32) *ItemInscriptionInf
 		return nil
 	}
 	info := &ItemInscriptionInfo{
-		ItemId:           uint32(conf.InscriptionInfo.GetItemID()),
+		ItemBaseInfo: &ItemBaseInfo{
+			ItemId:   uint32(conf.InscriptionInfo.GetItemID()),
+			ItemType: proto.EBagItemTag_EBagItemTag_Inscription,
+			PackType: proto.PackType_PackType_Inventory,
+		},
 		InscriptionId:    conf.InscriptionId,
 		Level:            1,
 		WeaponInstanceId: 0,
@@ -726,12 +753,12 @@ func (i *ItemInscriptionInfo) ItemDetail() *proto.ItemDetail {
 	info := &proto.ItemDetail{
 		MainItem: &proto.ItemInfo{
 			ItemId:  i.ItemId,
-			ItemTag: proto.EBagItemTag_EBagItemTag_Inscription,
+			ItemTag: i.ItemType,
 			Item: &proto.ItemInfo_Inscription{
 				Inscription: i.GetPbInscription(),
 			},
 		},
-		PackType: proto.PackType_PackType_Inventory,
+		PackType: i.PackType,
 	}
 	return info
 }
@@ -746,7 +773,7 @@ func (i *ItemInscriptionInfo) GetPbInscription() *proto.Inscription {
 }
 
 type ItemPetInfo struct {
-	ItemId       uint32              `json:"itemId,omitempty"`         // 宠物的id
+	*ItemBaseInfo
 	InstanceId   uint32              `json:"instanceId,omitempty"`     // 索引id
 	Name         string              `json:"name,omitempty"`           // 宠物昵称
 	Level        uint32              `json:"level,omitempty"`          // 等级
@@ -785,7 +812,11 @@ func (i *ItemModel) AddItemPet(petId uint32) *ItemPetInfo {
 	//}
 	instanceId := i.NextInstanceIndex()
 	info := &ItemPetInfo{
-		ItemId:       petId,
+		ItemBaseInfo: &ItemBaseInfo{
+			ItemId:   petId,
+			ItemType: proto.EBagItemTag_EBagItemTag_Pet,
+			PackType: proto.PackType_PackType_Inventory,
+		},
 		InstanceId:   instanceId,
 		Name:         "",
 		Level:        1,
@@ -811,12 +842,12 @@ func (i *ItemPetInfo) ItemDetail() *proto.ItemDetail {
 	info := &proto.ItemDetail{
 		MainItem: &proto.ItemInfo{
 			ItemId:  i.ItemId,
-			ItemTag: proto.EBagItemTag_EBagItemTag_Pet,
+			ItemTag: i.ItemType,
 			Item: &proto.ItemInfo_Pet{
 				Pet: i.GetPbPetInstance(),
 			},
 		},
-		PackType: proto.PackType_PackType_Inventory,
+		PackType: i.PackType,
 	}
 	return info
 }
@@ -843,6 +874,7 @@ func (i *ItemPetInfo) GetPbPetInstance() *proto.PetInstance {
 }
 
 type ItemHeadInfo struct {
+	*ItemBaseInfo
 	HeadId  uint32 `json:"headId,omitempty"`
 	AddTime int64  `json:"addTime,omitempty"`
 }
@@ -851,6 +883,11 @@ func (i *ItemModel) GetItemHeadMap() map[uint32]*ItemHeadInfo {
 	if i.ItemHeadMap == nil {
 		i.ItemHeadMap = map[uint32]*ItemHeadInfo{
 			41101: {
+				ItemBaseInfo: &ItemBaseInfo{
+					ItemId:   41101,
+					ItemType: proto.EBagItemTag_EBagItemTag_Head,
+					PackType: proto.PackType_PackType_Inventory,
+				},
 				HeadId:  41101,
 				AddTime: time.Now().Unix(),
 			},
@@ -873,6 +910,11 @@ func (i *ItemModel) AddHead(head uint32) *ItemHeadInfo {
 		return info
 	}
 	info := &ItemHeadInfo{
+		ItemBaseInfo: &ItemBaseInfo{
+			ItemId:   head,
+			ItemType: proto.EBagItemTag_EBagItemTag_Head,
+			PackType: proto.PackType_PackType_Inventory,
+		},
 		HeadId:  head,
 		AddTime: time.Now().Unix(),
 	}
@@ -883,15 +925,15 @@ func (i *ItemModel) AddHead(head uint32) *ItemHeadInfo {
 func (i *ItemHeadInfo) ItemDetail() *proto.ItemDetail {
 	info := &proto.ItemDetail{
 		MainItem: &proto.ItemInfo{
-			ItemId:  i.HeadId,
-			ItemTag: proto.EBagItemTag_EBagItemTag_Head,
+			ItemId:  i.ItemId,
+			ItemTag: i.ItemType,
 			Item: &proto.ItemInfo_BaseItem{
 				BaseItem: &proto.BaseItem{
 					ItemId: i.HeadId,
 				},
 			},
 		},
-		PackType: proto.PackType_PackType_Inventory,
+		PackType: i.PackType,
 	}
 	return info
 }

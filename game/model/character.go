@@ -56,6 +56,7 @@ func (c *CharacterModel) SetPlacedCharacter(characterId uint32, isRemove bool) {
 }
 
 type CharacterInfo struct {
+	*ItemBaseInfo
 	CharacterId               uint32                      `json:"characterId,omitempty"`               // 角色id
 	IsNew                     bool                        `json:"isNew,omitempty"`                     // 是否新角色
 	Level                     uint32                      `json:"level,omitempty"`                     // 角色等级
@@ -76,6 +77,12 @@ type CharacterInfo struct {
 
 func newCharacterInfo(characterId uint32) *CharacterInfo {
 	info := &CharacterInfo{
+		ItemBaseInfo: &ItemBaseInfo{
+			ItemId:   characterId,
+			Num:      0,
+			ItemType: proto.EBagItemTag_EBagItemTag_Card,
+			PackType: 0,
+		},
 		CharacterId:               characterId,
 		IsNew:                     true,
 		Level:                     1,
@@ -201,8 +208,8 @@ func (c *CharacterInfo) Character() *proto.Character {
 func (c *CharacterInfo) ItemDetail() *proto.ItemDetail {
 	return &proto.ItemDetail{
 		MainItem: &proto.ItemInfo{
-			ItemId:  c.CharacterId,
-			ItemTag: proto.EBagItemTag_EBagItemTag_Card,
+			ItemId:  c.ItemId,
+			ItemTag: c.ItemType,
 			IsNew:   c.IsNew,
 			Item: &proto.ItemInfo_Character{
 				Character: c.Character(),
