@@ -3,6 +3,7 @@ package model
 import (
 	"errors"
 	"fmt"
+	"math/rand/v2"
 	"sync"
 	"time"
 
@@ -292,13 +293,30 @@ func (i *ItemModel) GetItemWeaponInfo(instanceId uint32) *ItemWeaponInfo {
 }
 
 func (i *ItemModel) AddItemWeapon(weaponId uint32) *ItemWeaponInfo {
-	conf := gdconf.GetWeaponAllInfo(weaponId)
+	info := GenItemWeaponInfo(weaponId, 10)
 	list := i.GetItemWeaponMap()
-	if conf == nil || list == nil {
-		log.Game.Warnf("添加Weapon失败,数据异常或不存在WeaponId:%v", weaponId)
+	if info == nil || list == nil {
 		return nil
 	}
 	instanceId := i.NextInstanceIndex()
+	info.InstanceId = instanceId
+	list[instanceId] = info
+
+	return info
+}
+
+func GenItemWeaponInfo(weaponId, propertyIndex uint32) *ItemWeaponInfo {
+	conf := gdconf.GetWeaponAllInfo(weaponId)
+	if conf == nil {
+		log.Game.Warnf("生成Weapon失败,数据异常或不存在WeaponId:%v", weaponId)
+		return nil
+	}
+	propertyInfo, ok := conf.PropertyGroup[propertyIndex]
+	if !ok {
+		log.Game.Warnf("生成Weapon失败,参数组不存在WeaponId:%v PropertyIndex:%v", weaponId, propertyIndex)
+		return nil
+	}
+
 	info := &ItemWeaponInfo{
 		ItemBaseInfo: &ItemBaseInfo{
 			ItemType: proto.EBagItemTag_EBagItemTag_Weapon,
@@ -306,24 +324,58 @@ func (i *ItemModel) AddItemWeapon(weaponId uint32) *ItemWeaponInfo {
 			ItemId:   uint32(conf.WeaponInfo.GetItemID()),
 		},
 		WeaponId:         conf.WeaponId,
-		InstanceId:       instanceId,
+		InstanceId:       0,
 		WeaponSystemType: proto.EWeaponSystemType(conf.WeaponInfo.NewWeaponSystemType),
-		Attack:           1, // 攻击力
-		DamageBalance:    1, // 伤害平衡
-		CriticalRatio:    1, // 临界比率
+		Attack:           alg.RandUint32(uint32(propertyInfo.MinAttack), uint32(propertyInfo.MaxAttack)),                       // 攻击力
+		DamageBalance:    alg.RandUint32(uint32(propertyInfo.MinDamageBalance*100), uint32(propertyInfo.MaxDamageBalance*100)), // 伤害平衡
+		CriticalRatio:    alg.RandUint32(uint32(propertyInfo.MinCriticalRatio*100), uint32(propertyInfo.MaxCriticalRatio*100)), // 临界比率
 		RandomProperty:   make([]*RandomProperty, 0),
 		WearerId:         0,
 		WearerIndex:      0,
-		Level:            1,
-		StrengthLevel:    0, // 强度等级
-		StrengthExp:      0, // 强度经验
-		Star:             1, // 星
-		Inscription1:     0, //
-		Durability:       0, // 磨损度
-		PropertyIndex:    1, //
+		Level:            alg.RandUint32(uint32(propertyInfo.MinLevel), uint32(propertyInfo.MaxLevel)),
+		StrengthLevel:    0,             // 强度等级
+		StrengthExp:      0,             // 强度经验
+		Star:             1,             // 星
+		Inscription1:     0,             //
+		Durability:       0,             // 磨损度
+		PropertyIndex:    propertyIndex, // 参数序号
 		IsLock:           false,
 	}
-	list[instanceId] = info
+	// 随机属性附加
+	tempPropertyType := make(map[int32]struct{})
+	addRandomProperty := func(id int32) {
+		if id == 0 {
+			return
+		}
+		randomConf := gdconf.GetWeaponRandomPropertyConfigure(id)
+		if randomConf == nil || len(randomConf.WeaponRandomPropertyGroupInfo) == 0 {
+			return
+		}
+		groupInfo := randomConf.WeaponRandomPropertyGroupInfo[rand.IntN(len(randomConf.WeaponRandomPropertyGroupInfo))]
+		if groupInfo == nil {
+			return
+		}
+		_, exist := tempPropertyType[groupInfo.NewPropertyType]
+		if !exist {
+			valueConfs := gdconf.GetWeaponRandomValueConfigure(groupInfo.RandomValueID)
+			if valueConfs == nil {
+				return
+			}
+			for _, valueConf := range valueConfs.GetWeaponRandomGroupInfo() {
+				if uint32(valueConf.MinLevel) <= info.Level && info.Level <= uint32(valueConf.MaxLevel) {
+					tempPropertyType[groupInfo.NewPropertyType] = struct{}{}
+					alg.AddList(&info.RandomProperty, &RandomProperty{
+						PropertyType: proto.EPropertyType(groupInfo.NewPropertyType),
+						Value:        alg.RandUint32(uint32(valueConf.Min*100), uint32(valueConf.Max*100)),
+					})
+				}
+			}
+		}
+	}
+	addRandomProperty(propertyInfo.RandomProperty1ID)
+	addRandomProperty(propertyInfo.RandomProperty2ID)
+	addRandomProperty(propertyInfo.RandomProperty3ID)
+	addRandomProperty(propertyInfo.RandomProperty4ID)
 
 	return info
 }

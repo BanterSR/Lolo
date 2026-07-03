@@ -31,9 +31,9 @@ func S2U32(msg string) uint32 {
 	return uint32(ms)
 }
 
-func AddList[T any](list *[]*T, n ...*T) {
+func AddList[S ~[]*E, E any](list *S, n ...*E) {
 	if list == nil {
-		list = new([]*T)
+		list = new(S)
 	}
 	*list = append(*list, n...)
 }
@@ -79,7 +79,6 @@ func NoZero[T comparable](a *T, b T) {
 }
 
 type orSlice interface {
-	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 | ~string | ~bool
 	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64
 }
 
@@ -95,6 +94,13 @@ func MinSlice[T orSlice](a, b T) T {
 		return a
 	}
 	return b
+}
+
+func RandUint32(a, b uint32) uint32 {
+	if a >= b {
+		return a
+	}
+	return rand.Uint32N(b-a) + a
 }
 
 func AddSlice[T orSlice](a *[]T, b T) {

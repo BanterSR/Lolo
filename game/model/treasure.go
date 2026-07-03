@@ -3,7 +3,6 @@ package model
 import (
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/pkg/alg"
-	"gucooing/lolo/pkg/log"
 	"gucooing/lolo/protocol/proto"
 	"math/rand/v2"
 	"sync/atomic"
@@ -107,35 +106,13 @@ func RandItemDetail(worldLevel uint32, tag proto.EBagItemTag) EBagItemTag {
 			PackType: proto.PackType_PackType_TempStorageArea,
 		}
 	case proto.EBagItemTag_EBagItemTag_Weapon: // 武器
-		weapConf := gdconf.GetWeaponAllInfo(uint32(conf.ID))
-		if weapConf == nil {
-			log.Game.Warnf("[WeaponItemID:%v]未知的武器掉落物", conf.ID)
+		info := GenItemWeaponInfo(uint32(conf.ID), alg.MinSlice(10, (worldLevel/5)+1))
+		if info == nil {
 			return nil
 		}
-		return &ItemWeaponInfo{
-			ItemBaseInfo: &ItemBaseInfo{
-				ItemType: proto.EBagItemTag_EBagItemTag_Weapon,
-				PackType: proto.PackType_PackType_Inventory,
-				ItemId:   uint32(weapConf.WeaponInfo.GetItemID()),
-			},
-			WeaponId:         weapConf.WeaponId,
-			InstanceId:       0,
-			WeaponSystemType: proto.EWeaponSystemType(weapConf.WeaponInfo.NewWeaponSystemType),
-			Attack:           1, // 攻击力
-			DamageBalance:    1, // 伤害平衡
-			CriticalRatio:    1, // 临界比率
-			RandomProperty:   make([]*RandomProperty, 0),
-			WearerId:         0,
-			WearerIndex:      0,
-			Level:            rand.Uint32N((worldLevel+1)*20-alg.MaxSlice(worldLevel*20, 1)+1) + alg.MaxSlice(worldLevel*20, 1),
-			StrengthLevel:    0, // 强度等级
-			StrengthExp:      0, // 强度经验
-			Star:             1, // 星
-			Inscription1:     0, //
-			Durability:       0, // 磨损度
-			PropertyIndex:    1, //
-			IsLock:           false,
-		}
+		info.PackType = proto.PackType_PackType_TempStorageArea
+
+		return info
 	case proto.EBagItemTag_EBagItemTag_Armor: // 装备
 	}
 
