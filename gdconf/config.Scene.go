@@ -73,6 +73,10 @@ func GetSceneInfo(sceneId uint32) *SceneInfo {
 	return info
 }
 
+func GetSceneMap() map[uint32]*SceneInfo {
+	return cc.Config.SceneConfig.SceneMap
+}
+
 func GetDungeonSceneInfo(dungeonId uint32) *DungeonSceneInfo {
 	info := cc.Config.SceneConfig.DungeonSceneMap[dungeonId]
 	if info == nil {

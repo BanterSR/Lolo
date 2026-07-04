@@ -35,6 +35,10 @@ func (g *GameConfig) loadSpell() {
 	}
 }
 
+func GetSpellLevelMap(skillId uint32) map[uint32]*excel.SpellConfigure {
+	return cc.Excel.Spell.SpellMap[skillId]
+}
+
 func GetSpellLevelUpInfoBySkillId(skillId, level uint32) *excel.SpellLevelUpInfoConfigure {
 	levelMap := cc.Excel.Spell.SpellMap[skillId]
 	if levelMap == nil {

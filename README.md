@@ -1,5 +1,9 @@
 # lolo
 
+# 当前分支是实验性分支，目的是测试服务端内置MCP Server的可行性[README](./mcp/README.md) 给AI提供Lolo资源调用的工具
+
+## 由于是实验性更新 此更新不会被合并到main中，后续内容更新也不会对此分支进行支持
+
 [![Discord](https://img.shields.io/badge/Join-Discord-blue?logo=discord&logoSize=auto)](https://discord.gg/GNKBE7X75d)
 
 开放空间/OverField 服务端部分实现

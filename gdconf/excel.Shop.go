@@ -46,6 +46,10 @@ func GetShopInfo(shopId uint32) *excel.ShopInfoConfigure {
 	return cc.Excel.Shop.Info[shopId]
 }
 
+func GetAllShopInfo() []*excel.ShopInfoConfigure {
+	return cc.Excel.Shop.all.GetInfo().GetDatas()
+}
+
 func GetGrids(grid uint32) map[uint32]*excel.ShopGridConfigureItem {
 	return cc.Excel.Shop.Grid[grid]
 }

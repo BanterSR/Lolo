@@ -51,3 +51,10 @@ func GetDungeonQuestConfigure(id uint32) *excel.DungeonQuestConfigure {
 	}
 	return cc.Excel.Dungeon.DungeonQuestMap[id]
 }
+
+func GetAllDungeonConfigure() []*excel.DungeonConfigure {
+	if cc == nil || cc.Excel == nil || cc.Excel.Dungeon == nil {
+		return nil
+	}
+	return cc.Excel.Dungeon.all.GetDungeon().GetDatas()
+}

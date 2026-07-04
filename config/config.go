@@ -27,6 +27,7 @@ type Config struct {
 	Game           *Game      `json:"Game"`
 	LogServer      *LogServer `json:"LogServer"`
 	DB             *DB        `json:"DB"`
+	Mcp            *Mcp       `json:"Mcp"`
 }
 
 var DefaultConfig = &Config{
@@ -39,6 +40,7 @@ var DefaultConfig = &Config{
 	Game:           defaultGame,
 	LogServer:      defaultLogServer,
 	DB:             defaultDB,
+	Mcp:            defaultMcp,
 }
 
 var (

@@ -77,7 +77,7 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg
 			}
 			s.GetItemModel().InitItem()
 		}
-		g.userMap[userId] = s
+		g.userMap.Set(userId, s)
 	}
 login:
 	s.Init(conn, uuid)

@@ -78,6 +78,7 @@ func (g *GameConfig) load() {
 	g.loadAchieve()
 	g.loadHead()
 	g.loadCharacter()
+	g.loadCharacterPractice()
 	g.loadItem()
 	g.loadWeapon()
 	g.loadGacha()
@@ -104,6 +105,8 @@ func (g *GameConfig) load() {
 	g.loadMake()
 	g.loadTreasureBox()
 	g.loadMonster()
+	g.loadString()
+	g.loadVoice()
 
 	// config
 	g.loadSceneConfig()
@@ -118,35 +121,38 @@ type Data struct {
 }
 
 type Excel struct {
-	Achieve        *Achieve
-	Head           *Head
-	Character      *Character
-	Item           *Item
-	Weapon         *Weapon
-	Gacha          *Gacha
-	Quest          *Quest
-	PlayerUnlock   *PlayerUnlock
-	PlayerAbility  *PlayerAbility
-	Story          *Story
-	Fashion        *Fashion
-	Armor          *Armor
-	Poster         *Poster
-	Inscription    *Inscription
-	GlobalConfig   *GlobalConfig
-	Chat           *Chat
-	Shop           *Shop
-	Ability        *Ability
-	Spell          *Spell
-	CollectionItem *CollectionItem
-	Reward         *Reward
-	Gather         *Gather
-	Dungeon        *Dungeon
-	Flag           *Flag
-	Manual         *Manual
-	HomeItem       *HomeItem
-	Make           *Make
-	TreasureBox    *TreasureBox
-	Monster        *Monster
+	Achieve           *Achieve
+	Head              *Head
+	Character         *Character
+	CharacterPractice *CharacterPractice
+	Item              *Item
+	Weapon            *Weapon
+	Gacha             *Gacha
+	Quest             *Quest
+	PlayerUnlock      *PlayerUnlock
+	PlayerAbility     *PlayerAbility
+	Story             *Story
+	Fashion           *Fashion
+	Armor             *Armor
+	Poster            *Poster
+	Inscription       *Inscription
+	GlobalConfig      *GlobalConfig
+	Chat              *Chat
+	Shop              *Shop
+	Ability           *Ability
+	Spell             *Spell
+	CollectionItem    *CollectionItem
+	Reward            *Reward
+	Gather            *Gather
+	Dungeon           *Dungeon
+	Flag              *Flag
+	Manual            *Manual
+	HomeItem          *HomeItem
+	Make              *Make
+	TreasureBox       *TreasureBox
+	Monster           *Monster
+	String            *String
+	Voice             *Voice
 }
 
 type Config struct {

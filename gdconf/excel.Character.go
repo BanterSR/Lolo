@@ -113,6 +113,10 @@ func AddCharacterExp(levelId, oldExp int32, oldLevel, maxLevel uint32) (newLevel
 	}
 }
 
+func GetCharacterStarMap(characterId uint32) map[uint32]*excel.CharacterStarInfo {
+	return cc.Excel.Character.CharacterStarMap[characterId]
+}
+
 func GetCharacterStar(characterId, star uint32) *excel.CharacterStarInfo {
 	list := cc.Excel.Character.CharacterStarMap[characterId]
 	if list == nil {

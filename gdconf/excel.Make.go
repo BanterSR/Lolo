@@ -54,6 +54,10 @@ func GetMakeItemConfigure(id uint32) *excel.MakeItemConfigure {
 	return cc.Excel.Make.MakeItemMap[id]
 }
 
+func GetAllMakeItemConfigure() []*excel.MakeItemConfigure {
+	return cc.Excel.Make.all.GetMakeItem().GetDatas()
+}
+
 func GetMakeSpellConfigure(id uint32) *excel.MakeSpellConfigure {
 	return cc.Excel.Make.MakeSpellMap[id]
 }

@@ -23,7 +23,7 @@ import (
 type Game struct {
 	router              *gin.Engine // http 服务器
 	gateTaskChan        chan GateTask
-	userMap             map[uint32]*model.Player
+	userMap             *cache.Cache[uint32, *model.Player]
 	handlerFuncRouteMap map[uint32]HandlerFunc
 	botCache            *cache.Cache[uint32, BotInterface]
 	onlyUserId          atomic.Uint32
@@ -59,6 +59,14 @@ type KillPlayer struct {
 
 func (k *KillPlayer) UserID() uint32 { return k.UserId }
 
+// SnapshotPlayer 请求某在线玩家的实时快照:在主线程内只读取少量高价值字段(不整体序列化),避免高频序列化开销与并发竞争
+type SnapshotPlayer struct {
+	UserId uint32
+	Reply  chan map[string]any
+}
+
+func (s *SnapshotPlayer) UserID() uint32 { return s.UserId }
+
 func NewGame(router *gin.Engine) *Game {
 	conf := config.GetGame()
 	log.NewGame()
@@ -66,7 +74,7 @@ func NewGame(router *gin.Engine) *Game {
 		router:       router,
 		worldTask:    model.NewWorldTask(),
 		gateTaskChan: make(chan GateTask, conf.MsgChanSize),
-		userMap:      make(map[uint32]*model.Player, 1000),
+		userMap:      cache.New[uint32, *model.Player](0),
 		doneChan:     make(chan struct{}),
 		botCache:     cache.New[uint32, BotInterface](0),
 	}
@@ -118,6 +126,12 @@ func (g *Game) gateTask(task GateTask) {
 		g.routeHandle(t.Conn, t.UserId, t.UUID, t.GameMsg)
 	case *KillPlayer:
 		g.donePlayer(t)
+	case *SnapshotPlayer:
+		if player := g.GetUser(t.UserId); player != nil {
+			t.Reply <- g.livePlayerSnapshot(player)
+		} else {
+			t.Reply <- nil
+		}
 	}
 }
 
@@ -129,17 +143,88 @@ func (g *Game) send(s *model.Player, packetId uint32, payloadMsg pb.Message) {
 }
 
 func (g *Game) GetUser(userId uint32) *model.Player {
-	player, ok := g.userMap[userId]
+	player, ok := g.userMap.Get(userId)
 	if !ok {
 		return nil
 	}
 	return player
 }
 
+// OnlinePlayerCount 当前内存中加载的玩家数(供 mcp 只读查询)
+func (g *Game) OnlinePlayerCount() int {
+	count := 0
+	g.userMap.Range(func(_ uint32, _ *model.Player) bool {
+		count++
+		return true
+	})
+	return count
+}
+
+// IsPlayerOnline 玩家是否在内存中(供 mcp 只读查询)
+func (g *Game) IsPlayerOnline(userId uint32) bool {
+	_, ok := g.userMap.Get(userId)
+	return ok
+}
+
+// LivePlayerInfo 取在线玩家的实时快照(供 mcp 只读查询)。
+// 经游戏主线程读取:唯一写线程内只挑少量高价值字段,既避免并发竞争,又避免高频全量序列化开销。
+// 玩家不在线或超时返回 false。
+func (g *Game) LivePlayerInfo(userId uint32) (map[string]any, bool) {
+	if !g.IsPlayerOnline(userId) {
+		return nil, false
+	}
+	reply := make(chan map[string]any, 1)
+	select {
+	case g.gateTaskChan <- &SnapshotPlayer{UserId: userId, Reply: reply}:
+	case <-time.After(2 * time.Second):
+		return nil, false
+	}
+	select {
+	case info := <-reply:
+		return info, info != nil
+	case <-time.After(2 * time.Second):
+		return nil, false
+	}
+}
+
+// livePlayerSnapshot 在主线程内构造紧凑实时快照:仅读取少量简单字段,不整体序列化玩家
+func (g *Game) livePlayerSnapshot(p *model.Player) map[string]any {
+	h := map[string]any{
+		"userId":     p.UserId,
+		"nickName":   p.NickName,
+		"online":     p.Online,
+		"activeTime": p.ActiveTime.Unix(),
+	}
+	if p.Scene != nil {
+		h["worldLevel"] = p.Scene.GetWorldLevel()
+	}
+	if p.Character != nil {
+		h["characterCount"] = len(p.Character.CharacterMap)
+	}
+	if p.Item != nil {
+		h["itemCount"] = len(p.Item.ItemBaseInfo)
+	}
+	if p.Team != nil && p.Team.TeamInfo != nil {
+		h["team"] = []uint32{p.Team.TeamInfo.Char1, p.Team.TeamInfo.Char2, p.Team.TeamInfo.Char3}
+	}
+	// 当前场景与位置(世界层实时状态,主线程内读取避免竞争)
+	if sp := g.getWordInfo().getScenePlayer(p); sp != nil {
+		h["channelId"] = sp.ChannelId
+		if sp.CurScene != nil {
+			h["sceneId"] = sp.CurScene.GetSceneId()
+			if pos := sp.CurScene.GetPos(); pos != nil {
+				// 坐标为定点数(见 gdconf.ConfigVector3ToProtoVector3,已放大),decimalPlaces 表示小数位
+				h["pos"] = map[string]any{"x": pos.GetX(), "y": pos.GetY(), "z": pos.GetZ(), "decimalPlaces": pos.GetDecimalPlaces()}
+			}
+		}
+	}
+	return h
+}
+
 func (g *Game) checkPlayer() {
 	defer g.checkPlayerTimer.Reset(3 * time.Minute)
 	playerList := make([]*model.Player, 0)
-	for _, player := range g.userMap {
+	g.userMap.Range(func(key uint32, player *model.Player) bool {
 		if player.IsOffline() {
 			g.kickPlayer(player)
 			playerList = append(playerList, player)
@@ -147,9 +232,10 @@ func (g *Game) checkPlayer() {
 		if player.IsSave() {
 			player.SavePlayer()
 		}
-	}
+		return true
+	})
 	for _, player := range playerList {
-		delete(g.userMap, player.UserId)
+		g.userMap.Del(player.UserId)
 	}
 }
 
@@ -218,13 +304,14 @@ func (g *Game) GetGateTask() chan GateTask {
 func (g *Game) Close() {
 	close(g.doneChan)
 	g.checkPlayer()
-	for _, player := range g.userMap {
+	g.userMap.Range(func(key uint32, player *model.Player) bool {
 		g.send(player, 0, &proto.PlayerOfflineRsp{
 			Status:             proto.StatusCode_StatusCode_Ok,
 			Reason:             proto.PlayerOfflineReason_PlayerOfflineReason_ServerShutdown,
 			ServerNextOpenTime: 0,
 		})
 		g.kickPlayer(player)
-	}
+		return true
+	})
 	log.Game.Infof("game退出完成")
 }

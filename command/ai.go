@@ -3,19 +3,23 @@ package command
 import (
 	"context"
 	"fmt"
+	"gucooing/lolo/mcp"
+	"net/http"
+	"sync"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/openai/openai-go/v3"
 	"github.com/openai/openai-go/v3/option"
 	"github.com/openai/openai-go/v3/shared"
-	"net/http"
-	"sync"
-	"time"
 
 	"gucooing/lolo/config"
 	"gucooing/lolo/game"
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/pkg/cache"
 )
+
+const aiMaxToolRounds = 8
 
 type AiBot struct {
 	*Command
@@ -99,6 +103,9 @@ func (a *AiBot) Handle(s *model.Player, text string) {
 			PromptCacheKey:       openai.String(fmt.Sprintf("lolo-ai-chat-%s-%d", a.uuid, s.UserId)),
 			PromptCacheRetention: openai.ChatCompletionNewParamsPromptCacheRetention24h,
 		}
+		if m := mcp.Default(); m != nil {
+			params.Tools = m.OpenAITools()
+		}
 		params.SetExtraFields(map[string]interface{}{
 			"thinking": map[string]string{
 				"type": "enabled",
@@ -108,16 +115,48 @@ func (a *AiBot) Handle(s *model.Player, text string) {
 			},
 			"tool_choice": "auto",
 		})
-		completion, err := a.openAi.Chat.Completions.New(ctx, params)
-		if err != nil {
-			a.Command.gs.ChatPrivateMsgNotice(s, a.GetUserChatMsgData(err.Error(), time.Now()))
-			return
+		for round := 0; round <= aiMaxToolRounds; round++ {
+			params.Messages = messages
+			completion, err := a.openAi.Chat.Completions.New(ctx, params)
+			if err != nil {
+				a.Command.gs.ChatPrivateMsgNotice(s, a.GetUserChatMsgData(err.Error(), time.Now()))
+				return
+			}
+			if len(completion.Choices) == 0 {
+				a.Command.gs.ChatPrivateMsgNotice(s, a.GetUserChatMsgData("暂时没有返回内容，请稍后再试", time.Now()))
+				return
+			}
+
+			choice := completion.Choices[0]
+			if len(choice.Message.ToolCalls) == 0 {
+				content := choice.Message.Content
+				if content == "" {
+					content = choice.Message.Refusal
+				}
+				if content == "" {
+					a.Command.gs.ChatPrivateMsgNotice(s, a.GetUserChatMsgData("暂时没有返回内容，请稍后再试", time.Now()))
+					return
+				}
+				now := time.Now()
+				a.Command.gs.ChatPrivateMsgNotice(s, a.GetUserChatMsgData(content, now))
+				sessionInfo.messages = append(sessionInfo.messages,
+					&messageInfo{userId: 0, time: now, message: openai.AssistantMessage(content)})
+				return
+			}
+
+			server := mcp.Default()
+			if server == nil {
+				a.Command.gs.ChatPrivateMsgNotice(s, a.GetUserChatMsgData("我现在无法查询游戏数据，请稍后再试", time.Now()))
+				return
+			}
+			messages = append(messages, choice.Message.ToParam())
+			for _, tc := range choice.Message.ToolCalls {
+				out := server.CallTool(tc.Function.Name, tc.Function.Arguments)
+				messages = append(messages, openai.ToolMessage(out, tc.ID))
+			}
 		}
-		for _, choice := range completion.Choices {
-			a.Command.gs.ChatPrivateMsgNotice(s, a.GetUserChatMsgData(choice.Message.Content, time.Now()))
-			sessionInfo.messages = append(sessionInfo.messages,
-				&messageInfo{userId: 0, time: time.Now(), message: openai.AssistantMessage(choice.Message.Content)})
-		}
+
+		a.Command.gs.ChatPrivateMsgNotice(s, a.GetUserChatMsgData("这次查询步骤过多，请把问题拆得更具体一些", time.Now()))
 	}()
 }
 

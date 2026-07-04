@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"gucooing/lolo/command"
 	"gucooing/lolo/game"
+	"gucooing/lolo/mcp"
 	"net/http"
 	"os"
 	"os/signal"
@@ -130,6 +131,8 @@ func newLolo() error {
 	s := sdk.New(ginRouter)
 	// 初始化game
 	gs := game.NewGame(ginRouter)
+	// 初始化 mcp/tools 服务器(AI 咨询)
+	mcpServer := mcp.New(ginRouter, gs)
 	// 初始化command
 	command.NewCommand(ginRouter, gs)
 	// 初始化gateWay
@@ -178,6 +181,9 @@ func newLolo() error {
 		s.Close()
 		g.Close()
 		l.Close()
+		if mcpServer != nil {
+			mcpServer.Close()
+		}
 		log.Close()
 		os.Exit(0)
 	}
