@@ -82,19 +82,20 @@ func (s *Player) IsOffline() bool {
 
 func (s *Player) SavePlayer() error {
 	s.SetLastSaveTime()
-	var laseErr error
-	if err := db.SaveOFGame(s.UserId, func(user *db.OFGame) bool {
-		bin, err := sonic.Marshal(s)
-		if err != nil {
-			log.Game.Errorf("玩家:%v序列化失败err:%s",
-				s.UserId, err.Error())
-			return false
-		}
-		user.BinData = bin
-		return true
-	}); err != nil {
-		laseErr = err
+	bin, err := sonic.Marshal(s) // 主循环上:一致快照,纯内存操作
+	if err != nil {
+		log.Game.Errorf("玩家:%v序列化失败err:%s",
+			s.UserId, err.Error())
+		return err
 	}
+	userId := s.UserId
+	db.Persist(userId, func() error { // 分片落库协程上:gzip + DB 写
+		if err := db.SaveOFGameBin(userId, bin); err != nil {
+			log.Game.Errorf("玩家:%v落库失败err:%s", userId, err.Error())
+			return err
+		}
+		return nil
+	})
 
-	return laseErr
+	return nil
 }

@@ -165,6 +165,61 @@ docker run -d \
   -c max_connections=200
 ```
 
+## 数据库配置（读写分离 / 异步落库）
+
+`config.json` 的 `DB` 段，字段说明：
+
+```json
+"DB": {
+  "dbType": "sqlite",          // 类型：sqlite / mysql / postgres
+  "dsn": "./db/lolo.db",       // 主库（写）连接串
+  "readDsn": [],               // 从库（读）连接串列表，空=读写都走主库
+  "maxIdleConns": 20,          // 最大空闲连接数
+  "maxOpenConns": 40,          // 最大连接数
+  "connMaxLifetime": "1h0m0s", // 连接最大复用时间
+  "persistShardNum": 0,        // 异步落库分片数，0=CPU核数（上限 maxOpenConns）
+  "persistBufSize": 1024       // 每分片队列缓冲
+}
+```
+
+### 读写分离（readDsn）
+
+`readDsn` 填**数据库主从复制中“从库”的连接串**：读自动走从库、写自动走主库，无需改代码。从库必须是**真正在复制主库**的实例（在数据库侧配好主从复制，或使用云厂商只读副本），程序只负责填连接串。
+
+**SQLite** —— 进程内单文件，不支持读写分离，`readDsn` 留空：
+
+```json
+"DB": { "dbType": "sqlite", "dsn": "./db/lolo.db", "readDsn": [] }
+```
+
+**MySQL** —— DSN 格式 `用户:密码@tcp(主机:端口)/库名?参数`（`parseTime=True` 必填）：
+
+```json
+"DB": {
+  "dbType": "mysql",
+  "dsn": "lolo:pass@tcp(10.0.0.1:3306)/lolo?charset=utf8mb4&parseTime=True&loc=Local",
+  "readDsn": [
+    "lolo:pass@tcp(10.0.0.2:3306)/lolo?charset=utf8mb4&parseTime=True&loc=Local",
+    "lolo:pass@tcp(10.0.0.3:3306)/lolo?charset=utf8mb4&parseTime=True&loc=Local"
+  ]
+}
+```
+
+**PostgreSQL** —— DSN 用 kv 形式（或 `postgres://用户:密码@主机:端口/库名?sslmode=disable`）：
+
+```json
+"DB": {
+  "dbType": "postgres",
+  "dsn": "host=10.0.0.1 user=lolo password=pass dbname=lolo port=5432 sslmode=disable TimeZone=Asia/Shanghai",
+  "readDsn": [
+    "host=10.0.0.2 user=lolo password=pass dbname=lolo port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+  ]
+}
+```
+
+> - 多个 `readDsn` 会随机负载均衡；暂无真从库、只想验证配置时，可把 `readDsn` 临时填成主库地址。
+> - 主从复制有延迟（从库读可能滞后主库几十毫秒~数秒）
+
 ## 如果要在私聊中加入ai 下面是参考配置:
 config.json的Game中添加:
 ```json

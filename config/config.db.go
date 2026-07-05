@@ -11,21 +11,27 @@ import (
 type DB struct {
 	Dev             bool      `toml:"dev"`
 	DbType          db.DbType `json:"dbType"`
-	Dsn             string    `json:"dsn"`
+	Dsn             string    `json:"dsn"`     // 主库(写)
+	ReadDsn         []string  `json:"readDsn"` // 从库(读),空=读写都走主库
 	MaxIdleConns    int       `json:"maxIdleConns"`
 	MaxOpenConns    int       `json:"maxOpenConns"`
 	ConnMaxLifetime Duration  `json:"connMaxLifetime"`
+	PersistShardNum int       `json:"persistShardNum"` // 异步落库分片数,0=CPU核数
+	PersistBufSize  int       `json:"persistBufSize"`  // 每分片队列缓冲
 }
 
 var defaultDB = &DB{
 	Dev:          false,
 	DbType:       "sqlite",
 	Dsn:          "./db/lolo.db",
+	ReadDsn:      make([]string, 0),
 	MaxIdleConns: 20,
 	MaxOpenConns: 40,
 	ConnMaxLifetime: Duration{
 		time.Hour,
 	},
+	PersistShardNum: 0,
+	PersistBufSize:  1024,
 }
 
 func GetDB() *DB {
@@ -40,9 +46,12 @@ func (x *DB) GetOption() *db.Option {
 		Dev:             x.Dev,
 		Type:            x.DbType,
 		Dsn:             x.Dsn,
+		ReadDsn:         x.ReadDsn,
 		MaxIdleConns:    x.MaxIdleConns,
 		MaxOpenConns:    x.MaxOpenConns,
 		ConnMaxLifetime: x.ConnMaxLifetime.Duration,
+		PersistShardNum: x.PersistShardNum,
+		PersistBufSize:  x.PersistBufSize,
 	}
 }
 

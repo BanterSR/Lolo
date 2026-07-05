@@ -178,6 +178,9 @@ func newLolo() error {
 		s.Close()
 		g.Close()
 		l.Close()
+		if err := db.Close(); err != nil { // 排空异步落库队列并关闭连接
+			log.App.Errorf("数据库关闭失败:%s", err.Error())
+		}
 		log.Close()
 		os.Exit(0)
 	}

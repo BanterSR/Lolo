@@ -48,24 +48,17 @@ func GetOFGameByUserId(userId uint32) (*OFGame, error) {
 	return user, err
 }
 
-// 更新账号数据
-func SaveOFGame(userId uint32, fx func(user *OFGame) bool) error {
-	err := db.Transaction(func(tx *gorm.DB) error {
+// SaveOFGameBin 更新玩家 blob 数据。bin 由调用方在主循环上序列化好传入,
+// gzip 由 GzipBin.Value 在本(落库)协程完成。
+func SaveOFGameBin(userId uint32, bin []byte) error {
+	return db.Transaction(func(tx *gorm.DB) error {
 		info := new(OFGame)
-		if tx.Where("user_id = ?", userId).First(info); tx.Error != nil {
-			return tx.Error
+		if err := tx.Where("user_id = ?", userId).First(info).Error; err != nil {
+			return err
 		}
-		if !fx(info) {
-			return nil
-		}
-		if tx.Save(info).Error != nil {
-			return tx.Error
-		}
-
-		return tx.Error
+		info.BinData = bin
+		return tx.Save(info).Error
 	})
-
-	return err
 }
 
 // 判断玩家是否存在
