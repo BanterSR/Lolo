@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"sync"
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
@@ -28,14 +28,26 @@ type AiBot struct {
 }
 
 type aiMessage struct {
-	sync     sync.Mutex
-	messages []*messageInfo
+	messages *cache.Cache[int, *messageInfo]
 }
 
 type messageInfo struct {
 	userId  uint32
+	id      int
 	time    time.Time
 	message openai.ChatCompletionMessageParamUnion
+}
+
+func (m *aiMessage) MessageList() []*messageInfo {
+	messageList := make([]*messageInfo, 0)
+	m.messages.Range(func(id int, info *messageInfo) bool {
+		messageList = append(messageList, info)
+		return true
+	})
+	sort.Slice(messageList, func(i, j int) bool {
+		return messageList[i].id < messageList[j].id
+	})
+	return messageList
 }
 
 func (m *messageInfo) GetUserId() uint32 {
@@ -69,25 +81,38 @@ func (a *AiBot) Handle(s *model.Player, text string) {
 		sessionInfo, ok := a.session.Get(s.UserId)
 		if !ok {
 			sessionInfo = &aiMessage{
-				sync: sync.Mutex{},
-				messages: []*messageInfo{
-					{userId: 0, time: time.Now(),
-						message: openai.SystemMessage(fmt.Sprintf("你现在对话的玩家名称是:%s,%s", s.NickName, a.cfg.System))},
-				},
+				messages: cache.New[int, *messageInfo](0),
 			}
+			sessionInfo.messages.Set(0, &messageInfo{userId: 0, time: time.Now(),
+				message: openai.SystemMessage(fmt.Sprintf("你现在对话的玩家名称是:%s,%s", s.NickName, a.cfg.System))})
 			a.session.Set(s.UserId, sessionInfo)
 		}
-		sessionInfo.sync.Lock()
-		defer sessionInfo.sync.Unlock()
-		if len(sessionInfo.messages) > 500 {
-			sessionInfo.messages = append(sessionInfo.messages[:1], sessionInfo.messages[51:]...)
+		messageList := sessionInfo.MessageList()
+		if len(messageList) > 500 {
+			delNum := 0
+			for _, message := range messageList {
+				if message.id == 0 {
+					continue
+				}
+				sessionInfo.messages.Del(message.id)
+				delNum++
+				if delNum >= 50 {
+					break
+				}
+			}
+			messageList = sessionInfo.MessageList()
 		}
-		sessionInfo.messages = append(sessionInfo.messages,
-			&messageInfo{userId: s.UserId, time: time.Now(), message: openai.UserMessage(text)})
+		nextId := 1
+		if len(messageList) > 0 {
+			nextId = messageList[len(messageList)-1].id + 1
+		}
+		userMessage := &messageInfo{id: nextId, userId: s.UserId, time: time.Now(), message: openai.UserMessage(text)}
+		sessionInfo.messages.Set(nextId, userMessage)
+		messageList = append(messageList, userMessage)
 
-		messages := make([]openai.ChatCompletionMessageParamUnion, len(sessionInfo.messages))
-		for i, message := range sessionInfo.messages {
-			messages[i] = message.message
+		messages := make([]openai.ChatCompletionMessageParamUnion, 0, len(messageList))
+		for _, message := range messageList {
+			messages = append(messages, message.message)
 		}
 
 		params := openai.ChatCompletionNewParams{
@@ -120,7 +145,8 @@ func (a *AiBot) Handle(s *model.Player, text string) {
 			a.Command.gs.PostPlayerFunc(s.UserId, func(p *model.Player) {
 				a.Command.gs.ChatPrivateMsgNotice(p, a.GetUserChatMsgData(choice.Message.Content, time.Now()))
 			})
-			sessionInfo.messages = append(sessionInfo.messages,
+			nextId++
+			sessionInfo.messages.Set(nextId,
 				&messageInfo{userId: 0, time: time.Now(), message: openai.AssistantMessage(choice.Message.Content)})
 		}
 	}()
@@ -132,9 +158,7 @@ func (a *AiBot) GetMsgRecords(userId uint32) []game.MsgRecordInterface {
 	if !ok {
 		return list
 	}
-	session.sync.Lock()
-	defer session.sync.Unlock()
-	for _, message := range session.messages {
+	for _, message := range session.MessageList() {
 		list = append(list, message)
 	}
 	return list
