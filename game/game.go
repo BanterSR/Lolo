@@ -1,6 +1,7 @@
 package game
 
 import (
+	"errors"
 	"gucooing/lolo/pkg/cache"
 	"runtime"
 	"runtime/debug"
@@ -58,6 +59,25 @@ type KillPlayer struct {
 }
 
 func (k *KillPlayer) UserID() uint32 { return k.UserId }
+
+// ErrPlayerOffline 目标玩家不在线(未加载到内存),操作未执行。
+var ErrPlayerOffline = errors.New("玩家不在线")
+
+// FuncTask 通用玩家任务:把"对在线玩家的操作"投递到 game 主循环上串行执行,
+// 让 GM/HTTP/bot 回调等外部 goroutine 无需加锁即可安全操作 Player。
+type FuncTask struct {
+	UserId uint32
+	Fn     func(s *model.Player) (any, error) // 在主循环上执行,可直接读写 Player,返回结果与错误
+	reply  chan funcTaskResult                // 非nil时回传执行结果
+}
+
+// funcTaskResult FuncTask 的执行结果
+type funcTaskResult struct {
+	msg any
+	err error
+}
+
+func (f *FuncTask) UserID() uint32 { return f.UserId }
 
 func NewGame(router *gin.Engine) *Game {
 	conf := config.GetGame()
@@ -118,6 +138,23 @@ func (g *Game) gateTask(task GateTask) {
 		g.routeHandle(t.Conn, t.UserId, t.UUID, t.GameMsg)
 	case *KillPlayer:
 		g.donePlayer(t)
+	case *FuncTask:
+		g.funcTask(t)
+	}
+}
+
+// funcTask 在主循环上执行外部投递的玩家操作。
+func (g *Game) funcTask(t *FuncTask) {
+	player := g.GetUser(t.UserId)
+	if player == nil {
+		if t.reply != nil {
+			t.reply <- funcTaskResult{err: ErrPlayerOffline}
+		}
+		return
+	}
+	msg, err := t.Fn(player)
+	if t.reply != nil {
+		t.reply <- funcTaskResult{msg: msg, err: err}
 	}
 }
 
@@ -213,6 +250,33 @@ func (g *Game) kickPlayer(player *model.Player) {
 
 func (g *Game) GetGateTask() chan GateTask {
 	return g.gateTaskChan
+}
+
+// PostPlayerFunc 投递一个针对在线玩家的操作到 game 主循环异步执行(不等待结果)。
+// 仅供非主循环 goroutine(GM/HTTP/bot 回调等)调用;严禁在主循环内部调用,否则可能自锁。
+func (g *Game) PostPlayerFunc(userId uint32, fn func(s *model.Player)) {
+	g.gateTaskChan <- &FuncTask{UserId: userId, Fn: func(s *model.Player) (any, error) {
+		fn(s)
+		return nil, nil
+	}}
+}
+
+// InvokePlayerFunc 投递操作并等待主循环执行完成,返回 fn 的结果与错误。
+// 玩家不在线时返回 ErrPlayerOffline;timeout<=0 表示一直等待。
+// 阻塞的是调用方 goroutine,不是主循环。仅供非主循环 goroutine 调用。
+func (g *Game) InvokePlayerFunc(userId uint32, fn func(s *model.Player) (any, error), timeout time.Duration) (any, error) {
+	reply := make(chan funcTaskResult, 1)
+	g.gateTaskChan <- &FuncTask{UserId: userId, Fn: fn, reply: reply}
+	if timeout <= 0 {
+		res := <-reply
+		return res.msg, res.err
+	}
+	select {
+	case res := <-reply:
+		return res.msg, res.err
+	case <-time.After(timeout):
+		return nil, errors.New("game主循环执行超时")
+	}
 }
 
 func (g *Game) Close() {

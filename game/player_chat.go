@@ -152,9 +152,9 @@ func (g *Game) SendChatMsg(s *model.Player, msg *alg.GameMsg) {
 			log.Game.Warnf("UserId:%v db.CreateChatPrivateMsg err:%v", s.UserId, err)
 			return
 		}
-		// 如果在线就通知过去
+		// 如果在线就通知过去(在主循环上直接通知,避免 go 起协程碰 live Player 造成竞态)
 		if user := g.GetUser(req.PlayerId); user != nil {
-			go g.ChatPrivateMsgNotice(user, chatMsgData)
+			g.ChatPrivateMsgNotice(user, chatMsgData)
 		}
 	}
 }

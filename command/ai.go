@@ -3,13 +3,14 @@ package command
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"sync"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/openai/openai-go/v3"
 	"github.com/openai/openai-go/v3/option"
 	"github.com/openai/openai-go/v3/shared"
-	"net/http"
-	"sync"
-	"time"
 
 	"gucooing/lolo/config"
 	"gucooing/lolo/game"
@@ -110,11 +111,15 @@ func (a *AiBot) Handle(s *model.Player, text string) {
 		})
 		completion, err := a.openAi.Chat.Completions.New(ctx, params)
 		if err != nil {
-			a.Command.gs.ChatPrivateMsgNotice(s, a.GetUserChatMsgData(err.Error(), time.Now()))
+			a.Command.gs.PostPlayerFunc(s.UserId, func(p *model.Player) {
+				a.Command.gs.ChatPrivateMsgNotice(p, a.GetUserChatMsgData(err.Error(), time.Now()))
+			})
 			return
 		}
 		for _, choice := range completion.Choices {
-			a.Command.gs.ChatPrivateMsgNotice(s, a.GetUserChatMsgData(choice.Message.Content, time.Now()))
+			a.Command.gs.PostPlayerFunc(s.UserId, func(p *model.Player) {
+				a.Command.gs.ChatPrivateMsgNotice(p, a.GetUserChatMsgData(choice.Message.Content, time.Now()))
+			})
 			sessionInfo.messages = append(sessionInfo.messages,
 				&messageInfo{userId: 0, time: time.Now(), message: openai.AssistantMessage(choice.Message.Content)})
 		}
