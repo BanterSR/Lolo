@@ -107,7 +107,9 @@ func NewDB(option *Option) error {
 	db = d.db
 
 	// 启动异步落库分片写池
-	StartPersist(resolveShardNum(d.option.PersistShardNum, d.option.MaxOpenConns), d.option.PersistBufSize)
+	if len(d.option.ReadDsn) > 0 {
+		StartPersist(resolveShardNum(d.option.PersistShardNum, d.option.MaxOpenConns), d.option.PersistBufSize)
+	}
 
 	return err
 }
