@@ -9,6 +9,7 @@ import (
 
 type Conn interface {
 	Read() (*alg.GameMsg, error)
+	SendBin(packetId, cmdId uint32, bodyByte []byte)
 	Send(packetId uint32, protoObj pb.Message)
 	SetUID(uint32)
 	GetSeqId() uint32

@@ -1,6 +1,8 @@
 package game
 
 import (
+	pb "google.golang.org/protobuf/proto"
+	"gucooing/lolo/protocol/cmd"
 	"sync"
 
 	"gucooing/lolo/game/model"
@@ -213,11 +215,16 @@ func (c *ChatChannel) allSendMsg(msg *proto.ChatMsgData) {
 		Type:   c.Type,
 		Msg:    msg,
 	}
+	bodyByte, err := pb.Marshal(notice)
+	if err != nil {
+		log.Gate.Errorf("ChatMsgNotice marshal data err: %v\n", err)
+		return
+	}
 	for _, s := range c.userMap {
 		if s.UserId == msg.PlayerId {
 			continue
 		}
-		s.Conn.Send(0, notice)
+		s.Conn.SendBin(0, cmd.ChatMsgNotice, bodyByte)
 	}
 }
 

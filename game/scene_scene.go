@@ -139,7 +139,7 @@ func (s *SceneInfo) getDefaultChannel() *ChannelInfo {
 		if err != nil {
 			return nil
 		}
-		if ci.PlayerNum() >= 30 {
+		if ci.PlayerNum() >= 50 {
 			s.defaultChannelId++
 			if s.defaultChannelId > maxChannelId {
 				s.defaultChannelId = minChannelId

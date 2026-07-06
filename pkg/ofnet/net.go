@@ -283,6 +283,9 @@ const (
 )
 
 func (c *netBase) logMag(tp int, serverTag string, uid uint32, head *proto.PacketHead, payloadMsg pb.Message) {
+	if c.fileLog == nil {
+		return
+	}
 	var s string
 	switch tp {
 	case ClientMsg:
@@ -293,15 +296,13 @@ func (c *netBase) logMag(tp int, serverTag string, uid uint32, head *proto.Packe
 	if _, ok := c.blackPackId[head.MsgId]; ok {
 		return
 	}
-	if c.fileLog == nil {
-		return
-	}
+	packMsg := protojson.Format(payloadMsg)
 	c.fileLog.Debugf("%s[Server:%s][UID:%v][PacketId:%v][CMD:%s]Pack:%s",
 		s,
 		serverTag,
 		uid,
 		head.PacketId,
 		cmd.Get().GetCmdNameByCmdId(head.MsgId),
-		protojson.Format(payloadMsg),
+		packMsg,
 	)
 }

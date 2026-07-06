@@ -2,6 +2,7 @@ package game
 
 import (
 	"gucooing/lolo/gdconf"
+	"gucooing/lolo/protocol/cmd"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -90,11 +91,17 @@ func (c *ChannelInfo) PlayerNum() int64 {
 }
 
 func (c *ChannelInfo) sendAllPlayer(packetId uint32, payloadMsg pb.Message) {
+	cmdId := cmd.Get().GetCmdIdByProtoObj(payloadMsg)
+	bodyByte, err := pb.Marshal(payloadMsg)
+	if err != nil {
+		log.Gate.Errorf("sendAllPlayer marshal data err: %v\n", err)
+		return
+	}
 	for _, player := range c.getAllPlayer() {
 		if player.NetFreeze { // 网络冻结排除
 			continue
 		}
-		player.Conn.Send(packetId, payloadMsg)
+		player.Conn.SendBin(packetId, cmdId, bodyByte)
 	}
 }
 
