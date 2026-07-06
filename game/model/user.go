@@ -1,6 +1,7 @@
 package model
 
 import (
+	"math/rand/v2"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -17,6 +18,7 @@ type Player struct {
 	Created       time.Time       `json:"-"`                       // 创建时间
 	ActiveTime    time.Time       `json:"-"`                       // 上一次活跃时间
 	LastSaveTime  time.Time       `json:"-"`                       // 上一次数据保存时间
+	SaveLock      bool            `json:"-"`                       // 是否在db写入队列中
 	UserId        uint32          `json:"-"`                       // 玩家id
 	NickName      string          `json:"-"`                       // 玩家昵称
 	LoginUUID     string          `json:"-"`                       // 当前登录uuid
@@ -39,6 +41,7 @@ func (s *Player) Init(conn ofnet.Conn, uuid string) {
 	s.Online = true
 	s.NetFreeze = false
 	s.LoginUUID = uuid
+	s.LastSaveTime = time.Now().Add(time.Duration(rand.Int64N(1800)) * time.Second)
 }
 
 func (s *Player) GetSeqId() uint32 {
@@ -53,7 +56,7 @@ func (s *Player) SetActiveTime() {
 }
 
 func (s *Player) SetLastSaveTime() {
-	s.LastSaveTime = time.Now()
+	s.LastSaveTime = time.Now().Add(time.Duration(rand.Int64N(1200)) * time.Second)
 }
 
 // 是否保存玩家数据
@@ -64,7 +67,7 @@ var (
 )
 
 func (s *Player) IsSave() bool {
-	if s.ActiveTime.Before(s.LastSaveTime) {
+	if s.ActiveTime.Before(s.LastSaveTime) || s.SaveLock {
 		return false
 	}
 	if s.LastSaveTime.Add(playerSaveIntervalTime).After(time.Now()) {
@@ -74,6 +77,9 @@ func (s *Player) IsSave() bool {
 }
 
 func (s *Player) IsOffline() bool {
+	if s.SaveLock {
+		return false
+	}
 	if s.ActiveTime.Add(playerCacheTime).Before(time.Now()) && s.Online {
 		return true
 	}
@@ -81,6 +87,7 @@ func (s *Player) IsOffline() bool {
 }
 
 func (s *Player) SavePlayer() error {
+	s.SaveLock = true
 	s.SetLastSaveTime()
 	bin, err := sonic.Marshal(s) // 主循环上:一致快照,纯内存操作
 	if err != nil {
@@ -94,6 +101,7 @@ func (s *Player) SavePlayer() error {
 			log.Game.Errorf("玩家:%v落库失败err:%s", userId, err.Error())
 			return err
 		}
+		s.SaveLock = false
 		return nil
 	})
 

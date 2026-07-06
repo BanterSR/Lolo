@@ -4,7 +4,6 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"gucooing/lolo/pkg/alg"
 	"time"
 )
@@ -51,14 +50,11 @@ func GetOFGameByUserId(userId uint32) (*OFGame, error) {
 // SaveOFGameBin 更新玩家 blob 数据。bin 由调用方在主循环上序列化好传入,
 // gzip 由 GzipBin.Value 在本(落库)协程完成。
 func SaveOFGameBin(userId uint32, bin []byte) error {
-	return db.Transaction(func(tx *gorm.DB) error {
-		info := new(OFGame)
-		if err := tx.Where("user_id = ?", userId).First(info).Error; err != nil {
-			return err
-		}
-		info.BinData = bin
-		return tx.Save(info).Error
-	})
+	info := &OFGame{
+		UserId:  userId,
+		BinData: bin,
+	}
+	return db.Save(info).Error
 }
 
 // 判断玩家是否存在

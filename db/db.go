@@ -107,9 +107,7 @@ func NewDB(option *Option) error {
 	db = d.db
 
 	// 启动异步落库分片写池
-	if len(d.option.ReadDsn) > 0 {
-		StartPersist(resolveShardNum(d.option.PersistShardNum, d.option.MaxOpenConns), d.option.PersistBufSize)
-	}
+	StartPersist(resolveShardNum(d.option.PersistShardNum, d.option.MaxOpenConns), d.option.PersistBufSize)
 
 	return err
 }
@@ -218,7 +216,7 @@ func (d *Database) getGormConfig() *gorm.Config {
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
 			gromlogger.Config{
 				SlowThreshold: time.Second,
-				LogLevel:      gromlogger.Warn,
+				LogLevel:      gromlogger.Error,
 				Colorful:      false,
 			},
 		)

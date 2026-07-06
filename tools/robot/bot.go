@@ -24,9 +24,10 @@ var (
 
 // 每类失败仅打印首个原因到 stderr，避免刷屏又不至于让用户对着计数器猜。
 var (
-	logSdkErrOnce   sync.Once
-	logConnErrOnce  sync.Once
-	logLoginErrOnce sync.Once
+	logSdkErrOnce      sync.Once
+	logConnErrOnce     sync.Once
+	logLoginErrOnce    sync.Once
+	logSceneAnchorOnce sync.Once
 )
 
 func logOnce(o *sync.Once, format string, args ...any) {
@@ -35,9 +36,10 @@ func logOnce(o *sync.Once, format string, args ...any) {
 
 // Bot 是单个纯协议机器人：SDK 登录 -> 连接网关 -> VerifyLoginToken -> PlayerLogin -> 场景循环。
 type Bot struct {
-	id  int
-	cfg *Config
-	m   *Metrics
+	id     int
+	userId uint32 // 网关下发的游戏 UserId，用于在 SceneDataNotice 中定位自己
+	cfg    *Config
+	m      *Metrics
 
 	conn *Client
 
@@ -56,7 +58,7 @@ func newBot(id int, cfg *Config, m *Metrics) *Bot {
 		cfg:      cfg,
 		m:        m,
 		inflight: make(map[uint32]time.Time),
-		hsCh:     make(chan *alg.GameMsg, 8),
+		hsCh:     make(chan *alg.GameMsg, 16),
 		dead:     make(chan struct{}),
 	}
 }
@@ -119,7 +121,7 @@ func (b *Bot) readLoop() {
 		}
 
 		switch msg.Body.(type) {
-		case *proto.VerifyLoginTokenRsp, *proto.PlayerLoginRsp, *proto.PlayerMainDataRsp:
+		case *proto.VerifyLoginTokenRsp, *proto.PlayerLoginRsp, *proto.PlayerMainDataRsp, *proto.SceneDataNotice:
 			select {
 			case b.hsCh <- msg:
 			default:
@@ -229,7 +231,8 @@ func (b *Bot) login() bool {
 		logOnce(&logLoginErrOnce, "VerifyLoginToken 无响应: %v", err)
 		return false
 	}
-	if vmsg.Body.(*proto.VerifyLoginTokenRsp).GetUserId() == 0 {
+	b.userId = vmsg.Body.(*proto.VerifyLoginTokenRsp).GetUserId()
+	if b.userId == 0 {
 		atomic.AddInt64(&b.m.loginFail, 1)
 		logOnce(&logLoginErrOnce, "VerifyLoginToken 被拒（UserId=0，检查 SdkUid/GateToken）")
 		return false
