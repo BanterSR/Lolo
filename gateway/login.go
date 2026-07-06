@@ -1,6 +1,8 @@
 package gateway
 
 import (
+	"errors"
+	"gorm.io/gorm"
 	"gucooing/lolo/db"
 	"gucooing/lolo/game"
 	"gucooing/lolo/pkg/alg"
@@ -59,9 +61,18 @@ func (g *Gateway) VerifyLoginToken(login *LoginInfo) {
 
 	ofUser, err := db.GetOFUserBySdkUid(sdkUid)
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_AccountUnauth
-		log.Gate.Debugf("SdkUid:%s,get account failed err:%s", login.SdkUid, err.Error())
-		return
+		if errors.Is(err, gorm.ErrRecordNotFound) { // 可添加是否自动注册判断
+			ofUser, err = db.CreateOFUser(&db.OFUser{SdkUid: sdkUid})
+			if err != nil {
+				rsp.Status = proto.StatusCode_StatusCode_Fail
+				log.Gate.Debugf("SdkUid:%s,func db.CreateOFUser err:%s", login.SdkUid, err.Error())
+				return
+			}
+		} else {
+			rsp.Status = proto.StatusCode_StatusCode_AccountUnauth
+			log.Gate.Debugf("SdkUid:%s,get account failed err:%s", login.SdkUid, err.Error())
+			return
+		}
 	}
 
 	rsp.IsServerOpen = true

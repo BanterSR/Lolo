@@ -2,6 +2,7 @@ package game
 
 import (
 	"gucooing/lolo/gdconf"
+	"gucooing/lolo/protocol/cmd"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -20,6 +21,7 @@ type ChannelInfo struct {
 	SceneInfo        *SceneInfo                            // 所属场景
 	ChannelId        uint32                                // 房间号
 	allPlayer        map[uint32]*ScenePlayer               // 当前房间的全部玩家
+	playerNum        int64                                 // 玩家数
 	weatherType      proto.WeatherType                     // 天气
 	todSeq           int64                                 // 时间段
 	doneChan         chan struct{}                         // done
@@ -46,6 +48,7 @@ func (s *SceneInfo) newChannelInfo(channelId uint32, channelType int) *ChannelIn
 		ChannelId:            channelId,
 		channelType:          channelType,
 		allPlayer:            make(map[uint32]*ScenePlayer),
+		playerNum:            0,
 		weatherType:          proto.WeatherType_WeatherType_Sunny,
 		chatChannel:          newChatChannel(),
 		sceneGardenData:      model.GetSceneGardenData(channelId, s.SceneId),
@@ -83,12 +86,22 @@ func (c *ChannelInfo) getAllPlayer() map[uint32]*ScenePlayer {
 	return c.allPlayer
 }
 
+func (c *ChannelInfo) PlayerNum() int64 {
+	return c.playerNum
+}
+
 func (c *ChannelInfo) sendAllPlayer(packetId uint32, payloadMsg pb.Message) {
+	cmdId := cmd.Get().GetCmdIdByProtoObj(payloadMsg)
+	bodyByte, err := pb.Marshal(payloadMsg)
+	if err != nil {
+		log.Gate.Errorf("sendAllPlayer marshal data err: %v\n", err)
+		return
+	}
 	for _, player := range c.getAllPlayer() {
 		if player.NetFreeze { // 网络冻结排除
 			continue
 		}
-		player.Conn.Send(packetId, payloadMsg)
+		player.Conn.SendBin(packetId, cmdId, bodyByte)
 	}
 }
 
@@ -171,6 +184,7 @@ func (c *ChannelInfo) channelTick() {
 func (c *ChannelInfo) addPlayer(scenePlayer *ScenePlayer) bool {
 	list := c.getAllPlayer()
 	if _, ok := list[scenePlayer.UserId]; !ok {
+		c.playerNum++
 		scenePlayer.channelInfo = c
 		list[scenePlayer.UserId] = scenePlayer
 	}
@@ -188,6 +202,7 @@ func (c *ChannelInfo) addPlayer(scenePlayer *ScenePlayer) bool {
 func (c *ChannelInfo) delPlayer(scenePlayer *ScenePlayer) {
 	list := c.getAllPlayer()
 	if _, ok := list[scenePlayer.UserId]; ok { // 移除玩家
+		c.playerNum--
 		delete(list, scenePlayer.UserId)
 	}
 	c.serverSceneSync(&ServerSceneSyncCtx{

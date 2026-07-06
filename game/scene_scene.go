@@ -23,10 +23,11 @@ type WordInfo struct {
 }
 
 type SceneInfo struct {
-	game       *Game
-	cfg        *gdconf.SceneInfo       // 场景配置
-	SceneId    uint32                  // 场景id
-	allChannel map[uint32]*ChannelInfo // 全部房间
+	game             *Game
+	cfg              *gdconf.SceneInfo       // 场景配置
+	SceneId          uint32                  // 场景id
+	allChannel       map[uint32]*ChannelInfo // 全部房间
+	defaultChannelId uint32                  // 默认房间号
 }
 
 // 场景中玩家对象
@@ -87,10 +88,11 @@ func (w *WordInfo) getSceneInfo(sceneId uint32) (*SceneInfo, error) {
 		return nil, errors.New("ScenesConfigAsset.json配置文件中没有该场景")
 	}
 	info := &SceneInfo{
-		game:       w.game,
-		cfg:        cfg,
-		SceneId:    sceneId,
-		allChannel: make(map[uint32]*ChannelInfo),
+		game:             w.game,
+		cfg:              cfg,
+		SceneId:          sceneId,
+		allChannel:       make(map[uint32]*ChannelInfo),
+		defaultChannelId: gdconf.GetConstant().DefaultChannelId,
 	}
 	list[sceneId] = info
 	return info, nil
@@ -130,6 +132,26 @@ func (s *SceneInfo) getAllSceneChannel() map[uint32]*ChannelInfo {
 	return s.allChannel
 }
 
+func (s *SceneInfo) getDefaultChannel() *ChannelInfo {
+	var c *ChannelInfo
+	for {
+		ci, err := s.getSceneChannel(s.defaultChannelId)
+		if err != nil {
+			return nil
+		}
+		if ci.PlayerNum() >= 50 {
+			s.defaultChannelId++
+			if s.defaultChannelId > maxChannelId {
+				s.defaultChannelId = minChannelId
+			}
+		} else {
+			c = ci
+			break
+		}
+	}
+	return c
+}
+
 func (s *SceneInfo) getSceneChannel(channelId uint32) (*ChannelInfo, error) {
 	list := s.getAllSceneChannel()
 	if info, ok := list[channelId]; ok {
@@ -158,7 +180,6 @@ func (w *WordInfo) addScenePlayer(player *model.Player) *ScenePlayer {
 		sp.NetFreeze = false
 		return sp
 	}
-	defaultChannelId := gdconf.GetConstant().DefaultChannelId
 
 	curScene := model.NewScenePlayerInfo(player, nil, nil, nil, nil)
 	if curScene == nil {
@@ -170,7 +191,12 @@ func (w *WordInfo) addScenePlayer(player *model.Player) *ScenePlayer {
 		log.Game.Errorf("SceneID:%v 场景不存在！请检查默认场景配置是否正确err:%s", curScene.SceneId, err.Error())
 		return nil
 	}
-	_, err = sceneInfo.getSceneChannel(defaultChannelId)
+	defaultChannel := sceneInfo.getDefaultChannel()
+	if defaultChannel == nil {
+		log.Game.Errorf("SceneID:%v 无法获取场景房间", curScene.SceneId)
+		return nil
+	}
+	_, err = sceneInfo.getSceneChannel(defaultChannel.ChannelId)
 	if err != nil {
 		log.Game.Error(err.Error())
 		return nil
@@ -179,7 +205,7 @@ func (w *WordInfo) addScenePlayer(player *model.Player) *ScenePlayer {
 	info := &ScenePlayer{
 		Player:    player,
 		CurScene:  curScene,
-		ChannelId: defaultChannelId, // 默认房间
+		ChannelId: defaultChannel.ChannelId, // 默认房间
 	}
 	w.allScenePlayer.Store(player.UserId, info)
 	return info

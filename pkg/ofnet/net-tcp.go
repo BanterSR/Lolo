@@ -42,14 +42,15 @@ func (x *tcpNet) Accept() (Conn, error) {
 	if x == nil {
 		return nil, errors.New("tcpNet is nil")
 	}
-	conn, err := x.listener.Accept()
+	c, err := x.listener.Accept()
 	if err != nil {
 		return nil, err
 	}
 	tconn := &tcpConn{
+		base: new(conn),
 		net:  x,
-		conn: conn,
-		buf:  bufio.NewReaderSize(conn, alg.PacketMaxLen),
+		conn: c,
+		buf:  bufio.NewReaderSize(c, alg.PacketMaxLen),
 	}
 	x.onConnOpen()
 
@@ -74,13 +75,13 @@ type tcpConn struct {
 	conn      net.Conn
 	buf       *bufio.Reader
 	uid       uint32
-	seqId     uint32
+	seqId     atomic.Uint32
 	serverTag string
 	closed    int32
 }
 
 func (x *tcpConn) GetSeqId() uint32 {
-	return x.seqId
+	return x.seqId.Load()
 }
 
 func (x *tcpConn) Read() (*alg.GameMsg, error) {
@@ -139,8 +140,48 @@ func (x *tcpConn) Read() (*alg.GameMsg, error) {
 	}
 }
 
+func (x *tcpConn) SendBin(packetId, cmdId uint32, bodyByte []byte) {
+	if x.base.close {
+		return
+	}
+	head := &proto.PacketHead{
+		MsgId:    cmdId,
+		Flag:     0,
+		BodyLen:  0,
+		SeqId:    x.seqId.Add(1),
+		PacketId: packetId,
+
+		TotalPackCount: 0,
+	}
+
+	if len(bodyByte) > alg.SnappySize {
+		bodyByte = snappy.Encode(nil, bodyByte)
+		head.Flag = 1
+	}
+	head.BodyLen = uint32(len(bodyByte))
+	headBytes, err := pb.Marshal(head)
+	if err != nil {
+		x.net.log.Errorf("marshal proto data err: %v\n", err)
+		return
+	}
+	bin := make([]byte, alg.TcpHeadSize+len(headBytes)+len(bodyByte))
+
+	binary.BigEndian.PutUint16(bin[:alg.TcpHeadSize], uint16(len(headBytes)))
+	// 头部数据
+	copy(bin[alg.TcpHeadSize:], headBytes)
+	// proto数据
+	copy(bin[alg.TcpHeadSize+len(headBytes):], bodyByte)
+
+	n, err := x.conn.Write(bin)
+	x.net.recordSendBytes(n)
+	if err != nil && !errors.Is(err, io.ErrClosedPipe) {
+		x.net.log.Errorf("tcpConn write error: %v", err)
+		return
+	}
+}
+
 func (x *tcpConn) Send(packetId uint32, protoObj pb.Message) {
-	if x == nil {
+	if x.base.close {
 		return
 	}
 
@@ -156,12 +197,11 @@ func (x *tcpConn) Send(packetId uint32, protoObj pb.Message) {
 		MsgId:    cmdId,
 		Flag:     0,
 		BodyLen:  0,
-		SeqId:    x.seqId,
+		SeqId:    x.seqId.Add(1),
 		PacketId: packetId,
 
 		TotalPackCount: 0,
 	}
-	x.seqId++
 
 	if len(bodyByte) > alg.SnappySize {
 		bodyByte = snappy.Encode(nil, bodyByte)
@@ -199,9 +239,10 @@ func (x *tcpConn) SetServerTag(serverTag string) {
 }
 
 func (x *tcpConn) Close() {
-	if x == nil {
+	if x.base.close {
 		return
 	}
+	x.base.close = true
 	if !atomic.CompareAndSwapInt32(&x.closed, 0, 1) {
 		return
 	}

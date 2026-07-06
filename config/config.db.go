@@ -23,7 +23,7 @@ type DB struct {
 var defaultDB = &DB{
 	Dev:          false,
 	DbType:       "sqlite",
-	Dsn:          "./db/lolo.db",
+	Dsn:          "./db/lolo.db?_pragma=busy_timeout(10000)&_pragma=journal_mode(WAL)&_pragma=synchronous(NORMAL)",
 	ReadDsn:      make([]string, 0),
 	MaxIdleConns: 20,
 	MaxOpenConns: 40,

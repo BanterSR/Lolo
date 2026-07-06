@@ -1,7 +1,6 @@
 package db
 
 import (
-	"errors"
 	"time"
 
 	"gorm.io/gorm"
@@ -42,28 +41,13 @@ func GetOFUserByUserId(userId uint32) (*OFUser, error) {
 // GetOFUserBySdkUid 使用SdkUid拉取数据
 func GetOFUserBySdkUid(sdkUid uint32) (*OFUser, error) {
 	user := &OFUser{}
-	tx := db.Begin()
-	defer func() {
-		if tx.Error != nil {
-			tx.Rollback()
-		}
-	}()
-	err := tx.Where("sdk_uid = ?", sdkUid).First(user).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			user = &OFUser{
-				SdkUid: sdkUid,
-			}
-			err = tx.Create(user).Error
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, err
-		}
-	}
-	tx.Commit()
-	return user, tx.Error
+	err := db.Where("sdk_uid = ?", sdkUid).First(user).Error
+	return user, err
+}
+
+func CreateOFUser(user *OFUser) (*OFUser, error) {
+	err := db.Create(user).Error
+	return user, err
 }
 
 func SaveOFUser(sdkUid uint32, fx func(user *OFUser) bool) error {

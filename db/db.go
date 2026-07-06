@@ -216,7 +216,7 @@ func (d *Database) getGormConfig() *gorm.Config {
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
 			gromlogger.Config{
 				SlowThreshold: time.Second,
-				LogLevel:      gromlogger.Warn,
+				LogLevel:      gromlogger.Error,
 				Colorful:      false,
 			},
 		)

@@ -17,6 +17,7 @@ type Player struct {
 	Created       time.Time       `json:"-"`                       // 创建时间
 	ActiveTime    time.Time       `json:"-"`                       // 上一次活跃时间
 	LastSaveTime  time.Time       `json:"-"`                       // 上一次数据保存时间
+	SaveLock      bool            `json:"-"`                       // 是否在db写入队列中
 	UserId        uint32          `json:"-"`                       // 玩家id
 	NickName      string          `json:"-"`                       // 玩家昵称
 	LoginUUID     string          `json:"-"`                       // 当前登录uuid
@@ -39,6 +40,7 @@ func (s *Player) Init(conn ofnet.Conn, uuid string) {
 	s.Online = true
 	s.NetFreeze = false
 	s.LoginUUID = uuid
+	s.LastSaveTime = time.Now()
 }
 
 func (s *Player) GetSeqId() uint32 {
@@ -64,7 +66,7 @@ var (
 )
 
 func (s *Player) IsSave() bool {
-	if s.ActiveTime.Before(s.LastSaveTime) {
+	if s.ActiveTime.Before(s.LastSaveTime) || s.SaveLock {
 		return false
 	}
 	if s.LastSaveTime.Add(playerSaveIntervalTime).After(time.Now()) {
@@ -74,6 +76,9 @@ func (s *Player) IsSave() bool {
 }
 
 func (s *Player) IsOffline() bool {
+	if s.SaveLock {
+		return false
+	}
 	if s.ActiveTime.Add(playerCacheTime).Before(time.Now()) && s.Online {
 		return true
 	}
@@ -81,7 +86,7 @@ func (s *Player) IsOffline() bool {
 }
 
 func (s *Player) SavePlayer() error {
-	s.SetLastSaveTime()
+	s.SaveLock = true
 	bin, err := sonic.Marshal(s) // 主循环上:一致快照,纯内存操作
 	if err != nil {
 		log.Game.Errorf("玩家:%v序列化失败err:%s",
@@ -91,9 +96,12 @@ func (s *Player) SavePlayer() error {
 	userId := s.UserId
 	db.Persist(userId, func() error { // 分片落库协程上:gzip + DB 写
 		if err := db.SaveOFGameBin(userId, bin); err != nil {
+			s.SaveLock = false
 			log.Game.Errorf("玩家:%v落库失败err:%s", userId, err.Error())
 			return err
 		}
+		s.SetLastSaveTime()
+		s.SaveLock = false
 		return nil
 	})
 

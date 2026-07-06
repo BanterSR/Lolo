@@ -1,0 +1,20 @@
+{
+  "gate": "127.0.0.1:11000",
+  "sdk": "http://127.0.0.1:8080",
+  "mode": "profile",
+  "scenario": "scene",
+  "loop": false,
+  "stages": [
+    {"ccu": 100,  "hold": "60s"},
+    {"ccu": 500,  "hold": "60s"},
+    {"ccu": 1000, "hold": "120s"},
+    {"ccu": 2000, "hold": "120s"}
+  ],
+  "prefix": "robot_",
+  "password": "robot123456",
+  "ping": "15s",
+  "action": "2s",
+  "report": "1s",
+  "web": ":8090",
+  "pprof": ""
+}
