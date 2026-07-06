@@ -101,9 +101,15 @@ func (b *Bot) scenarioScene(ctx context.Context) {
 			}
 			tick++
 			if tick%5 == 0 {
-				if b.send(&proto.SendActionReq{ActionId: 1}) != nil {
+				if b.send(&proto.SendActionReq{ActionId: 1010}) != nil {
 					return
 				}
+				b.send(&proto.SendChatMsgReq{
+					Type:       proto.ChatChannelType_ChatChannelType_ChatChannelDefault,
+					PlayerId:   0,
+					Text:       b.username(),
+					Expression: 0,
+				})
 			}
 		case <-sweep.C:
 			b.sweepInflight()
@@ -155,15 +161,24 @@ func (b *Bot) sceneAnchorFrom(m *alg.GameMsg, def sceneAnchor) sceneAnchor {
 // moveRecord 构造第 tick 步的位置上报：以出生点为锚，仅 X 轴按 keepAliveOffsets 摆动。
 func (a sceneAnchor) moveRecord(tick int) *proto.PlayerSceneRecordReq {
 	off := keepAliveOffsets[tick%len(keepAliveOffsets)]
-	x := a.x + off*pow10(a.dp) // 1 个「坐标」= 10^dp 个原始整数单位
+	x := a.x + off // 1 个「坐标」= 10^dp 个原始整数单位
 	return &proto.PlayerSceneRecordReq{
 		Data: &proto.PlayerRecorderData{
 			Ping: 30,
 			CharRecorderDataLst: []*proto.CharacterRecorderData{
 				{
 					CharId: a.charId,
-					Pos:    &proto.Vector3{X: x, Y: a.y, Z: a.z, DecimalPlaces: a.dp},
-					Rot:    &proto.Vector3{X: a.rx, Y: a.ry, Z: a.rz, DecimalPlaces: a.rdp},
+					DataLst: []*proto.SyncRecorderProperty{
+						{
+							SyncType:           1,
+							Pos:                &proto.Vector3{X: x, Y: a.y, Z: a.z},
+							Rot:                &proto.Vector3{X: a.rx, Y: a.ry, Z: a.rz},
+							AnimeInputSpeed:    5,
+							AnimeVerticalSpeed: 1.751,
+						},
+					},
+					Pos: &proto.Vector3{X: x, Y: a.y, Z: a.z},
+					Rot: &proto.Vector3{X: a.rx, Y: a.ry, Z: a.rz},
 				},
 			},
 		},

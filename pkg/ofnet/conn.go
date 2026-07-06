@@ -23,4 +23,5 @@ func newConn() *conn {
 }
 
 type conn struct {
+	close bool
 }

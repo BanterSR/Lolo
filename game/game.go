@@ -224,7 +224,6 @@ func (g *Game) offlinePlayer(player *model.Player, reason proto.PlayerOfflineRea
 	}
 	if player.Conn != nil {
 		player.Conn.Close()
-		player.Conn = nil
 	}
 	player.NetFreeze = true
 	scenePlayer := g.getWordInfo().getScenePlayer(player)

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"math/rand/v2"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -41,7 +40,7 @@ func (s *Player) Init(conn ofnet.Conn, uuid string) {
 	s.Online = true
 	s.NetFreeze = false
 	s.LoginUUID = uuid
-	s.LastSaveTime = time.Now().Add(time.Duration(rand.Int64N(1800)) * time.Second)
+	s.LastSaveTime = time.Now()
 }
 
 func (s *Player) GetSeqId() uint32 {
@@ -56,7 +55,7 @@ func (s *Player) SetActiveTime() {
 }
 
 func (s *Player) SetLastSaveTime() {
-	s.LastSaveTime = time.Now().Add(time.Duration(rand.Int64N(1200)) * time.Second)
+	s.LastSaveTime = time.Now()
 }
 
 // 是否保存玩家数据
@@ -88,7 +87,6 @@ func (s *Player) IsOffline() bool {
 
 func (s *Player) SavePlayer() error {
 	s.SaveLock = true
-	s.SetLastSaveTime()
 	bin, err := sonic.Marshal(s) // 主循环上:一致快照,纯内存操作
 	if err != nil {
 		log.Game.Errorf("玩家:%v序列化失败err:%s",
@@ -98,9 +96,11 @@ func (s *Player) SavePlayer() error {
 	userId := s.UserId
 	db.Persist(userId, func() error { // 分片落库协程上:gzip + DB 写
 		if err := db.SaveOFGameBin(userId, bin); err != nil {
+			s.SaveLock = false
 			log.Game.Errorf("玩家:%v落库失败err:%s", userId, err.Error())
 			return err
 		}
+		s.SetLastSaveTime()
 		s.SaveLock = false
 		return nil
 	})

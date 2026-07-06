@@ -261,11 +261,18 @@ func (b *Bot) login() bool {
 		logOnce(&logLoginErrOnce, "PlayerLogin 无响应: %v", err)
 		return false
 	}
-	if st := pmsg.Body.(*proto.PlayerLoginRsp).GetStatus(); st != proto.StatusCode_StatusCode_Ok {
+	if rsp := pmsg.Body.(*proto.PlayerLoginRsp); rsp.GetStatus() != proto.StatusCode_StatusCode_Ok {
 		atomic.AddInt64(&b.m.loginFail, 1)
-		logOnce(&logLoginErrOnce, "PlayerLogin 被拒: status=%v", st)
+		logOnce(&logLoginErrOnce, "PlayerLogin 被拒: status=%v", rsp.GetStatus())
 		return false
+	} else if rsp.PlayerName == "" {
+		// 改名
+		b.send(&proto.ChangeNickNameReq{
+			NickName: b.username(),
+			Birthday: "1990-01-01",
+		})
 	}
+
 	atomic.AddInt64(&b.m.loginOK, 1)
 
 	ok = true

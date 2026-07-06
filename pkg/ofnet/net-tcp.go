@@ -140,7 +140,7 @@ func (x *tcpConn) Read() (*alg.GameMsg, error) {
 }
 
 func (x *tcpConn) Send(packetId uint32, protoObj pb.Message) {
-	if x == nil {
+	if x.base.close {
 		return
 	}
 
@@ -199,9 +199,10 @@ func (x *tcpConn) SetServerTag(serverTag string) {
 }
 
 func (x *tcpConn) Close() {
-	if x == nil {
+	if x.base.close {
 		return
 	}
+	x.base.close = true
 	if !atomic.CompareAndSwapInt32(&x.closed, 0, 1) {
 		return
 	}
