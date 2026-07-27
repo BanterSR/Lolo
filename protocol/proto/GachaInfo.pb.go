@@ -33,6 +33,7 @@ type GachaInfo struct {
 	OptionalUpItem uint32                 `protobuf:"varint,5,opt,name=optional_up_item,json=optionalUpItem,proto3" json:"optional_up_item,omitempty"`
 	OptionalValue  uint32                 `protobuf:"varint,6,opt,name=optional_value,json=optionalValue,proto3" json:"optional_value,omitempty"`
 	Guarantee      uint32                 `protobuf:"varint,7,opt,name=guarantee,proto3" json:"guarantee,omitempty"`
+	ChoosePoolId   uint32                 `protobuf:"varint,8,opt,name=choose_pool_id,json=choosePoolId,proto3" json:"choose_pool_id,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -116,11 +117,18 @@ func (x *GachaInfo) GetGuarantee() uint32 {
 	return 0
 }
 
+func (x *GachaInfo) GetChoosePoolId() uint32 {
+	if x != nil {
+		return x.ChoosePoolId
+	}
+	return 0
+}
+
 var File_GachaInfo_proto protoreflect.FileDescriptor
 
 const file_GachaInfo_proto_rawDesc = "" +
 	"\n" +
-	"\x0fGachaInfo.proto\x12\x05proto\"\xf3\x01\n" +
+	"\x0fGachaInfo.proto\x12\x05proto\"\x99\x02\n" +
 	"\tGachaInfo\x12\x19\n" +
 	"\bgacha_id\x18\x01 \x01(\rR\agachaId\x12\x1f\n" +
 	"\vgacha_times\x18\x02 \x01(\rR\n" +
@@ -129,7 +137,8 @@ const file_GachaInfo_proto_rawDesc = "" +
 	"\ais_free\x18\x04 \x01(\bR\x06isFree\x12(\n" +
 	"\x10optional_up_item\x18\x05 \x01(\rR\x0eoptionalUpItem\x12%\n" +
 	"\x0eoptional_value\x18\x06 \x01(\rR\roptionalValue\x12\x1c\n" +
-	"\tguarantee\x18\a \x01(\rR\tguaranteeB\n" +
+	"\tguarantee\x18\a \x01(\rR\tguarantee\x12$\n" +
+	"\x0echoose_pool_id\x18\b \x01(\rR\fchoosePoolIdB\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

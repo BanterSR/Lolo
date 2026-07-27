@@ -154,11 +154,12 @@ type GachaInfoConfigure struct {
 	PracticeCharacterID1 int32                  `protobuf:"varint,22,opt,name=PracticeCharacterID1,proto3" json:"PracticeCharacterID1,omitempty"`
 	PracticeCharacterID2 int32                  `protobuf:"varint,23,opt,name=PracticeCharacterID2,proto3" json:"PracticeCharacterID2,omitempty"`
 	PracticeCharacterID3 int32                  `protobuf:"varint,24,opt,name=PracticeCharacterID3,proto3" json:"PracticeCharacterID3,omitempty"`
-	OptionalNum          int32                  `protobuf:"varint,25,opt,name=OptionalNum,proto3" json:"OptionalNum,omitempty"`
-	OptionalPoolID       int32                  `protobuf:"varint,26,opt,name=OptionalPoolID,proto3" json:"OptionalPoolID,omitempty"`
-	BigGuaranteePoolID   int32                  `protobuf:"varint,27,opt,name=BigGuaranteePoolID,proto3" json:"BigGuaranteePoolID,omitempty"`
-	NewUIGachaType       int32                  `protobuf:"varint,28,opt,name=NewUIGachaType,proto3" json:"NewUIGachaType,omitempty"`
-	NewShowType          int32                  `protobuf:"varint,29,opt,name=NewShowType,proto3" json:"NewShowType,omitempty"`
+	CardPoolRange        []int32                `protobuf:"varint,25,rep,packed,name=CardPoolRange,proto3" json:"CardPoolRange,omitempty"`
+	OptionalNum          int32                  `protobuf:"varint,26,opt,name=OptionalNum,proto3" json:"OptionalNum,omitempty"`
+	OptionalPoolID       int32                  `protobuf:"varint,27,opt,name=OptionalPoolID,proto3" json:"OptionalPoolID,omitempty"`
+	BigGuaranteePoolID   int32                  `protobuf:"varint,28,opt,name=BigGuaranteePoolID,proto3" json:"BigGuaranteePoolID,omitempty"`
+	NewUIGachaType       int32                  `protobuf:"varint,29,opt,name=NewUIGachaType,proto3" json:"NewUIGachaType,omitempty"`
+	NewShowType          int32                  `protobuf:"varint,30,opt,name=NewShowType,proto3" json:"NewShowType,omitempty"`
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -359,6 +360,13 @@ func (x *GachaInfoConfigure) GetPracticeCharacterID3() int32 {
 		return x.PracticeCharacterID3
 	}
 	return 0
+}
+
+func (x *GachaInfoConfigure) GetCardPoolRange() []int32 {
+	if x != nil {
+		return x.CardPoolRange
+	}
+	return nil
 }
 
 func (x *GachaInfoConfigure) GetOptionalNum() int32 {
@@ -712,7 +720,7 @@ const file_AllGachaDatas_proto_rawDesc = "" +
 	"RewardPool\x18\x03 \x01(\v2\x1b.excel.GachaRewardPoolDatasR\n" +
 	"RewardPool\"A\n" +
 	"\x0eGachaInfoDatas\x12/\n" +
-	"\x05Datas\x18\x01 \x03(\v2\x19.excel.GachaInfoConfigureR\x05Datas\"\x8c\b\n" +
+	"\x05Datas\x18\x01 \x03(\v2\x19.excel.GachaInfoConfigureR\x05Datas\"\xb2\b\n" +
 	"\x12GachaInfoConfigure\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\x05R\x02ID\x12\x14\n" +
 	"\x05Index\x18\x02 \x01(\x05R\x05Index\x12 \n" +
@@ -738,12 +746,13 @@ const file_AllGachaDatas_proto_rawDesc = "" +
 	"\bVideoID3\x18\x15 \x01(\x05R\bVideoID3\x122\n" +
 	"\x14PracticeCharacterID1\x18\x16 \x01(\x05R\x14PracticeCharacterID1\x122\n" +
 	"\x14PracticeCharacterID2\x18\x17 \x01(\x05R\x14PracticeCharacterID2\x122\n" +
-	"\x14PracticeCharacterID3\x18\x18 \x01(\x05R\x14PracticeCharacterID3\x12 \n" +
-	"\vOptionalNum\x18\x19 \x01(\x05R\vOptionalNum\x12&\n" +
-	"\x0eOptionalPoolID\x18\x1a \x01(\x05R\x0eOptionalPoolID\x12.\n" +
-	"\x12BigGuaranteePoolID\x18\x1b \x01(\x05R\x12BigGuaranteePoolID\x12&\n" +
-	"\x0eNewUIGachaType\x18\x1c \x01(\x05R\x0eNewUIGachaType\x12 \n" +
-	"\vNewShowType\x18\x1d \x01(\x05R\vNewShowType\"A\n" +
+	"\x14PracticeCharacterID3\x18\x18 \x01(\x05R\x14PracticeCharacterID3\x12$\n" +
+	"\rCardPoolRange\x18\x19 \x03(\x05R\rCardPoolRange\x12 \n" +
+	"\vOptionalNum\x18\x1a \x01(\x05R\vOptionalNum\x12&\n" +
+	"\x0eOptionalPoolID\x18\x1b \x01(\x05R\x0eOptionalPoolID\x12.\n" +
+	"\x12BigGuaranteePoolID\x18\x1c \x01(\x05R\x12BigGuaranteePoolID\x12&\n" +
+	"\x0eNewUIGachaType\x18\x1d \x01(\x05R\x0eNewUIGachaType\x12 \n" +
+	"\vNewShowType\x18\x1e \x01(\x05R\vNewShowType\"A\n" +
 	"\x0eGachaPoolDatas\x12/\n" +
 	"\x05Datas\x18\x01 \x03(\v2\x19.excel.GachaPoolConfigureR\x05Datas\"P\n" +
 	"\x12GachaPoolConfigure\x12\x0e\n" +

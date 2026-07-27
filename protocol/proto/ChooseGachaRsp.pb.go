@@ -28,6 +28,7 @@ type ChooseGachaRsp struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Status          StatusCode             `protobuf:"varint,1,opt,name=status,proto3,enum=proto.StatusCode" json:"status,omitempty"`
 	ChooseGachaPool uint32                 `protobuf:"varint,2,opt,name=choose_gacha_pool,json=chooseGachaPool,proto3" json:"choose_gacha_pool,omitempty"`
+	GachaId         uint32                 `protobuf:"varint,3,opt,name=gacha_id,json=gachaId,proto3" json:"gacha_id,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -76,14 +77,22 @@ func (x *ChooseGachaRsp) GetChooseGachaPool() uint32 {
 	return 0
 }
 
+func (x *ChooseGachaRsp) GetGachaId() uint32 {
+	if x != nil {
+		return x.GachaId
+	}
+	return 0
+}
+
 var File_ChooseGachaRsp_proto protoreflect.FileDescriptor
 
 const file_ChooseGachaRsp_proto_rawDesc = "" +
 	"\n" +
-	"\x14ChooseGachaRsp.proto\x12\x05proto\x1a\x10StatusCode.proto\"g\n" +
+	"\x14ChooseGachaRsp.proto\x12\x05proto\x1a\x10StatusCode.proto\"\x82\x01\n" +
 	"\x0eChooseGachaRsp\x12)\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x11.proto.StatusCodeR\x06status\x12*\n" +
-	"\x11choose_gacha_pool\x18\x02 \x01(\rR\x0fchooseGachaPoolB\n" +
+	"\x11choose_gacha_pool\x18\x02 \x01(\rR\x0fchooseGachaPool\x12\x19\n" +
+	"\bgacha_id\x18\x03 \x01(\rR\agachaIdB\n" +
 	"Z\b./;protob\x06proto3"
 
 var (
