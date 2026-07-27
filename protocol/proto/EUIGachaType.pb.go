@@ -27,34 +27,103 @@ const (
 type EUIGachaType int32
 
 const (
-	EUIGachaType_EUIGachaType_None     EUIGachaType = 0
-	EUIGachaType_EUIGachaType_New      EUIGachaType = 1
-	EUIGachaType_EUIGachaType_Default  EUIGachaType = 2
-	EUIGachaType_EUIGachaType_Limit    EUIGachaType = 3
-	EUIGachaType_EUIGachaType_Poster   EUIGachaType = 4
-	EUIGachaType_EUIGachaType_Fashion  EUIGachaType = 5
-	EUIGachaType_EUIGachaType_Optional EUIGachaType = 6
+	EUIGachaType_EUIGachaType_None                      EUIGachaType = 0
+	EUIGachaType_EUIGachaType_New                       EUIGachaType = 1
+	EUIGachaType_EUIGachaType_Default                   EUIGachaType = 2
+	EUIGachaType_EUIGachaType_Limit                     EUIGachaType = 3
+	EUIGachaType_EUIGachaType_Poster                    EUIGachaType = 4
+	EUIGachaType_EUIGachaType_Fashion                   EUIGachaType = 5
+	EUIGachaType_EUIGachaType_BeginnerOptionalCharacter EUIGachaType = 6
+	EUIGachaType_EUIGachaType_BeginnerOptionalPoster    EUIGachaType = 7
+	EUIGachaType_EUIGachaType_Placeholder1              EUIGachaType = 8
+	EUIGachaType_EUIGachaType_Placeholder2              EUIGachaType = 9
+	EUIGachaType_EUIGachaType_OptionalCharacter1        EUIGachaType = 10
+	EUIGachaType_EUIGachaType_OptionalCharacter2        EUIGachaType = 11
+	EUIGachaType_EUIGachaType_OptionalCharacter3        EUIGachaType = 12
+	EUIGachaType_EUIGachaType_OptionalCharacter4        EUIGachaType = 13
+	EUIGachaType_EUIGachaType_OptionalCharacter5        EUIGachaType = 14
+	EUIGachaType_EUIGachaType_OptionalCharacter6        EUIGachaType = 15
+	EUIGachaType_EUIGachaType_OptionalCharacter7        EUIGachaType = 16
+	EUIGachaType_EUIGachaType_OptionalCharacter8        EUIGachaType = 17
+	EUIGachaType_EUIGachaType_OptionalCharacter9        EUIGachaType = 18
+	EUIGachaType_EUIGachaType_OptionalCharacter10       EUIGachaType = 19
+	EUIGachaType_EUIGachaType_OptionalPoster1           EUIGachaType = 20
+	EUIGachaType_EUIGachaType_OptionalPoster2           EUIGachaType = 21
+	EUIGachaType_EUIGachaType_OptionalPoster3           EUIGachaType = 22
+	EUIGachaType_EUIGachaType_OptionalPoster4           EUIGachaType = 23
+	EUIGachaType_EUIGachaType_OptionalPoster5           EUIGachaType = 24
+	EUIGachaType_EUIGachaType_OptionalPoster6           EUIGachaType = 25
+	EUIGachaType_EUIGachaType_OptionalPoster7           EUIGachaType = 26
+	EUIGachaType_EUIGachaType_OptionalPoster8           EUIGachaType = 27
+	EUIGachaType_EUIGachaType_OptionalPoster9           EUIGachaType = 28
+	EUIGachaType_EUIGachaType_OptionalPoster10          EUIGachaType = 29
 )
 
 // Enum value maps for EUIGachaType.
 var (
 	EUIGachaType_name = map[int32]string{
-		0: "EUIGachaType_None",
-		1: "EUIGachaType_New",
-		2: "EUIGachaType_Default",
-		3: "EUIGachaType_Limit",
-		4: "EUIGachaType_Poster",
-		5: "EUIGachaType_Fashion",
-		6: "EUIGachaType_Optional",
+		0:  "EUIGachaType_None",
+		1:  "EUIGachaType_New",
+		2:  "EUIGachaType_Default",
+		3:  "EUIGachaType_Limit",
+		4:  "EUIGachaType_Poster",
+		5:  "EUIGachaType_Fashion",
+		6:  "EUIGachaType_BeginnerOptionalCharacter",
+		7:  "EUIGachaType_BeginnerOptionalPoster",
+		8:  "EUIGachaType_Placeholder1",
+		9:  "EUIGachaType_Placeholder2",
+		10: "EUIGachaType_OptionalCharacter1",
+		11: "EUIGachaType_OptionalCharacter2",
+		12: "EUIGachaType_OptionalCharacter3",
+		13: "EUIGachaType_OptionalCharacter4",
+		14: "EUIGachaType_OptionalCharacter5",
+		15: "EUIGachaType_OptionalCharacter6",
+		16: "EUIGachaType_OptionalCharacter7",
+		17: "EUIGachaType_OptionalCharacter8",
+		18: "EUIGachaType_OptionalCharacter9",
+		19: "EUIGachaType_OptionalCharacter10",
+		20: "EUIGachaType_OptionalPoster1",
+		21: "EUIGachaType_OptionalPoster2",
+		22: "EUIGachaType_OptionalPoster3",
+		23: "EUIGachaType_OptionalPoster4",
+		24: "EUIGachaType_OptionalPoster5",
+		25: "EUIGachaType_OptionalPoster6",
+		26: "EUIGachaType_OptionalPoster7",
+		27: "EUIGachaType_OptionalPoster8",
+		28: "EUIGachaType_OptionalPoster9",
+		29: "EUIGachaType_OptionalPoster10",
 	}
 	EUIGachaType_value = map[string]int32{
-		"EUIGachaType_None":     0,
-		"EUIGachaType_New":      1,
-		"EUIGachaType_Default":  2,
-		"EUIGachaType_Limit":    3,
-		"EUIGachaType_Poster":   4,
-		"EUIGachaType_Fashion":  5,
-		"EUIGachaType_Optional": 6,
+		"EUIGachaType_None":                      0,
+		"EUIGachaType_New":                       1,
+		"EUIGachaType_Default":                   2,
+		"EUIGachaType_Limit":                     3,
+		"EUIGachaType_Poster":                    4,
+		"EUIGachaType_Fashion":                   5,
+		"EUIGachaType_BeginnerOptionalCharacter": 6,
+		"EUIGachaType_BeginnerOptionalPoster":    7,
+		"EUIGachaType_Placeholder1":              8,
+		"EUIGachaType_Placeholder2":              9,
+		"EUIGachaType_OptionalCharacter1":        10,
+		"EUIGachaType_OptionalCharacter2":        11,
+		"EUIGachaType_OptionalCharacter3":        12,
+		"EUIGachaType_OptionalCharacter4":        13,
+		"EUIGachaType_OptionalCharacter5":        14,
+		"EUIGachaType_OptionalCharacter6":        15,
+		"EUIGachaType_OptionalCharacter7":        16,
+		"EUIGachaType_OptionalCharacter8":        17,
+		"EUIGachaType_OptionalCharacter9":        18,
+		"EUIGachaType_OptionalCharacter10":       19,
+		"EUIGachaType_OptionalPoster1":           20,
+		"EUIGachaType_OptionalPoster2":           21,
+		"EUIGachaType_OptionalPoster3":           22,
+		"EUIGachaType_OptionalPoster4":           23,
+		"EUIGachaType_OptionalPoster5":           24,
+		"EUIGachaType_OptionalPoster6":           25,
+		"EUIGachaType_OptionalPoster7":           26,
+		"EUIGachaType_OptionalPoster8":           27,
+		"EUIGachaType_OptionalPoster9":           28,
+		"EUIGachaType_OptionalPoster10":          29,
 	}
 )
 
@@ -89,15 +158,39 @@ var File_EUIGachaType_proto protoreflect.FileDescriptor
 
 const file_EUIGachaType_proto_rawDesc = "" +
 	"\n" +
-	"\x12EUIGachaType.proto\x12\x05proto*\xbb\x01\n" +
+	"\x12EUIGachaType.proto\x12\x05proto*\xfb\a\n" +
 	"\fEUIGachaType\x12\x15\n" +
 	"\x11EUIGachaType_None\x10\x00\x12\x14\n" +
 	"\x10EUIGachaType_New\x10\x01\x12\x18\n" +
 	"\x14EUIGachaType_Default\x10\x02\x12\x16\n" +
 	"\x12EUIGachaType_Limit\x10\x03\x12\x17\n" +
 	"\x13EUIGachaType_Poster\x10\x04\x12\x18\n" +
-	"\x14EUIGachaType_Fashion\x10\x05\x12\x19\n" +
-	"\x15EUIGachaType_Optional\x10\x06B\n" +
+	"\x14EUIGachaType_Fashion\x10\x05\x12*\n" +
+	"&EUIGachaType_BeginnerOptionalCharacter\x10\x06\x12'\n" +
+	"#EUIGachaType_BeginnerOptionalPoster\x10\a\x12\x1d\n" +
+	"\x19EUIGachaType_Placeholder1\x10\b\x12\x1d\n" +
+	"\x19EUIGachaType_Placeholder2\x10\t\x12#\n" +
+	"\x1fEUIGachaType_OptionalCharacter1\x10\n" +
+	"\x12#\n" +
+	"\x1fEUIGachaType_OptionalCharacter2\x10\v\x12#\n" +
+	"\x1fEUIGachaType_OptionalCharacter3\x10\f\x12#\n" +
+	"\x1fEUIGachaType_OptionalCharacter4\x10\r\x12#\n" +
+	"\x1fEUIGachaType_OptionalCharacter5\x10\x0e\x12#\n" +
+	"\x1fEUIGachaType_OptionalCharacter6\x10\x0f\x12#\n" +
+	"\x1fEUIGachaType_OptionalCharacter7\x10\x10\x12#\n" +
+	"\x1fEUIGachaType_OptionalCharacter8\x10\x11\x12#\n" +
+	"\x1fEUIGachaType_OptionalCharacter9\x10\x12\x12$\n" +
+	" EUIGachaType_OptionalCharacter10\x10\x13\x12 \n" +
+	"\x1cEUIGachaType_OptionalPoster1\x10\x14\x12 \n" +
+	"\x1cEUIGachaType_OptionalPoster2\x10\x15\x12 \n" +
+	"\x1cEUIGachaType_OptionalPoster3\x10\x16\x12 \n" +
+	"\x1cEUIGachaType_OptionalPoster4\x10\x17\x12 \n" +
+	"\x1cEUIGachaType_OptionalPoster5\x10\x18\x12 \n" +
+	"\x1cEUIGachaType_OptionalPoster6\x10\x19\x12 \n" +
+	"\x1cEUIGachaType_OptionalPoster7\x10\x1a\x12 \n" +
+	"\x1cEUIGachaType_OptionalPoster8\x10\x1b\x12 \n" +
+	"\x1cEUIGachaType_OptionalPoster9\x10\x1c\x12!\n" +
+	"\x1dEUIGachaType_OptionalPoster10\x10\x1dB\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

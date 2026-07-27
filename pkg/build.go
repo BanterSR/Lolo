@@ -2,7 +2,7 @@ package pkg
 
 var (
 	AppName       = "lolo"
-	ClientVersion = "1.1.9"
-	ServerVersion = "26.4.2"
+	ClientVersion = "1.1.10"
+	ServerVersion = "26.5"
 	Commit        = ""
 )

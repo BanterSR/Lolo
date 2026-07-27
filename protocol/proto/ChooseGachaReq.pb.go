@@ -27,6 +27,7 @@ const (
 type ChooseGachaReq struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	ChooseGachaPool uint32                 `protobuf:"varint,1,opt,name=choose_gacha_pool,json=chooseGachaPool,proto3" json:"choose_gacha_pool,omitempty"`
+	GachaId         uint32                 `protobuf:"varint,2,opt,name=gacha_id,json=gachaId,proto3" json:"gacha_id,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -68,13 +69,21 @@ func (x *ChooseGachaReq) GetChooseGachaPool() uint32 {
 	return 0
 }
 
+func (x *ChooseGachaReq) GetGachaId() uint32 {
+	if x != nil {
+		return x.GachaId
+	}
+	return 0
+}
+
 var File_ChooseGachaReq_proto protoreflect.FileDescriptor
 
 const file_ChooseGachaReq_proto_rawDesc = "" +
 	"\n" +
-	"\x14ChooseGachaReq.proto\x12\x05proto\"<\n" +
+	"\x14ChooseGachaReq.proto\x12\x05proto\"W\n" +
 	"\x0eChooseGachaReq\x12*\n" +
-	"\x11choose_gacha_pool\x18\x01 \x01(\rR\x0fchooseGachaPoolB\n" +
+	"\x11choose_gacha_pool\x18\x01 \x01(\rR\x0fchooseGachaPool\x12\x19\n" +
+	"\bgacha_id\x18\x02 \x01(\rR\agachaIdB\n" +
 	"Z\b./;protob\x06proto3"
 
 var (

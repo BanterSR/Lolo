@@ -68,23 +68,35 @@ func (g *GameConfig) loadGacha() {
 		if isOpenGacha(conf) {
 			alg.AddList(&info.OpenList, data)
 		}
-		data.BigPool = info.rewardPoolMap[conf.BigGuaranteePoolID]
-		method, ok := info.poolMap[conf.Method1ID]
-		if !ok {
-			log.App.Errorf("请检查%s文件配置,卡池:%v缺少角色池:%v",
-				name, conf.ID, conf.Method1ID)
-			continue
-		}
-		for _, pool := range method.Items {
-			poolInfo, okk := info.rewardPoolMap[pool.FreeGachaPoolID]
-			if !okk {
-				log.App.Warnf("请检查卡池Pool:%v,缺少奖励配置:%v",
-					method.ID, pool.FreeGachaPoolID)
+		if len(conf.CardPoolRange) == 0 { // 自选卡池
+			data.BigPool = info.rewardPoolMap[conf.BigGuaranteePoolID]
+			method, ok := info.poolMap[conf.Method1ID]
+			if !ok {
+				log.App.Errorf("请检查%s文件配置,卡池:%v缺少角色池:%v",
+					name, conf.ID, conf.Method1ID)
 				continue
 			}
-			data.Pools[pool.FreeGachaPoolID] = poolInfo
+			for _, pool := range method.Items {
+				poolInfo, okk := info.rewardPoolMap[pool.FreeGachaPoolID]
+				if !okk {
+					log.App.Warnf("请检查卡池Pool:%v,缺少奖励配置:%v",
+						method.ID, pool.FreeGachaPoolID)
+					continue
+				}
+				data.Pools[pool.FreeGachaPoolID] = poolInfo
+			}
+		} else {
+			// 这里代表是自选卡池
 		}
 	}
+}
+
+func (c *GachaData) IsOptional() bool {
+	switch proto.EUIGachaType(c.Conf.NewUIGachaType) {
+	case proto.EUIGachaType_EUIGachaType_BeginnerOptionalCharacter:
+		return true
+	}
+	return false
 }
 
 func GetAllGacha() *excel.AllGachaDatas {

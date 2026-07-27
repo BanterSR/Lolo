@@ -51,6 +51,12 @@ func (i *ItemModel) NextInstanceIndex() uint32 {
 	return i.InstanceIndex
 }
 
+func (s *Player) AllItemModel() {
+	for _, conf := range gdconf.GetAllItemConfigure() {
+		s.AddAllTypeItem(uint32(conf.ID), 99999999)
+	}
+}
+
 type AddItemCtx struct {
 	EBagItemTag
 	Num int64

@@ -94,6 +94,7 @@ login:
 			g.loginGame(s)
 		}
 	}()
+	// s.AllItemModel()
 	// pack
 	{
 		rsp.ClientSeqId = msg.SeqId

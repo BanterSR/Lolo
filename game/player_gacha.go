@@ -81,3 +81,18 @@ func (g *Game) OptionalUpPoolItem(s *model.Player, msg *alg.GameMsg) {
 	info.OptionalItemId = req.ItemId
 	rsp.Info = info.GachaInfo()
 }
+
+func (g *Game) ChooseGacha(s *model.Player, msg *alg.GameMsg) {
+	req := msg.Body.(*proto.ChooseGachaReq)
+	rsp := &proto.ChooseGachaRsp{
+		Status:          0,
+		ChooseGachaPool: 0,
+		GachaId:         req.GachaId,
+	}
+	defer g.send(s, msg.PacketId, rsp)
+	info := s.GetGachaModel().GetGachaInfo(req.GachaId)
+	info.ChoosePoolId = req.ChooseGachaPool
+
+	rsp.ChooseGachaPool = info.ChoosePoolId
+	rsp.Status = proto.StatusCode_StatusCode_Ok
+}
