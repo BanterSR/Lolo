@@ -51,6 +51,7 @@ type GachaInfo struct {
 	GachaId        uint32 `json:"gachaId,omitempty"`        // 卡池id
 	GachaTimes     uint32 `json:"gachaTimes,omitempty"`     // 已抽数
 	OptionalItemId uint32 `json:"optionalItemId,omitempty"` // 选择的保底物品
+	ChoosePoolId   uint32 `json:"choosePoolId,omitempty"`   // 自选的up
 }
 
 type GachaTypeInfo struct {
@@ -118,6 +119,7 @@ func (g *GachaInfo) GachaInfo() *proto.GachaInfo {
 		OptionalUpItem: g.OptionalItemId,
 		OptionalValue:  0,
 		Guarantee:      0,
+		ChoosePoolId:   g.ChoosePoolId,
 	}
 }
 
@@ -141,6 +143,9 @@ func (s *Player) NewGachaCtx(req *proto.GachaReq) (*GachaCtx, error) {
 		req:       req,
 		conf:      gdconf.GetGachaData(req.GachaId),
 		gachaInfo: s.GetGachaModel().GetGachaInfo(req.GachaId),
+	}
+	if ctx.conf.IsOptional() {
+		ctx.conf = gdconf.GetGachaData(ctx.gachaInfo.ChoosePoolId)
 	}
 	if ctx.conf == nil {
 		return nil, errors.New("gacha conf is nil")
@@ -229,15 +234,16 @@ func (c *GachaCtx) Run() {
 func (c *GachaCtx) getPool() (int32, int) {
 	switch proto.EUIGachaType(c.conf.Conf.NewUIGachaType) {
 	case proto.EUIGachaType_EUIGachaType_New, // 新人
-		proto.EUIGachaType_EUIGachaType_Default, // 普池
-		proto.EUIGachaType_EUIGachaType_Limit:   // 限时池
+		proto.EUIGachaType_EUIGachaType_Default,                   // 普池
+		proto.EUIGachaType_EUIGachaType_Limit,                     // 限时池
+		proto.EUIGachaType_EUIGachaType_BeginnerOptionalCharacter: // 新手指定角色池
 		c.typeInfo.GuaranteeSR++
 		c.typeInfo.GuaranteeSSR++
 
 		guaranteeSR := c.typeInfo.GuaranteeSR == c.probability.GuaranteeSR-1
 		guaranteeSSR := c.typeInfo.GuaranteeSSR == c.probability.GuaranteeSSR
 		if guaranteeSSR { // ssr
-			return c.probabilitySSR(true), characterSSR
+			return c.probabilitySSR(true), characterSSR // TODO 这里后期要做特殊处理，自选池不允许歪
 		}
 		if guaranteeSR { // sr
 			return c.probabilitySR(true), characterSR
@@ -278,6 +284,8 @@ func (c *GachaCtx) getPool() (int32, int) {
 			return c.probabilityWeaponSR(), weaponSR
 		}
 		return c.probabilityDyeStuff(), dyeStuff
+	case proto.EUIGachaType_EUIGachaType_BeginnerOptionalPoster: // 新手指定海报池
+
 	}
 	log.Game.Warnf("未知的卡池类型:%s", proto.EUIGachaType(c.conf.Conf.NewUIGachaType).String())
 	return 0, 0

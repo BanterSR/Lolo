@@ -4,6 +4,7 @@
     ""
   ],
   "autoSavePcapFiles": true,
+  "dumpJson": false,
   "maxPort": 11100,
   "minPort": 11000
 }

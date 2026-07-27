@@ -25,6 +25,7 @@ A KCP packet sniffer + visualizer in one, backend rewritten in Go.
     ""
   ],
   "autoSavePcapFiles" : true, // 自动保存抓包记录文件
+  "dumpJson": false, // 是否导出成json
   "maxPort": 11100, // 端口监听范围
   "minPort": 11000
 }

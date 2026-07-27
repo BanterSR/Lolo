@@ -36,6 +36,9 @@ func (c *ChatModel) GetUnLockExpression() []uint32 {
 }
 
 func (c *ChatModel) AddUnExpression(expression uint32) *ItemBaseInfo {
+	if c.UnLockExpression == nil {
+		c.UnLockExpression = make(map[uint32]*ItemBaseInfo)
+	}
 	item, ok := c.UnLockExpression[expression]
 	if !ok {
 		item = &ItemBaseInfo{

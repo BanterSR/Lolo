@@ -66,6 +66,7 @@ func (g *Game) newRouter() {
 		cmd.GachaRecordReq:        g.GachaRecord,        // 获取抽卡记录
 		cmd.GachaReq:              g.Gacha,              // 抽卡，启动！
 		cmd.OptionalUpPoolItemReq: g.OptionalUpPoolItem, // 设置保底物品
+		cmd.ChooseGachaReq:        g.ChooseGacha,        // 设置自选物品
 		// 角色
 		cmd.CharacterLevelUpReq:             g.CharacterLevelUp,             // 角色升级
 		cmd.CharacterLevelBreakReq:          g.CharacterLevelBreak,          // 角色突破

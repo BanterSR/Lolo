@@ -16,6 +16,7 @@ type Config struct {
 	DeviceName        string         `json:"deviceName"`
 	PacketFilter      []string       `json:"packetFilter"`
 	AutoSavePcapFiles bool           `json:"autoSavePcapFiles"`
+	DumpJson          bool           `json:"dumpJson"`
 	MaxPort           layers.TCPPort `json:"maxPort"`
 	MinPort           layers.TCPPort `json:"minPort"`
 }

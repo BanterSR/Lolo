@@ -54,6 +54,7 @@ var (
 	captureHandler      *pcap.Handle
 	packetFilter        = make(map[string]bool)
 	pcapFile            *os.File
+	jsonEnd             *json.Encoder
 	packetDumpFile      *os.File
 	packetDumpFilePath  = "packet_dump.ndjson"
 	packetDumpFileMutex sync.Mutex
@@ -419,6 +420,16 @@ func openCapture() {
 			log.Printf("Saving live capture to %s\n", pcapFile.Name())
 		}
 	}
+	if config.DumpJson {
+		jsonFile, err := os.Create(time.Now().Format("2006-01-02_15-04-05") + ".json")
+		if err != nil {
+			log.Println("Could not create json file", err)
+		} else {
+			jsonEnd = json.NewEncoder(jsonFile)
+			jsonEnd.SetIndent("", "  ")
+			log.Printf("Starting sniffer with json output\n")
+		}
+	}
 
 	startSniffer()
 }
@@ -431,6 +442,9 @@ func closeHandle() {
 	if pcapFile != nil {
 		pcapFile.Close()
 		pcapFile = nil
+	}
+	if jsonEnd != nil {
+		jsonEnd = nil
 	}
 	packetDumpFileMutex.Lock()
 	defer packetDumpFileMutex.Unlock()
@@ -499,6 +513,12 @@ func handleFlag(flag uint32, body []byte) []byte {
 }
 
 func buildPacketToSend(head *pb.PacketHead, data []byte, fromServer bool, timestamp time.Time, objectJson interface{}) {
+	if jsonEnd != nil {
+		jsonEnd.Encode(map[string]interface{}{
+			"head": head,
+			"data": objectJson,
+		})
+	}
 	if _, ok := packetFilter[GetProtoNameById(head.MsgId)]; ok {
 		return
 	}
