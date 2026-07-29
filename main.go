@@ -209,6 +209,7 @@ func NewGin() (*gin.Engine, *http.Server, *http.Server) {
 		gzip.Gzip(gzip.DefaultCompression),
 		log.GinLog(log.App),
 	)
+	router.ForwardedByClientIP = true
 	if config.GetMode() == config.ModeDev {
 		pprof.Register(router)
 	}

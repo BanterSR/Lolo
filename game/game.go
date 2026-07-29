@@ -2,6 +2,7 @@ package game
 
 import (
 	"errors"
+	"fmt"
 	"gucooing/lolo/pkg/cache"
 	"runtime"
 	"runtime/debug"
@@ -148,7 +149,7 @@ func (g *Game) funcTask(t *FuncTask) {
 	player := g.GetUser(t.UserId)
 	if player == nil {
 		if t.reply != nil {
-			t.reply <- funcTaskResult{err: ErrPlayerOffline}
+			t.reply <- funcTaskResult{err: fmt.Errorf("[PlayerID:%d]%s", t.UserId, ErrPlayerOffline)}
 		}
 		return
 	}
