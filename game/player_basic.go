@@ -2,6 +2,7 @@ package game
 
 import (
 	"strconv"
+	"sync/atomic"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -77,6 +78,7 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg
 			}
 			s.GetItemModel().InitItem()
 		}
+		atomic.AddInt64(&playerNum, 1)
 		g.userMap[userId] = s
 	}
 login:

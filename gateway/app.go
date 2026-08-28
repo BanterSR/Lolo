@@ -74,6 +74,8 @@ func NewGateway(router *gin.Engine, gs *game.Game) *Gateway {
 	return g
 }
 
+func (g *Gateway) ConnNum() int64 { return g.net.GetConnNum() }
+
 func (g *Gateway) RunGateway() error {
 	for {
 		select {

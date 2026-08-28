@@ -2,22 +2,11 @@ package game
 
 import (
 	"fmt"
-	"time"
-
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/pkg/log"
 	"gucooing/lolo/protocol/proto"
 )
-
-// RunPlayerCommand 供外部(GM 等非主循环 goroutine)对在线玩家执行一条 GM 指令。
-// 指令通过 game 主循环串行执行,外部无需加锁即可直接操作 Player。
-// 返回玩家是否在线(指令是否执行)。
-func (g *Game) RunPlayerCommand(userId uint32, handle func(s *model.Player) (string, error)) (any, error) {
-	return g.InvokePlayerFunc(userId, func(s *model.Player) (any, error) {
-		return handle(s)
-	}, 3*time.Second)
-}
 
 var gmCodeParamMap = map[string]func(){
 	// add_gm_count_item 添加新号道具

@@ -1,6 +1,6 @@
 module gucooing/lolo
 
-go 1.26.2
+go 1.27
 
 require (
 	github.com/bytedance/sonic v1.15.2

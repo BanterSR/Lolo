@@ -6,28 +6,28 @@ import (
 )
 
 type item struct {
-	baseCommand
+	base
 	ItemId uint32 `form:"item_id"`
 	Count  int64  `form:"count"`
 	All    bool   `form:"all"`
 }
 
-func (i *item) Options() *CommandOptions {
-	return &CommandOptions{
-		IsPlayer: true,
-	}
+func (i *item) Options() *Options {
+	return &Options{}
 }
 
-func (i *item) Handle(s *model.Player) (string, error) {
+func (i *item) Handle(ctx *Context) {
 	if i.Count < 0 {
 		i.Count = 1
 	}
-	if i.All {
-		for _, conf := range gdconf.GetAllItemConfigure() {
-			s.AddAllTypeItem(uint32(conf.ID), i.Count)
+	ctx.PlayerHandle(i, func(s *model.Player) {
+		if i.All {
+			for _, conf := range gdconf.GetAllItemConfigure() {
+				s.AddAllTypeItem(uint32(conf.ID), i.Count)
+			}
+		} else {
+			s.AddAllTypeItem(i.ItemId, i.Count)
 		}
-	} else {
-		s.AddAllTypeItem(i.ItemId, i.Count)
-	}
-	return "物品获取完成", nil
+		ctx.Response().String("添加物品成功")
+	})
 }

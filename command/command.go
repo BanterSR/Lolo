@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gucooing/lolo/config"
 	"gucooing/lolo/game"
-	"gucooing/lolo/game/model"
+	"gucooing/lolo/gateway"
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/pkg/limiter"
 	"gucooing/lolo/pkg/log"
@@ -14,18 +14,20 @@ import (
 )
 
 type CommandInterface interface {
-	Options() *CommandOptions
+	Options() *Options
+	Handle(ctx *Context)
+	// 基础方法值
 	GetPlayerID() uint32
-	Handle(s *model.Player) (string, error)
 }
 
 type Command struct {
 	apiKey     string
+	ga         *gateway.Gateway
 	gs         *game.Game
 	commandMap map[string]reflect.Type
 }
 
-func NewCommand(router *gin.Engine, gs *game.Game) {
+func NewCommand(router *gin.Engine, ga *gateway.Gateway, gs *game.Game) {
 	apiKey := config.GetGame().GetApiKey()
 	if apiKey == "" {
 		apiKey = alg.RandHex(20)
@@ -33,6 +35,7 @@ func NewCommand(router *gin.Engine, gs *game.Game) {
 	}
 	c := &Command{
 		apiKey:     apiKey,
+		ga:         ga,
 		gs:         gs,
 		commandMap: make(map[string]reflect.Type),
 	}
@@ -65,21 +68,10 @@ func CfgToBotInfo(cfg *config.Bot) *game.BotInfo {
 	}
 }
 
-type CommandOptions struct {
-	IsPlayer bool // 是否作用于玩家
-}
-
-type baseCommand struct {
-	PlayerID uint32 `form:"player_id"`
-}
-
-func (b *baseCommand) GetPlayerID() uint32 {
-	return b.PlayerID
-}
-
 func (c *Command) registerAllCommand() {
 	c.regCommand(new(hi))
 	c.regCommand(new(item))
+	c.regCommand(new(status))
 }
 
 func (c *Command) regCommand(cmd CommandInterface) {
@@ -103,52 +95,32 @@ func (c *Command) GetCommand(code string) CommandInterface {
 	return protoObj
 }
 
-type CommandResponse struct {
-	Code    string
-	Message any
-}
-
 func (c *Command) CommandAuto() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		if c.apiKey != "" && c.apiKey != ctx.GetHeader("X-Api-Key") {
-			ctx.Status(http.StatusNotFound)
-			ctx.Abort()
-			return
-		}
-		ctx.Next()
+		//if c.apiKey != "" && c.apiKey != ctx.GetHeader("X-Api-Key") {
+		//	ctx.Status(http.StatusNotFound)
+		//	ctx.Abort()
+		//	return
+		//}
+		//ctx.Next()
 	}
 }
 
-func (c *Command) HttpCommandRun(ctx *gin.Context) {
-	rsp := &CommandResponse{Code: "ok"}
+func (c *Command) HttpCommandRun(ginC *gin.Context) {
+	ctx := c.NewContext(ginC)
 	defer func() {
-		ctx.JSON(http.StatusOK, rsp)
+		ginC.JSON(http.StatusOK, ctx.response)
 	}()
-	code := c.GetCommand(ctx.Query("code"))
+	code := c.GetCommand(ginC.Query("code"))
 	if code == nil {
-		rsp.Code = "未知的指令"
+		ctx.Response().ErrorCode(ResponseUnknownCode, nil)
 		return
 	}
-	err := ctx.ShouldBindQuery(code)
+	err := ginC.ShouldBindQuery(code)
 	if err != nil {
-		rsp.Code = err.Error()
+		ctx.Response().ErrorCode(ResponseInvalidParam, err)
 		return
 	}
-	option := code.Options()
-	if !option.IsPlayer {
-		re, er := code.Handle(nil)
-		if er != nil {
-			rsp.Code = er.Error()
-			return
-		}
-		rsp.Message = re
-		return
-	}
-	re, er := c.gs.RunPlayerCommand(code.GetPlayerID(), code.Handle)
-	if er != nil {
-		rsp.Code = er.Error()
-		return
-	}
-	rsp.Message = re
+	code.Handle(ctx)
 	return
 }

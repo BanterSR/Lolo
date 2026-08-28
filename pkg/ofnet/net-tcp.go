@@ -53,7 +53,7 @@ func (x *tcpNet) Accept() (Conn, error) {
 		buf:  bufio.NewReaderSize(c, alg.PacketMaxLen),
 	}
 	x.onConnOpen()
-
+	
 	return tconn, nil
 }
 

@@ -1,19 +1,13 @@
 package command
 
-import (
-	"gucooing/lolo/game/model"
-)
-
 type hi struct {
-	baseCommand
+	base
 }
 
-func (h *hi) Options() *CommandOptions {
-	return &CommandOptions{
-		IsPlayer: false,
-	}
+func (h *hi) Options() *Options {
+	return &Options{}
 }
 
-func (h *hi) Handle(s *model.Player) (string, error) {
-	return "hi!", nil
+func (h *hi) Handle(ctx *Context) {
+	ctx.Response().String("hi")
 }
