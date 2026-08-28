@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lolo 需求工作流"
+  short_description: "Orchestrate capture, analysis, and server implementation"
+  default_prompt: "Use $lolo-requirement to implement a Lolo server feature from official client behavior."

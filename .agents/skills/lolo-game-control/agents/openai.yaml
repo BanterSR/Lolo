@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lolo 游戏操作"
+  short_description: "Operate the official Lolo client for bounded capture scenarios"
+  default_prompt: "Use $lolo-game-control to reproduce a specific official client action."

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
@@ -9,7 +8,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/fatih/color"
@@ -25,12 +23,15 @@ import (
 )
 
 type Packet struct {
-	Time       int64       `json:"time"`
-	FromServer bool        `json:"fromServer"`
-	PacketId   uint32      `json:"packetId"`
-	PacketName string      `json:"packetName"`
-	Object     interface{} `json:"object"`
-	Raw        []byte      `json:"raw"`
+	Time        int64  `json:"time"`
+	FromServer  bool   `json:"fromServer"`
+	PacketId    uint32 `json:"packetId"`
+	PacketName  string `json:"packetName"`
+	RequestID   uint32 `json:"requestId"`
+	SequenceID  uint32 `json:"sequenceId"`
+	DecodeError string `json:"decodeError,omitempty"`
+	Object      any    `json:"object"`
+	Raw         []byte `json:"raw"`
 }
 
 type streamFactory struct{}
@@ -50,15 +51,7 @@ type packetDecoder struct {
 	flowKey    string
 }
 
-var (
-	captureHandler      *pcap.Handle
-	packetFilter        = make(map[string]bool)
-	pcapFile            *os.File
-	jsonEnd             *json.Encoder
-	packetDumpFile      *os.File
-	packetDumpFilePath  = "packet_dump.ndjson"
-	packetDumpFileMutex sync.Mutex
-)
+var packetFilter = make(map[string]bool)
 
 const (
 	tcpHeadSize         = 2
@@ -234,17 +227,24 @@ func (d *packetDecoder) append(data []byte, fromServer bool, timestamp time.Time
 		bodyBin = handleFlag(head.Flag, bodyBin)
 
 		// 解析协议内容
-		objectJson, err := parseProtoToInterface(head.MsgId, bodyBin)
+		objectJSON, err := parseProtoToInterface(head.MsgId, bodyBin)
 		if err != nil {
 			// 尝试动态解析
-			bodyPb, err := DynamicParse(bodyBin)
-			if err != nil {
-				log.Printf("Failed to parse body:%s\n", base64.StdEncoding.EncodeToString(bodyBin))
+			bodyPB, dynamicErr := DynamicParse(bodyBin)
+			if dynamicErr != nil {
+				buildPacketToSend(
+					head,
+					bodyBin,
+					fromServer,
+					timestamp,
+					nil,
+					fmt.Sprintf("known schema: %v; dynamic decode: %v", err, dynamicErr),
+				)
 			} else {
-				buildPacketToSend(head, bodyBin, fromServer, timestamp, bodyPb)
+				buildPacketToSend(head, bodyBin, fromServer, timestamp, bodyPB, "")
 			}
 		} else {
-			buildPacketToSend(head, bodyBin, fromServer, timestamp, objectJson)
+			buildPacketToSend(head, bodyBin, fromServer, timestamp, objectJSON, "")
 		}
 
 		// 从缓冲区移除已处理的数据
@@ -307,7 +307,7 @@ func validatePacketHead(head *pb.PacketHead) error {
 	return nil
 }
 
-func newPacketAssembler(linkType layers.LinkType) (*packetAssembler, error) {
+func newPacketAssembler(linkType layers.LinkType, pcapFile *os.File) (*packetAssembler, error) {
 	pa := &packetAssembler{
 		assembler:      tcpassembly.NewAssembler(tcpassembly.NewStreamPool(&streamFactory{})),
 		truncatedFlows: make(map[string]*tcpFlowState),
@@ -392,71 +392,7 @@ func (pa *packetAssembler) handlePacket(packet gopacket.Packet) {
 	)
 }
 
-func openPcap(fileName string) {
-	var err error
-	log.Printf("Opening pcap file %s\n", fileName)
-	captureHandler, err = pcap.OpenOffline(fileName)
-	if err != nil {
-		log.Println("Could not open pcap file", err)
-		return
-	}
-	startSniffer()
-}
-
-func openCapture() {
-	var err error
-	log.Printf("Opening live capture device=%s snaplen=%d\n", config.DeviceName, liveCaptureSnapshot)
-	captureHandler, err = pcap.OpenLive(config.DeviceName, liveCaptureSnapshot, true, pcap.BlockForever)
-	if err != nil {
-		log.Println("Could not open capture", err)
-		return
-	}
-
-	if config.AutoSavePcapFiles {
-		pcapFile, err = os.Create(time.Now().Format("2006-01-02_15-04-05") + ".pcapng")
-		if err != nil {
-			log.Println("Could not create pcapng file", err)
-		} else {
-			log.Printf("Saving live capture to %s\n", pcapFile.Name())
-		}
-	}
-	if config.DumpJson {
-		jsonFile, err := os.Create(time.Now().Format("2006-01-02_15-04-05") + ".json")
-		if err != nil {
-			log.Println("Could not create json file", err)
-		} else {
-			jsonEnd = json.NewEncoder(jsonFile)
-			jsonEnd.SetIndent("", "  ")
-			log.Printf("Starting sniffer with json output\n")
-		}
-	}
-
-	startSniffer()
-}
-
-func closeHandle() {
-	if captureHandler != nil {
-		captureHandler.Close()
-		captureHandler = nil
-	}
-	if pcapFile != nil {
-		pcapFile.Close()
-		pcapFile = nil
-	}
-	if jsonEnd != nil {
-		jsonEnd = nil
-	}
-	packetDumpFileMutex.Lock()
-	defer packetDumpFileMutex.Unlock()
-	if packetDumpFile != nil {
-		packetDumpFile.Close()
-		packetDumpFile = nil
-	}
-}
-
-func startSniffer() {
-	defer closeHandle()
-
+func startSniffer(captureHandler *pcap.Handle, pcapFile *os.File) error {
 	// expr := fmt.Sprintf("tcp portrange %v-%v", int64(config.MinPort), int64(config.MaxPort))
 	// expr = "tcp"
 	// err := captureHandler.SetBPFFilter(expr)
@@ -468,10 +404,9 @@ func startSniffer() {
 	packetSource := gopacket.NewPacketSource(captureHandler, captureHandler.LinkType())
 	packetSource.NoCopy = true
 
-	pa, err := newPacketAssembler(captureHandler.LinkType())
+	pa, err := newPacketAssembler(captureHandler.LinkType(), pcapFile)
 	if err != nil {
-		log.Println("Could not create packet assembler", err)
-		return
+		return fmt.Errorf("create packet assembler: %w", err)
 	}
 	defer pa.flushAll()
 
@@ -485,7 +420,7 @@ func startSniffer() {
 		case packet, ok := <-packetSource.Packets():
 			if !ok {
 				log.Println("Packet channel closed")
-				return
+				return nil
 			}
 			pa.handlePacket(packet)
 
@@ -512,23 +447,45 @@ func handleFlag(flag uint32, body []byte) []byte {
 	}
 }
 
-func buildPacketToSend(head *pb.PacketHead, data []byte, fromServer bool, timestamp time.Time, objectJson interface{}) {
-	if jsonEnd != nil {
-		jsonEnd.Encode(map[string]interface{}{
-			"head": head,
-			"data": objectJson,
-		})
-	}
+func buildPacketToSend(
+	head *pb.PacketHead,
+	data []byte,
+	fromServer bool,
+	timestamp time.Time,
+	objectJSON any,
+	decodeError string,
+) {
 	if _, ok := packetFilter[GetProtoNameById(head.MsgId)]; ok {
 		return
 	}
+
+	direction := "client_to_server"
+	if fromServer {
+		direction = "server_to_client"
+	}
+	packetName := GetProtoNameById(head.MsgId)
+	captures.record(CapturedPacket{
+		Time:        timestamp.UnixMilli(),
+		Direction:   direction,
+		FromServer:  fromServer,
+		MessageID:   head.MsgId,
+		MessageName: packetName,
+		RequestID:   head.PacketId,
+		SequenceID:  head.SeqId,
+		Object:      objectJSON,
+		DecodeError: decodeError,
+	}, data)
+
 	packet := &Packet{
-		Time:       timestamp.UnixMilli(),
-		FromServer: fromServer,
-		PacketId:   head.MsgId,
-		PacketName: GetProtoNameById(head.MsgId),
-		Object:     objectJson,
-		Raw:        data,
+		Time:        timestamp.UnixMilli(),
+		FromServer:  fromServer,
+		PacketId:    head.MsgId,
+		PacketName:  packetName,
+		RequestID:   head.PacketId,
+		SequenceID:  head.SeqId,
+		DecodeError: decodeError,
+		Object:      objectJSON,
+		Raw:         data,
 	}
 
 	jsonResult, err := json.Marshal(packet)
@@ -536,34 +493,8 @@ func buildPacketToSend(head *pb.PacketHead, data []byte, fromServer bool, timest
 		log.Println("Json marshal error", err)
 		return
 	}
-	// logPacket(packet, head)
-
-	log.Printf("name:%s time:%s b64:%s\n", GetProtoNameById(head.MsgId), timestamp.String(), base64.StdEncoding.EncodeToString(data))
-	// writePacketDump(jsonResult)
-
+	logPacket(packet, head)
 	sendStreamMsg(string(jsonResult))
-}
-
-func writePacketDump(jsonResult []byte) {
-	packetDumpFileMutex.Lock()
-	defer packetDumpFileMutex.Unlock()
-
-	if packetDumpFile == nil {
-		file, err := os.OpenFile(packetDumpFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
-		if err != nil {
-			log.Println("Could not open packet dump file", err)
-			return
-		}
-		packetDumpFile = file
-	}
-
-	if _, err := packetDumpFile.Write(jsonResult); err != nil {
-		log.Println("Could not write packet dump data", err)
-		return
-	}
-	if _, err := packetDumpFile.Write([]byte("\n")); err != nil {
-		log.Println("Could not write packet dump newline", err)
-	}
 }
 
 func logPacket(packet *Packet, head *pb.PacketHead) {

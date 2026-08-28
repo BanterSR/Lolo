@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lolo 协议分析"
+  short_description: "Map completed Iridium captures to Lolo protocol and code"
+  default_prompt: "Use $lolo-protocol-analysis to analyze a completed Lolo Iridium capture session."

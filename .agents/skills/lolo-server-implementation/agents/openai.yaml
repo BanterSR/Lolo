@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lolo 服务端实现"
+  short_description: "Implement verified Lolo behavior from captured protocol evidence"
+  default_prompt: "Use $lolo-server-implementation to implement a Lolo handler from captured evidence."
