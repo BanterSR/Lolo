@@ -1,4 +1,3 @@
-InValid,4294967295
 VerifyLoginTokenReq,1001
 VerifyLoginTokenRsp,1002
 PlayerLoginReq,1003
@@ -708,3 +707,5 @@ ChangePetReq,4541
 ChangePetRsp,4542
 ChooseGachaReq,4543
 ChooseGachaRsp,4544
+GomokuSinglePlayerRewardReq,4600
+GomokuSinglePlayerRewardRsp,4601

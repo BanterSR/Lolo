@@ -4,3 +4,5 @@ cd ../excel
 protoc --proto_path=. --go_out=. *.proto
 cd ../config
 protoc --proto_path=. --go_out=. *.proto
+cd ../cmd
+ go generate .

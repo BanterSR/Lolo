@@ -714,6 +714,8 @@ const (
 	ChangePetRsp                            = 4542
 	ChooseGachaReq                          = 4543
 	ChooseGachaRsp                          = 4544
+	GomokuSinglePlayerRewardReq             = 4600
+	GomokuSinglePlayerRewardRsp             = 4601
 )
 
 func (c *CmdProtoMap) registerAllMessage() {
@@ -1426,4 +1428,6 @@ func (c *CmdProtoMap) registerAllMessage() {
 	c.regMsg(ChangePetRsp, func() any { return new(proto.ChangePetRsp) })
 	c.regMsg(ChooseGachaReq, func() any { return new(proto.ChooseGachaReq) })
 	c.regMsg(ChooseGachaRsp, func() any { return new(proto.ChooseGachaRsp) })
+	c.regMsg(GomokuSinglePlayerRewardReq, func() any { return new(proto.GomokuSinglePlayerRewardReq) })
+	c.regMsg(GomokuSinglePlayerRewardRsp, func() any { return new(proto.GomokuSinglePlayerRewardRsp) })
 }
