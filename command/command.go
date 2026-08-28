@@ -29,7 +29,7 @@ type Command struct {
 
 func NewCommand(router *gin.Engine, ga *gateway.Gateway, gs *game.Game) {
 	apiKey := config.GetGame().GetApiKey()
-	if apiKey == "" {
+	if apiKey == "" && config.GetMode() != config.ModeDev {
 		apiKey = alg.RandHex(20)
 		log.Game.Warnf("api key为空，生成临时ApiKey:%s | 下次重启失效", apiKey)
 	}
@@ -97,12 +97,12 @@ func (c *Command) GetCommand(code string) CommandInterface {
 
 func (c *Command) CommandAuto() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		//if c.apiKey != "" && c.apiKey != ctx.GetHeader("X-Api-Key") {
-		//	ctx.Status(http.StatusNotFound)
-		//	ctx.Abort()
-		//	return
-		//}
-		//ctx.Next()
+		if c.apiKey != "" && c.apiKey != ctx.GetHeader("X-Api-Key") {
+			ctx.Status(http.StatusNotFound)
+			ctx.Abort()
+			return
+		}
+		ctx.Next()
 	}
 }
 

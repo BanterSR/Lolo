@@ -17,7 +17,7 @@ func (i *item) Options() *Options {
 }
 
 func (i *item) Handle(ctx *Context) {
-	if i.Count < 0 {
+	if i.Count <= 0 {
 		i.Count = 1
 	}
 	ctx.PlayerHandle(i, func(s *model.Player) {

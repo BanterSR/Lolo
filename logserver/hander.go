@@ -28,3 +28,12 @@ func (g *LogServer) PlayerPing(conn ofnet.Conn, msg *alg.GameMsg) {
 		ServerTimeMs: req.ClientTimeMs,
 	})
 }
+
+func (g *LogServer) ClientLogMessage(conn ofnet.Conn, msg *alg.GameMsg) {
+	// req := msg.Body.(*proto.ClientLogMessageReq)
+	conn.Send(msg.PacketId, &proto.ClientLogMessageRsp{
+		Status:             proto.StatusCode_StatusCode_Ok,
+		Logs:               make([]*proto.ClientLogMessage, 0),
+		RemoveTemplateHash: make([]string, 0),
+	})
+}
