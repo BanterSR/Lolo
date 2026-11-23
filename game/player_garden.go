@@ -12,7 +12,7 @@ import (
 func (g *Game) SwitchGardenStatus(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.SwitchGardenStatusReq)
 	rsp := &proto.SwitchGardenStatusRsp{
-		Status:             proto.StatusCode_StatusCode_Ok,
+		Status:             proto.StatusCode_StatusCode_OK,
 		IsOpen:             false,
 		Password:           "",
 		PasswordExpireTime: 0,
@@ -30,7 +30,7 @@ func (g *Game) SwitchGardenStatus(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GardenLikeRecord(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.GardenLikeRecordReq)
 	rsp := &proto.GardenLikeRecordRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Record: make([]*proto.GardenLikeRecordInfo, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
@@ -39,7 +39,7 @@ func (g *Game) GardenLikeRecord(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GardenFurnitureScheme(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.GardenFurnitureSchemeReq)
 	rsp := &proto.GardenFurnitureSchemeRsp{
-		Status:  proto.StatusCode_StatusCode_Ok,
+		Status:  proto.StatusCode_StatusCode_OK,
 		Schemes: s.GetGardenModel().Schemes(),
 	}
 	defer g.send(s, msg.PacketId, rsp)
@@ -48,7 +48,7 @@ func (g *Game) GardenFurnitureScheme(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GardenSchemeFurnitureList(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GardenSchemeFurnitureListReq)
 	rsp := &proto.GardenSchemeFurnitureListRsp{
-		Status:          proto.StatusCode_StatusCode_Ok,
+		Status:          proto.StatusCode_StatusCode_OK,
 		SchemeId:        req.SchemeId,
 		FurnitureItemId: s.GetGardenModel().GetGardenSchemeInfo(req.SchemeId).FurnitureItemId(),
 	}
@@ -58,7 +58,7 @@ func (g *Game) GardenSchemeFurnitureList(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GardenFurnitureSave(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GardenFurnitureSaveReq)
 	rsp := &proto.GardenFurnitureSaveRsp{
-		Status:   proto.StatusCode_StatusCode_Ok,
+		Status:   proto.StatusCode_StatusCode_OK,
 		SchemeId: req.SchemeId,
 	}
 	defer g.send(s, msg.PacketId, rsp)
@@ -72,13 +72,13 @@ func (g *Game) GardenFurnitureSave(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GardenFurnitureRemoveAll(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.GardenFurnitureRemoveAllReq)
 	rsp := &proto.GardenFurnitureRemoveAllRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil ||
 		scenePlayer.channelInfo == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
 		log.Game.Warnf("玩家:%v没有加入房间", s.UserId)
 		return
 	}
@@ -92,7 +92,7 @@ func (g *Game) GardenFurnitureRemoveAll(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GardenFurnitureSchemeSetName(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GardenFurnitureSchemeSetNameReq)
 	rsp := &proto.GardenFurnitureSchemeSetNameRsp{
-		Status:   proto.StatusCode_StatusCode_Ok,
+		Status:   proto.StatusCode_StatusCode_OK,
 		SchemeId: req.SchemeId,
 		Name:     "",
 	}
@@ -105,14 +105,14 @@ func (g *Game) GardenFurnitureSchemeSetName(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GardenFurnitureApplyScheme(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GardenFurnitureApplySchemeReq)
 	rsp := &proto.GardenFurnitureApplySchemeRsp{
-		Status:   proto.StatusCode_StatusCode_Ok,
+		Status:   proto.StatusCode_StatusCode_OK,
 		SchemeId: req.SchemeId,
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil ||
 		scenePlayer.channelInfo == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
 		log.Game.Warnf("玩家:%v没有加入房间", s.UserId)
 		return
 	}
@@ -127,7 +127,7 @@ func (g *Game) GardenFurnitureApplyScheme(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GardenPlaceCharacter(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GardenPlaceCharacterReq)
 	rsp := &proto.GardenPlaceCharacterRsp{
-		Status:      proto.StatusCode_StatusCode_Ok,
+		Status:      proto.StatusCode_StatusCode_OK,
 		CharacterId: req.CharacterId,
 		FurnitureId: req.FurnitureId,
 		SeatId:      req.SeatId,
@@ -139,13 +139,13 @@ func (g *Game) GardenPlaceCharacter(s *model.Player, msg *alg.GameMsg) {
 	if characterInfo == nil || scenePlayer == nil ||
 		scenePlayer.channelInfo == nil ||
 		scenePlayer.channelInfo.ChannelId != s.UserId {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	garden := model.GetSceneGardenData(s.UserId, 9999)
 	if req.IsRemove {
 		if !garden.RemovePlacedCharacter(req.CharacterId) {
-			rsp.Status = proto.StatusCode_StatusCode_BadReq
+			rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 			return
 		}
 	} else {
@@ -155,7 +155,7 @@ func (g *Game) GardenPlaceCharacter(s *model.Player, msg *alg.GameMsg) {
 			FurnitureId:  req.FurnitureId,
 			SeatId:       req.SeatId,
 		}) {
-			rsp.Status = proto.StatusCode_StatusCode_BadReq
+			rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 			return
 		}
 	}

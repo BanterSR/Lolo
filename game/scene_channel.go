@@ -49,7 +49,7 @@ func (s *SceneInfo) newChannelInfo(channelId uint32, channelType int) *ChannelIn
 		channelType:          channelType,
 		allPlayer:            make(map[uint32]*ScenePlayer),
 		playerNum:            0,
-		weatherType:          proto.WeatherType_WeatherType_Sunny,
+		weatherType:          proto.WeatherType_WeatherType_SUNNY,
 		chatChannel:          newChatChannel(),
 		sceneGardenData:      model.GetSceneGardenData(channelId, s.SceneId),
 		chaiInfoMap:          make(map[uint32]*proto.ChairInfo),
@@ -67,7 +67,7 @@ func (s *SceneInfo) newChannelInfo(channelId uint32, channelType int) *ChannelIn
 	}
 
 	info.chatChannel.doneChan = info.doneChan
-	info.chatChannel.Type = proto.ChatChannelType_ChatChannelType_ChatChannelDefault
+	info.chatChannel.Type = proto.ChatChannelType_ChatChannel_Default
 
 	go info.chatChannel.channelMainLoop()
 	go info.channelMainLoop()
@@ -153,7 +153,7 @@ func (c *ChannelInfo) channelTick() {
 	if todSeq := c.game.worldTask.TodSeq(); todSeq != c.todSeq {
 		c.todSeq = todSeq
 		c.serverSceneSync(&ServerSceneSyncCtx{
-			ActionType: proto.SceneActionType_SceneActionType_TodUpdate,
+			ActionType: proto.SceneActionType_SceneActionType_TOD_UPDATE,
 		})
 	}
 
@@ -161,7 +161,7 @@ func (c *ChannelInfo) channelTick() {
 	// 场景变化同步
 	if len(c.sceneSyncDatas) > 0 {
 		notice := &proto.PlayerSceneSyncDataNotice{
-			Status: proto.StatusCode_StatusCode_Ok,
+			Status: proto.StatusCode_StatusCode_OK,
 			Data:   c.sceneSyncDatas,
 		}
 		c.sendAllPlayer(0, notice)
@@ -170,7 +170,7 @@ func (c *ChannelInfo) channelTick() {
 	// 玩家变化同步
 	if len(c.sceneServerDatas) > 0 {
 		notice := &proto.ServerSceneSyncDataNotice{
-			Status: proto.StatusCode_StatusCode_Ok,
+			Status: proto.StatusCode_StatusCode_OK,
 			Data:   make([]*proto.ServerSceneSyncData, 0),
 		}
 		for _, data := range c.sceneServerDatas {
@@ -192,7 +192,7 @@ func (c *ChannelInfo) addPlayer(scenePlayer *ScenePlayer) bool {
 	c.SceneDataNotice(scenePlayer)
 	c.serverSceneSync(&ServerSceneSyncCtx{
 		ScenePlayer: scenePlayer,
-		ActionType:  proto.SceneActionType_SceneActionType_Enter,
+		ActionType:  proto.SceneActionType_SceneActionType_ENTER,
 	})
 
 	c.chatChannel.addUserChan <- c.game.getChatInfo().getChannelSceneUser(scenePlayer.Player)
@@ -207,7 +207,7 @@ func (c *ChannelInfo) delPlayer(scenePlayer *ScenePlayer) {
 	}
 	c.serverSceneSync(&ServerSceneSyncCtx{
 		ScenePlayer: scenePlayer,
-		ActionType:  proto.SceneActionType_SceneActionType_Leave,
+		ActionType:  proto.SceneActionType_SceneActionType_LEAVE,
 	})
 
 	if scenePlayer.UserId != c.ChannelId { // 移除家具
@@ -222,7 +222,7 @@ func (c *ChannelInfo) delPlayer(scenePlayer *ScenePlayer) {
 // 通知客户端场景信息
 func (c *ChannelInfo) SceneDataNotice(scenePlayer *ScenePlayer) {
 	notice := &proto.SceneDataNotice{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Data:   nil,
 	}
 	defer c.sendPlayer(scenePlayer, 0, notice)
@@ -230,7 +230,7 @@ func (c *ChannelInfo) SceneDataNotice(scenePlayer *ScenePlayer) {
 	if data == nil {
 		str, _ := sonic.MarshalString(c)
 		log.Game.Errorf("玩家场景信息异常|场景快照:%s", str)
-		notice.Status = proto.StatusCode_StatusCode_CantJoinPlayerCurrentSceneChannel
+		notice.Status = proto.StatusCode_StatusCode_CANT_JOIN_PLAYER_CURRENT_SCENE_CHANNEL
 		return
 	}
 	notice.Data = data
@@ -268,19 +268,19 @@ func (c *ChannelInfo) serverSceneSync(ctx *ServerSceneSyncCtx) {
 	}
 	alg.AddList(&playerData.ServerData, serverData)
 	switch ctx.ActionType {
-	case proto.SceneActionType_SceneActionType_Enter: // 进入场景
+	case proto.SceneActionType_SceneActionType_ENTER: // 进入场景
 		serverData.Player = c.GetPbScenePlayer(ctx.ScenePlayer)
-	case proto.SceneActionType_SceneActionType_Leave: // 退出场景
-	case proto.SceneActionType_SceneActionType_UpdateEquip: /*更新装备*/
+	case proto.SceneActionType_SceneActionType_LEAVE: // 退出场景
+	case proto.SceneActionType_SceneActionType_UPDATE_EQUIP: /*更新装备*/
 		sceneCharacter := ctx.NewTeamSceneCharacter(serverData)
 		ctx.ScenePlayer.CurScene.GetScenePlayerInfo().UpdateCharacterEquip(sceneCharacter)
-	case proto.SceneActionType_SceneActionType_UpdateFashion, /*更新服装*/
-		proto.SceneActionType_SceneActionType_UpdateTeam,       /*更新队伍*/
-		proto.SceneActionType_SceneActionType_UpdateAppearance: /*更新外观*/
+	case proto.SceneActionType_SceneActionType_UPDATE_FASHION, /*更新服装*/
+		proto.SceneActionType_SceneActionType_UPDATE_TEAM,       /*更新队伍*/
+		proto.SceneActionType_SceneActionType_UPDATE_APPEARANCE: /*更新外观*/
 		serverData.Player = &proto.ScenePlayer{
 			Team: ctx.ScenePlayer.CurScene.GetScenePlayerInfo().GetPbSceneTeam(),
 		}
-	case proto.SceneActionType_SceneActionType_UpdateNickname: // 更新昵称
+	case proto.SceneActionType_SceneActionType_UPDATE_NICKNAME: // 更新昵称
 		basic, ok := db.GetGameBasic(ctx.ScenePlayer.UserId)
 		if !ok {
 			log.Game.Errorf("UserId:%v func serverSceneSync 获取玩家基础数据失败:玩家不存在", ctx.ScenePlayer.UserId)
@@ -290,16 +290,16 @@ func (c *ChannelInfo) serverSceneSync(ctx *ServerSceneSyncCtx) {
 			PlayerId:   ctx.ScenePlayer.UserId,
 			PlayerName: basic.NickName,
 		}
-	case proto.SceneActionType_SceneActionType_TodUpdate: /* 时间更新*/
+	case proto.SceneActionType_SceneActionType_TOD_UPDATE: /* 时间更新*/
 		serverData.TodTime = c.game.worldTask.TodTime()
-	case proto.SceneActionType_SceneActionType_UpdateMusicalItem: // 乐器更新
+	case proto.SceneActionType_SceneActionType_UPDATE_MUSICAL_ITEM: // 乐器更新
 		ctx.ScenePlayer.UpdateMusicalItem(serverData.Player)
-	case proto.SceneActionType_SceneActionType_UpdateCharacterLv, // 角色升级
-		proto.SceneActionType_SceneActionType_UpdateCharacterBreakLv, // 角色突破升阶
-		proto.SceneActionType_SceneActionType_UpdateCharacterStar:    // 角色升星
+	case proto.SceneActionType_SceneActionType_UPDATE_CHARACTER_LV, // 角色升级
+		proto.SceneActionType_SceneActionType_UPDATE_CHARACTER_BREAK_LV, // 角色突破升阶
+		proto.SceneActionType_SceneActionType_UPDATE_CHARACTER_STAR:     // 角色升星
 		sceneCharacter := ctx.NewTeamSceneCharacter(serverData)
 		ctx.ScenePlayer.CurScene.GetScenePlayerInfo().UpdateCharacterBasic(sceneCharacter)
-	case proto.SceneActionType_SceneActionType_UpdataPet: // 更新宠物
+	case proto.SceneActionType_SceneActionType_UPDATA_PET: // 更新宠物
 		ctx.ScenePlayer.UpdatePet(serverData.Player)
 	}
 }
@@ -344,7 +344,7 @@ func (c *ChannelInfo) SceneGardenFurnitureUpdate(ctx *SceneGardenFurnitureCtx) {
 				c.ChannelId, ctx.FurnitureId, true)
 			if furnitureInfo != nil { // 移除家具
 				notice := &proto.SceneGardenFurnitureRemoveNotice{
-					Status:      proto.StatusCode_StatusCode_Ok,
+					Status:      proto.StatusCode_StatusCode_OK,
 					FurnitureId: furnitureInfo.FurnitureId,
 					ItemId:      furnitureInfo.FurnitureItemId,
 					UpdateItems: make([]*proto.ItemDetail, 0),
@@ -354,7 +354,7 @@ func (c *ChannelInfo) SceneGardenFurnitureUpdate(ctx *SceneGardenFurnitureCtx) {
 		}
 		if ctx.CharacterId != 0 {
 			notice := &proto.GardenPlaceCharacterNotice{
-				Status:            proto.StatusCode_StatusCode_Ok,
+				Status:            proto.StatusCode_StatusCode_OK,
 				RemoveCharacterId: ctx.CharacterId,
 			}
 			c.sendAllPlayer(0, notice)
@@ -382,13 +382,13 @@ func (c *ChannelInfo) SceneGardenFurnitureUpdate(ctx *SceneGardenFurnitureCtx) {
 			true,
 		)
 		notice := &proto.SceneGardenFurnitureUpdateNotice{
-			Status:        proto.StatusCode_StatusCode_Ok,
+			Status:        proto.StatusCode_StatusCode_OK,
 			FurnitureInfo: ctx.FurnitureInfo,
 		}
 		c.sendAllPlayer(0, notice)
 	} else if ctx.CharacterId != 0 { // 摆放角色
 		notice := &proto.GardenPlaceCharacterNotice{
-			Status:            proto.StatusCode_StatusCode_Ok,
+			Status:            proto.StatusCode_StatusCode_OK,
 			Character:         c.sceneGardenData.GetScenePlacedCharacter(ctx.CharacterId),
 			RemoveCharacterId: 0,
 		}
@@ -398,7 +398,7 @@ func (c *ChannelInfo) SceneGardenFurnitureUpdate(ctx *SceneGardenFurnitureCtx) {
 
 func (c *ChannelInfo) GardenFurnitureBatchUpdateNotice(player *ScenePlayer) {
 	notice := &proto.GardenFurnitureBatchUpdateNotice{
-		Status:            proto.StatusCode_StatusCode_Ok,
+		Status:            proto.StatusCode_StatusCode_OK,
 		PlayerId:          player.UserId,
 		FurniturePointNum: 0,
 		NewFurnitureList:  c.sceneGardenData.NewFurnitureList(),
@@ -436,7 +436,7 @@ type ActionSyncCtx struct {
 
 func (c *ChannelInfo) SendActionNotice(ctx *ActionSyncCtx) {
 	notice := &proto.SendActionNotice{
-		Status:            proto.StatusCode_StatusCode_Ok,
+		Status:            proto.StatusCode_StatusCode_OK,
 		ActionId:          ctx.ActionId,
 		FromPlayerId:      ctx.ScenePlayer.UserId,
 		FromPlayerName:    ctx.ScenePlayer.NickName,
@@ -455,7 +455,7 @@ type InterActionCtx struct {
 
 func (c *ChannelInfo) SceneInterActionPlayStatusNotice(ctx *InterActionCtx) {
 	notice := &proto.SceneInterActionPlayStatusNotice{
-		Status:       proto.StatusCode_StatusCode_Ok,
+		Status:       proto.StatusCode_StatusCode_OK,
 		ActionStatus: ctx.ActionStatus,
 		PushType:     ctx.PushType,
 		PlayerId:     ctx.ScenePlayer.UserId,
@@ -495,7 +495,7 @@ func (c *ChannelInfo) GetPbSceneData(scenePlayer *ScenePlayer) (info *proto.Scen
 			FireworksDurationTime: 60 * 60 * 24,
 			FireworksStartTime:    time.Now().Unix(),
 		},
-		MpBeacons:        make([]*proto.MPBeacon, 0),
+		MPBeacons:        make([]*proto.MPBeacon, 0),
 		NetworkEvent:     make([]*proto.NetworkEventData, 0),
 		PlacedCharacters: c.sceneGardenData.PlacedCharacters(), // ok
 		MoonSpots:        make([]*proto.MoonSpotData, 0),
@@ -590,7 +590,7 @@ func (s *ScenePlayer) UpdatePet(info *proto.ScenePlayer) {
 
 func (c *ChannelInfo) SceneWeatherChangeNotice() {
 	notice := &proto.SceneWeatherChangeNotice{
-		Status:      proto.StatusCode_StatusCode_Ok,
+		Status:      proto.StatusCode_StatusCode_OK,
 		WeatherType: c.weatherType,
 	}
 	c.sendAllPlayer(0, notice)

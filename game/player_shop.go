@@ -11,7 +11,7 @@ import (
 func (g *Game) ShopInfo(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ShopInfoReq)
 	rsp := &proto.ShopInfoRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		ShopId: req.ShopId,
 		Grids:  make([]*proto.ShopGrid, 0),
 	}
@@ -36,7 +36,7 @@ func (g *Game) ShopInfo(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) ShopBuy(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ShopBuyReq)
 	rsp := &proto.ShopBuyRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		ShopId: req.ShopId,
 		Grids:  new(proto.ShopGrid),
 		Items:  make([]*proto.ItemDetail, 0), // 结果
@@ -47,13 +47,13 @@ func (g *Game) ShopBuy(s *model.Player, msg *alg.GameMsg) {
 	}()
 	conf := gdconf.GetPoolByGrid(req.ShopId, req.GridId, req.ItemId)
 	if conf == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	// 扣钱
 	ctx, err := s.GetItemModel().Begin()
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	defer func() {
@@ -65,7 +65,7 @@ func (g *Game) ShopBuy(s *model.Player, msg *alg.GameMsg) {
 		ctx.DelBaseItem(uint32(item.CurrencyID), int64(item.Price*int32(req.BuyTimes)))
 	}
 	if ctx.Error != nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	ctx.Commit()
@@ -74,17 +74,17 @@ func (g *Game) ShopBuy(s *model.Player, msg *alg.GameMsg) {
 	switch proto.EShopType(gdconf.GetShopInfo(req.ShopId).NewShopType) {
 	case proto.EShopType_EShopType_BattlePass: // 通行证
 
-	case proto.EShopType_EShopType_CharacterBp: // 角色商店
+	case proto.EShopType_EShopType_CharacterBP: // 角色商店
 		// 解锁角色购买
 		characterInfo := s.GetCharacterModel().GetCharacterInfo(uint32(gdconf.GetCharacterInfoByShop(req.ShopId).ID))
 		if characterInfo == nil {
-			rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+			rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
 			log.Game.Warnf("获取角色商店失败,商店%v不存在", req.ShopId)
 			return
 		}
 		characterInfo.IsUnlockPayment = true
 		g.send(s, 0, &proto.CharacterBpBuyNotice{
-			Status:      proto.StatusCode_StatusCode_Ok,
+			Status:      proto.StatusCode_StatusCode_OK,
 			CharacterId: characterInfo.CharacterId,
 		})
 
@@ -97,7 +97,7 @@ func (g *Game) ShopBuy(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) CreatePayOrder(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.CreatePayOrderReq)
 	rsp := &proto.CreatePayOrderRsp{
-		Status:    proto.StatusCode_StatusCode_Ok,
+		Status:    proto.StatusCode_StatusCode_OK,
 		OrderId:   "", // 订单号
 		ResultStr: "", // ？
 	}

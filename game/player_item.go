@@ -17,7 +17,7 @@ func (g *Game) AllPackNotice(s *model.Player) {
 	petMap := itemModel.GetItemPetInfoMap()
 
 	notice := &proto.PackNotice{
-		Status:          proto.StatusCode_StatusCode_Ok,
+		Status:          proto.StatusCode_StatusCode_OK,
 		Items:           make([]*proto.ItemDetail, 0, len(baseMap)+len(fashionMap)+len(weaponMap)+len(armorMap)+len(posterMap)+len(inscriptionMap)+len(petMap)),
 		TempPackMaxSize: 30,
 		IsClearTempPack: false,
@@ -49,7 +49,7 @@ func (g *Game) AllPackNotice(s *model.Player) {
 
 func (g *Game) PackNoticeByItems(s *model.Player, items []*proto.ItemDetail) {
 	g.send(s, 0, &proto.PackNotice{
-		Status:          proto.StatusCode_StatusCode_Ok,
+		Status:          proto.StatusCode_StatusCode_OK,
 		Items:           items,
 		TempPackMaxSize: 0,
 		IsClearTempPack: false,
@@ -60,7 +60,7 @@ func (g *Game) GetWeapon(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GetWeaponReq)
 	weaponMap := s.GetItemModel().GetItemWeaponMap()
 	rsp := &proto.GetWeaponRsp{
-		Status:   proto.StatusCode_StatusCode_Ok,
+		Status:   proto.StatusCode_StatusCode_OK,
 		Weapons:  make([]*proto.WeaponInstance, 0, len(weaponMap)),
 		TotalNum: uint32(len(weaponMap)),
 		EndIndex: uint32(len(weaponMap)),
@@ -78,7 +78,7 @@ func (g *Game) GetArmor(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GetArmorReq)
 	armorMap := s.GetItemModel().GetItemArmorMap()
 	rsp := &proto.GetArmorRsp{
-		Status:   proto.StatusCode_StatusCode_Ok,
+		Status:   proto.StatusCode_StatusCode_OK,
 		Armors:   make([]*proto.ArmorInstance, 0, len(armorMap)),
 		TotalNum: uint32(len(armorMap)),
 		EndIndex: uint32(len(armorMap)),
@@ -96,7 +96,7 @@ func (g *Game) GetPoster(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.GetPosterReq)
 	posterMap := s.GetItemModel().GetItemPosterMap()
 	rsp := &proto.GetPosterRsp{
-		Status:   proto.StatusCode_StatusCode_Ok,
+		Status:   proto.StatusCode_StatusCode_OK,
 		Posters:  make([]*proto.PosterInstance, 0, len(posterMap)),
 		TotalNum: uint32(len(posterMap)),
 		EndIndex: uint32(len(posterMap)),
@@ -110,14 +110,14 @@ func (g *Game) GetPoster(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) PosterIllustrationList(s *model.Player, msg *alg.GameMsg) {
 	posterMap := s.GetItemModel().GetItemPosterMap()
 	rsp := &proto.PosterIllustrationListRsp{
-		Status:              proto.StatusCode_StatusCode_Ok,
+		Status:              proto.StatusCode_StatusCode_OK,
 		PosterIllustrations: make([]*proto.PosterIllustration, 0, len(posterMap)),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	for _, v := range posterMap {
 		alg.AddList(&rsp.PosterIllustrations, &proto.PosterIllustration{
 			PosterIllustrationId: v.PosterId,
-			Status:               proto.RewardStatus_RewardStatus_Reward,
+			Status:               proto.RewardStatus_Reward,
 		})
 	}
 }

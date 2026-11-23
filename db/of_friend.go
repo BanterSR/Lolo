@@ -31,14 +31,14 @@ type OFFriend struct {
 // 获取向目标玩家申请好友列表
 func GetAllFriendApply(userId uint32) ([]*OFFriend, error) {
 	list := make([]*OFFriend, 0)
-	err := db.Where("friend_id = ? AND status = ?", userId, proto.FriendStatus_FriendStatus_Apply).Find(&list).Error
+	err := db.Where("friend_id = ? AND status = ?", userId, proto.FriendStatus_FriendStatus_APPLY).Find(&list).Error
 	return list, err
 }
 
 // 获取目标玩家申请了那些好友列表
 func GetAllFriendSenderApply(userId uint32) ([]*OFFriend, error) {
 	list := make([]*OFFriend, 0)
-	err := db.Where("user_id = ? AND status = ?", userId, proto.FriendStatus_FriendStatus_Apply).Find(&list).Error
+	err := db.Where("user_id = ? AND status = ?", userId, proto.FriendStatus_FriendStatus_APPLY).Find(&list).Error
 	return list, err
 }
 
@@ -69,7 +69,7 @@ func CreateFriendApply(requestUserId, recipientId uint32) error {
 	return db.Create(&OFFriend{
 		UserId:   requestUserId,
 		FriendId: recipientId,
-		Status:   proto.FriendStatus_FriendStatus_Apply,
+		Status:   proto.FriendStatus_FriendStatus_APPLY,
 	}).Error
 }
 
@@ -83,21 +83,21 @@ func FriendHandleApply(recipientId, requestUserId uint32, isAgree bool) error {
 		// 获取是否存在该申请
 		request := &OFFriend{}
 		err := tx.
-			Where("user_id = ? AND friend_id = ? AND status = ?", requestUserId, recipientId, proto.FriendStatus_FriendStatus_Apply).
+			Where("user_id = ? AND friend_id = ? AND status = ?", requestUserId, recipientId, proto.FriendStatus_FriendStatus_APPLY).
 			First(&request).Error
 		if err != nil {
 			return err
 		}
 		if isAgree {
 			// 同意好友
-			request.Status = proto.FriendStatus_FriendStatus_Friend
+			request.Status = proto.FriendStatus_FriendStatus_FRIEND
 			if err := tx.Save(request).Error; err != nil {
 				return err
 			}
 			if err := tx.Create(&OFFriend{
 				UserId:   request.FriendId,
 				FriendId: request.UserId,
-				Status:   proto.FriendStatus_FriendStatus_Friend,
+				Status:   proto.FriendStatus_FriendStatus_FRIEND,
 			}).Error; err != nil {
 				return err
 			}
@@ -110,7 +110,7 @@ func FriendHandleApply(recipientId, requestUserId uint32, isAgree bool) error {
 // 获取目标玩家的全部好友
 func GetAllFiend(userId uint32) ([]*OFFriend, error) {
 	list := make([]*OFFriend, 0)
-	err := db.Where("user_id = ? AND status = ?", userId, proto.FriendStatus_FriendStatus_Friend).Find(&list).Error
+	err := db.Where("user_id = ? AND status = ?", userId, proto.FriendStatus_FriendStatus_FRIEND).Find(&list).Error
 	return list, err
 }
 
@@ -118,7 +118,7 @@ func GetAllFiend(userId uint32) ([]*OFFriend, error) {
 func GetIsFiend(userId, friendId uint32) (int64, error) {
 	var count int64
 	err := db.Model(&OFFriend{}).
-		Where("user_id = ? AND friend_id = ? AND status = ?", userId, friendId, proto.FriendStatus_FriendStatus_Friend).
+		Where("user_id = ? AND friend_id = ? AND status = ?", userId, friendId, proto.FriendStatus_FriendStatus_FRIEND).
 		Count(&count).Error
 	return count, err
 }
@@ -126,7 +126,7 @@ func GetIsFiend(userId, friendId uint32) (int64, error) {
 // 尝试获取可能存在的好友关系
 func GetFiend(userId, friendId uint32) (*OFFriend, error) {
 	off := &OFFriend{}
-	err := db.Where("user_id = ? AND friend_id = ? AND status = ?", userId, friendId, proto.FriendStatus_FriendStatus_Friend).
+	err := db.Where("user_id = ? AND friend_id = ? AND status = ?", userId, friendId, proto.FriendStatus_FriendStatus_FRIEND).
 		First(&off).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
@@ -192,7 +192,7 @@ func CreateFriendBlack(userId, blackId uint32, isRemove bool) error {
 			})
 		} else {
 			tx.Where("user_id = ? AND friend_id = ?", userId, blackId).
-				Update("status", proto.FriendStatus_FriendStatus_Black)
+				Update("status", proto.FriendStatus_FriendStatus_BLACK)
 		}
 		return tx.Error
 	})

@@ -103,14 +103,14 @@ func RandItemDetail(worldLevel uint32, tag proto.EBagItemTag) EBagItemTag {
 			ItemId:   uint32(conf.ID),
 			Num:      rand.Int64N(2*(int64(worldLevel)+1)) + 1,
 			ItemType: proto.EBagItemTag(conf.NewBagItemTag),
-			PackType: proto.PackType_PackType_TempStorageArea,
+			PackType: proto.ItemDetail_PackType_TempStorageArea,
 		}
 	case proto.EBagItemTag_EBagItemTag_Weapon: // 武器
 		info := GenItemWeaponInfo(uint32(conf.ID), alg.MinSlice(10, (worldLevel/5)+1))
 		if info == nil {
 			return nil
 		}
-		info.PackType = proto.PackType_PackType_TempStorageArea
+		info.PackType = proto.ItemDetail_PackType_TempStorageArea
 
 		return info
 	case proto.EBagItemTag_EBagItemTag_Armor: // 装备
@@ -126,7 +126,7 @@ func (d *SceneTempPack) Pickup(dropIndex uint32, pickIndex int32) []*proto.ItemD
 	}
 	list := make([]*proto.ItemDetail, 0, len(temp.Items))
 	for _, i := range temp.Items {
-		i.SetPackType(proto.PackType_PackType_TempPack)
+		i.SetPackType(proto.ItemDetail_PackType_TempPack)
 		alg.AddLists(&list, i.ItemDetail())
 	}
 	return list

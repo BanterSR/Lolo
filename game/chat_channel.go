@@ -64,7 +64,7 @@ func (c *ChatInfo) getChatChannel(channelId uint32) *ChatChannel {
 	channel, ok := all[channelId]
 	if !ok {
 		channel = newChatChannel()
-		channel.Type = proto.ChatChannelType_ChatChannelType_ChatChannelChatRoom
+		channel.Type = proto.ChatChannelType_ChatChannel_ChatRoom
 		channel.channelId = channelId
 		all[channelId] = channel
 		go channel.channelMainLoop()
@@ -176,9 +176,9 @@ func (c *ChatChannel) addUser(s *ChannelUser) {
 		log.Game.Debugf("UserId:%v ChannelId:%v 进入聊天房间:%s", s.UserId, c.channelId, c.Type.String())
 	}
 	// 进入通知
-	if c.Type == proto.ChatChannelType_ChatChannelType_ChatChannelChatRoom {
+	if c.Type == proto.ChatChannelType_ChatChannel_ChatRoom {
 		s.Conn.Send(0, &proto.ChangeChatChannelNotice{
-			Status:    proto.StatusCode_StatusCode_Ok,
+			Status:    proto.StatusCode_StatusCode_OK,
 			ChannelId: c.channelId,
 		})
 	}
@@ -211,7 +211,7 @@ func (c *ChatChannel) allSendMsg(msg *proto.ChatMsgData) {
 	}
 	alg.AddList(&c.msgList, msg)
 	notice := &proto.ChatMsgNotice{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Type:   c.Type,
 		Msg:    msg,
 	}
@@ -230,7 +230,7 @@ func (c *ChatChannel) allSendMsg(msg *proto.ChatMsgData) {
 
 func (c *ChatChannel) ChatMsgRecordInitNotice(s *model.Player, msgs []*proto.ChatMsgData) {
 	notice := &proto.ChatMsgRecordInitNotice{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Type:   c.Type,
 		Msg:    msgs,
 	}

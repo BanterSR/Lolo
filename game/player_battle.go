@@ -12,14 +12,14 @@ import (
 func (g *Game) BattleEncounterInfo(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.BattleEncounterInfoReq)
 	rsp := &proto.BattleEncounterInfoRsp{
-		Status:     proto.StatusCode_StatusCode_Ok,
+		Status:     proto.StatusCode_StatusCode_OK,
 		Encounters: make([]*proto.BattleEncounterData, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	for _, encounterId := range req.EncounterIds {
 		alg.AddList(&rsp.Encounters, &proto.BattleEncounterData{
 			BattleId: encounterId,
-			State:    proto.BattleState_BattleState_Start,
+			State:    proto.BattleState_Start,
 			BoxId:    300000,
 		})
 	}
@@ -28,7 +28,7 @@ func (g *Game) BattleEncounterInfo(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) BattleEncounterStateUpdate(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.BattleEncounterStateUpdateReq)
 	rsp := &proto.BattleEncounterStateUpdateRsp{
-		Status:                     proto.StatusCode_StatusCode_Ok,
+		Status:                     proto.StatusCode_StatusCode_OK,
 		Encounter:                  nil,
 		DynamicTreasureBoxBaseInfo: new(proto.DynamicTreasureBoxBaseData),
 	}
@@ -43,7 +43,7 @@ func (g *Game) BattleEncounterStateUpdate(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) FlagBattleStateUpdate(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.FlagBattleStateUpdateReq)
 	rsp := &proto.FlagBattleStateUpdateRsp{
-		Status:                     proto.StatusCode_StatusCode_Ok,
+		Status:                     proto.StatusCode_StatusCode_OK,
 		BattleData:                 nil,
 		DynamicTreasureBoxBaseInfo: new(proto.DynamicTreasureBoxBaseData),
 	}
@@ -62,7 +62,7 @@ func (g *Game) FlagBattleStateUpdate(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) MonsterDead(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.MonsterDeadReq)
 	rsp := &proto.MonsterDeadRsp{
-		Status:       proto.StatusCode_StatusCode_Ok,
+		Status:       proto.StatusCode_StatusCode_OK,
 		MonsterIndex: req.MonsterIndex,
 		DropItem:     nil,
 	}
@@ -75,7 +75,7 @@ func (g *Game) MonsterDead(s *model.Player, msg *alg.GameMsg) {
 
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
 		return
 	}
 	switch ty := scenePlayer.CurScene.(type) {
@@ -91,20 +91,20 @@ func (g *Game) MonsterDead(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) Pickup(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.PickupReq)
 	rsp := &proto.PickupRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Items:  nil,
 	}
 	defer g.send(s, msg.PacketId, rsp)
 
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
 		return
 	}
 
 	item := scenePlayer.CurScene.GetTempPack().Pickup(req.DropItemIndex, req.PickIndex)
 	if item == nil {
-		rsp.Status = proto.StatusCode_StatusCode_GachaAlreadyFullPick
+		rsp.Status = proto.StatusCode_StatusCode_GACHA_ALREADY_FULL_PICK
 		return
 	}
 	g.PackNoticeByItems(s, item)

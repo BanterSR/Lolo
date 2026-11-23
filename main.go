@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"gucooing/lolo/command"
 	"gucooing/lolo/game"
 	"net/http"
 	"os"
@@ -92,7 +91,7 @@ func runLolo(cmd *cobra.Command, args []string) error {
 			return
 		}
 	}
-	fmt.Printf("%s\n", alg.GmNotice)
+	fmt.Printf("%s\n", alg.ProjectNotice)
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println("\n程序异常退出,原因:")
@@ -132,8 +131,6 @@ func newLolo() error {
 	gs := game.NewGame(ginRouter)
 	// 初始化gateWay
 	ga := gateway.NewGateway(ginRouter, gs)
-	// 初始化command
-	command.NewCommand(ginRouter, ga, gs)
 	// 初始化logserver
 	l := logserver.NewLogServer(ginRouter)
 

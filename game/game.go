@@ -3,7 +3,6 @@ package game
 import (
 	"errors"
 	"fmt"
-	"gucooing/lolo/pkg/cache"
 	"runtime"
 	"runtime/debug"
 	"sync/atomic"
@@ -31,13 +30,10 @@ type Game struct {
 	taskChan            chan TaskInterface
 	userMap             map[uint32]*model.Player
 	handlerFuncRouteMap map[uint32]HandlerFunc
-	botCache            *cache.Cache[uint32, BotInterface]
-	onlyUserId          atomic.Uint32
 	wordInfo            *WordInfo
 	worldTask           *model.WorldTask
 	chatInfo            *ChatInfo
 	checkPlayerTimer    *time.Timer
-	gmChan              chan bool
 	doneChan            chan struct{}
 }
 
@@ -71,7 +67,7 @@ func (k *KillPlayer) UserID() uint32 { return k.UserId }
 var ErrPlayerOffline = errors.New("玩家不在线")
 
 // FuncTask 通用玩家任务:把"对在线玩家的操作"投递到 game 主循环上串行执行,
-// 让 GM/HTTP/bot 回调等外部 goroutine 无需加锁即可安全操作 Player。
+// 让 HTTP 回调等外部 goroutine 无需加锁即可安全操作 Player。
 type FuncTask struct {
 	UserId uint32
 	Fn     func(s *model.Player) // 在主循环上执行,可直接读写 Player,返回结果与错误
@@ -89,7 +85,6 @@ func NewGame(router *gin.Engine) *Game {
 		taskChan:  make(chan TaskInterface, conf.MsgChanSize),
 		userMap:   make(map[uint32]*model.Player, 1000),
 		doneChan:  make(chan struct{}),
-		botCache:  cache.New[uint32, BotInterface](0),
 	}
 	g.newRouter()
 	// 初始化场景配置
@@ -214,9 +209,9 @@ func (g *Game) offlinePlayer(player *model.Player, reason proto.PlayerOfflineRea
 		player.LoginUUID != player2.LoginUUID || player.NetFreeze {
 		return
 	}
-	if reason != proto.PlayerOfflineReason_PlayerOfflineReason_None {
+	if reason != proto.PlayerOfflineReason_PlayerOfflineReason_NONE {
 		g.send(player, 0, &proto.PlayerOfflineRsp{
-			Status:             proto.StatusCode_StatusCode_Ok,
+			Status:             proto.StatusCode_StatusCode_OK,
 			Reason:             reason,
 			ServerNextOpenTime: 0,
 		})
@@ -256,7 +251,7 @@ func (g *Game) TaskNum() int {
 }
 
 // PostPlayerFunc 投递一个针对在线玩家的操作到 game 主循环异步执行(不等待结果)。
-// 仅供非主循环 goroutine(GM/HTTP/bot 回调等)调用;严禁在主循环内部调用,否则可能自锁。
+// 仅供非主循环 goroutine(HTTP 回调等)调用;严禁在主循环内部调用,否则可能自锁。
 func (g *Game) PostPlayerFunc(userId uint32, fn func(s *model.Player)) {
 	g.taskChan <- &FuncTask{UserId: userId, Fn: fn}
 }
@@ -284,8 +279,8 @@ func (g *Game) Close() {
 	g.checkPlayer()
 	for _, player := range g.userMap {
 		g.send(player, 0, &proto.PlayerOfflineRsp{
-			Status:             proto.StatusCode_StatusCode_Ok,
-			Reason:             proto.PlayerOfflineReason_PlayerOfflineReason_ServerShutdown,
+			Status:             proto.StatusCode_StatusCode_OK,
+			Reason:             proto.PlayerOfflineReason_PlayerOfflineReason_SERVER_SHUTDOWN,
 			ServerNextOpenTime: time.Now().Add(10 * time.Minute).Unix(),
 		})
 		g.kickPlayer(player)

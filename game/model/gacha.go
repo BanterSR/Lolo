@@ -235,7 +235,7 @@ func (c *GachaCtx) getPool() (int32, int) {
 	switch proto.EUIGachaType(c.conf.Conf.NewUIGachaType) {
 	case proto.EUIGachaType_EUIGachaType_New, // 新人
 		proto.EUIGachaType_EUIGachaType_Default,                   // 普池
-		proto.EUIGachaType_EUIGachaType_Limit,                     // 限时池
+		proto.EUIGachaType_EUIGachaType_limit,                     // 限时池
 		proto.EUIGachaType_EUIGachaType_BeginnerOptionalCharacter: // 新手指定角色池
 		c.typeInfo.GuaranteeSR++
 		c.typeInfo.GuaranteeSSR++

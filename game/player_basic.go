@@ -19,7 +19,7 @@ import (
 func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.PlayerLoginReq)
 	rsp := &proto.PlayerLoginRsp{
-		Status:           proto.StatusCode_StatusCode_Ok,
+		Status:           proto.StatusCode_StatusCode_OK,
 		IsReconnect:      req.IsReconnect,
 		ReconnectSuccess: req.IsReconnect, // 重新连接是否成功
 	}
@@ -39,21 +39,21 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg
 			goto login
 		}
 		g.offlinePlayer(s,
-			proto.PlayerOfflineReason_PlayerOfflineReason_AnotherLogin) // 下线老玩家
+			proto.PlayerOfflineReason_PlayerOfflineReason_ANOTHER_LOGIN) // 下线老玩家
 	} else {
 		// 新登录 判断是否满人了
 
 		// 拉取数据
 		dbUser, err := db.GetOFGameByUserId(userId)
 		if err != nil {
-			rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 			log.Game.Warnf("数据库拉取玩家:%v数据失败:%s", userId, err.Error())
 			return
 		}
 		basic, err := db.GetGameBasicOrCreate(userId)
 		if err != nil {
 			log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败:%s", userId, err.Error())
-			rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 			return
 		}
 		s = &model.Player{
@@ -63,7 +63,7 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg
 		}
 		if len(dbUser.BinData) != 0 {
 			if err := sonic.Unmarshal(dbUser.BinData, s); err != nil {
-				rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+				rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 				log.Game.Warnf("玩家:%v数据序列化失败:%s", userId, err.Error())
 				return
 			}
@@ -87,7 +87,7 @@ login:
 	basic, err := db.GetGameBasicOrCreate(userId)
 	if err != nil {
 		log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败:%s", s.UserId, err.Error())
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		return
 	}
 	defer func() {
@@ -111,7 +111,7 @@ login:
 	// 加入房间
 	scenePlayer := g.getWordInfo().addScenePlayer(s)
 	if scenePlayer == nil {
-		rsp.Status = proto.StatusCode_StatusCode_SceneChannelNotExist
+		rsp.Status = proto.StatusCode_StatusCode_SCENE_CHANNEL_NOT_EXIST
 		return
 	}
 	// 场景
@@ -134,7 +134,7 @@ login:
 
 func (g *Game) PlayerMainData(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.PlayerMainDataRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 	}
 	defer func() {
 		g.send(s, msg.PacketId, rsp)
@@ -145,7 +145,7 @@ func (g *Game) PlayerMainData(s *model.Player, msg *alg.GameMsg) {
 		basic, ok := db.GetGameBasic(s.UserId)
 		if !ok {
 			log.Game.Warnf("UserId:%v 登录失败,获取玩家基础数据失败 玩家不存在", s.UserId)
-			rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 			return
 		}
 		rsp.PlayerId = s.UserId
@@ -171,7 +171,7 @@ func (g *Game) PlayerMainData(s *model.Player, msg *alg.GameMsg) {
 	}
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil {
-		rsp.Status = proto.StatusCode_StatusCode_SceneChannelIsFull
+		rsp.Status = proto.StatusCode_StatusCode_SCENE_CHANNEL_IS_FULL
 		return
 	}
 	// 场景
@@ -216,15 +216,15 @@ func (g *Game) loginGame(s *model.Player) {
 	// 初始化聊天
 	g.chatInit(s)
 	g.send(s, 0, &proto.GmNotice{
-		Status: proto.StatusCode_StatusCode_Ok,
-		Notice: alg.GmNotice,
+		Status: proto.StatusCode_StatusCode_OK,
+		Notice: alg.ProjectNotice,
 	})
 }
 
 func (g *Game) PlayerPing(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.PlayerPingReq)
 	rsp := &proto.PlayerPingRsp{
-		Status:       proto.StatusCode_StatusCode_Ok,
+		Status:       proto.StatusCode_StatusCode_OK,
 		ClientTimeMs: req.ClientTimeMs,
 		ServerTimeMs: time.Now().UnixMilli(),
 	}
@@ -234,14 +234,14 @@ func (g *Game) PlayerPing(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) ChangeNickName(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ChangeNickNameReq)
 	rsp := &proto.ChangeNickNameRsp{
-		Status:          proto.StatusCode_StatusCode_Ok,
+		Status:          proto.StatusCode_StatusCode_OK,
 		NickName:        "",
 		Items:           make([]*proto.ItemDetail, 0),
 		RenameAllowTime: 0,
 	}
 	defer func() {
 		g.send(s, msg.PacketId, rsp)
-		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UpdateNickname)
+		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UPDATE_NICKNAME)
 	}()
 	err := db.UpGameBasic(s.UserId, func(basic *db.OFGameBasic) bool {
 		basic.NickName = req.NickName
@@ -249,7 +249,7 @@ func (g *Game) ChangeNickName(s *model.Player, msg *alg.GameMsg) {
 		return true
 	})
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		log.Game.Errorf("UserId:%v 修改基础信息失败:%s", s.UserId, err.Error())
 		return
 	}
@@ -269,7 +269,7 @@ func (g *Game) UnlockHeadList(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) UpdatePlayerAppearance(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.UpdatePlayerAppearanceReq)
 	rsp := &proto.UpdatePlayerAppearanceRsp{
-		Status:     proto.StatusCode_StatusCode_Ok,
+		Status:     proto.StatusCode_StatusCode_OK,
 		Appearance: nil,
 	}
 	defer func() {
@@ -282,7 +282,7 @@ func (g *Game) UpdatePlayerAppearance(s *model.Player, msg *alg.GameMsg) {
 		return true
 	})
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		log.Game.Errorf("UserId:%v func db.UpGameBasic err:%v", s.UserId, err)
 	}
 }
@@ -290,7 +290,7 @@ func (g *Game) UpdatePlayerAppearance(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) ChangePhoneBackground(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ChangePhoneBackgroundReq)
 	rsp := &proto.ChangePhoneBackgroundRsp{
-		Status:          proto.StatusCode_StatusCode_Ok,
+		Status:          proto.StatusCode_StatusCode_OK,
 		PhoneBackground: req.PhoneBackground,
 	}
 	defer g.send(s, msg.PacketId, rsp)
@@ -299,7 +299,7 @@ func (g *Game) ChangePhoneBackground(s *model.Player, msg *alg.GameMsg) {
 		return true
 	})
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		log.Game.Errorf("UserId:%v func db.UpGameBasic err:%v", s.UserId, err)
 	}
 }
@@ -307,7 +307,7 @@ func (g *Game) ChangePhoneBackground(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) ChangeIsHideBirthday(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.ChangeIsHideBirthdayReq)
 	rsp := &proto.ChangeIsHideBirthdayRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	err := db.UpGameBasic(s.UserId, func(basic *db.OFGameBasic) bool {
@@ -315,7 +315,7 @@ func (g *Game) ChangeIsHideBirthday(s *model.Player, msg *alg.GameMsg) {
 		return true
 	})
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		log.Game.Errorf("UserId:%v func db.UpGameBasic err:%v", s.UserId, err)
 	}
 }
@@ -323,7 +323,7 @@ func (g *Game) ChangeIsHideBirthday(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) ChangeHideType(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ChangeHideTypeReq)
 	rsp := &proto.ChangeHideTypeRsp{
-		Status:    proto.StatusCode_StatusCode_Ok,
+		Status:    proto.StatusCode_StatusCode_OK,
 		HideValue: 0,
 	}
 	defer g.send(s, msg.PacketId, rsp)
@@ -337,7 +337,7 @@ func (g *Game) ChangeHideType(s *model.Player, msg *alg.GameMsg) {
 		return true
 	})
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		log.Game.Errorf("UserId:%v func db.UpGameBasic err:%v", s.UserId, err)
 	}
 }
@@ -345,7 +345,7 @@ func (g *Game) ChangeHideType(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) ChangeSign(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ChangeSignReq)
 	rsp := &proto.ChangeSignRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Sign:   req.Sign,
 	}
 	defer g.send(s, msg.PacketId, rsp)
@@ -354,7 +354,7 @@ func (g *Game) ChangeSign(s *model.Player, msg *alg.GameMsg) {
 		return true
 	})
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		log.Game.Errorf("UserId:%v func db.UpGameBasic err:%v", s.UserId, err)
 	}
 }
@@ -362,7 +362,7 @@ func (g *Game) ChangeSign(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GamePlayReward(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.GamePlayRewardReq)
 	rsp := &proto.GamePlayRewardRsp{
-		Status:                 proto.StatusCode_StatusCode_Ok,
+		Status:                 proto.StatusCode_StatusCode_OK,
 		DynamicTreasureBoxInfo: nil,
 		Items:                  make([]*proto.ItemDetail, 0),
 	}
@@ -372,7 +372,7 @@ func (g *Game) GamePlayReward(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) AcceptQuest(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.AcceptQuestReq)
 	rsp := &proto.AcceptQuestRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Quest: &proto.Quest{
 			QuestId:       req.QuestId,
 			Conditions:    make([]*proto.Condition, 0),
@@ -388,7 +388,7 @@ func (g *Game) AcceptQuest(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GetAchieveOneGroup(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.GetAchieveOneGroupReq)
 	rsp := &proto.GetAchieveOneGroupRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		CurrentGroupAchieveInfo: &proto.OneGroupAchieveInfo{
 			GroupId:              0,
 			RewardedAchieveIdLst: make([]uint32, 0),
@@ -403,7 +403,7 @@ func (g *Game) GetAchieveOneGroup(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GetAchieveGroupList(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.GetAchieveGroupListReq)
 	rsp := &proto.GetAchieveGroupListRsp{
-		Status:             proto.StatusCode_StatusCode_Ok,
+		Status:             proto.StatusCode_StatusCode_OK,
 		RewardedGroupIdLst: make([]uint32, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
@@ -412,7 +412,7 @@ func (g *Game) GetAchieveGroupList(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GenericGameA(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GenericGameAReq)
 	rsp := &proto.GenericGameARsp{
-		Status:       proto.StatusCode_StatusCode_Ok,
+		Status:       proto.StatusCode_StatusCode_OK,
 		GenericMsgId: req.GenericMsgId,
 		Params:       make([]*proto.CommonParam, 0),
 	}
@@ -422,7 +422,7 @@ func (g *Game) GenericGameA(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GenericGameB(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GenericGameBReq)
 	rsp := &proto.GenericGameBRsp{
-		Status:       proto.StatusCode_StatusCode_Ok,
+		Status:       proto.StatusCode_StatusCode_OK,
 		GenericMsgId: req.GenericMsgId,
 		Params:       make([]*proto.CommonParam, 0),
 	}
@@ -432,15 +432,15 @@ func (g *Game) GenericGameB(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) ManualList(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.ManualListReq)
 	rsp := &proto.ManualListRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Flags:  make([]*proto.ManualFlag, 0),
 	}
 	add := func(flagID uint32) {
 		if flagID != 0 {
 			alg.AddLists(&rsp.Flags, &proto.ManualFlag{
 				FlagId:               flagID,
-				Status:               proto.RewardStatus_RewardStatus_Reward,
-				DungeonTaskFinishNum: 1,
+				Status:               proto.RewardStatus_Reward,
+				DungeonTaskFinishNum: new(uint32(1)),
 			})
 		}
 	}
@@ -456,7 +456,7 @@ func (g *Game) ManualList(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) SelfIntervalInit(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.SelfIntervalInitReq)
 	rsp := &proto.SelfIntervalInitRsp{
-		Status:     proto.StatusCode_StatusCode_Ok,
+		Status:     proto.StatusCode_StatusCode_OK,
 		IntervalId: 0,
 		EndTime:    0,
 		IsStart:    false,
@@ -474,7 +474,7 @@ func (g *Game) SelfIntervalInit(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) BossRushInfo(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.BossRushInfoReq)
 	rsp := &proto.BossRushInfoRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Info: &proto.BossRushInfo{
 			SeasonId:          1002,
 			BestTotalScore:    0,
@@ -494,7 +494,7 @@ func (g *Game) BossRushInfo(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) PlayerVitality(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.PlayerVitalityReq)
 	rsp := &proto.PlayerVitalityRsp{
-		Status:         proto.StatusCode_StatusCode_Ok,
+		Status:         proto.StatusCode_StatusCode_OK,
 		VitalityBuyNum: 0,
 		Items:          make([]*proto.ItemDetail, 0),
 	}
@@ -503,7 +503,7 @@ func (g *Game) PlayerVitality(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) TreasureIllustrationInfo(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.TreasureIllustrationInfoRsp{
-		Status:         proto.StatusCode_StatusCode_Ok,
+		Status:         proto.StatusCode_StatusCode_OK,
 		UtensilReward:  make([]uint32, 0),
 		BookReward:     make([]uint32, 0),
 		Achieves:       make([]*proto.TreasureAchieve, 0),

@@ -16,9 +16,9 @@ func CalcWeather(seed int64, day, hour int64) proto.WeatherType {
 	x ^= x >> 31
 
 	if x%100 < getWeatherBase() {
-		return proto.WeatherType_WeatherType_Rainy
+		return proto.WeatherType_WeatherType_RAINY
 	}
-	return proto.WeatherType_WeatherType_Sunny
+	return proto.WeatherType_WeatherType_SUNNY
 }
 
 // 下雨的概率

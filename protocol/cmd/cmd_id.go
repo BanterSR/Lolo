@@ -716,6 +716,28 @@ const (
 	ChooseGachaRsp                          = 4544
 	GomokuSinglePlayerRewardReq             = 4600
 	GomokuSinglePlayerRewardRsp             = 4601
+	GomokuOnlinePlayerReadyReq              = 4602
+	GomokuOnlinePlayerReadyRsp              = 4603
+	GomokuOnlinePlayerWatchReq              = 4604
+	GomokuOnlinePlayerWatchRsp              = 4605
+	GomokuOnlinePlayerNotice                = 4606
+	GomokuOnlinePlayerWatchNotice           = 4607
+	GomokuOnlinePlayerRemoveNotice          = 4608
+	GetGomokuOnlineChessboardReq            = 4609
+	GetGomokuOnlineChessboardRsp            = 4610
+	GomokuOnlinePlayerPlaceStoneReq         = 4611
+	GomokuOnlinePlayerPlaceStoneRsp         = 4612
+	GomokuOnlinePlayerPlaceStoneNotice      = 4613
+	GomokuOnlinePlayerLeaveReq              = 4614
+	GomokuOnlinePlayerLeaveRsp              = 4615
+	GomokuOnlinePlayerLeaveNotice           = 4616
+	GomokuOnlinePlayerStartPlayReq          = 4617
+	GomokuOnlinePlayerStartPlayRsp          = 4618
+	GomokuOnlinePlayerStartPlayNotice       = 4619
+	GomokuOnlineSettlementNotice            = 4620
+	CollapseFailReq                         = 4700
+	CollapseFailRsp                         = 4701
+	CollapseFailNotice                      = 4702
 )
 
 func (c *CmdProtoMap) registerAllMessage() {
@@ -1430,4 +1452,26 @@ func (c *CmdProtoMap) registerAllMessage() {
 	c.regMsg(ChooseGachaRsp, func() any { return new(proto.ChooseGachaRsp) })
 	c.regMsg(GomokuSinglePlayerRewardReq, func() any { return new(proto.GomokuSinglePlayerRewardReq) })
 	c.regMsg(GomokuSinglePlayerRewardRsp, func() any { return new(proto.GomokuSinglePlayerRewardRsp) })
+	c.regMsg(GomokuOnlinePlayerReadyReq, func() any { return new(proto.GomokuOnlinePlayerReadyReq) })
+	c.regMsg(GomokuOnlinePlayerReadyRsp, func() any { return new(proto.GomokuOnlinePlayerReadyRsp) })
+	c.regMsg(GomokuOnlinePlayerWatchReq, func() any { return new(proto.GomokuOnlinePlayerWatchReq) })
+	c.regMsg(GomokuOnlinePlayerWatchRsp, func() any { return new(proto.GomokuOnlinePlayerWatchRsp) })
+	c.regMsg(GomokuOnlinePlayerNotice, func() any { return new(proto.GomokuOnlinePlayerNotice) })
+	c.regMsg(GomokuOnlinePlayerWatchNotice, func() any { return new(proto.GomokuOnlinePlayerWatchNotice) })
+	c.regMsg(GomokuOnlinePlayerRemoveNotice, func() any { return new(proto.GomokuOnlinePlayerRemoveNotice) })
+	c.regMsg(GetGomokuOnlineChessboardReq, func() any { return new(proto.GetGomokuOnlineChessboardReq) })
+	c.regMsg(GetGomokuOnlineChessboardRsp, func() any { return new(proto.GetGomokuOnlineChessboardRsp) })
+	c.regMsg(GomokuOnlinePlayerPlaceStoneReq, func() any { return new(proto.GomokuOnlinePlayerPlaceStoneReq) })
+	c.regMsg(GomokuOnlinePlayerPlaceStoneRsp, func() any { return new(proto.GomokuOnlinePlayerPlaceStoneRsp) })
+	c.regMsg(GomokuOnlinePlayerPlaceStoneNotice, func() any { return new(proto.GomokuOnlinePlayerPlaceStoneNotice) })
+	c.regMsg(GomokuOnlinePlayerLeaveReq, func() any { return new(proto.GomokuOnlinePlayerLeaveReq) })
+	c.regMsg(GomokuOnlinePlayerLeaveRsp, func() any { return new(proto.GomokuOnlinePlayerLeaveRsp) })
+	c.regMsg(GomokuOnlinePlayerLeaveNotice, func() any { return new(proto.GomokuOnlinePlayerLeaveNotice) })
+	c.regMsg(GomokuOnlinePlayerStartPlayReq, func() any { return new(proto.GomokuOnlinePlayerStartPlayReq) })
+	c.regMsg(GomokuOnlinePlayerStartPlayRsp, func() any { return new(proto.GomokuOnlinePlayerStartPlayRsp) })
+	c.regMsg(GomokuOnlinePlayerStartPlayNotice, func() any { return new(proto.GomokuOnlinePlayerStartPlayNotice) })
+	c.regMsg(GomokuOnlineSettlementNotice, func() any { return new(proto.GomokuOnlineSettlementNotice) })
+	c.regMsg(CollapseFailReq, func() any { return new(proto.CollapseFailReq) })
+	c.regMsg(CollapseFailRsp, func() any { return new(proto.CollapseFailRsp) })
+	c.regMsg(CollapseFailNotice, func() any { return new(proto.CollapseFailNotice) })
 }

@@ -11,7 +11,7 @@ import (
 
 func (g *Game) GetAllCharacterEquip(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.GetAllCharacterEquipRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Items:  make([]*proto.ItemDetail, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
@@ -20,25 +20,25 @@ func (g *Game) GetAllCharacterEquip(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) CharacterLevelUp(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.CharacterLevelUpReq)
 	rsp := &proto.CharacterLevelUpRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		CharId: req.CharId,
 		Level:  0,
 		Exp:    0,
 	}
 	defer func() {
 		g.send(s, msg.PacketId, rsp)
-		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UpdateCharacterLv, req.CharId)
+		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UPDATE_CHARACTER_LV, req.CharId)
 	}()
 	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharId)
 	if characterInfo == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+		rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
 		log.Game.Warnf("保存角色升级失败,角色%v不存在", req.CharId)
 		return
 	}
 	// 申请事务
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_ItemNotEnough
+		rsp.Status = proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 		log.Game.Errorf("玩家:%v申请背包事务失败:%s", s.UserId, err.Error())
 		return
 	}
@@ -49,7 +49,7 @@ func (g *Game) CharacterLevelUp(s *model.Player, msg *alg.GameMsg) {
 		itemId := alg.S2U32(itemList.Values[index])
 		if tx.DelBaseItem(itemId, num).Error != nil {
 			tx.Rollback()
-			rsp.Status = proto.StatusCode_StatusCode_ExploreNumLimit
+			rsp.Status = proto.StatusCode_StatusCode_EXPLORE_NUM_LIMIT
 			log.Game.Errorf("玩家:%v扣除背包物品失败:%s", s.UserId, tx.Error.Error())
 			return
 		}
@@ -63,7 +63,7 @@ func (g *Game) CharacterLevelUp(s *model.Player, msg *alg.GameMsg) {
 	)
 	if tx.DelBaseItem(constant.CurrencyGold, int64(itemExp/50)).Error != nil {
 		tx.Rollback()
-		rsp.Status = proto.StatusCode_StatusCode_ExploreNumLimit
+		rsp.Status = proto.StatusCode_StatusCode_EXPLORE_NUM_LIMIT
 		log.Game.Errorf("玩家:%v扣除金币失败:%s", s.UserId, tx.Error.Error())
 		return
 	}
@@ -82,7 +82,7 @@ func (g *Game) CharacterLevelUp(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) CharacterLevelBreak(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.CharacterLevelBreakReq)
 	rsp := &proto.CharacterLevelBreakRsp{
-		Status:   proto.StatusCode_StatusCode_Ok,
+		Status:   proto.StatusCode_StatusCode_OK,
 		CharId:   req.CharId,
 		Level:    0,
 		Exp:      0,
@@ -90,30 +90,30 @@ func (g *Game) CharacterLevelBreak(s *model.Player, msg *alg.GameMsg) {
 	}
 	defer func() {
 		g.send(s, msg.PacketId, rsp)
-		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UpdateCharacterBreakLv, req.CharId)
+		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UPDATE_CHARACTER_BREAK_LV, req.CharId)
 	}()
 	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharId)
 	if characterInfo == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+		rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
 		log.Game.Warnf("保存角色升级失败,角色%v不存在", req.CharId)
 		return
 	}
 	conf := gdconf.GetCharacterAll(characterInfo.CharacterId)
 	if len(conf.LevelRules) < int(characterInfo.BreakLevel) {
-		rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+		rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
 		return
 	}
 	// 申请事务
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_ItemNotEnough
+		rsp.Status = proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 		log.Game.Errorf("玩家:%v申请背包事务失败:%s", s.UserId, err.Error())
 		return
 	}
 	for _, itemInfo := range conf.LevelRules[int(characterInfo.BreakLevel)].RuleNeedItem {
 		if tx.DelBaseItem(uint32(itemInfo.NeedItemID), int64(itemInfo.NeedItemCount)).Error != nil {
 			tx.Rollback()
-			rsp.Status = proto.StatusCode_StatusCode_ExploreNumLimit
+			rsp.Status = proto.StatusCode_StatusCode_EXPLORE_NUM_LIMIT
 			log.Game.Errorf("玩家:%v扣除背包物品失败:%s", s.UserId, tx.Error.Error())
 			return
 		}
@@ -131,14 +131,14 @@ func (g *Game) CharacterLevelBreak(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) OutfitPresetUpdate(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.OutfitPresetUpdateReq)
 	rsp := &proto.OutfitPresetUpdateRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		CharId: req.CharId,
 		Preset: nil,
 	}
 	defer func() {
 		g.send(s, msg.PacketId, rsp)
 		g.SceneActionCharacterUpdate(
-			s, proto.SceneActionType_SceneActionType_UpdateFashion, req.CharId)
+			s, proto.SceneActionType_SceneActionType_UPDATE_FASHION, req.CharId)
 	}()
 	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharId)
 	if characterInfo == nil {
@@ -185,14 +185,14 @@ func (g *Game) OutfitPresetUpdate(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) OutfitPresetSwitch(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.OutfitPresetSwitchReq)
 	rsp := &proto.OutfitPresetSwitchRsp{
-		Status:         proto.StatusCode_StatusCode_Ok,
+		Status:         proto.StatusCode_StatusCode_OK,
 		CharId:         req.CharId,
 		UsePresetIndex: req.UsePresetIndex,
 	}
 	defer func() {
 		g.send(s, msg.PacketId, rsp)
 		g.SceneActionCharacterUpdate(
-			s, proto.SceneActionType_SceneActionType_UpdateFashion, req.CharId)
+			s, proto.SceneActionType_SceneActionType_UPDATE_FASHION, req.CharId)
 	}()
 	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharId)
 	if characterInfo == nil {
@@ -205,7 +205,7 @@ func (g *Game) OutfitPresetSwitch(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) OutfitColorantSelect(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.OutfitColorantSelectReq)
 	rsp := &proto.OutfitColorantSelectRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Param: &proto.OutfitDyeParam{
 			PictureId: 1,
 			Params:    make([]float64, 0),
@@ -219,7 +219,7 @@ func (g *Game) OutfitColorantSelect(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) OutfitDye(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.OutfitDyeReq)
 	rsp := &proto.OutfitDyeRsp{
-		Status:   proto.StatusCode_StatusCode_Ok,
+		Status:   proto.StatusCode_StatusCode_OK,
 		OutfitId: req.OutfitId,
 		PosColor: &proto.PosColor{
 			Pos:   req.Pos,
@@ -235,7 +235,7 @@ func (g *Game) OutfitDye(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) OutFitDyeSave(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.OutFitDyeSaveReq)
 	rsp := &proto.OutFitDyeSaveRsp{
-		Status:      proto.StatusCode_StatusCode_Ok,
+		Status:      proto.StatusCode_StatusCode_OK,
 		SchemeIndex: req.SchemeIndex,
 		PosColor: &proto.PosColor{
 			Pos:   req.Pos,
@@ -252,7 +252,7 @@ func (g *Game) OutFitDyeSave(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) CharacterEquipUpdate(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.CharacterEquipUpdateReq)
 	rsp := &proto.CharacterEquipUpdateRsp{
-		Status:    proto.StatusCode_StatusCode_Ok,
+		Status:    proto.StatusCode_StatusCode_OK,
 		Character: make([]*proto.Character, 0),
 		Items:     make([]*proto.ItemDetail, 0),
 	}
@@ -270,7 +270,7 @@ func (g *Game) CharacterEquipUpdate(s *model.Player, msg *alg.GameMsg) {
 	upCharacterList := make(map[uint32]struct{}, 2)
 	defer func() {
 		g.SceneActionCharacterUpdate(
-			s, proto.SceneActionType_SceneActionType_UpdateEquip, alg.OrNum(upCharacterList)...)
+			s, proto.SceneActionType_SceneActionType_UPDATE_EQUIP, alg.OrNum(upCharacterList)...)
 		upCharacterList[req.CharId] = struct{}{}
 	}()
 
@@ -362,13 +362,13 @@ func (g *Game) CharacterEquipUpdate(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) UpdateCharacterAppearance(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.UpdateCharacterAppearanceReq)
 	rsp := &proto.UpdateCharacterAppearanceRsp{
-		Status:     proto.StatusCode_StatusCode_Ok,
+		Status:     proto.StatusCode_StatusCode_OK,
 		CharId:     req.CharId,
 		Appearance: nil,
 	}
 	defer func() {
 		g.send(s, msg.PacketId, rsp)
-		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UpdateAppearance, req.CharId)
+		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UPDATE_APPEARANCE, req.CharId)
 	}()
 	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharId)
 	if characterInfo == nil {
@@ -399,17 +399,17 @@ func (g *Game) UpdateCharacterAppearance(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) CharacterGatherWeaponUpdate(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.CharacterGatherWeaponUpdateReq)
 	rsp := &proto.CharacterGatherWeaponUpdateRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 	}
 	defer func() {
 		g.send(s, msg.PacketId, rsp)
 		g.SceneActionCharacterUpdate(
-			s, proto.SceneActionType_SceneActionType_UpdateEquip, req.CharacterId)
+			s, proto.SceneActionType_SceneActionType_UPDATE_EQUIP, req.CharacterId)
 	}()
 	itemInfo := s.GetItemModel().GetItemWeaponInfo(req.WeaponId)
 	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharacterId)
 	if characterInfo == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
 		log.Game.Warnf("玩家:%v 角色:%v 不存在", s.UserId, req.CharacterId)
 		return
 	}
@@ -423,37 +423,37 @@ func (g *Game) CharacterGatherWeaponUpdate(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) CharacterStarUp(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.CharacterStarUpReq)
 	rsp := &proto.CharacterStarUpRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		CharId: req.CharId,
 		Star:   0,
 		Items:  make([]*proto.ItemDetail, 0),
 	}
 	defer func() {
 		g.send(s, msg.PacketId, rsp)
-		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UpdateCharacterStar, req.CharId)
+		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UPDATE_CHARACTER_STAR, req.CharId)
 	}()
 	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharId)
 	if characterInfo == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+		rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
 		log.Game.Warnf("保存角色升星失败,角色%v不存在", req.CharId)
 		return
 	}
 	conf := gdconf.GetCharacterStar(characterInfo.CharacterId, characterInfo.Star+1)
 	if conf == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+		rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
 		return
 	}
 	// 申请事务
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_ItemNotEnough
+		rsp.Status = proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 		log.Game.Errorf("玩家:%v申请背包事务失败:%s", s.UserId, err.Error())
 		return
 	}
 	tx.DelBaseItem(uint32(conf.ItemID), int64(conf.ItemNum))
 	if tx.Error != nil {
 		tx.Rollback()
-		rsp.Status = proto.StatusCode_StatusCode_ExploreNumLimit
+		rsp.Status = proto.StatusCode_StatusCode_EXPLORE_NUM_LIMIT
 		log.Game.Errorf("玩家:%v扣除背包物品失败:%s", s.UserId, tx.Error.Error())
 		return
 	}
@@ -467,7 +467,7 @@ func (g *Game) CharacterStarUp(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) CharacterSkillLevelUp(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.CharacterSkillLevelUpReq)
 	rsp := &proto.CharacterSkillLevelUpRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		CharId: req.CharId,
 		Items:  make([]*proto.ItemDetail, 0),
 		Skill:  nil,
@@ -475,24 +475,24 @@ func (g *Game) CharacterSkillLevelUp(s *model.Player, msg *alg.GameMsg) {
 	defer g.send(s, msg.PacketId, rsp)
 	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharId)
 	if characterInfo == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+		rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
 		log.Game.Warnf("保存角色技能升级失败,角色%v不存在", req.CharId)
 		return
 	}
 	skillInfo, ok := characterInfo.CharacterSkillList[req.SkillId]
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+		rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
 		return
 	}
 	conf := gdconf.GetSpellLevelUpInfoBySkillId(req.SkillId, skillInfo.SkillLevel)
 	if conf == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+		rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
 		return
 	}
 	// 申请事务
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_ItemNotEnough
+		rsp.Status = proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 		log.Game.Errorf("玩家:%v申请背包事务失败:%s", s.UserId, err.Error())
 		return
 	}
@@ -502,7 +502,7 @@ func (g *Game) CharacterSkillLevelUp(s *model.Player, msg *alg.GameMsg) {
 			tx.DelBaseItem(uint32(itemId), int64(item.Num[index]))
 			if tx.Error != nil {
 				tx.Rollback()
-				rsp.Status = proto.StatusCode_StatusCode_ExploreNumLimit
+				rsp.Status = proto.StatusCode_StatusCode_EXPLORE_NUM_LIMIT
 				log.Game.Errorf("玩家:%v扣除背包物品失败:%s", s.UserId, tx.Error.Error())
 				return
 			}
@@ -519,7 +519,7 @@ func (g *Game) CharacterSkillLevelUp(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GetCharacterAchievementList(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GetCharacterAchievementListReq)
 	rsp := &proto.GetCharacterAchievementListRsp{
-		Status:                  proto.StatusCode_StatusCode_Ok,
+		Status:                  proto.StatusCode_StatusCode_OK,
 		CharacterAchievementLst: make([]*proto.Achieve, 0),
 		HasRewardedIds:          make([]uint32, 0), // ok
 		IsUnlockedPayment:       false,             // ok
@@ -529,7 +529,7 @@ func (g *Game) GetCharacterAchievementList(s *model.Player, msg *alg.GameMsg) {
 	defer g.send(s, msg.PacketId, rsp)
 	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharacterId)
 	if characterInfo == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+		rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
 		log.Game.Warnf("获取角色成就列表失败,角色%v不存在", req.CharacterId)
 		return
 	}
@@ -543,7 +543,7 @@ func (g *Game) GetCharacterAchievementList(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GetCharacterAchievementAward(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GetCharacterAchievementAwardReq)
 	rsp := &proto.GetCharacterAchievementAwardRsp{
-		Status:           proto.StatusCode_StatusCode_Ok,
+		Status:           proto.StatusCode_StatusCode_OK,
 		Items:            make([]*proto.ItemDetail, 0),
 		RewardedIndexLst: make([]uint32, 0),
 		CharacterId:      req.CharacterId,
@@ -552,12 +552,12 @@ func (g *Game) GetCharacterAchievementAward(s *model.Player, msg *alg.GameMsg) {
 	conf := gdconf.GetAchieveRewardInfo(req.CharacterId, req.RewardIndex)
 	achievement := s.GetCharacterModel().GetCharacterInfo(req.CharacterId).GetCharacterAchievement()
 	if conf == nil || achievement == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+		rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
 		log.Game.Warnf("获取角色成就列表失败,角色%v不存在", req.CharacterId)
 		return
 	}
 	if int64(conf.UnlockItemCount) > s.GetItemModel().GetItemBaseInfo(uint32(conf.UnlockItemID)).Num {
-		rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+		rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
 		return
 	}
 	// 领取奖励

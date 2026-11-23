@@ -105,7 +105,7 @@ func (b *Bot) scenarioScene(ctx context.Context) {
 					return
 				}
 				b.send(&proto.SendChatMsgReq{
-					Type:       proto.ChatChannelType_ChatChannelType_ChatChannelDefault,
+					Type:       proto.ChatChannelType_ChatChannel_Default,
 					PlayerId:   0,
 					Text:       b.username(),
 					Expression: 0,

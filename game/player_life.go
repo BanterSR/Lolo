@@ -9,7 +9,7 @@ import (
 func (g *Game) GetLifeInfo(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GetLifeInfoReq)
 	rsp := &proto.GetLifeInfoRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		LifeBaseInfo: &proto.LifeBaseInfo{
 			LifeType:         req.GetLifeType(),
 			ProficiencyValue: 0,
@@ -21,7 +21,7 @@ func (g *Game) GetLifeInfo(s *model.Player, msg *alg.GameMsg) {
 		},
 		LifeAchieve: &proto.LifeAchieve{
 			LifeType:                 req.GetLifeType(),
-			LifeAchieve_:             nil,
+			LifeAchieve:              nil,
 			RewardedLifeAchieveIdLst: nil,
 		},
 	}

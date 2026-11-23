@@ -9,7 +9,7 @@ import (
 func (g *Game) PhotoShareSearch(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.PhotoShareSearchReq)
 	rsp := &proto.PhotoShareSearchRsp{
-		Status:           proto.StatusCode_StatusCode_Ok,
+		Status:           proto.StatusCode_StatusCode_OK,
 		Photos:           make([]*proto.PhotoPreviewInfo, 0),
 		TotalNum:         0,
 		EndIndex:         0,

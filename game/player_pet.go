@@ -9,7 +9,7 @@ import (
 func (g *Game) GetPetReq(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.GetPetReq)
 	rsp := &proto.GetPetRsp{
-		Status:   proto.StatusCode_StatusCode_Ok,
+		Status:   proto.StatusCode_StatusCode_OK,
 		Pets:     make([]*proto.PetInstance, 0),
 		TotalNum: 0,
 		EndIndex: 0,
@@ -26,16 +26,16 @@ func (g *Game) GetPetReq(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) ChangePet(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ChangePetReq)
 	rsp := &proto.ChangePetRsp{
-		Status:        proto.StatusCode_StatusCode_Ok,
+		Status:        proto.StatusCode_StatusCode_OK,
 		PetInstanceId: req.PetInstanceId,
 	}
 	defer func() {
 		g.send(s, msg.PacketId, rsp)
-		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UpdataPet)
+		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UPDATA_PET)
 	}()
 	_, ok := s.GetItemModel().GetItemPetInfoMap()[req.PetInstanceId]
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_PetNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PET_NOT_FOUND
 		return
 	}
 	s.GetSceneModel().CurPetInstanceId = req.PetInstanceId

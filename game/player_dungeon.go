@@ -11,7 +11,7 @@ import (
 func (g *Game) DungeonView(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.DungeonViewReq)
 	rsp := &proto.DungeonViewRsp{
-		Status:      proto.StatusCode_StatusCode_Ok,
+		Status:      proto.StatusCode_StatusCode_OK,
 		DungeonData: nil,
 		TaskDataLst: make([]*proto.Achieve, 0), // TODO
 	}
@@ -24,7 +24,7 @@ func (g *Game) DungeonView(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) DungeonEnter(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.DungeonEnterReq)
 	rsp := &proto.DungeonEnterRsp{
-		Status:               proto.StatusCode_StatusCode_Ok,
+		Status:               proto.StatusCode_StatusCode_OK,
 		Team:                 nil, // OK
 		DungeonData:          nil, // OK
 		UpdateItem:           make([]*proto.ItemDetail, 0),
@@ -36,7 +36,7 @@ func (g *Game) DungeonEnter(s *model.Player, msg *alg.GameMsg) {
 
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil || scenePlayer.channelInfo == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
 		return
 	}
 
@@ -78,7 +78,7 @@ func (g *Game) DungeonEnter(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) DungeonOperate(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.DungeonOperateReq)
 	rsp := &proto.DungeonOperateRsp{
-		Status:      proto.StatusCode_StatusCode_Ok,
+		Status:      proto.StatusCode_StatusCode_OK,
 		ConsumeTime: 0,
 		Star:        0,
 	}
@@ -86,7 +86,7 @@ func (g *Game) DungeonOperate(s *model.Player, msg *alg.GameMsg) {
 
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
 		return
 	}
 	// 获取当前玩家用户状态
@@ -97,9 +97,9 @@ func (g *Game) DungeonOperate(s *model.Player, msg *alg.GameMsg) {
 	}
 	curTime := time.Now()
 	switch req.OperateType {
-	case proto.DungeonOperateType_DungeonOperateType_Start:
+	case proto.DungeonOperateReq_START:
 		sd.Info.LastEnterTime = curTime.Unix()
-	case proto.DungeonOperateType_DungeonOperateType_End:
+	case proto.DungeonOperateReq_END:
 		sd.Info.LastFinishTime = curTime.Unix() - sd.Info.LastEnterTime
 	}
 
@@ -109,7 +109,7 @@ func (g *Game) DungeonOperate(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) DungeonFinish(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.DungeonFinishReq)
 	rsp := &proto.DungeonFinishRsp{
-		Status:      proto.StatusCode_StatusCode_Ok,
+		Status:      proto.StatusCode_StatusCode_OK,
 		SceneId:     0,   // ok
 		DungeonData: nil, // ok
 		UpdateItems: make([]*proto.ItemDetail, 0),
@@ -119,7 +119,7 @@ func (g *Game) DungeonFinish(s *model.Player, msg *alg.GameMsg) {
 
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
 		return
 	}
 	// 获取当前玩家用户状态
@@ -136,14 +136,14 @@ func (g *Game) DungeonFinish(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) DungeonExit(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.DungeonExitReq)
 	rsp := &proto.DungeonExitRsp{
-		Status:  proto.StatusCode_StatusCode_Ok,
+		Status:  proto.StatusCode_StatusCode_OK,
 		SceneId: 0,
 	}
 	defer g.send(s, msg.PacketId, rsp)
 
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
 		return
 	}
 	// 获取当前玩家用户状态

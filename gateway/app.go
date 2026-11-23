@@ -148,7 +148,7 @@ func (g *Gateway) receive(se *session) {
 		g.game.GetGateTask() <- &game.KillPlayer{
 			UserId:     se.userId,
 			UUID:       se.uuid,
-			Reason:     proto.PlayerOfflineReason_PlayerOfflineReason_None,
+			Reason:     proto.PlayerOfflineReason_PlayerOfflineReason_NONE,
 			KillPlayer: false,
 		}
 		ose, ok := g.sessionMap.Get(se.userId)

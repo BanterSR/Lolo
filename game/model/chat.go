@@ -45,7 +45,7 @@ func (c *ChatModel) AddUnExpression(expression uint32) *ItemBaseInfo {
 			ItemId:   expression,
 			Num:      1,
 			ItemType: proto.EBagItemTag_EBagItemTag_Expression,
-			PackType: proto.PackType_PackType_Inventory,
+			PackType: proto.ItemDetail_PackType_Inventory,
 		}
 		c.UnLockExpression[expression] = item
 	}

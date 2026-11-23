@@ -14,7 +14,7 @@ import (
 func (g *Game) GetCollectItemIds(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.GetCollectItemIdsReq)
 	rsp := &proto.GetCollectItemIdsRsp{
-		Status:  proto.StatusCode_StatusCode_Ok,
+		Status:  proto.StatusCode_StatusCode_OK,
 		ItemIds: make([]uint32, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
@@ -30,7 +30,7 @@ func (g *Game) GetCollectItemIds(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) Collecting(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.CollectingReq)
 	rsp := &proto.CollectingRsp{
-		Status:      proto.StatusCode_StatusCode_Ok,
+		Status:      proto.StatusCode_StatusCode_OK,
 		Collections: make([]*proto.CollectionData, 0),
 		Items:       make([]*proto.ItemDetail, 0),
 	}
@@ -38,22 +38,22 @@ func (g *Game) Collecting(s *model.Player, msg *alg.GameMsg) {
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	conf := gdconf.GetCollectionItem(req.ItemId)
 	if conf == nil || scenePlayer == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	info := s.GetSceneModel().GetSceneInfo(scenePlayer.CurScene.GetSceneId()).
 		GetCollectionInfo(proto.ECollectionType(conf.NewCollectionType))
 	if info == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	if _, ok := info.ItemMap[req.ItemId]; ok {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	info.ItemMap[req.ItemId] = &model.PBCollectionRewardData{
 		ItemId: req.ItemId,
-		Status: proto.RewardStatus_RewardStatus_Reward,
+		Status: proto.RewardStatus_Reward,
 	}
 	alg.AddList(&rsp.Collections, info.CollectionData())
 	// 获取奖励
@@ -70,7 +70,7 @@ func (g *Game) Collecting(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) CollectionReward(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.CollectionRewardReq)
 	rsp := &proto.CollectionRewardRsp{
-		Status:               proto.StatusCode_StatusCode_Ok,
+		Status:               proto.StatusCode_StatusCode_OK,
 		CollectionRewardData: nil,
 		Items:                make([]*proto.ItemDetail, 0),
 	}
@@ -78,19 +78,19 @@ func (g *Game) CollectionReward(s *model.Player, msg *alg.GameMsg) {
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	conf := gdconf.GetCollectionItem(req.ItemId)
 	if conf == nil || scenePlayer == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	info := s.GetSceneModel().GetSceneInfo(scenePlayer.CurScene.GetSceneId()).
 		GetCollectionInfo(proto.ECollectionType(conf.NewCollectionType))
 	if info == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	itemInfo, ok := info.ItemMap[req.ItemId]
 	if !ok ||
-		itemInfo.Status != proto.RewardStatus_RewardStatus_NotReward {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		itemInfo.Status != proto.RewardStatus_NotReward {
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	// 获取奖励
@@ -102,14 +102,14 @@ func (g *Game) CollectionReward(s *model.Player, msg *alg.GameMsg) {
 			).
 				AddItemDetail())
 	}
-	itemInfo.Status = proto.RewardStatus_RewardStatus_Reward
+	itemInfo.Status = proto.RewardStatus_Reward
 	rsp.CollectionRewardData = itemInfo.PBCollectionRewardData()
 }
 
 func (g *Game) Gather(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GatherReq)
 	rsp := &proto.GatherRsp{
-		Status:           proto.StatusCode_StatusCode_Ok,
+		Status:           proto.StatusCode_StatusCode_OK,
 		Index:            req.GetGatherItem().GetIndex(),
 		Items:            make([]*proto.ItemDetail, 0),
 		GroupGatherLimit: new(proto.GroupGatherLimit),
@@ -119,14 +119,14 @@ func (g *Game) Gather(s *model.Player, msg *alg.GameMsg) {
 	defer g.send(s, msg.PacketId, rsp)
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	conf := gdconf.GetSceneInfo(scenePlayer.CurScene.GetSceneId()).GatherPointInfo(req.GetGatherItem().GetIndex())
 	gatherConf := gdconf.GetGatherConfigure(uint32(conf.GetGatherID()))
 	rewardConf := gdconf.GetGatherRewardConfigure(req.GetGatherItem().GetReward())
 	if gatherConf == nil || rewardConf == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	var t uint32
@@ -162,13 +162,13 @@ func (g *Game) Gather(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) TreasureBoxOpen(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.TreasureBoxOpenReq)
 	rsp := &proto.TreasureBoxOpenRsp{
-		Status:          proto.StatusCode_StatusCode_Ok,
+		Status:          proto.StatusCode_StatusCode_OK,
 		Items:           make([]*proto.ItemDetail, 0),
 		NextRefreshTime: 0,
 	}
 	defer g.send(s, msg.PacketId, rsp)
 
-	if req.GetLocType() != proto.TreasureBoxLocType_TreasureBoxLocType_Dungeon {
+	if req.GetLocType() != proto.TreasureBoxLocType_TreasureBoxLocType_DUNGEON {
 		return
 	}
 
@@ -177,12 +177,12 @@ func (g *Game) TreasureBoxOpen(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) TreasureBoxPickup(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.TreasureBoxPickupReq)
 	rsp := &proto.TreasureBoxPickupRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Items:  make([]*proto.ItemDetail, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 
-	if req.GetLocType() != proto.TreasureBoxLocType_TreasureBoxLocType_Dungeon {
+	if req.GetLocType() != proto.TreasureBoxLocType_TreasureBoxLocType_DUNGEON {
 		return
 	}
 
@@ -191,7 +191,7 @@ func (g *Game) TreasureBoxPickup(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GetCollectMoonInfo(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GetCollectMoonInfoReq)
 	rsp := &proto.GetCollectMoonInfoRsp{
-		Status:           proto.StatusCode_StatusCode_Ok,
+		Status:           proto.StatusCode_StatusCode_OK,
 		SceneId:          req.SceneId,
 		CollectedMoonIds: make([]uint32, 0),
 		EmotionMoons:     make([]*proto.EmotionMoonInfo, 0),
@@ -200,7 +200,7 @@ func (g *Game) GetCollectMoonInfo(s *model.Player, msg *alg.GameMsg) {
 	info := s.GetSceneModel().GetSceneInfo(req.SceneId).
 		GetCollectionInfo(proto.ECollectionType_ECollectionType_CollectMoonPiece)
 	if info == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	rsp.CollectedMoonIds = info.CollectedMoonIds
@@ -209,7 +209,7 @@ func (g *Game) GetCollectMoonInfo(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) CollectMoon(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.CollectMoonReq)
 	rsp := &proto.CollectMoonRsp{
-		Status:  proto.StatusCode_StatusCode_Ok,
+		Status:  proto.StatusCode_StatusCode_OK,
 		MoonId:  req.MoonId,
 		Rewards: make([]*proto.ItemDetail, 0),
 	}
@@ -217,14 +217,14 @@ func (g *Game) CollectMoon(s *model.Player, msg *alg.GameMsg) {
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	conf := gdconf.GetCollectionItem(req.MoonId)
 	if conf == nil || scenePlayer == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	info := s.GetSceneModel().GetSceneInfo(scenePlayer.CurScene.GetSceneId()).
 		GetCollectionInfo(proto.ECollectionType(conf.NewCollectionType))
 	// 判断
 	if slices.Contains(info.CollectedMoonIds, req.MoonId) {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	alg.AddSlice(&info.CollectedMoonIds, req.MoonId)
