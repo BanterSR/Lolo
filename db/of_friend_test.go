@@ -17,7 +17,7 @@ func TestFriendApplyAcceptDeleteConsistency(t *testing.T) {
 		t.Fatalf("duplicate apply: %v", err)
 	}
 	var applies int64
-	if err := db.Model(&OFFriend{}).Where("status = ?", proto.FriendStatus_FriendStatus_Apply).Count(&applies).Error; err != nil {
+	if err := db.Model(&OFFriend{}).Where("status = ?", proto.FriendStatus_FriendStatus_APPLY).Count(&applies).Error; err != nil {
 		t.Fatal(err)
 	}
 	if applies != 1 {
@@ -78,7 +78,7 @@ func TestMutualFriendApplicationsCollapseOnAccept(t *testing.T) {
 		t.Fatal(err)
 	}
 	var applies int64
-	if err := db.Model(&OFFriend{}).Where("status = ?", proto.FriendStatus_FriendStatus_Apply).Count(&applies).Error; err != nil {
+	if err := db.Model(&OFFriend{}).Where("status = ?", proto.FriendStatus_FriendStatus_APPLY).Count(&applies).Error; err != nil {
 		t.Fatal(err)
 	}
 	if applies != 0 {
@@ -114,7 +114,7 @@ func TestFriendConcurrentDuplicateOperations(t *testing.T) {
 	}
 	run(func() error { return CreateFriendApply(1, 2) })
 	var applies int64
-	if err := db.Model(&OFFriend{}).Where("status = ?", proto.FriendStatus_FriendStatus_Apply).Count(&applies).Error; err != nil {
+	if err := db.Model(&OFFriend{}).Where("status = ?", proto.FriendStatus_FriendStatus_APPLY).Count(&applies).Error; err != nil {
 		t.Fatal(err)
 	}
 	if applies != 1 {
@@ -122,7 +122,7 @@ func TestFriendConcurrentDuplicateOperations(t *testing.T) {
 	}
 	run(func() error { return FriendHandleApply(2, 1, true) })
 	var friends int64
-	if err := db.Model(&OFFriend{}).Where("status = ?", proto.FriendStatus_FriendStatus_Friend).Count(&friends).Error; err != nil {
+	if err := db.Model(&OFFriend{}).Where("status = ?", proto.FriendStatus_FriendStatus_FRIEND).Count(&friends).Error; err != nil {
 		t.Fatal(err)
 	}
 	if friends != 2 {

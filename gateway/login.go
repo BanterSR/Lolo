@@ -35,7 +35,7 @@ func (g *Gateway) VerifyLoginToken(login *LoginInfo) {
 		AccountType: login.AccountType,
 		SdkUid:      login.SdkUid,
 		DeviceUuid:  login.DeviceUuid,
-		Status:      proto.StatusCode_StatusCode_Ok,
+		Status:      proto.StatusCode_StatusCode_OK,
 		TimeLeft:    4294967295,
 		Text:        "",
 		BanEndTime:  0,
@@ -64,12 +64,12 @@ func (g *Gateway) VerifyLoginToken(login *LoginInfo) {
 		if errors.Is(err, gorm.ErrRecordNotFound) { // 可添加是否自动注册判断
 			ofUser, err = db.CreateOFUser(&db.OFUser{SdkUid: sdkUid})
 			if err != nil {
-				rsp.Status = proto.StatusCode_StatusCode_Fail
+				rsp.Status = proto.StatusCode_StatusCode_FAIL
 				log.Gate.Debugf("SdkUid:%s,func db.CreateOFUser err:%s", login.SdkUid, err.Error())
 				return
 			}
 		} else {
-			rsp.Status = proto.StatusCode_StatusCode_AccountUnauth
+			rsp.Status = proto.StatusCode_StatusCode_ACCOUNT_UNAUTH
 			log.Gate.Debugf("SdkUid:%s,get account failed err:%s", login.SdkUid, err.Error())
 			return
 		}
@@ -94,7 +94,7 @@ func (g *Gateway) VerifyLoginToken(login *LoginInfo) {
 		g.game.GetGateTask() <- &game.KillPlayer{
 			UserId:     se.userId,
 			UUID:       se.uuid,
-			Reason:     proto.PlayerOfflineReason_PlayerOfflineReason_AnotherLogin,
+			Reason:     proto.PlayerOfflineReason_PlayerOfflineReason_ANOTHER_LOGIN,
 			KillPlayer: false,
 		}
 		close(se.done)

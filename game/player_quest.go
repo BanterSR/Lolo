@@ -37,7 +37,7 @@ func grantQuestRewards(s *model.Player, rewardId int32) []*proto.ItemDetail {
 
 func (g *Game) AcceptQuest(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.AcceptQuestReq)
-	rsp := &proto.AcceptQuestRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.AcceptQuestRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	questId := req.QuestId
 	if req.QuestType == proto.EQuestType_EQuestType_MainQuest {
@@ -45,7 +45,7 @@ func (g *Game) AcceptQuest(s *model.Player, msg *alg.GameMsg) {
 			if story := chapter.StoryList[req.QuestId]; story != nil {
 				questId = uint32(story.QuestID)
 				if story.PreStoryUnlock != 0 && !s.GetQuestModel().IsStoryRewarded(uint32(story.PreStoryUnlock)) {
-					rsp.Status = proto.StatusCode_StatusCode_BadReq
+					rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 					return
 				}
 				break
@@ -54,27 +54,27 @@ func (g *Game) AcceptQuest(s *model.Player, msg *alg.GameMsg) {
 	}
 	info := gdconf.GetQuestInfos()[questId]
 	if info == nil || (req.QuestType != proto.EQuestType_EQuestType_MainQuest && proto.EQuestType(info.Config.NewType) != req.QuestType) {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	if s.GetQuestModel().GetQuestMap()[questId] != nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	rsp.Quest = s.GetQuestModel().Accept(questId)
 	if rsp.Quest == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	if err := s.SavePlayerNow(); err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		log.Game.Errorf("UserId:%v 接取任务落库失败:%s", s.UserId, err.Error())
 	}
 }
 
 func (g *Game) ClaimQuestReward(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ClaimQuestRewardReq)
-	rsp := &proto.ClaimQuestRewardRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.ClaimQuestRewardRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	questModel := s.GetQuestModel()
 	questId := req.QuestId
@@ -88,17 +88,17 @@ func (g *Game) ClaimQuestReward(s *model.Player, msg *alg.GameMsg) {
 			}
 		}
 		if questModel.IsStoryRewarded(storyId) {
-			rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+			rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 			return
 		}
 	}
 	quest := questModel.GetQuestMap()[questId]
 	if quest == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	if quest.Status != proto.QuestStatus_QuestStatus_Completed && quest.Status != proto.QuestStatus_QuestStatus_Finish {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	rsp.Quest = quest
@@ -115,11 +115,11 @@ func (g *Game) ClaimQuestReward(s *model.Player, msg *alg.GameMsg) {
 	} else {
 		info := gdconf.GetQuestInfos()[questId]
 		if info == nil {
-			rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return
 		}
 		if info.Config.LimitNum > 0 && quest.CompleteCount >= uint32(info.Config.LimitNum) {
-			rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+			rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 			return
 		}
 		rsp.Items = append(rsp.Items, grantQuestRewards(s, info.Config.Reward)...)
@@ -130,12 +130,12 @@ func (g *Game) ClaimQuestReward(s *model.Player, msg *alg.GameMsg) {
 		quest.Status = proto.QuestStatus_QuestStatus_Finish
 	}
 	if err := s.SavePlayerNow(); err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		log.Game.Errorf("UserId:%v 任务奖励落库失败:%s", s.UserId, err.Error())
 		return
 	}
 	if len(rsp.Items) > 0 {
-		notice := &proto.PackNotice{Status: proto.StatusCode_StatusCode_Ok, Items: rsp.Items}
+		notice := &proto.PackNotice{Status: proto.StatusCode_StatusCode_OK, Items: rsp.Items}
 		g.send(s, 0, notice)
 	}
 	s.SetActiveTime()

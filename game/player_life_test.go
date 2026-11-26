@@ -32,7 +32,7 @@ func TestLifeRequestTokenUsesPacketSequence(t *testing.T) {
 
 func TestLifeCommonResultUsesConfiguredItems(t *testing.T) {
 	receipt := model.LifeReceipt{
-		Status: proto.StatusCode_StatusCode_Ok, LifeType: proto.LifeType_LifeType_Cooking, Success: true,
+		Status: proto.StatusCode_StatusCode_OK, LifeType: proto.LifeType_LIFE_TYPE_Cooking, Success: true,
 		ResultItems:      []model.LifeItem{{ItemID: 200, Count: 2, Tag: proto.EBagItemTag_EBagItemTag_Food}},
 		SkillReturnItems: []model.LifeItem{{ItemID: 100, Count: 1, Tag: proto.EBagItemTag_EBagItemTag_Material}},
 		IsLuckyReturn:    true,
@@ -48,14 +48,14 @@ func TestLifeCommonResultUsesConfiguredItems(t *testing.T) {
 
 func TestValidLifeType(t *testing.T) {
 	for _, lifeType := range []proto.LifeType{
-		proto.LifeType_LifeType_Cooking, proto.LifeType_LifeType_Fishing,
-		proto.LifeType_LifeType_Making, proto.LifeType_LifeType_Handicraft,
+		proto.LifeType_LIFE_TYPE_Cooking, proto.LifeType_LIFE_TYPE_Fishing,
+		proto.LifeType_LIFE_TYPE_Making, proto.LifeType_LIFE_TYPE_Handicraft,
 	} {
 		if !model.ValidLifeType(lifeType) {
 			t.Fatalf("有效生活类型被拒绝: %v", lifeType)
 		}
 	}
-	for _, lifeType := range []proto.LifeType{proto.LifeType_LifeType_None, proto.LifeType_LifeType_Sewing, proto.LifeType_LifeType_Gathering} {
+	for _, lifeType := range []proto.LifeType{proto.LifeType_LIFE_TYPE_NONE, proto.LifeType_LIFE_TYPE_Sewing, proto.LifeType_LIFE_TYPE_Gathering} {
 		if model.ValidLifeType(lifeType) {
 			t.Fatalf("未实现生活类型被接受: %v", lifeType)
 		}
@@ -90,7 +90,7 @@ func TestFishingCancelDoesNotConsumeOrLoadConfig(t *testing.T) {
 		t.Fatalf("取消钓鱼产生了额外通知: %d", len(conn.sent))
 	}
 	rsp, ok := conn.sent[0].(*proto.FishingRsp)
-	if !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_Ok || !rsp.GetIsCancel() || rsp.GetFishingEventResult() != nil {
+	if !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_OK || !rsp.GetIsCancel() || rsp.GetFishingEventResult() != nil {
 		t.Fatalf("取消钓鱼响应错误: %+v", conn.sent[0])
 	}
 	if player.Life != nil || len(player.Item.ItemBaseInfo) != 0 {

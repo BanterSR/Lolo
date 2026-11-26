@@ -16,7 +16,7 @@ import (
 func (g *Game) VerifyLoginToken(conn ofnet.Conn, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.VerifyLoginTokenReq)
 	rsp := &proto.VerifyLoginTokenRsp{
-		Status:       proto.StatusCode_StatusCode_Ok,
+		Status:       proto.StatusCode_StatusCode_OK,
 		AccountType:  req.AccountType,
 		SdkUid:       req.SdkUid,
 		IsServerOpen: true,
@@ -26,14 +26,14 @@ func (g *Game) VerifyLoginToken(conn ofnet.Conn, msg *alg.GameMsg) {
 	if value, err := strconv.ParseUint(req.SdkUid, 10, 32); err == nil && value > 0 {
 		rsp.UserId = uint32(value)
 	} else {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 	}
 	conn.Send(msg.PacketId, rsp)
 }
 
 func (g *Game) PlayerOffline(s *model.Player, msg *alg.GameMsg) {
 	g.send(s, msg.PacketId, &proto.PlayerOfflineRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 	})
 }
 
@@ -42,7 +42,7 @@ func (g *Game) PlayerOffline(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) AccountNameBindingCancel(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.AccountNameBindingCancelRsp{
-		Status:   proto.StatusCode_StatusCode_Ok,
+		Status:   proto.StatusCode_StatusCode_OK,
 		PlayerId: s.UserId,
 	}
 	g.send(s, msg.PacketId, rsp)
@@ -53,17 +53,17 @@ func (g *Game) ActionStudy(s *model.Player, msg *alg.GameMsg) {
 	if req.ActionId > 0 {
 		s.GetArchive().SetArchiveMap("actionStudy:"+strconv.Itoa(int(req.ActionId)), "1")
 	}
-	g.send(s, msg.PacketId, &proto.ActionStudyRsp{Status: proto.StatusCode_StatusCode_Ok})
+	g.send(s, msg.PacketId, &proto.ActionStudyRsp{Status: proto.StatusCode_StatusCode_OK})
 }
 
 func (g *Game) ClientLogAuth(s *model.Player, msg *alg.GameMsg) {
-	g.send(s, msg.PacketId, &proto.ClientLogAuthRsp{Status: proto.StatusCode_StatusCode_Ok})
+	g.send(s, msg.PacketId, &proto.ClientLogAuthRsp{Status: proto.StatusCode_StatusCode_OK})
 }
 
 func (g *Game) ClientLogMessage(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ClientLogMessageReq)
 	rsp := &proto.ClientLogMessageRsp{
-		Status:             proto.StatusCode_StatusCode_Ok,
+		Status:             proto.StatusCode_StatusCode_OK,
 		Logs:               req.Logs,
 		RemoveTemplateHash: req.RemoveTemplateHash,
 	}
@@ -71,21 +71,21 @@ func (g *Game) ClientLogMessage(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) Report(s *model.Player, msg *alg.GameMsg) {
-	g.send(s, msg.PacketId, &proto.ReportRsp{Status: proto.StatusCode_StatusCode_Ok})
+	g.send(s, msg.PacketId, &proto.ReportRsp{Status: proto.StatusCode_StatusCode_OK})
 }
 
 func (g *Game) UnfreezePlayerAction(s *model.Player, msg *alg.GameMsg) {
-	g.send(s, msg.PacketId, &proto.UnfreezePlayerActionRsp{Status: proto.StatusCode_StatusCode_Ok})
+	g.send(s, msg.PacketId, &proto.UnfreezePlayerActionRsp{Status: proto.StatusCode_StatusCode_OK})
 }
 
 func (g *Game) MultipleActionAccept(s *model.Player, msg *alg.GameMsg) {
-	g.send(s, msg.PacketId, &proto.MultipleActionAcceptRsp{Status: proto.StatusCode_StatusCode_Ok})
+	g.send(s, msg.PacketId, &proto.MultipleActionAcceptRsp{Status: proto.StatusCode_StatusCode_OK})
 }
 
 func (g *Game) GenericSceneA(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GenericSceneAReq)
 	rsp := &proto.GenericSceneARsp{
-		Status:       proto.StatusCode_StatusCode_Ok,
+		Status:       proto.StatusCode_StatusCode_OK,
 		GenericMsgId: req.GenericMsgId,
 		Params:       req.Params,
 		ParamMap:     req.ParamMap,
@@ -97,7 +97,7 @@ func (g *Game) SPOperate(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.SPOperateReq)
 	archive := s.GetArchive()
 	rsp := &proto.SPOperateRsp{
-		Status:      proto.StatusCode_StatusCode_Ok,
+		Status:      proto.StatusCode_StatusCode_OK,
 		OperateType: req.OperateType,
 	}
 	hash := func(value string) string {
@@ -108,14 +108,14 @@ func (g *Game) SPOperate(s *model.Player, msg *alg.GameMsg) {
 	switch req.OperateType {
 	case proto.SPOperateType_SPOperateType_Open:
 		if req.Password == "" {
-			rsp.Status = proto.StatusCode_StatusCode_BadReq
+			rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 			break
 		}
 		archive.SetArchiveMap("sp:password", hash(req.Password))
 		archive.SetArchiveMap("sp:open", "1")
 	case proto.SPOperateType_SPOperateType_Change:
 		if password == "" || hash(req.OldPassword) != password || req.Password == "" {
-			rsp.Status = proto.StatusCode_StatusCode_BadReq
+			rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 			break
 		}
 		archive.SetArchiveMap("sp:password", hash(req.Password))
@@ -123,7 +123,7 @@ func (g *Game) SPOperate(s *model.Player, msg *alg.GameMsg) {
 	case proto.SPOperateType_SPOperateType_Check:
 		if password == "" || hash(req.Password) != password {
 			archive.SetArchiveMap("sp:check", "0")
-			rsp.Status = proto.StatusCode_StatusCode_BadReq
+			rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 			break
 		}
 		archive.SetArchiveMap("sp:check", "1")
@@ -131,7 +131,7 @@ func (g *Game) SPOperate(s *model.Player, msg *alg.GameMsg) {
 		archive.SetArchiveMap("sp:open", "0")
 		archive.SetArchiveMap("sp:check", "0")
 	default:
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 	}
 	rsp.SpOpenStatus = archive.GetArchiveValue("sp:open") == "1"
 	rsp.SpCheckStatus = archive.GetArchiveValue("sp:check") == "1"
@@ -140,7 +140,7 @@ func (g *Game) SPOperate(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) DailyTaskExchange(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.DailyTaskExchangeRsp{
-		Status:            proto.StatusCode_StatusCode_Ok,
+		Status:            proto.StatusCode_StatusCode_OK,
 		Rewards:           make([]*proto.ItemDetail, 0),
 		TodayConverted:    0,
 		ExchangeTimesLeft: 0,
@@ -162,7 +162,7 @@ func (g *Game) DoLikes(s *model.Player, msg *alg.GameMsg) {
 		left = 0
 	}
 	g.send(s, msg.PacketId, &proto.DoLikesRsp{
-		Status:       proto.StatusCode_StatusCode_Ok,
+		Status:       proto.StatusCode_StatusCode_OK,
 		LeftLikeNums: uint32(left),
 		LikeNums:     used,
 	})
@@ -171,12 +171,12 @@ func (g *Game) DoLikes(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) AreaLevelUp(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.AreaLevelUpReq)
 	rsp := &proto.AreaLevelUpRsp{
-		Status:   proto.StatusCode_StatusCode_Ok,
+		Status:   proto.StatusCode_StatusCode_OK,
 		Items:    make([]*proto.ItemDetail, 0),
 		Achieves: make([]*proto.Achieve, 0),
 	}
 	if req.AreaId == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		g.send(s, msg.PacketId, rsp)
 		return
 	}
@@ -187,7 +187,7 @@ func (g *Game) AreaLevelUp(s *model.Player, msg *alg.GameMsg) {
 	archive.SetArchiveMap(key, strconv.Itoa(int(level)))
 	rsp.Area = &proto.AreaData{
 		AreaId:    req.AreaId,
-		AreaState: proto.AreaState_AreaState_Unlock,
+		AreaState: proto.AreaData_Unlock,
 		Level:     uint32(level),
 	}
 	g.send(s, msg.PacketId, rsp)
@@ -196,10 +196,10 @@ func (g *Game) AreaLevelUp(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) ChallengeStateUpdate(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ChallengeStateUpdateReq)
 	rsp := &proto.ChallengeStateUpdateRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 	}
 	if req.ChallengeId == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		g.send(s, msg.PacketId, rsp)
 		return
 	}
@@ -218,7 +218,7 @@ func (g *Game) ChallengeStateUpdate(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) RiddleStateUpdate(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.RiddleStateUpdateReq)
 	rsp := &proto.RiddleStateUpdateRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		RiddleData: &proto.RiddleData{
 			RiddleId: req.RiddleId,
 			IsWin:    req.IsWin,
@@ -229,7 +229,7 @@ func (g *Game) RiddleStateUpdate(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) SceneTransmit(s *model.Player, msg *alg.GameMsg) {
-	rsp := &proto.SceneTransmitRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.SceneTransmitRsp{Status: proto.StatusCode_StatusCode_OK}
 	if scenePlayer := g.getWordInfo().getScenePlayer(s); scenePlayer != nil && scenePlayer.CurScene != nil {
 		rsp.SceneId = scenePlayer.CurScene.GetSceneId()
 		rsp.ChannelId = scenePlayer.ChannelId
@@ -239,10 +239,10 @@ func (g *Game) SceneTransmit(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) TransmitScene(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.TransmitSceneReq)
-	rsp := &proto.TransmitSceneRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.TransmitSceneRsp{Status: proto.StatusCode_StatusCode_OK}
 	target := g.getWordInfo().getScenePlayerByUserId(req.FriendId)
 	if target == nil || target.CurScene == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		g.send(s, msg.PacketId, rsp)
 		return
 	}
@@ -254,7 +254,7 @@ func (g *Game) TransmitScene(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) CollectCoin(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.CollectCoinReq)
 	rsp := &proto.CollectCoinRsp{
-		Status:    proto.StatusCode_StatusCode_Ok,
+		Status:    proto.StatusCode_StatusCode_OK,
 		CoinIndex: req.CoinIndex,
 		Rewards:   make([]*proto.ItemDetail, 0),
 	}
@@ -264,7 +264,7 @@ func (g *Game) CollectCoin(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) CollectVoiceRegion(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.CollectVoiceRegionReq)
 	g.send(s, msg.PacketId, &proto.CollectVoiceRegionRsp{
-		Status:  proto.StatusCode_StatusCode_Ok,
+		Status:  proto.StatusCode_StatusCode_OK,
 		VoiceId: req.VoiceId,
 	})
 }
@@ -279,24 +279,24 @@ func (g *Game) PlaceCampFire(s *model.Player, msg *alg.GameMsg) {
 		ActionId: req.ActionId,
 	}
 	g.send(s, msg.PacketId, &proto.PlaceCampFireRsp{
-		Status:   proto.StatusCode_StatusCode_Ok,
+		Status:   proto.StatusCode_StatusCode_OK,
 		CampFire: campFire,
 	})
 }
 
 func (g *Game) RemoveCampFire(s *model.Player, msg *alg.GameMsg) {
-	g.send(s, msg.PacketId, &proto.RemoveCampFireRsp{Status: proto.StatusCode_StatusCode_Ok})
+	g.send(s, msg.PacketId, &proto.RemoveCampFireRsp{Status: proto.StatusCode_StatusCode_OK})
 }
 
 func (g *Game) PlaceMoonSpot(s *model.Player, msg *alg.GameMsg) {
-	g.send(s, msg.PacketId, &proto.PlaceMoonSpotRsp{Status: proto.StatusCode_StatusCode_Ok})
+	g.send(s, msg.PacketId, &proto.PlaceMoonSpotRsp{Status: proto.StatusCode_StatusCode_OK})
 }
 
 func (g *Game) EmotionMoonInteract(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.EmotionMoonInteractReq)
 	s.GetArchive().SetArchiveMap("emotionMoon:"+strconv.Itoa(int(req.EmotionMoonId)), "1")
 	g.send(s, msg.PacketId, &proto.EmotionMoonInteractRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Info:   &proto.EmotionMoonInfo{MoonId: req.EmotionMoonId, Interacted: true},
 	})
 }
@@ -309,20 +309,20 @@ func (g *Game) SetRoomDecor(s *model.Player, msg *alg.GameMsg) {
 			strconv.Itoa(int(decor.PosId))+":"+strconv.Itoa(int(decor.ItemId)),
 		)
 	}
-	g.send(s, msg.PacketId, &proto.SetRoomDecorRsp{Status: proto.StatusCode_StatusCode_Ok})
+	g.send(s, msg.PacketId, &proto.SetRoomDecorRsp{Status: proto.StatusCode_StatusCode_OK})
 }
 
 func (g *Game) CharacterDead(s *model.Player, msg *alg.GameMsg) {
-	g.send(s, msg.PacketId, &proto.CharacterDeadRsp{Status: proto.StatusCode_StatusCode_Ok})
+	g.send(s, msg.PacketId, &proto.CharacterDeadRsp{Status: proto.StatusCode_StatusCode_OK})
 }
 
 func (g *Game) CharacterRevive(s *model.Player, msg *alg.GameMsg) {
-	g.send(s, msg.PacketId, &proto.CharacterReviveRsp{Status: proto.StatusCode_StatusCode_Ok})
+	g.send(s, msg.PacketId, &proto.CharacterReviveRsp{Status: proto.StatusCode_StatusCode_OK})
 }
 
 func (g *Game) BuyGameCoin(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.BuyGameCoinRsp{
-		Status:      proto.StatusCode_StatusCode_Ok,
+		Status:      proto.StatusCode_StatusCode_OK,
 		ItemDetails: make([]*proto.ItemDetail, 0),
 	}
 	g.send(s, msg.PacketId, rsp)
@@ -342,36 +342,36 @@ func (g *Game) useCodeOnce(s *model.Player, code, namespace string) bool {
 
 func (g *Game) UseRedemptionCode(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.UseRedemptionCodeReq)
-	rsp := &proto.UseRedemptionCodeRsp{Status: proto.StatusCode_StatusCode_Ok, Code: req.Code}
+	rsp := &proto.UseRedemptionCodeRsp{Status: proto.StatusCode_StatusCode_OK, Code: req.Code}
 	if !g.useCodeOnce(s, req.Code, "redeem") {
-		rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 	}
 	g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) InviteCodeUse(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.InviteCodeUseReq)
-	rsp := &proto.InviteCodeUseRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.InviteCodeUseRsp{Status: proto.StatusCode_StatusCode_OK}
 	if !g.useCodeOnce(s, req.Code, "invite") {
-		rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 	}
 	g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) RecallCodeUse(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.RecallCodeUseReq)
-	rsp := &proto.RecallCodeUseRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.RecallCodeUseRsp{Status: proto.StatusCode_StatusCode_OK}
 	if !g.useCodeOnce(s, req.Code, "recall") {
-		rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 	}
 	g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) InheritCodeUse(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.InheritCodeUseReq)
-	rsp := &proto.InheritCodeUseRsp{Status: proto.StatusCode_StatusCode_Ok, CodeStr: req.Code}
+	rsp := &proto.InheritCodeUseRsp{Status: proto.StatusCode_StatusCode_OK, CodeStr: req.Code}
 	if !g.useCodeOnce(s, req.Code, "inherit") {
-		rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 	}
 	g.send(s, msg.PacketId, rsp)
 }
@@ -379,7 +379,7 @@ func (g *Game) InheritCodeUse(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GetExpressAddress(s *model.Player, msg *alg.GameMsg) {
 	archive := s.GetArchive()
 	rsp := &proto.GetExpressAddressRsp{
-		Status:  proto.StatusCode_StatusCode_Ok,
+		Status:  proto.StatusCode_StatusCode_OK,
 		Name:    archive.GetArchiveValue("express:name"),
 		Phone:   archive.GetArchiveValue("express:phone"),
 		Address: archive.GetArchiveValue("express:address"),
@@ -396,7 +396,7 @@ func (g *Game) UploadExpressAddress(s *model.Player, msg *alg.GameMsg) {
 	archive.SetArchiveMap("express:phone", req.Phone)
 	archive.SetArchiveMap("express:address", req.Address)
 	rsp := &proto.UploadExpressAddressRsp{
-		Status:  proto.StatusCode_StatusCode_Ok,
+		Status:  proto.StatusCode_StatusCode_OK,
 		Items:   req.Items,
 		OrderNo: archive.GetArchiveValue("express:order"),
 	}
@@ -408,12 +408,12 @@ func (g *Game) UploadFGBytes(s *model.Player, msg *alg.GameMsg) {
 	if len(req.Info) > 0 {
 		s.GetArchive().SetArchiveMap("fg:bytes", strconv.Itoa(len(req.Info)))
 	}
-	g.send(s, msg.PacketId, &proto.UploadFGBytesRsp{Status: proto.StatusCode_StatusCode_Ok})
+	g.send(s, msg.PacketId, &proto.UploadFGBytesRsp{Status: proto.StatusCode_StatusCode_OK})
 }
 
 func (g *Game) PlayerVitalityBuy(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.PlayerVitalityBuyRsp{
-		Status:         proto.StatusCode_StatusCode_Ok,
+		Status:         proto.StatusCode_StatusCode_OK,
 		VitalityBuyNum: 0,
 		Items:          make([]*proto.ItemDetail, 0),
 	}
@@ -423,7 +423,7 @@ func (g *Game) PlayerVitalityBuy(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) UseItemFriendIntimacy(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.UseItemFriendIntimacyReq)
 	g.send(s, msg.PacketId, &proto.UseItemFriendIntimacyRsp{
-		Status:   proto.StatusCode_StatusCode_Ok,
+		Status:   proto.StatusCode_StatusCode_OK,
 		FriendId: req.FriendId,
 		Intimacy: 0,
 	})

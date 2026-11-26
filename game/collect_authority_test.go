@@ -210,7 +210,7 @@ func addAuthorityWeapon(player *model.Player, instanceId, weaponId uint32) *mode
 	item := &model.ItemWeaponInfo{
 		ItemBaseInfo: &model.ItemBaseInfo{
 			ItemId: weaponId, ItemType: proto.EBagItemTag_EBagItemTag_Weapon,
-			PackType: proto.PackType_PackType_Inventory,
+			PackType: proto.ItemDetail_PackType_Inventory,
 		},
 		WeaponId: weaponId, InstanceId: instanceId,
 		WeaponSystemType: proto.EWeaponSystemType(conf.GetNewWeaponSystemType()),
@@ -224,7 +224,7 @@ func addAuthorityArmor(player *model.Player, instanceId, armorId uint32) *model.
 	item := &model.ItemArmorInfo{
 		ItemBaseInfo: &model.ItemBaseInfo{
 			ItemId: armorId, ItemType: proto.EBagItemTag_EBagItemTag_Armor,
-			PackType: proto.PackType_PackType_Inventory,
+			PackType: proto.ItemDetail_PackType_Inventory,
 		},
 		ArmorId: armorId, InstanceId: instanceId,
 		WeaponSystemType: proto.EWeaponSystemType(conf.GetNewWeaponSystemType()),
@@ -237,7 +237,7 @@ func addAuthorityPoster(player *model.Player, instanceId, posterId uint32) *mode
 	item := &model.ItemPosterInfo{
 		ItemBaseInfo: &model.ItemBaseInfo{
 			ItemId: posterId, ItemType: proto.EBagItemTag_EBagItemTag_Poster,
-			PackType: proto.PackType_PackType_Inventory,
+			PackType: proto.ItemDetail_PackType_Inventory,
 		},
 		PosterId: posterId, InstanceId: instanceId,
 	}
@@ -277,16 +277,16 @@ func TestGatherRejectsMissingScenePointAndModelData(t *testing.T) {
 	player := newAuthorityPlayer()
 	prepareWoodGather(player)
 	g := newGatherGame(player, 999)
-	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BadReq {
+	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("missing configured scene: %v", rsp.GetStatus())
 	}
 
 	g = newGatherGame(player, 1)
-	if rsp := callGather(g, player, 999, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BadReq {
+	if rsp := callGather(g, player, 999, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("missing gather point: %v", rsp.GetStatus())
 	}
 	player.Scene.SceneMap[1] = nil
-	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BadReq {
+	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("nil player scene data: %v", rsp.GetStatus())
 	}
 }
@@ -299,7 +299,7 @@ func TestGatherRejectsMissingCurrentScene(t *testing.T) {
 		Body:       &proto.GatherReq{GatherItem: &proto.GatherItem{Index: 10, Reward: 1000}},
 	})
 	rsp := player.Conn.(*authorityConn).last(42).(*proto.GatherRsp)
-	if rsp.GetStatus() != proto.StatusCode_StatusCode_BadReq {
+	if rsp.GetStatus() != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("missing current scene: %v", rsp.GetStatus())
 	}
 }
@@ -309,7 +309,7 @@ func TestGatherIgnoresClientLuckyAndAcceptsConfiguredZeroType(t *testing.T) {
 	prepareWoodGather(player)
 	g := newGatherGame(player, 1)
 	rsp := callGather(g, player, 10, 1000, true)
-	if rsp.GetStatus() != proto.StatusCode_StatusCode_Ok || len(rsp.GetItems()) != 1 {
+	if rsp.GetStatus() != proto.StatusCode_StatusCode_OK || len(rsp.GetItems()) != 1 {
 		t.Fatalf("forged lucky changed reward: status=%v items=%d", rsp.GetStatus(), len(rsp.GetItems()))
 	}
 	if got := player.GetItemModel().GetItemBaseInfo(5001).Num; got != 1 {
@@ -319,7 +319,7 @@ func TestGatherIgnoresClientLuckyAndAcceptsConfiguredZeroType(t *testing.T) {
 	flower := addAuthorityWeapon(player, 3, 1005)
 	player.GetCharacterModel().GetCharacterInfo(101).GatherWeapon = flower.WeaponId
 	rsp = callGather(g, player, 20, 2000, false)
-	if rsp.GetStatus() != proto.StatusCode_StatusCode_Ok {
+	if rsp.GetStatus() != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("configured gather type zero must be valid: %v", rsp.GetStatus())
 	}
 	limit := player.Scene.SceneMap[1].GatherLimits[0]
@@ -337,7 +337,7 @@ func TestGatherUsesServerProbabilityForLuckyReward(t *testing.T) {
 	prepareWoodGather(player)
 	g := newGatherGame(player, 1)
 	rsp := callGather(g, player, 10, 1000, false)
-	if rsp.GetStatus() != proto.StatusCode_StatusCode_Ok {
+	if rsp.GetStatus() != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("lucky gather failed: %v", rsp.GetStatus())
 	}
 	if got := player.GetItemModel().GetItemBaseInfo(5001).Num; got != 3 {
@@ -349,15 +349,15 @@ func TestGatherRejectsUnmatchedRewardWrongToolAndInvalidCount(t *testing.T) {
 	player := newAuthorityPlayer()
 	prepareWoodGather(player)
 	g := newGatherGame(player, 1)
-	if rsp := callGather(g, player, 10, 4000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BadReq {
+	if rsp := callGather(g, player, 10, 4000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("reward outside gather group: %v", rsp.GetStatus())
 	}
 	player.GetCharacterModel().GetCharacterInfo(101).GatherWeapon = 1003
-	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BadReq {
+	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("wrong tool type: %v", rsp.GetStatus())
 	}
 	player.GetCharacterModel().GetCharacterInfo(101).GatherWeapon = 1002
-	if rsp := callGather(g, player, 30, 3000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BadReq {
+	if rsp := callGather(g, player, 30, 3000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("zero reward count: %v", rsp.GetStatus())
 	}
 	if player.GetItemModel().GetItemBaseInfo(5001) != nil {
@@ -390,7 +390,7 @@ func TestGatherLimitAndConcurrentDuplicateProtection(t *testing.T) {
 				}},
 			})
 			rsp := player.Conn.(*authorityConn).last(packetId).(*proto.GatherRsp)
-			if rsp.GetStatus() == proto.StatusCode_StatusCode_Ok {
+			if rsp.GetStatus() == proto.StatusCode_StatusCode_OK {
 				okCount.Add(1)
 			}
 		}(i)
@@ -402,7 +402,7 @@ func TestGatherLimitAndConcurrentDuplicateProtection(t *testing.T) {
 	if limit.GatherNum != 1 || player.GetItemModel().GetItemBaseInfo(5001).Num != 1 {
 		t.Fatalf("duplicate protection failed: limit=%d items=%d", limit.GatherNum, player.GetItemModel().GetItemBaseInfo(5001).Num)
 	}
-	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BadReq {
+	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("gather beyond configured limit: %v", rsp.GetStatus())
 	}
 }
@@ -413,7 +413,7 @@ func TestGatherRejectsCounterOverflow(t *testing.T) {
 	limit := player.Scene.SceneMap[1].GetGatherLimit(1)
 	limit.GatherNum = math.MaxUint32
 	g := newGatherGame(player, 1)
-	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BadReq {
+	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("counter overflow must be rejected: %v", rsp.GetStatus())
 	}
 }
@@ -426,7 +426,7 @@ func TestGatherRejectsRewardQuantityOverflow(t *testing.T) {
 	}
 	player.GetItemModel().GetItemBaseMap()[5001] = item
 	g := newGatherGame(player, 1)
-	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BadReq {
+	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("reward quantity overflow must be rejected: %v", rsp.GetStatus())
 	}
 	if item.Num != math.MaxInt64 || player.Scene.SceneMap[1].GatherLimits[1].GatherNum != 0 {
@@ -505,7 +505,7 @@ func TestOldSaveRestoresLimitsWithoutClearingExceededCount(t *testing.T) {
 	}
 	prepareWoodGather(player)
 	g := newGatherGame(player, 1)
-	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BadReq {
+	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("old save exceeded tightened limit: %v", rsp.GetStatus())
 	}
 	limit := player.Scene.SceneMap[1].GatherLimits[1]
@@ -541,7 +541,7 @@ func TestGatherRejectsMissingRuleAndOutOfRangeType(t *testing.T) {
 	player := newAuthorityPlayer()
 	prepareWoodGather(player)
 	g := newGatherGame(player, 7)
-	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BadReq {
+	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("missing scene gather rule accepted: %v", rsp.GetStatus())
 	}
 	if player.GetItemModel().GetItemBaseInfo(5001) != nil {
@@ -553,7 +553,7 @@ func TestGatherRejectsMissingRuleAndOutOfRangeType(t *testing.T) {
 	oldType := group.NewGatherType
 	group.NewGatherType = int32(gdconf.GatherTypeCount)
 	defer func() { group.NewGatherType = oldType }()
-	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BadReq {
+	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("out-of-range gather type accepted: %v", rsp.GetStatus())
 	}
 }
@@ -592,16 +592,16 @@ func TestGatherZeroLimitsAreForbidden(t *testing.T) {
 		probability.Values[1] = oldProbability
 	}()
 	rule.FlowerNum = 0
-	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BadReq {
+	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("configured zero normal limit accepted: %v", rsp.GetStatus())
 	}
 	rule.FlowerNum, rule.LuckyFinishflowerNum = oldNormal, 0
 	probability.Values[1] = "100"
-	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BadReq {
+	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("configured zero lucky limit accepted: %v", rsp.GetStatus())
 	}
 	probability.Values[1] = "0"
-	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_Ok {
+	if rsp := callGather(g, player, 10, 1000, false); rsp.GetStatus() != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("zero lucky limit incorrectly blocked normal gather: %v", rsp.GetStatus())
 	}
 }

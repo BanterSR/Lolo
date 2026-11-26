@@ -201,22 +201,22 @@ func startExplore(s *model.Player, deps exploreDeps, id uint32, activity bool,
 	sceneID, playerLevel uint32, team [3]uint32, now time.Time) (*proto.PlayerExploreInfo, proto.StatusCode) {
 	cfg, err := deps.loadConfig()
 	if err != nil {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	def, ok := exploreDefinition(cfg, id, activity)
 	if !ok {
-		return nil, proto.StatusCode_StatusCode_ExploreNotExists
+		return nil, proto.StatusCode_StatusCode_EXPLORE_NOT_EXISTS
 	}
 	state, err := s.LoadExploreModel()
 	if err != nil {
-		return nil, proto.StatusCode_StatusCode_PlayerNotFound
+		return nil, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
 	current := exploreState(state, id, activity)
 	if current != nil && current.StartTime != 0 {
-		return current.PB(def), proto.StatusCode_StatusCode_ExploreInProgress
+		return current.PB(def), proto.StatusCode_StatusCode_EXPLORE_IN_PROGRESS
 	}
 	if activity && (now.Before(def.StartTime) || now.After(def.EndTime)) {
-		return nil, proto.StatusCode_StatusCode_ExploreNotExists
+		return nil, proto.StatusCode_StatusCode_EXPLORE_NOT_EXISTS
 	}
 	if def.MaxTimes != 0 {
 		times := uint32(0)
@@ -224,30 +224,30 @@ func startExplore(s *model.Player, deps exploreDeps, id uint32, activity bool,
 			times = current.Times
 		}
 		if times >= def.MaxTimes {
-			return nil, proto.StatusCode_StatusCode_ExploreMaxTimes
+			return nil, proto.StatusCode_StatusCode_EXPLORE_MAX_TIMES
 		}
 	}
 	if activeExploreCount(state) >= cfg.MaxConcurrent {
-		return nil, proto.StatusCode_StatusCode_ExploreInProgress
+		return nil, proto.StatusCode_StatusCode_EXPLORE_IN_PROGRESS
 	}
 	if sceneID == 0 || (!activity && sceneID != def.NeedSceneID) {
-		return nil, proto.StatusCode_StatusCode_SceneNotUnlock
+		return nil, proto.StatusCode_StatusCode_SCENE_NOT_UNLOCK
 	}
 	if playerLevel < def.NeedPlayerLevel {
-		return nil, proto.StatusCode_StatusCode_PlayerLevelLimit
+		return nil, proto.StatusCode_StatusCode_PLAYER_LEVEL_LIMIT
 	}
 	if !validExploreTeam(s, team) {
-		return nil, proto.StatusCode_StatusCode_BadReq
+		return nil, proto.StatusCode_StatusCode_BAD_REQ
 	}
 	if !validateExploreItems(deps, def) {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	if def.NeedItemID != 0 && !deps.hasItem(s, def.NeedItemID, def.NeedItemCount) {
-		return nil, proto.StatusCode_StatusCode_ItemNotEnough
+		return nil, proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 	}
 	token, err := newExploreToken()
 	if err != nil {
-		return nil, proto.StatusCode_StatusCode_BadReq
+		return nil, proto.StatusCode_StatusCode_BAD_REQ
 	}
 	current = state.Ensure(id, activity)
 	if activity {
@@ -259,43 +259,43 @@ func startExplore(s *model.Player, deps exploreDeps, id uint32, activity bool,
 	current.QuickFinish = false
 	current.CollectItemIDs = append([]uint32(nil), def.RewardItemIDs...)
 	if err := s.SaveExploreModel(state); err != nil {
-		return nil, proto.StatusCode_StatusCode_PlayerNotFound
+		return nil, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
-	return current.PB(def), proto.StatusCode_StatusCode_Ok
+	return current.PB(def), proto.StatusCode_StatusCode_OK
 }
 
 func quickFinishExplore(s *model.Player, deps exploreDeps, id uint32, activity bool) (*proto.PlayerExploreInfo, *proto.ItemDetail, proto.StatusCode) {
 	cfg, err := deps.loadConfig()
 	if err != nil {
-		return nil, nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	def, ok := exploreDefinition(cfg, id, activity)
 	if !ok {
-		return nil, nil, proto.StatusCode_StatusCode_ExploreNotExists
+		return nil, nil, proto.StatusCode_StatusCode_EXPLORE_NOT_EXISTS
 	}
 	state, err := s.LoadExploreModel()
 	if err != nil {
-		return nil, nil, proto.StatusCode_StatusCode_PlayerNotFound
+		return nil, nil, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
 	current := exploreState(state, id, activity)
 	if current == nil || current.StartTime == 0 {
-		return nil, nil, proto.StatusCode_StatusCode_ExploreNotExists
+		return nil, nil, proto.StatusCode_StatusCode_EXPLORE_NOT_EXISTS
 	}
 	if current.QuickFinish {
-		return current.PB(def), nil, proto.StatusCode_StatusCode_Ok
+		return current.PB(def), nil, proto.StatusCode_StatusCode_OK
 	}
 	if def.QuickItemID == 0 || def.QuickItemCount <= 0 || !deps.itemExists(def.QuickItemID) {
-		return nil, nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	item, ok := deps.consumeItem(s, def.QuickItemID, def.QuickItemCount)
 	if !ok {
-		return current.PB(def), nil, proto.StatusCode_StatusCode_ItemNotEnough
+		return current.PB(def), nil, proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 	}
 	current.QuickFinish = true
 	if err := s.SaveExploreModel(state); err != nil {
-		return current.PB(def), item, proto.StatusCode_StatusCode_PlayerNotFound
+		return current.PB(def), item, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
-	return current.PB(def), item, proto.StatusCode_StatusCode_Ok
+	return current.PB(def), item, proto.StatusCode_StatusCode_OK
 }
 
 func grantExploreDefinition(s *model.Player, deps exploreDeps, def model.ExploreDefinition) ([]*proto.ItemDetail, bool) {
@@ -322,29 +322,29 @@ func claimExploreReward(s *model.Player, deps exploreDeps, id uint32, activity b
 	now time.Time) (*proto.PlayerExploreInfo, []*proto.ItemDetail, proto.StatusCode) {
 	cfg, err := deps.loadConfig()
 	if err != nil {
-		return nil, nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	def, ok := exploreDefinition(cfg, id, activity)
 	if !ok {
-		return nil, nil, proto.StatusCode_StatusCode_ExploreNotExists
+		return nil, nil, proto.StatusCode_StatusCode_EXPLORE_NOT_EXISTS
 	}
 	state, err := s.LoadExploreModel()
 	if err != nil {
-		return nil, nil, proto.StatusCode_StatusCode_PlayerNotFound
+		return nil, nil, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
 	current := exploreState(state, id, activity)
 	if current == nil || current.StartTime == 0 {
-		return nil, nil, proto.StatusCode_StatusCode_ExploreNotFinish
+		return nil, nil, proto.StatusCode_StatusCode_EXPLORE_NOT_FINISH
 	}
 	if !current.QuickFinish && now.UnixMilli() < current.EndTime {
-		return current.PB(def), nil, proto.StatusCode_StatusCode_ExploreNotFinish
+		return current.PB(def), nil, proto.StatusCode_StatusCode_EXPLORE_NOT_FINISH
 	}
 	if !validateExploreItems(deps, def) {
-		return nil, nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	items, ok := grantExploreDefinition(s, deps, def)
 	if !ok {
-		return current.PB(def), nil, proto.StatusCode_StatusCode_ItemGetFail
+		return current.PB(def), nil, proto.StatusCode_StatusCode_Item_Get_Fail
 	}
 	current.StartTime, current.EndTime, current.Token, current.QuickFinish = 0, 0, "", false
 	current.CompletedTimes++
@@ -352,108 +352,108 @@ func claimExploreReward(s *model.Player, deps exploreDeps, id uint32, activity b
 		current.Times++
 	}
 	if err := s.SaveExploreModel(state); err != nil {
-		return current.PB(def), items, proto.StatusCode_StatusCode_PlayerNotFound
+		return current.PB(def), items, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
-	return current.PB(def), items, proto.StatusCode_StatusCode_Ok
+	return current.PB(def), items, proto.StatusCode_StatusCode_OK
 }
 
 func claimExploreCollectReward(s *model.Player, deps exploreDeps, id uint32, activity bool) (*proto.PlayerExploreInfo, []*proto.ItemDetail, proto.StatusCode) {
 	cfg, err := deps.loadConfig()
 	if err != nil {
-		return nil, nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	def, ok := exploreDefinition(cfg, id, activity)
 	if !ok {
-		return nil, nil, proto.StatusCode_StatusCode_ExploreNotExists
+		return nil, nil, proto.StatusCode_StatusCode_EXPLORE_NOT_EXISTS
 	}
 	state, err := s.LoadExploreModel()
 	if err != nil {
-		return nil, nil, proto.StatusCode_StatusCode_PlayerNotFound
+		return nil, nil, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
 	current := exploreState(state, id, activity)
 	if current == nil || current.CompletedTimes == 0 {
-		return nil, nil, proto.StatusCode_StatusCode_ExploreCollectNotFinish
+		return nil, nil, proto.StatusCode_StatusCode_EXPLORE_COLLECT_NOT_FINISH
 	}
 	if current.CollectReward {
-		return current.PB(def), nil, proto.StatusCode_StatusCode_RepeatGetReward
+		return current.PB(def), nil, proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 	}
 	if !validateExploreItems(deps, def) {
-		return nil, nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	items, ok := grantExploreItems(s, deps, def.RewardItemIDs)
 	if !ok {
-		return current.PB(def), nil, proto.StatusCode_StatusCode_ItemGetFail
+		return current.PB(def), nil, proto.StatusCode_StatusCode_Item_Get_Fail
 	}
 	current.CollectReward = true
 	if err := s.SaveExploreModel(state); err != nil {
-		return current.PB(def), items, proto.StatusCode_StatusCode_PlayerNotFound
+		return current.PB(def), items, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
-	return current.PB(def), items, proto.StatusCode_StatusCode_Ok
+	return current.PB(def), items, proto.StatusCode_StatusCode_OK
 }
 
 func cancelExplore(s *model.Player, id uint32, activity bool) (*proto.PlayerExploreInfo, proto.StatusCode) {
 	state, err := s.LoadExploreModel()
 	if err != nil {
-		return nil, proto.StatusCode_StatusCode_PlayerNotFound
+		return nil, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
 	current := exploreState(state, id, activity)
 	if current == nil || current.StartTime == 0 {
-		return nil, proto.StatusCode_StatusCode_ExploreNotExists
+		return nil, proto.StatusCode_StatusCode_EXPLORE_NOT_EXISTS
 	}
 	current.StartTime, current.EndTime, current.Token, current.QuickFinish = 0, 0, "", false
 	if err := s.SaveExploreModel(state); err != nil {
-		return nil, proto.StatusCode_StatusCode_PlayerNotFound
+		return nil, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
 	return &proto.PlayerExploreInfo{
 		ExploreId: id, Times: current.Times, CollectItemId: append([]uint32(nil), current.CollectItemIDs...),
 		CollectReward: current.CollectReward,
-	}, proto.StatusCode_StatusCode_Ok
+	}, proto.StatusCode_StatusCode_OK
 }
 
 func (g *Game) explorePlayerContext(s *model.Player) (uint32, uint32, [3]uint32, proto.StatusCode) {
 	basic, ok := db.GetGameBasic(s.UserId)
 	if !ok {
-		return 0, 0, [3]uint32{}, proto.StatusCode_StatusCode_PlayerNotFound
+		return 0, 0, [3]uint32{}, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil || scenePlayer.CurScene == nil {
-		return 0, 0, [3]uint32{}, proto.StatusCode_StatusCode_PlayerNotInChannel
+		return 0, 0, [3]uint32{}, proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
 	}
 	team := s.GetTeamModel().GetTeamInfo()
 	if team == nil {
-		return 0, 0, [3]uint32{}, proto.StatusCode_StatusCode_BadReq
+		return 0, 0, [3]uint32{}, proto.StatusCode_StatusCode_BAD_REQ
 	}
-	return basic.Level, scenePlayer.CurScene.GetSceneId(), [3]uint32{team.Char1, team.Char2, team.Char3}, proto.StatusCode_StatusCode_Ok
+	return basic.Level, scenePlayer.CurScene.GetSceneId(), [3]uint32{team.Char1, team.Char2, team.Char3}, proto.StatusCode_StatusCode_OK
 }
 
 func (g *Game) ExploreInit(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.ExploreInitRsp{
-		Status:  proto.StatusCode_StatusCode_Ok,
+		Status:  proto.StatusCode_StatusCode_OK,
 		Explore: make([]*proto.PlayerExploreInfo, 0), ActivityExplore: make([]*proto.PlayerExploreInfo, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	cfg, err := productionExploreDeps.loadConfig()
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	for _, id := range cfg.AreaIDs() {
 		def, _ := cfg.Area(id)
 		if !validateExploreItems(productionExploreDeps, def) {
-			rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return
 		}
 	}
 	for _, id := range cfg.ActivityIDs() {
 		def, _ := cfg.Activity(id)
 		if !validateExploreItems(productionExploreDeps, def) {
-			rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return
 		}
 	}
 	state, err := s.LoadExploreModel()
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		return
 	}
 	for _, id := range cfg.AreaIDs() {
@@ -476,19 +476,19 @@ func (g *Game) ExploreInit(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) Explore(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ExploreReq)
-	rsp := &proto.ExploreRsp{Status: proto.StatusCode_StatusCode_Ok, IsActivity: req.IsActivity}
+	rsp := &proto.ExploreRsp{Status: proto.StatusCode_StatusCode_OK, IsActivity: req.IsActivity}
 	defer g.send(s, msg.PacketId, rsp)
 	level, sceneID, team, status := g.explorePlayerContext(s)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	info, status := startExplore(s, productionExploreDeps, req.ExploreId, req.IsActivity, sceneID, level, team, time.Now())
 	rsp.Status = status
 	rsp.Explore = info
-	if status == proto.StatusCode_StatusCode_Ok {
+	if status == proto.StatusCode_StatusCode_OK {
 		if err := s.SavePlayerNow(); err != nil {
-			rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 			log.Game.Errorf("UserId:%v 探索开始落库失败:%s", s.UserId, err)
 		}
 	}
@@ -496,16 +496,16 @@ func (g *Game) Explore(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) ExploreQuickFinish(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ExploreQuickFinishReq)
-	rsp := &proto.ExploreQuickFinishRsp{Status: proto.StatusCode_StatusCode_Ok, IsActivity: req.IsActivity}
+	rsp := &proto.ExploreQuickFinishRsp{Status: proto.StatusCode_StatusCode_OK, IsActivity: req.IsActivity}
 	defer g.send(s, msg.PacketId, rsp)
 	info, item, status := quickFinishExplore(s, productionExploreDeps, req.ExploreId, req.IsActivity)
 	rsp.Status, rsp.Explore = status, info
 	if item != nil {
 		g.PackNoticeByItems(s, []*proto.ItemDetail{item})
 	}
-	if status == proto.StatusCode_StatusCode_Ok {
+	if status == proto.StatusCode_StatusCode_OK {
 		if err := s.SavePlayerNow(); err != nil {
-			rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 			log.Game.Errorf("UserId:%v 探索加速落库失败:%s", s.UserId, err)
 		}
 	}
@@ -514,7 +514,7 @@ func (g *Game) ExploreQuickFinish(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) ExploreReward(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ExploreRewardReq)
 	rsp := &proto.ExploreRewardRsp{
-		Status: proto.StatusCode_StatusCode_Ok, IsActivity: req.IsActivity,
+		Status: proto.StatusCode_StatusCode_OK, IsActivity: req.IsActivity,
 		ExploreId: req.ExploreId, RewardItem: make([]*proto.ItemDetail, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
@@ -523,9 +523,9 @@ func (g *Game) ExploreReward(s *model.Player, msg *alg.GameMsg) {
 	if len(items) > 0 {
 		g.PackNoticeByItems(s, items)
 	}
-	if status == proto.StatusCode_StatusCode_Ok {
+	if status == proto.StatusCode_StatusCode_OK {
 		if err := s.SavePlayerNow(); err != nil {
-			rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 			log.Game.Errorf("UserId:%v 探索领奖落库失败:%s", s.UserId, err)
 		}
 	}
@@ -533,13 +533,13 @@ func (g *Game) ExploreReward(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) ExploreCancel(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ExploreCancelReq)
-	rsp := &proto.ExploreCancelRsp{Status: proto.StatusCode_StatusCode_Ok, ExploreId: req.ExploreId, IsActivity: req.IsActivity}
+	rsp := &proto.ExploreCancelRsp{Status: proto.StatusCode_StatusCode_OK, ExploreId: req.ExploreId, IsActivity: req.IsActivity}
 	defer g.send(s, msg.PacketId, rsp)
 	info, status := cancelExplore(s, req.ExploreId, req.IsActivity)
 	rsp.Status, rsp.Explore = status, info
-	if status == proto.StatusCode_StatusCode_Ok {
+	if status == proto.StatusCode_StatusCode_OK {
 		if err := s.SavePlayerNow(); err != nil {
-			rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 			log.Game.Errorf("UserId:%v 取消探索落库失败:%s", s.UserId, err)
 		}
 	}
@@ -548,7 +548,7 @@ func (g *Game) ExploreCancel(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) ExploreCollectReward(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ExploreCollectRewardReq)
 	rsp := &proto.ExploreCollectRewardRsp{
-		Status: proto.StatusCode_StatusCode_Ok, IsActivity: req.IsActivity,
+		Status: proto.StatusCode_StatusCode_OK, IsActivity: req.IsActivity,
 		ExploreId: req.ExploreId, RewardItem: make([]*proto.ItemDetail, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
@@ -557,9 +557,9 @@ func (g *Game) ExploreCollectReward(s *model.Player, msg *alg.GameMsg) {
 	if len(items) > 0 {
 		g.PackNoticeByItems(s, items)
 	}
-	if status == proto.StatusCode_StatusCode_Ok {
+	if status == proto.StatusCode_StatusCode_OK {
 		if err := s.SavePlayerNow(); err != nil {
-			rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 			log.Game.Errorf("UserId:%v 探索收集奖励落库失败:%s", s.UserId, err)
 		}
 	}

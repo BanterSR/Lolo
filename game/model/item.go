@@ -180,17 +180,17 @@ func (s *Player) AddAllTypeItem(id uint32, num int64) *AddItemCtx {
 
 type EBagItemTag interface {
 	ItemDetail() *proto.ItemDetail
-	SetPackType(packType proto.PackType)
+	SetPackType(packType proto.ItemDetail_PackType)
 }
 
 type ItemBaseInfo struct {
-	ItemId   uint32            `json:"itemId,omitempty"`
-	Num      int64             `json:"num,omitempty"`
-	ItemType proto.EBagItemTag `json:"itemType,omitempty"`
-	PackType proto.PackType    `json:"packType,omitempty"`
+	ItemId   uint32                    `json:"itemId,omitempty"`
+	Num      int64                     `json:"num,omitempty"`
+	ItemType proto.EBagItemTag         `json:"itemType,omitempty"`
+	PackType proto.ItemDetail_PackType `json:"packType,omitempty"`
 }
 
-func (i *ItemBaseInfo) SetPackType(packType proto.PackType) {
+func (i *ItemBaseInfo) SetPackType(packType proto.ItemDetail_PackType) {
 	i.PackType = packType
 }
 
@@ -229,7 +229,7 @@ func (i *ItemModel) AddItemBase(itemId uint32, num int64) *ItemBaseInfo {
 			ItemId:   itemId,
 			Num:      0,
 			ItemType: proto.EBagItemTag(conf.NewBagItemTag),
-			PackType: proto.PackType_PackType_Inventory,
+			PackType: proto.ItemDetail_PackType_Inventory,
 		}
 		list[itemId] = info
 	}
@@ -339,7 +339,7 @@ func GenItemWeaponInfo(weaponId, propertyIndex uint32) *ItemWeaponInfo {
 	info := &ItemWeaponInfo{
 		ItemBaseInfo: &ItemBaseInfo{
 			ItemType: proto.EBagItemTag_EBagItemTag_Weapon,
-			PackType: proto.PackType_PackType_Inventory,
+			PackType: proto.ItemDetail_PackType_Inventory,
 			ItemId:   uint32(conf.WeaponInfo.GetItemID()),
 		},
 		WeaponId:         conf.WeaponId,
@@ -525,7 +525,7 @@ func newItemFashionInfo(conf *gdconf.FashionAllInfo) *ItemFashionInfo {
 		ItemBaseInfo: &ItemBaseInfo{
 			ItemId:   uint32(conf.FashionInfo.GetItemID()),
 			ItemType: proto.EBagItemTag_EBagItemTag_Fashion,
-			PackType: proto.PackType_PackType_Inventory,
+			PackType: proto.ItemDetail_PackType_Inventory,
 		},
 		OutfitId:   conf.FashionId,
 		DyeSchemes: make(map[uint32]*OutfitDyeScheme),
@@ -618,7 +618,7 @@ func (i *ItemModel) AddItemArmor(armorId uint32) *ItemArmorInfo {
 		ItemBaseInfo: &ItemBaseInfo{
 			ItemId:   uint32(conf.ArmorInfo.GetItemID()),
 			ItemType: proto.EBagItemTag_EBagItemTag_Armor,
-			PackType: proto.PackType_PackType_Inventory,
+			PackType: proto.ItemDetail_PackType_Inventory,
 		},
 		WeaponSystemType: proto.EWeaponSystemType(conf.ArmorInfo.NewWeaponSystemType),
 		ArmorId:          conf.ArmorId,
@@ -733,7 +733,7 @@ func newItemPosterInfo(conf *gdconf.PosterAllInfo, instanceId uint32) *ItemPoste
 		ItemBaseInfo: &ItemBaseInfo{
 			ItemId:   uint32(conf.PosterInfo.GetItemID()),
 			ItemType: proto.EBagItemTag_EBagItemTag_Poster,
-			PackType: proto.PackType_PackType_Inventory,
+			PackType: proto.ItemDetail_PackType_Inventory,
 		},
 		PosterId:   conf.PosterId,
 		InstanceId: instanceId,
@@ -812,7 +812,7 @@ func (i *ItemModel) AddItemInscription(inscriptionId uint32) *ItemInscriptionInf
 		ItemBaseInfo: &ItemBaseInfo{
 			ItemId:   uint32(conf.InscriptionInfo.GetItemID()),
 			ItemType: proto.EBagItemTag_EBagItemTag_Inscription,
-			PackType: proto.PackType_PackType_Inventory,
+			PackType: proto.ItemDetail_PackType_Inventory,
 		},
 		InscriptionId:    conf.InscriptionId,
 		Level:            1,
@@ -889,7 +889,7 @@ func (i *ItemModel) AddItemPet(petId uint32) *ItemPetInfo {
 		ItemBaseInfo: &ItemBaseInfo{
 			ItemId:   petId,
 			ItemType: proto.EBagItemTag_EBagItemTag_Pet,
-			PackType: proto.PackType_PackType_Inventory,
+			PackType: proto.ItemDetail_PackType_Inventory,
 		},
 		InstanceId:   instanceId,
 		Name:         "",
@@ -960,7 +960,7 @@ func (i *ItemModel) GetItemHeadMap() map[uint32]*ItemHeadInfo {
 				ItemBaseInfo: &ItemBaseInfo{
 					ItemId:   41101,
 					ItemType: proto.EBagItemTag_EBagItemTag_Head,
-					PackType: proto.PackType_PackType_Inventory,
+					PackType: proto.ItemDetail_PackType_Inventory,
 				},
 				HeadId:  41101,
 				AddTime: time.Now().Unix(),
@@ -987,7 +987,7 @@ func (i *ItemModel) AddHead(head uint32) *ItemHeadInfo {
 		ItemBaseInfo: &ItemBaseInfo{
 			ItemId:   head,
 			ItemType: proto.EBagItemTag_EBagItemTag_Head,
-			PackType: proto.PackType_PackType_Inventory,
+			PackType: proto.ItemDetail_PackType_Inventory,
 		},
 		HeadId:  head,
 		AddTime: time.Now().Unix(),
@@ -1112,7 +1112,7 @@ func (t *ItemTransaction) Commit() (tx *ItemTransaction) {
 		return
 	}
 	t.PackNotice = &proto.PackNotice{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Items:  make([]*proto.ItemDetail, 0),
 	}
 	for id, num := range t.baseItem {

@@ -56,7 +56,7 @@ func newCoreTestPlayer() *model.Player {
 	}
 	p.Scene.SceneMap[1] = &model.SceneInfo{
 		SceneId:   1,
-		AreaDatas: map[uint32]*model.AreaData{10: {AreaId: 10, AreaState: proto.AreaState_AreaState_Unlock}},
+		AreaDatas: map[uint32]*model.AreaData{10: {AreaId: 10, AreaState: proto.AreaData_Unlock}},
 	}
 	return p
 }
@@ -76,7 +76,7 @@ func newCoreTestGame(p *model.Player) (*Game, *coreTestConn) {
 func addCoreBase(p *model.Player, id uint32, count int64) {
 	items := p.GetItemModel().GetItemBaseMap()
 	if items[id] == nil {
-		items[id] = &model.ItemBaseInfo{ItemId: id, Num: count, ItemType: proto.EBagItemTag_EBagItemTag_Item, PackType: proto.PackType_PackType_Inventory}
+		items[id] = &model.ItemBaseInfo{ItemId: id, Num: count, ItemType: proto.EBagItemTag_EBagItemTag_Item, PackType: proto.ItemDetail_PackType_Inventory}
 		return
 	}
 	items[id].Num += count
@@ -140,7 +140,7 @@ func setupCoreGlobals(t *testing.T) map[uint32]*excel.ItemConfigure {
 		}
 		info := s.GetItemModel().GetItemBaseInfo(id)
 		if info == nil {
-			info = &model.ItemBaseInfo{ItemId: id, ItemType: proto.EBagItemTag(conf.NewBagItemTag), PackType: proto.PackType_PackType_Inventory}
+			info = &model.ItemBaseInfo{ItemId: id, ItemType: proto.EBagItemTag(conf.NewBagItemTag), PackType: proto.ItemDetail_PackType_Inventory}
 			s.GetItemModel().GetItemBaseMap()[id] = info
 		}
 		info.Num += count
@@ -236,7 +236,7 @@ func TestRestaurantOperateEatAndRewardAreIdempotent(t *testing.T) {
 	g, conn := newCoreTestGame(p)
 
 	g.RestaurantGameInfo(p, coreTestMessage(&proto.RestaurantGameInfoReq{ActivityId: 12000}))
-	if rsp := conn.last(t).(*proto.RestaurantGameInfoRsp); rsp.Status != proto.StatusCode_StatusCode_Ok {
+	if rsp := conn.last(t).(*proto.RestaurantGameInfoRsp); rsp.Status != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("info status = %v", rsp.Status)
 	}
 	buy := &proto.RestaurantGameOperateReq{ActivityId: 12000, Type: proto.RestaurantGameOperateType_RestaurantGameOperateType_Buy, BuyPoolId: 1001, Grid: []uint32{1}}
@@ -256,7 +256,7 @@ func TestRestaurantOperateEatAndRewardAreIdempotent(t *testing.T) {
 		t.Fatal("eat did not consume food and clear configured customer")
 	}
 	g.RestaurantGameEat(p, coreTestMessage(eat))
-	if rsp := conn.last(t).(*proto.RestaurantGameEatRsp); rsp.Status != proto.StatusCode_StatusCode_MinigameRestaurantCustomerFinish {
+	if rsp := conn.last(t).(*proto.RestaurantGameEatRsp); rsp.Status != proto.StatusCode_StatusCode_MINIGAME_RESTAURANT_CUSTOMER_FINISH {
 		t.Fatalf("duplicate eat status = %v", rsp.Status)
 	}
 
@@ -266,7 +266,7 @@ func TestRestaurantOperateEatAndRewardAreIdempotent(t *testing.T) {
 		t.Fatalf("reward counts = %d/%d, want 18/1", coreBaseCount(p, 1601), coreBaseCount(p, 1600))
 	}
 	g.RestaurantGameQuestReward(p, coreTestMessage(reward))
-	if rsp := conn.last(t).(*proto.RestaurantGameQuestRewardRsp); rsp.Status != proto.StatusCode_StatusCode_RepeatGetReward {
+	if rsp := conn.last(t).(*proto.RestaurantGameQuestRewardRsp); rsp.Status != proto.StatusCode_StatusCode_REPEAT_GET_REWARD {
 		t.Fatalf("duplicate reward status = %v", rsp.Status)
 	}
 	if coreBaseCount(p, 1601) != 18 || coreBaseCount(p, 1600) != 1 {
@@ -285,13 +285,13 @@ func TestRestaurantRejectsLockedGridAndInsufficientCoins(t *testing.T) {
 	g.RestaurantGameOperate(p, coreTestMessage(&proto.RestaurantGameOperateReq{
 		ActivityId: 12000, Type: proto.RestaurantGameOperateType_RestaurantGameOperateType_Buy, BuyPoolId: 1001, Grid: []uint32{2},
 	}))
-	if rsp := conn.last(t).(*proto.RestaurantGameOperateRsp); rsp.Status != proto.StatusCode_StatusCode_MinigameRestaurantGridNotExist {
+	if rsp := conn.last(t).(*proto.RestaurantGameOperateRsp); rsp.Status != proto.StatusCode_StatusCode_MINIGAME_RESTAURANT_GRID_NOT_EXIST {
 		t.Fatalf("locked grid status = %v", rsp.Status)
 	}
 	g.RestaurantGameOperate(p, coreTestMessage(&proto.RestaurantGameOperateReq{
 		ActivityId: 12000, Type: proto.RestaurantGameOperateType_RestaurantGameOperateType_Buy, BuyPoolId: 1001, Grid: []uint32{1},
 	}))
-	if rsp := conn.last(t).(*proto.RestaurantGameOperateRsp); rsp.Status != proto.StatusCode_StatusCode_ItemNotEnough {
+	if rsp := conn.last(t).(*proto.RestaurantGameOperateRsp); rsp.Status != proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH {
 		t.Fatalf("insufficient coin status = %v", rsp.Status)
 	}
 	_, dungeon := restaurantState(t, p)
@@ -353,7 +353,7 @@ func TestRestaurantStateSurvivesReloginAndReplay(t *testing.T) {
 	if coreBaseCount(restored, 1601) != 18 || coreBaseCount(restored, 1600) != 1 {
 		t.Fatal("relogin replay changed reward balances")
 	}
-	if rsp := conn.last(t).(*proto.RestaurantGameQuestRewardRsp); rsp.Status != proto.StatusCode_StatusCode_RepeatGetReward {
+	if rsp := conn.last(t).(*proto.RestaurantGameQuestRewardRsp); rsp.Status != proto.StatusCode_StatusCode_REPEAT_GET_REWARD {
 		t.Fatalf("restored duplicate reward status = %v", rsp.Status)
 	}
 }
@@ -394,7 +394,7 @@ func TestRestaurantDailyRewardDoesNotResetOnSameDayInfo(t *testing.T) {
 	}
 	g.RestaurantGameInfo(p, coreTestMessage(info))
 	g.RestaurantGameQuestReward(p, coreTestMessage(reward))
-	if rsp := conn.last(t).(*proto.RestaurantGameQuestRewardRsp); rsp.Status != proto.StatusCode_StatusCode_RepeatGetReward {
+	if rsp := conn.last(t).(*proto.RestaurantGameQuestRewardRsp); rsp.Status != proto.StatusCode_StatusCode_REPEAT_GET_REWARD {
 		t.Fatalf("same-day daily reward status = %v", rsp.Status)
 	}
 	if coreBaseCount(p, 1601) != 5 {
@@ -413,12 +413,12 @@ func TestRestaurantRejectsClosedOrMissingAuthority(t *testing.T) {
 		}}}, nil
 	}
 	g.RestaurantGameInfo(p, coreTestMessage(&proto.RestaurantGameInfoReq{ActivityId: 12000}))
-	if rsp := conn.last(t).(*proto.RestaurantGameInfoRsp); rsp.Status != proto.StatusCode_StatusCode_ActivityClose {
+	if rsp := conn.last(t).(*proto.RestaurantGameInfoRsp); rsp.Status != proto.StatusCode_StatusCode_Activity_Close {
 		t.Fatalf("closed activity status = %v", rsp.Status)
 	}
 	activityConfigProvider = func() (*excel.AllActivityDatas, error) { return nil, errors.New("missing") }
 	g.RestaurantGameInfo(p, coreTestMessage(&proto.RestaurantGameInfoReq{ActivityId: 12000}))
-	if rsp := conn.last(t).(*proto.RestaurantGameInfoRsp); rsp.Status != proto.StatusCode_StatusCode_CfgNotFound {
+	if rsp := conn.last(t).(*proto.RestaurantGameInfoRsp); rsp.Status != proto.StatusCode_StatusCode_CFG_NOT_FOUND {
 		t.Fatalf("missing authority status = %v", rsp.Status)
 	}
 }

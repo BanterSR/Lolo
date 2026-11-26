@@ -2,7 +2,7 @@ package game
 
 import (
 	"errors"
-	"gucooing/lolo/pkg/cache"
+	"fmt"
 	"runtime"
 	"runtime/debug"
 	"sync"
@@ -22,23 +22,26 @@ import (
 	"gucooing/lolo/protocol/proto"
 )
 
+var (
+	playerNum int64 = 0
+)
+
 type Game struct {
 	router              *gin.Engine // http 服务器
-	gateTaskChan        chan GateTask
+	taskChan            chan TaskInterface
 	userMap             map[uint32]*model.Player
 	handlerFuncRouteMap map[uint32]HandlerFunc
-	botCache            *cache.Cache[uint32, BotInterface]
-	onlyUserId          atomic.Uint32
 	wordInfo            *WordInfo
 	worldTask           *model.WorldTask
 	chatInfo            *ChatInfo
 	checkPlayerTimer    *time.Timer
-	gmChan              chan bool
 	doneChan            chan struct{}
 	closeOnce           sync.Once
 }
 
-type GateTask interface {
+func (g *Game) LoadPlayerNum() int64 { return atomic.LoadInt64(&playerNum) }
+
+type TaskInterface interface {
 	UserID() uint32
 }
 
@@ -66,17 +69,11 @@ func (k *KillPlayer) UserID() uint32 { return k.UserId }
 var ErrPlayerOffline = errors.New("玩家不在线")
 
 // FuncTask 通用玩家任务:把"对在线玩家的操作"投递到 game 主循环上串行执行,
-// 让 GM/HTTP/bot 回调等外部 goroutine 无需加锁即可安全操作 Player。
+// 让 HTTP 回调等外部 goroutine 无需加锁即可安全操作 Player。
 type FuncTask struct {
 	UserId uint32
-	Fn     func(s *model.Player) (any, error) // 在主循环上执行,可直接读写 Player,返回结果与错误
-	reply  chan funcTaskResult                // 非nil时回传执行结果
-}
-
-// funcTaskResult FuncTask 的执行结果
-type funcTaskResult struct {
-	msg any
-	err error
+	Fn     func(s *model.Player) // 在主循环上执行,可直接读写 Player,返回结果与错误
+	reply  chan error            // 非nil时回传执行结果
 }
 
 func (f *FuncTask) UserID() uint32 { return f.UserId }
@@ -85,12 +82,11 @@ func NewGame(router *gin.Engine) *Game {
 	conf := config.GetGame()
 	log.NewGame()
 	g := &Game{
-		router:       router,
-		worldTask:    model.NewWorldTask(),
-		gateTaskChan: make(chan GateTask, conf.MsgChanSize),
-		userMap:      make(map[uint32]*model.Player, 1000),
-		doneChan:     make(chan struct{}),
-		botCache:     cache.New[uint32, BotInterface](0),
+		router:    router,
+		worldTask: model.NewWorldTask(),
+		taskChan:  make(chan TaskInterface, conf.MsgChanSize),
+		userMap:   make(map[uint32]*model.Player, 1000),
+		doneChan:  make(chan struct{}),
 	}
 	g.newRouter()
 	// 初始化场景配置
@@ -126,15 +122,15 @@ func (g *Game) gameMainLoop() {
 		case <-syncWorldTimer.C:
 			g.worldTask.Tick()
 			syncWorldTimer.Reset(model.ChannelTick)
-		case task := <-g.gateTaskChan:
-			g.gateTask(task)
+		case task := <-g.taskChan:
+			g.taskRun(task)
 		case <-g.checkPlayerTimer.C:
 			g.checkPlayer()
 		}
 	}
 }
 
-func (g *Game) gateTask(task GateTask) {
+func (g *Game) taskRun(task TaskInterface) {
 	switch t := task.(type) {
 	case *PlayerMsg:
 		g.routeHandle(t.Conn, t.UserId, t.UUID, t.GameMsg)
@@ -150,14 +146,11 @@ func (g *Game) funcTask(t *FuncTask) {
 	player := g.GetUser(t.UserId)
 	if player == nil {
 		if t.reply != nil {
-			t.reply <- funcTaskResult{err: ErrPlayerOffline}
+			t.reply <- fmt.Errorf("[PlayerID:%d]%s", t.UserId, ErrPlayerOffline)
 		}
 		return
 	}
-	msg, err := t.Fn(player)
-	if t.reply != nil {
-		t.reply <- funcTaskResult{msg: msg, err: err}
-	}
+	t.Fn(player)
 }
 
 func (g *Game) send(s *model.Player, packetId uint32, payloadMsg pb.Message) {
@@ -190,6 +183,7 @@ func (g *Game) checkPlayer() {
 		}
 	}
 	for _, player := range playerList {
+		atomic.AddInt64(&playerNum, -1)
 		delete(g.userMap, player.UserId)
 	}
 }
@@ -219,9 +213,9 @@ func (g *Game) offlinePlayer(player *model.Player, reason proto.PlayerOfflineRea
 		player.LoginUUID != player2.LoginUUID || player.NetFreeze {
 		return
 	}
-	if reason != proto.PlayerOfflineReason_PlayerOfflineReason_None {
+	if reason != proto.PlayerOfflineReason_PlayerOfflineReason_NONE {
 		g.send(player, 0, &proto.PlayerOfflineRsp{
-			Status:             proto.StatusCode_StatusCode_Ok,
+			Status:             proto.StatusCode_StatusCode_OK,
 			Reason:             reason,
 			ServerNextOpenTime: 0,
 		})
@@ -257,34 +251,36 @@ func (g *Game) kickPlayer(player *model.Player) {
 	log.Game.Debugf("玩家:%v 离线", player.UserId)
 }
 
-func (g *Game) GetGateTask() chan GateTask {
-	return g.gateTaskChan
+func (g *Game) GetGateTask() chan TaskInterface {
+	return g.taskChan
+}
+
+// 获取排队中的任务数量
+func (g *Game) TaskNum() int {
+	return len(g.taskChan)
 }
 
 // PostPlayerFunc 投递一个针对在线玩家的操作到 game 主循环异步执行(不等待结果)。
-// 仅供非主循环 goroutine(GM/HTTP/bot 回调等)调用;严禁在主循环内部调用,否则可能自锁。
+// 仅供非主循环 goroutine(HTTP 回调等)调用;严禁在主循环内部调用,否则可能自锁。
 func (g *Game) PostPlayerFunc(userId uint32, fn func(s *model.Player)) {
-	g.gateTaskChan <- &FuncTask{UserId: userId, Fn: func(s *model.Player) (any, error) {
-		fn(s)
-		return nil, nil
-	}}
+	g.taskChan <- &FuncTask{UserId: userId, Fn: fn}
 }
 
 // InvokePlayerFunc 投递操作并等待主循环执行完成,返回 fn 的结果与错误。
 // 玩家不在线时返回 ErrPlayerOffline;timeout<=0 表示一直等待。
 // 阻塞的是调用方 goroutine,不是主循环。仅供非主循环 goroutine 调用。
-func (g *Game) InvokePlayerFunc(userId uint32, fn func(s *model.Player) (any, error), timeout time.Duration) (any, error) {
-	reply := make(chan funcTaskResult, 1)
-	g.gateTaskChan <- &FuncTask{UserId: userId, Fn: fn, reply: reply}
+func (g *Game) InvokePlayerFunc(userId uint32, fn func(s *model.Player), timeout time.Duration) error {
+	reply := make(chan error, 1)
+	g.taskChan <- &FuncTask{UserId: userId, Fn: fn, reply: reply}
 	if timeout <= 0 {
-		res := <-reply
-		return res.msg, res.err
+		err := <-reply
+		return err
 	}
 	select {
-	case res := <-reply:
-		return res.msg, res.err
+	case err := <-reply:
+		return err
 	case <-time.After(timeout):
-		return nil, errors.New("game主循环执行超时")
+		return errors.New("game主循环执行超时")
 	}
 }
 
@@ -297,8 +293,8 @@ func (g *Game) Close() {
 		}
 		for _, player := range g.userMap {
 			g.send(player, 0, &proto.PlayerOfflineRsp{
-				Status:             proto.StatusCode_StatusCode_Ok,
-				Reason:             proto.PlayerOfflineReason_PlayerOfflineReason_ServerShutdown,
+				Status:             proto.StatusCode_StatusCode_OK,
+				Reason:             proto.PlayerOfflineReason_PlayerOfflineReason_SERVER_SHUTDOWN,
 				ServerNextOpenTime: 0,
 			})
 			g.kickPlayer(player)

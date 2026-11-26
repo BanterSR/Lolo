@@ -17,7 +17,7 @@ func tempTestPack() *model.SceneTempPack {
 func tempTestBase(id uint32, count int64) *model.ItemBaseInfo {
 	return &model.ItemBaseInfo{
 		ItemId: id, Num: count, ItemType: proto.EBagItemTag_EBagItemTag_Material,
-		PackType: proto.PackType_PackType_TempStorageArea,
+		PackType: proto.ItemDetail_PackType_TempStorageArea,
 	}
 }
 
@@ -25,7 +25,7 @@ func tempTestWeapon(system proto.EWeaponSystemType) *model.ItemWeaponInfo {
 	return &model.ItemWeaponInfo{
 		ItemBaseInfo: &model.ItemBaseInfo{
 			ItemId: 1001, ItemType: proto.EBagItemTag_EBagItemTag_Weapon,
-			PackType: proto.PackType_PackType_TempStorageArea,
+			PackType: proto.ItemDetail_PackType_TempStorageArea,
 		},
 		WeaponId: 2001, WeaponSystemType: system,
 	}
@@ -35,7 +35,7 @@ func tempTestArmor(id uint32, system proto.EWeaponSystemType) *model.ItemArmorIn
 	return &model.ItemArmorInfo{
 		ItemBaseInfo: &model.ItemBaseInfo{
 			ItemId: id + 1000, ItemType: proto.EBagItemTag_EBagItemTag_Armor,
-			PackType: proto.PackType_PackType_TempStorageArea,
+			PackType: proto.ItemDetail_PackType_TempStorageArea,
 		},
 		ArmorId: id, WeaponSystemType: system,
 	}

@@ -118,8 +118,8 @@ func (d *DungeonInfo) DungeonData() *proto.DungeonData {
 		FinishTimes:      d.FinishTimes,
 		Coins:            make([]uint32, 0), // TODO 代币
 		LastFinishTime:   d.LastFinishTime,  // 上次完成时间
-		TaskFinishReward: proto.RewardStatus_RewardStatus_NotReward,
-		StarReward:       proto.RewardStatus_RewardStatus_NotReward,
+		TaskFinishReward: proto.RewardStatus_NotReward,
+		StarReward:       proto.RewardStatus_NotReward,
 		Char1:            d.TeamInfo.Char1,
 		Char2:            d.TeamInfo.Char2,
 		Char3:            d.TeamInfo.Char3,
@@ -129,10 +129,10 @@ func (d *DungeonInfo) DungeonData() *proto.DungeonData {
 		IsOpenSecretBox:  false, // 是否已开启宝箱
 	}
 	if d.FirstClearRewardClaimed {
-		info.TaskFinishReward = proto.RewardStatus_RewardStatus_Reward
+		info.TaskFinishReward = proto.RewardStatus_Reward
 	}
 	if d.Stars > 0 && d.StarRewardClaimed&starRewardMask(d.Stars) == starRewardMask(d.Stars) {
-		info.StarReward = proto.RewardStatus_RewardStatus_Reward
+		info.StarReward = proto.RewardStatus_Reward
 	}
 	return info
 }

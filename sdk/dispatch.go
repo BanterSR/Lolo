@@ -74,7 +74,7 @@ func clientHotUpdate(c *gin.Context) {
 		Server:               "cn_prod_main",
 		SsAppId:              "",
 		SsServerUrl:          "https://te-of.inutan.com",
-		OpenGm:               true,
+		OpenGm:               false,
 		OpenErrorLog:         true,
 		OpenNetConnectingLog: true,
 		IpAddress:            c.ClientIP(),

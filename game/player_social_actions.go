@@ -108,36 +108,36 @@ func socialSceneChannel(g *Game, s *model.Player) *ChannelInfo {
 
 func (g *Game) PopEmoji(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.PopEmojiReq)
-	rsp := &proto.PopEmojiRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.PopEmojiRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	profile, status := requirePlayerProfile(s)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	channel := socialSceneChannel(g, s)
 	if channel == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
 		return
 	}
 	if !validPopEmojiAction(req.EmojiId) {
-		rsp.Status = proto.StatusCode_StatusCode_ActionNotUnlock
+		rsp.Status = proto.StatusCode_StatusCode_ACTION_NOT_UNLOCK
 		return
 	}
 	now := profileNow()
 	if !socialActionReady(profile, profile.LastPopEmojiAt, now) {
-		rsp.Status = proto.StatusCode_StatusCode_RequestsTooFrequent
+		rsp.Status = proto.StatusCode_StatusCode_REQUESTS_TOO_FREQUENT
 		return
 	}
 	old := profile.LastPopEmojiAt
 	profile.LastPopEmojiAt = now.UnixMilli()
 	if err := profileSavePlayer(s); err != nil {
 		profile.LastPopEmojiAt = old
-		rsp.Status = proto.StatusCode_StatusCode_SysErr
+		rsp.Status = proto.StatusCode_StatusCode_SYS_ERR
 		return
 	}
 	channel.sendAllPlayer(0, &proto.PopEmojiNotice{
-		Status:       proto.StatusCode_StatusCode_Ok,
+		Status:       proto.StatusCode_StatusCode_OK,
 		EmojiId:      req.EmojiId,
 		FromPlayerId: s.UserId,
 	})
@@ -145,39 +145,39 @@ func (g *Game) PopEmoji(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) Clap(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ClapReq)
-	rsp := &proto.ClapRsp{Status: proto.StatusCode_StatusCode_Ok, MovementId: req.MovementId, IsCancel: req.IsCancel}
+	rsp := &proto.ClapRsp{Status: proto.StatusCode_StatusCode_OK, MovementId: req.MovementId, IsCancel: req.IsCancel}
 	defer g.send(s, msg.PacketId, rsp)
 	profile, status := requirePlayerProfile(s)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	channel := socialSceneChannel(g, s)
 	if channel == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
 		return
 	}
 	if !validClapRequest(req) {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	now := profileNow()
 	if !socialActionReady(profile, profile.LastClapAt, now) {
-		rsp.Status = proto.StatusCode_StatusCode_RequestsTooFrequent
+		rsp.Status = proto.StatusCode_StatusCode_REQUESTS_TOO_FREQUENT
 		return
 	}
 	old := profile.LastClapAt
 	profile.LastClapAt = now.UnixMilli()
 	if err := profileSavePlayer(s); err != nil {
 		profile.LastClapAt = old
-		rsp.Status = proto.StatusCode_StatusCode_SysErr
+		rsp.Status = proto.StatusCode_StatusCode_SYS_ERR
 		return
 	}
 	if req.IsCancel {
 		return
 	}
 	channel.sendAllPlayer(0, &proto.ClapResultNotice{
-		Status:             proto.StatusCode_StatusCode_Ok,
+		Status:             proto.StatusCode_StatusCode_OK,
 		MatchedPlayerIdLst: []uint32{s.UserId},
 		MovementId:         req.MovementId,
 	})
@@ -185,48 +185,48 @@ func (g *Game) Clap(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) ThrowDice(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ThrowDiceReq)
-	rsp := &proto.ThrowDiceRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.ThrowDiceRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	profile, status := requirePlayerProfile(s)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	channel := socialSceneChannel(g, s)
 	if channel == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
 		return
 	}
 	if !validThrowDiceRequest(s, req) {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	now := profileNow()
 	if !socialActionReady(profile, profile.LastThrowDiceAt, now) {
-		rsp.Status = proto.StatusCode_StatusCode_RequestsTooFrequent
+		rsp.Status = proto.StatusCode_StatusCode_REQUESTS_TOO_FREQUENT
 		return
 	}
 	old := profile.LastThrowDiceAt
 	profile.LastThrowDiceAt = now.UnixMilli()
 	if err := profileSavePlayer(s); err != nil {
 		profile.LastThrowDiceAt = old
-		rsp.Status = proto.StatusCode_StatusCode_SysErr
+		rsp.Status = proto.StatusCode_StatusCode_SYS_ERR
 		return
 	}
 	channel.sendAllPlayer(0, &proto.ThrowDiceNotice{
-		Status:     proto.StatusCode_StatusCode_Ok,
+		Status:     proto.StatusCode_StatusCode_OK,
 		Position:   model.CopyVector3(req.Position),
 		Pips:       req.Pips,
 		PlayerName: s.NickName,
 		DiceId:     req.DiceId,
 	})
 	channel.sendAllPlayer(0, &proto.ThrowDiceResultNotice{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		ZoneResultLst: []*proto.ThrowDiceResultListByZone{{ResultLst: []*proto.ThrowDiceResult{{
 			DiceId:     req.DiceId,
 			Pips:       req.Pips,
 			PlayerName: s.NickName,
-			WonResult:  proto.DiceWonResult_DiceWonResult_Win,
+			WonResult:  proto.ThrowDiceResult_Win,
 			PlayerId:   s.UserId,
 		}}}},
 	})

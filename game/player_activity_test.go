@@ -101,11 +101,11 @@ func TestActivitySignInPeriodDuplicateAndRestart(t *testing.T) {
 	}
 
 	rsp, _ := h.service.signIn(h.player, &proto.ActivitySignInReq{ActivityId: 1, Day: 1})
-	if rsp.Status != proto.StatusCode_StatusCode_Ok || h.itemCount(200) != 1 {
+	if rsp.Status != proto.StatusCode_StatusCode_OK || h.itemCount(200) != 1 {
 		t.Fatalf("first sign-in failed: status=%v count=%d", rsp.Status, h.itemCount(200))
 	}
 	rsp, _ = h.service.signIn(h.player, &proto.ActivitySignInReq{ActivityId: 1, Day: 1})
-	if rsp.Status != proto.StatusCode_StatusCode_RepeatGetReward || h.itemCount(200) != 1 {
+	if rsp.Status != proto.StatusCode_StatusCode_REPEAT_GET_REWARD || h.itemCount(200) != 1 {
 		t.Fatalf("duplicate sign-in was accepted: status=%v count=%d", rsp.Status, h.itemCount(200))
 	}
 	h.now = open + 86400 + 1
@@ -113,7 +113,7 @@ func TestActivitySignInPeriodDuplicateAndRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	rsp, _ = h.service.signIn(h.player, &proto.ActivitySignInReq{ActivityId: 1, Day: 2})
-	if rsp.Status != proto.StatusCode_StatusCode_Ok || h.itemCount(200) != 3 {
+	if rsp.Status != proto.StatusCode_StatusCode_OK || h.itemCount(200) != 3 {
 		t.Fatalf("second day sign-in failed: status=%v count=%d", rsp.Status, h.itemCount(200))
 	}
 
@@ -122,12 +122,12 @@ func TestActivitySignInPeriodDuplicateAndRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	rsp, _ = h.service.signIn(h.player, &proto.ActivitySignInReq{ActivityId: 2, Day: 1})
-	if rsp.Status != proto.StatusCode_StatusCode_Ok || h.itemCount(200) != 4 {
+	if rsp.Status != proto.StatusCode_StatusCode_OK || h.itemCount(200) != 4 {
 		t.Fatalf("new activity period did not reset claims: status=%v count=%d", rsp.Status, h.itemCount(200))
 	}
 	h.restart(t)
 	rsp, _ = h.service.signIn(h.player, &proto.ActivitySignInReq{ActivityId: 2, Day: 1})
-	if rsp.Status != proto.StatusCode_StatusCode_RepeatGetReward || h.itemCount(200) != 4 {
+	if rsp.Status != proto.StatusCode_StatusCode_REPEAT_GET_REWARD || h.itemCount(200) != 4 {
 		t.Fatalf("restart lost period claim: status=%v count=%d", rsp.Status, h.itemCount(200))
 	}
 }
@@ -143,12 +143,12 @@ func TestActivitySignInRejectsFutureClosedAndMissingConfig(t *testing.T) {
 		t.Fatalf("future day accepted: %v", rsp.Status)
 	}
 	rsp, _ = h.service.signIn(h.player, &proto.ActivitySignInReq{ActivityId: 99, Day: 1})
-	if rsp.Status != proto.StatusCode_StatusCode_CfgNotFound {
+	if rsp.Status != proto.StatusCode_StatusCode_CFG_NOT_FOUND {
 		t.Fatalf("missing activity accepted: %v", rsp.Status)
 	}
 	h.now = open + 31*86400
 	rsp, _ = h.service.signIn(h.player, &proto.ActivitySignInReq{ActivityId: 1, Day: 1})
-	if rsp.Status != proto.StatusCode_StatusCode_ActivityClose {
+	if rsp.Status != proto.StatusCode_StatusCode_Activity_Close {
 		t.Fatalf("closed activity accepted: %v", rsp.Status)
 	}
 }
@@ -164,18 +164,18 @@ func TestActivityQuestRequiresServerProgress(t *testing.T) {
 	h.service.conf.buildAchievementSpecs()
 
 	rsp, _ := h.service.activityQuestReward(h.player, &proto.ActivityQuestRewardReq{ActivityId: 1, Param: 1})
-	if rsp.Status != proto.StatusCode_StatusCode_QuestNotFinish || h.saves != 0 || h.itemCount(200) != 0 {
+	if rsp.Status != proto.StatusCode_StatusCode_Quest_Not_Finish || h.saves != 0 || h.itemCount(200) != 0 {
 		t.Fatalf("unfinished quest rewarded: status=%v saves=%d count=%d", rsp.Status, h.saves, h.itemCount(200))
 	}
 	if err := h.service.recordAchievement(h.player, 1001, 2, h.now); err != nil {
 		t.Fatal(err)
 	}
 	rsp, _ = h.service.activityQuestReward(h.player, &proto.ActivityQuestRewardReq{ActivityId: 1, Param: 1})
-	if rsp.Status != proto.StatusCode_StatusCode_Ok || h.itemCount(200) != 2 {
+	if rsp.Status != proto.StatusCode_StatusCode_OK || h.itemCount(200) != 2 {
 		t.Fatalf("completed quest not rewarded: status=%v count=%d", rsp.Status, h.itemCount(200))
 	}
 	rsp, _ = h.service.activityQuestReward(h.player, &proto.ActivityQuestRewardReq{ActivityId: 1, Param: 1})
-	if rsp.Status != proto.StatusCode_StatusCode_RepeatGetReward {
+	if rsp.Status != proto.StatusCode_StatusCode_REPEAT_GET_REWARD {
 		t.Fatalf("duplicate quest reward accepted: %v", rsp.Status)
 	}
 }
@@ -193,23 +193,23 @@ func TestActivityRegularDailyRewardResetsByServerDay(t *testing.T) {
 	}
 	req := &proto.ActivityRegularRewardReq{ActivityId: 5, Param: 1001, PoolType: 1}
 	rsp, _ := h.service.activityRegularReward(h.player, req)
-	if rsp.Status != proto.StatusCode_StatusCode_Ok || h.itemCount(200) != 1 {
+	if rsp.Status != proto.StatusCode_StatusCode_OK || h.itemCount(200) != 1 {
 		t.Fatalf("first daily reward failed: status=%v count=%d", rsp.Status, h.itemCount(200))
 	}
 	rsp, _ = h.service.activityRegularReward(h.player, req)
-	if rsp.Status != proto.StatusCode_StatusCode_RepeatGetReward {
+	if rsp.Status != proto.StatusCode_StatusCode_REPEAT_GET_REWARD {
 		t.Fatalf("duplicate daily reward accepted: %v", rsp.Status)
 	}
 	h.now += 86400
 	rsp, _ = h.service.activityRegularReward(h.player, req)
-	if rsp.Status != proto.StatusCode_StatusCode_QuestNotFinish {
+	if rsp.Status != proto.StatusCode_StatusCode_Quest_Not_Finish {
 		t.Fatalf("previous day progress satisfied new day: %v", rsp.Status)
 	}
 	if err := h.service.recordAchievement(h.player, 1001, 1, h.now); err != nil {
 		t.Fatal(err)
 	}
 	rsp, _ = h.service.activityRegularReward(h.player, req)
-	if rsp.Status != proto.StatusCode_StatusCode_Ok || h.itemCount(200) != 2 {
+	if rsp.Status != proto.StatusCode_StatusCode_OK || h.itemCount(200) != 2 {
 		t.Fatalf("new daily reward failed: status=%v count=%d", rsp.Status, h.itemCount(200))
 	}
 }
@@ -227,7 +227,7 @@ func TestActivityQuestMissingRewardRollsBackClaim(t *testing.T) {
 		t.Fatal(err)
 	}
 	rsp, _ := h.service.activityQuestReward(h.player, &proto.ActivityQuestRewardReq{ActivityId: 1, Param: 1})
-	if rsp.Status != proto.StatusCode_StatusCode_CfgNotFound || h.saves != 0 {
+	if rsp.Status != proto.StatusCode_StatusCode_CFG_NOT_FOUND || h.saves != 0 {
 		t.Fatalf("missing reward accepted: status=%v saves=%d", rsp.Status, h.saves)
 	}
 	state := h.player.GetActivityModel().GetPeriod(activityPeriodKey(h.service.conf.Activities[1]))
@@ -248,26 +248,26 @@ func TestBattlePassBuyExpAndLevelRewards(t *testing.T) {
 	h.player.GetItemModel().GetItemBaseInfo(100).Num = 50
 
 	rsp, _ := h.service.battlePassBuyExp(h.player, &proto.ActivityBattlePassBuyExpReq{ActivityBattlePassId: 30})
-	if rsp.Status != proto.StatusCode_StatusCode_Ok || rsp.BattlePassLv != 1 || rsp.TotalExp != 1000 || h.itemCount(100) != 0 {
+	if rsp.Status != proto.StatusCode_StatusCode_OK || rsp.BattlePassLv != 1 || rsp.TotalExp != 1000 || h.itemCount(100) != 0 {
 		t.Fatalf("buy exp failed: status=%v lv=%d total=%d currency=%d", rsp.Status, rsp.BattlePassLv, rsp.TotalExp, h.itemCount(100))
 	}
 	free, _ := h.service.battlePassLevelReward(h.player, &proto.GetActivityBattlePassLevelRewardReq{ActivityBattlePassId: 30, Level: 1, IsGetFreeReward: true})
-	if free.Status != proto.StatusCode_StatusCode_Ok || h.itemCount(200) != 1 {
+	if free.Status != proto.StatusCode_StatusCode_OK || h.itemCount(200) != 1 {
 		t.Fatalf("free level reward failed: status=%v count=%d", free.Status, h.itemCount(200))
 	}
 	free, _ = h.service.battlePassLevelReward(h.player, &proto.GetActivityBattlePassLevelRewardReq{ActivityBattlePassId: 30, Level: 1, IsGetFreeReward: true})
-	if free.Status != proto.StatusCode_StatusCode_BattlePassLvRewarded {
+	if free.Status != proto.StatusCode_StatusCode_BattlePass_LvRewarded {
 		t.Fatalf("duplicate level reward accepted: %v", free.Status)
 	}
 	paid, _ := h.service.battlePassLevelReward(h.player, &proto.GetActivityBattlePassLevelRewardReq{ActivityBattlePassId: 30, Level: 1})
-	if paid.Status != proto.StatusCode_StatusCode_BattlePassNotBuy {
+	if paid.Status != proto.StatusCode_StatusCode_BattlePass_Not_Buy {
 		t.Fatalf("paid reward accepted without purchase: %v", paid.Status)
 	}
 	if err := h.service.recordBattlePassPurchased(h.player, 30, h.now); err != nil {
 		t.Fatal(err)
 	}
 	paid, _ = h.service.battlePassLevelReward(h.player, &proto.GetActivityBattlePassLevelRewardReq{ActivityBattlePassId: 30, Level: 1})
-	if paid.Status != proto.StatusCode_StatusCode_Ok || h.itemCount(300) != 2 {
+	if paid.Status != proto.StatusCode_StatusCode_OK || h.itemCount(300) != 2 {
 		t.Fatalf("paid level reward failed: status=%v count=%d", paid.Status, h.itemCount(300))
 	}
 }
@@ -283,14 +283,14 @@ func TestBattlePassBuyExpInsufficientAndSaveFailureAreAtomic(t *testing.T) {
 	h.service.conf.Globals["BattlePass_BuyExp_Currency"] = []string{"100:50:1000"}
 	h.player.GetItemModel().GetItemBaseInfo(100).Num = 49
 	rsp, _ := h.service.battlePassBuyExp(h.player, &proto.ActivityBattlePassBuyExpReq{ActivityBattlePassId: 30})
-	if rsp.Status != proto.StatusCode_StatusCode_ItemNotEnough || h.itemCount(100) != 49 || h.saves != 0 {
+	if rsp.Status != proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH || h.itemCount(100) != 49 || h.saves != 0 {
 		t.Fatalf("insufficient currency changed state: status=%v currency=%d saves=%d", rsp.Status, h.itemCount(100), h.saves)
 	}
 
 	h.player.GetItemModel().GetItemBaseInfo(100).Num = 50
 	h.saveErr = errors.New("save failed")
 	rsp, _ = h.service.battlePassBuyExp(h.player, &proto.ActivityBattlePassBuyExpReq{ActivityBattlePassId: 30})
-	if rsp.Status == proto.StatusCode_StatusCode_Ok || h.itemCount(100) != 50 {
+	if rsp.Status == proto.StatusCode_StatusCode_OK || h.itemCount(100) != 50 {
 		t.Fatalf("save failure was not rolled back: status=%v currency=%d", rsp.Status, h.itemCount(100))
 	}
 	state := h.player.GetActivityModel().GetPeriod(activityPeriodKey(h.service.conf.Activities[30])).GetBattlePass()
@@ -307,22 +307,22 @@ func TestActivityTurntableLimitsPersistenceAndMaterials(t *testing.T) {
 	h.service.conf.TurntablePools[201] = activityTurntablePoolConfig{ID: 201, Items: []activityTurntablePoolItem{{Index: 1, ItemID: 200, ItemNum: 1, LimitNum: 1, Weight: 1}}}
 	h.player.GetItemModel().GetItemBaseInfo(100).Num = 5
 	rsp, _ := h.service.activityTurntableDraw(h.player, &proto.ActivityTurntableDrawReq{ActivityId: 40, DrawTimes: 1})
-	if rsp.Status != proto.StatusCode_StatusCode_ItemNotEnough || h.itemCount(100) != 5 {
+	if rsp.Status != proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH || h.itemCount(100) != 5 {
 		t.Fatalf("insufficient turntable material changed state: status=%v currency=%d", rsp.Status, h.itemCount(100))
 	}
 
 	h.player.GetItemModel().GetItemBaseInfo(100).Num = 6
 	rsp, _ = h.service.activityTurntableDraw(h.player, &proto.ActivityTurntableDrawReq{ActivityId: 40, DrawTimes: 1})
-	if rsp.Status != proto.StatusCode_StatusCode_Ok || h.itemCount(100) != 0 || h.itemCount(200) != 1 {
+	if rsp.Status != proto.StatusCode_StatusCode_OK || h.itemCount(100) != 0 || h.itemCount(200) != 1 {
 		t.Fatalf("turntable draw failed: status=%v currency=%d reward=%d", rsp.Status, h.itemCount(100), h.itemCount(200))
 	}
 	h.restart(t)
 	rsp, _ = h.service.activityTurntableDraw(h.player, &proto.ActivityTurntableDrawReq{ActivityId: 40, DrawTimes: 1})
-	if rsp.Status != proto.StatusCode_StatusCode_TurntableNoRewardRemain || h.itemCount(200) != 1 {
+	if rsp.Status != proto.StatusCode_StatusCode_TURNTABLE_NO_REWARD_REMAIN || h.itemCount(200) != 1 {
 		t.Fatalf("turntable limit reset after restart: status=%v reward=%d", rsp.Status, h.itemCount(200))
 	}
 	records := h.service.activityTurntableRecord(h.player, &proto.ActivityTurntableRecordReq{ActivityId: 40, Page: 1})
-	if records.Status != proto.StatusCode_StatusCode_Ok || len(records.Records) != 1 {
+	if records.Status != proto.StatusCode_StatusCode_OK || len(records.Records) != 1 {
 		t.Fatalf("turntable record missing after restart: status=%v records=%d", records.Status, len(records.Records))
 	}
 }
@@ -333,23 +333,23 @@ func TestSupplyBoxCooldownPersistenceAndMissingReward(t *testing.T) {
 	h.service.conf.Globals["SupplyBox_Reward"] = []string{"200:1"}
 	h.player.Created = time.Unix(h.now-20*60, 0).UTC()
 	info, _ := h.service.supplyBoxInfo(h.player)
-	if info.Status != proto.StatusCode_StatusCode_Ok || info.NextRewardTime != h.now-10*60 {
+	if info.Status != proto.StatusCode_StatusCode_OK || info.NextRewardTime != h.now-10*60 {
 		t.Fatalf("supply info failed: status=%v next=%d", info.Status, info.NextRewardTime)
 	}
 	rsp, _ := h.service.supplyBoxReward(h.player)
-	if rsp.Status != proto.StatusCode_StatusCode_Ok || h.itemCount(200) != 1 || rsp.NextRewardTime != h.now+10*60 {
+	if rsp.Status != proto.StatusCode_StatusCode_OK || h.itemCount(200) != 1 || rsp.NextRewardTime != h.now+10*60 {
 		t.Fatalf("supply reward failed: status=%v count=%d next=%d", rsp.Status, h.itemCount(200), rsp.NextRewardTime)
 	}
 	h.restart(t)
 	rsp, _ = h.service.supplyBoxReward(h.player)
-	if rsp.Status != proto.StatusCode_StatusCode_IntervalRewardIsGet || h.itemCount(200) != 1 {
+	if rsp.Status != proto.StatusCode_StatusCode_Interval_Reward_Is_Get || h.itemCount(200) != 1 {
 		t.Fatalf("supply cooldown reset after restart: status=%v count=%d", rsp.Status, h.itemCount(200))
 	}
 
 	delete(h.service.conf.Globals, "SupplyBox_Reward")
 	h.now += 11 * 60
 	rsp, _ = h.service.supplyBoxReward(h.player)
-	if rsp.Status != proto.StatusCode_StatusCode_CfgNotFound || h.itemCount(200) != 1 {
+	if rsp.Status != proto.StatusCode_StatusCode_CFG_NOT_FOUND || h.itemCount(200) != 1 {
 		t.Fatalf("missing supply reward was fabricated: status=%v count=%d", rsp.Status, h.itemCount(200))
 	}
 }
@@ -360,17 +360,17 @@ func TestMonthCardDailyClaimAndRestart(t *testing.T) {
 	state := h.player.GetActivityModel().GetMonthCard()
 	state.OverDueTime = h.now + 3*86400
 	rsp, _ := h.service.monthCardReward(h.player)
-	if rsp.Status != proto.StatusCode_StatusCode_Ok || rsp.MonthCardRewardDays != 1 || h.itemCount(200) != 2 {
+	if rsp.Status != proto.StatusCode_StatusCode_OK || rsp.MonthCardRewardDays != 1 || h.itemCount(200) != 2 {
 		t.Fatalf("month card claim failed: status=%v days=%d count=%d", rsp.Status, rsp.MonthCardRewardDays, h.itemCount(200))
 	}
 	h.restart(t)
 	rsp, _ = h.service.monthCardReward(h.player)
-	if rsp.Status != proto.StatusCode_StatusCode_MoonCardDaysLimit || h.itemCount(200) != 2 {
+	if rsp.Status != proto.StatusCode_StatusCode_MOON_CARD_DAYS_LIMIT || h.itemCount(200) != 2 {
 		t.Fatalf("duplicate month card claim accepted: status=%v count=%d", rsp.Status, h.itemCount(200))
 	}
 	h.now += 86400
 	rsp, _ = h.service.monthCardReward(h.player)
-	if rsp.Status != proto.StatusCode_StatusCode_Ok || rsp.MonthCardRewardDays != 2 || h.itemCount(200) != 4 {
+	if rsp.Status != proto.StatusCode_StatusCode_OK || rsp.MonthCardRewardDays != 2 || h.itemCount(200) != 4 {
 		t.Fatalf("next day month card claim failed: status=%v days=%d count=%d", rsp.Status, rsp.MonthCardRewardDays, h.itemCount(200))
 	}
 }
@@ -386,16 +386,16 @@ func TestAchieveGroupAwardRequiresAllRealProgress(t *testing.T) {
 	h.player.GetActivityModel().AddAchievementProgress(1001, 1)
 
 	rsp, _ := h.service.getAchieveGroupAward(h.player, &proto.GetAchieveGroupAwardReq{GroupId: 500})
-	if rsp.Status != proto.StatusCode_StatusCode_QuestNotFinish || h.itemCount(200) != 0 {
+	if rsp.Status != proto.StatusCode_StatusCode_Quest_Not_Finish || h.itemCount(200) != 0 {
 		t.Fatalf("incomplete group rewarded: status=%v count=%d", rsp.Status, h.itemCount(200))
 	}
 	h.player.GetActivityModel().AddAchievementProgress(1002, 2)
 	rsp, _ = h.service.getAchieveGroupAward(h.player, &proto.GetAchieveGroupAwardReq{GroupId: 500})
-	if rsp.Status != proto.StatusCode_StatusCode_Ok || h.itemCount(200) != 1 {
+	if rsp.Status != proto.StatusCode_StatusCode_OK || h.itemCount(200) != 1 {
 		t.Fatalf("complete group not rewarded: status=%v count=%d", rsp.Status, h.itemCount(200))
 	}
 	rsp, _ = h.service.getAchieveGroupAward(h.player, &proto.GetAchieveGroupAwardReq{GroupId: 500})
-	if rsp.Status != proto.StatusCode_StatusCode_RepeatGetReward {
+	if rsp.Status != proto.StatusCode_StatusCode_REPEAT_GET_REWARD {
 		t.Fatalf("duplicate group reward accepted: %v", rsp.Status)
 	}
 }
@@ -408,16 +408,16 @@ func TestAbyssQuestRewardRequiresSeasonProgress(t *testing.T) {
 	h.service.conf.RewardItemPools[600] = rewardItemPoolConfig{ID: 600, Groups: []rewardItemPoolGroupConfig{{ItemID: 200, ItemMinCount: 1, ItemMaxCount: 1}}}
 
 	rsp, _ := h.service.abyssQuestReward(h.player, &proto.AbyssQuestRewardReq{SeasonId: 1, ConditionId: 1001})
-	if rsp.Status != proto.StatusCode_StatusCode_QuestNotFinish {
+	if rsp.Status != proto.StatusCode_StatusCode_Quest_Not_Finish {
 		t.Fatalf("unfinished abyss achievement rewarded: %v", rsp.Status)
 	}
 	h.player.GetActivityModel().AddAchievementProgress(1001, 3)
 	rsp, _ = h.service.abyssQuestReward(h.player, &proto.AbyssQuestRewardReq{SeasonId: 1, ConditionId: 1001})
-	if rsp.Status != proto.StatusCode_StatusCode_Ok || h.itemCount(200) != 1 {
+	if rsp.Status != proto.StatusCode_StatusCode_OK || h.itemCount(200) != 1 {
 		t.Fatalf("complete abyss achievement not rewarded: status=%v count=%d", rsp.Status, h.itemCount(200))
 	}
 	rsp, _ = h.service.abyssQuestReward(h.player, &proto.AbyssQuestRewardReq{SeasonId: 1, ConditionId: 1001})
-	if rsp.Status != proto.StatusCode_StatusCode_RepeatGetReward {
+	if rsp.Status != proto.StatusCode_StatusCode_REPEAT_GET_REWARD {
 		t.Fatalf("duplicate abyss reward accepted: %v", rsp.Status)
 	}
 }

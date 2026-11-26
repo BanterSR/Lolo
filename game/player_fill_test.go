@@ -53,7 +53,7 @@ func TestGetAllCharacterEquipReturnsWornItems(t *testing.T) {
 		t.Fatalf("装备总览响应数量错误: %d", len(conn.sent))
 	}
 	rsp, ok := conn.sent[0].(*proto.GetAllCharacterEquipRsp)
-	if !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_Ok {
+	if !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("装备总览响应错误: %+v", conn.sent[0])
 	}
 	if len(rsp.GetItems()) != 2 {
@@ -76,7 +76,7 @@ func TestPlayerVitalityReturnsOwnedEnergyItems(t *testing.T) {
 
 	(&Game{}).PlayerVitality(player, mailMsg(&proto.PlayerVitalityReq{}))
 	rsp, ok := conn.sent[0].(*proto.PlayerVitalityRsp)
-	if !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_Ok {
+	if !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("体力响应错误: %+v", conn.sent[0])
 	}
 	if len(rsp.GetItems()) != 2 {
@@ -100,12 +100,12 @@ func TestPhotoShareSearchFiltersStoredPhotos(t *testing.T) {
 
 	conn.sent = nil
 	g.PhotoShareSearch(player, mailMsg(&proto.PhotoShareSearchReq{
-		SearchType: proto.PhotoSearchType_PhotoSearchType_MyShare,
-		TextType:   proto.PhotoSearchTextType_PhotoSearchTextType_Text,
+		SearchType: proto.PhotoSearchType_PhotoSearchType_MY_SHARE,
+		TextType:   proto.PhotoSearchTextType_PhotoSearchTextType_TEXT,
 		Text:       "日落",
 	}))
 	rsp, ok := conn.sent[0].(*proto.PhotoShareSearchRsp)
-	if !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_Ok {
+	if !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("照片搜索响应错误: %+v", conn.sent[0])
 	}
 	if rsp.GetTotalNum() != 1 || len(rsp.GetPhotos()) != 1 {
@@ -114,8 +114,8 @@ func TestPhotoShareSearchFiltersStoredPhotos(t *testing.T) {
 
 	conn.sent = nil
 	g.PhotoShareSearch(player, mailMsg(&proto.PhotoShareSearchReq{
-		SearchType: proto.PhotoSearchType_PhotoSearchType_MyShare,
-		TextType:   proto.PhotoSearchTextType_PhotoSearchTextType_Text,
+		SearchType: proto.PhotoSearchType_PhotoSearchType_MY_SHARE,
+		TextType:   proto.PhotoSearchTextType_PhotoSearchTextType_TEXT,
 		Text:       "不存在",
 	}))
 	empty, ok := conn.sent[0].(*proto.PhotoShareSearchRsp)
@@ -144,7 +144,7 @@ func TestSPOperatePasswordFlow(t *testing.T) {
 		Password:    "bad",
 	}))
 	badRsp, ok := conn.sent[len(conn.sent)-1].(*proto.SPOperateRsp)
-	if !ok || badRsp.GetStatus() != proto.StatusCode_StatusCode_BadReq || badRsp.GetSpCheckStatus() {
+	if !ok || badRsp.GetStatus() != proto.StatusCode_StatusCode_BAD_REQ || badRsp.GetSpCheckStatus() {
 		t.Fatalf("错误密码未被拒绝: %+v", badRsp)
 	}
 
@@ -195,14 +195,14 @@ func TestPhotoUploadLimitUsesPurchasedGrids(t *testing.T) {
 
 	g.UploadPhotoShare(player, mailMsg(&proto.UploadPhotoShareReq{File: []byte("a"), Title: "first"}))
 	first, ok := conn.sent[0].(*proto.UploadPhotoShareRsp)
-	if !ok || first.GetStatus() != proto.StatusCode_StatusCode_Ok {
+	if !ok || first.GetStatus() != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("第一张照片上传失败: %+v", conn.sent[0])
 	}
 
 	conn.sent = nil
 	g.UploadPhotoShare(player, mailMsg(&proto.UploadPhotoShareReq{File: []byte("b"), Title: "second"}))
 	second, ok := conn.sent[0].(*proto.UploadPhotoShareRsp)
-	if !ok || second.GetStatus() != proto.StatusCode_StatusCode_PsUploadLimit {
+	if !ok || second.GetStatus() != proto.StatusCode_StatusCode_PS_UPLOAD_LIMIT {
 		t.Fatalf("上传上限未生效: %+v", conn.sent[0])
 	}
 
@@ -220,7 +220,7 @@ func TestChallengeFriendRankReturnsLocalRecords(t *testing.T) {
 	g := &Game{}
 	g.ChallengeFriendRank(player, mailMsg(&proto.ChallengeFriendRankReq{}))
 	rsp, ok := conn.sent[0].(*proto.ChallengeFriendRankRsp)
-	if !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_Ok {
+	if !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("挑战排行响应错误: %+v", conn.sent[0])
 	}
 	if len(rsp.GetSelfChallenge().GetChallengeInfos()) != 1 ||
@@ -237,7 +237,7 @@ func TestWishListByShopIdReturnsLocalWish(t *testing.T) {
 	g := &Game{}
 	g.WishListByShopId(player, mailMsg(&proto.WishListByShopIdReq{ShopId: 10, GridId: 20}))
 	rsp, ok := conn.sent[0].(*proto.WishListByShopIdRsp)
-	if !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_Ok || len(rsp.GetInfo()) != 1 {
+	if !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_OK || len(rsp.GetInfo()) != 1 {
 		t.Fatalf("心愿单响应错误: %+v", conn.sent[0])
 	}
 }
@@ -255,7 +255,7 @@ func TestMPTeamDismissClearsTeamState(t *testing.T) {
 		t.Fatal("解散队伍后仍残留队伍状态")
 	}
 	rsp, ok := conn.sent[0].(*proto.MPTeamDismissRsp)
-	if !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_Ok {
+	if !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("解散队伍响应错误: %+v", conn.sent[0])
 	}
 }

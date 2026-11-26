@@ -95,7 +95,7 @@ func (i LifeItem) ItemDetail() *proto.ItemDetail {
 				BaseItem: &proto.BaseItem{ItemId: i.ItemID, Num: i.Count},
 			},
 		},
-		PackType: proto.PackType_PackType_Inventory,
+		PackType: proto.ItemDetail_PackType_Inventory,
 	}
 }
 
@@ -104,7 +104,7 @@ func DefaultLifeModel() *LifeModel {
 		States:   make(map[uint32]*LifeState),
 		Receipts: make(map[string]LifeReceipt),
 	}
-	for lifeType := proto.LifeType_LifeType_Cooking; lifeType <= proto.LifeType_LifeType_Handicraft; lifeType++ {
+	for lifeType := proto.LifeType_LIFE_TYPE_Cooking; lifeType <= proto.LifeType_LIFE_TYPE_Handicraft; lifeType++ {
 		m.States[uint32(lifeType)] = newLifeState()
 	}
 	return m
@@ -133,7 +133,7 @@ func (m *LifeModel) normalize() {
 	if m.Receipts == nil {
 		m.Receipts = make(map[string]LifeReceipt)
 	}
-	for lifeType := proto.LifeType_LifeType_Cooking; lifeType <= proto.LifeType_LifeType_Handicraft; lifeType++ {
+	for lifeType := proto.LifeType_LIFE_TYPE_Cooking; lifeType <= proto.LifeType_LIFE_TYPE_Handicraft; lifeType++ {
 		state := m.States[uint32(lifeType)]
 		if state == nil {
 			m.States[uint32(lifeType)] = newLifeState()
@@ -201,7 +201,7 @@ func (m *LifeModel) doOnce(token string, items *ItemModel, persist func() error,
 		}
 	}
 	receipt := fn()
-	if receipt.Status == proto.StatusCode_StatusCode_SysErr {
+	if receipt.Status == proto.StatusCode_StatusCode_SYS_ERR {
 		return receipt
 	}
 	if token != "" {
@@ -224,7 +224,7 @@ func (m *LifeModel) doOnce(token string, items *ItemModel, persist func() error,
 			if items != nil {
 				items.ItemBaseInfo = itemsBefore
 			}
-			return LifeReceipt{Status: proto.StatusCode_StatusCode_SysErr, LifeType: receipt.LifeType}
+			return LifeReceipt{Status: proto.StatusCode_StatusCode_SYS_ERR, LifeType: receipt.LifeType}
 		}
 	}
 	return receipt
@@ -328,15 +328,15 @@ func (m *LifeModel) AchieveInfo(lifeType proto.LifeType, cfg *LifeConfig) *proto
 		}
 		state := m.GetState(lifeType).Achievements[id]
 		if state != nil {
-			result.LifeAchieve_ = append(result.LifeAchieve_, &proto.Achieve{AchieveId: id, Count: state.Count})
+			result.LifeAchieve = append(result.LifeAchieve, &proto.Achieve{AchieveId: id, Count: state.Count})
 			if state.Rewarded {
 				rewarded = append(rewarded, id)
 			}
 		} else {
-			result.LifeAchieve_ = append(result.LifeAchieve_, &proto.Achieve{AchieveId: id})
+			result.LifeAchieve = append(result.LifeAchieve, &proto.Achieve{AchieveId: id})
 		}
 	}
-	sort.Slice(result.LifeAchieve_, func(i, j int) bool { return result.LifeAchieve_[i].AchieveId < result.LifeAchieve_[j].AchieveId })
+	sort.Slice(result.LifeAchieve, func(i, j int) bool { return result.LifeAchieve[i].AchieveId < result.LifeAchieve[j].AchieveId })
 	sort.Slice(rewarded, func(i, j int) bool { return rewarded[i] < rewarded[j] })
 	result.RewardedLifeAchieveIdLst = rewarded
 	return result
@@ -542,8 +542,8 @@ func LoadLifeConfig(resourcePath string) (*LifeConfig, error) {
 		}
 	}
 	for _, lifeType := range []proto.LifeType{
-		proto.LifeType_LifeType_Cooking, proto.LifeType_LifeType_Fishing,
-		proto.LifeType_LifeType_Making, proto.LifeType_LifeType_Handicraft,
+		proto.LifeType_LIFE_TYPE_Cooking, proto.LifeType_LIFE_TYPE_Fishing,
+		proto.LifeType_LIFE_TYPE_Making, proto.LifeType_LIFE_TYPE_Handicraft,
 	} {
 		cfg.Levels[lifeType] = make(map[uint32]*LifeLevelConfig)
 		cfg.Recipes[lifeType] = make(map[uint32]*LifeRecipe)
@@ -554,28 +554,28 @@ func LoadLifeConfig(resourcePath string) (*LifeConfig, error) {
 		for _, item := range row.FishingLevelQuest {
 			reqs = append(reqs, LifeAchievementRequirement{ID: uint32(item.AchieveConditionID), Target: uint32(item.CompleteLimit), Proficiency: uint32(item.Proficiency)})
 		}
-		cfg.addLevel(proto.LifeType_LifeType_Fishing, uint32(row.ID), uint32(row.UpgradeLevelByProficiency), uint32(row.UpLevelNeedItemID), int64(row.UpLevelNeedItemCount), uint32(row.NeedItemID), int64(row.NeedItemCount), reqs)
+		cfg.addLevel(proto.LifeType_LIFE_TYPE_Fishing, uint32(row.ID), uint32(row.UpgradeLevelByProficiency), uint32(row.UpLevelNeedItemID), int64(row.UpLevelNeedItemCount), uint32(row.NeedItemID), int64(row.NeedItemCount), reqs)
 	}
 	for _, row := range cooking.GetCookLevel().GetDatas() {
 		reqs := make([]LifeAchievementRequirement, 0, len(row.CookLevelQuest))
 		for _, item := range row.CookLevelQuest {
 			reqs = append(reqs, LifeAchievementRequirement{ID: uint32(item.AchieveConditionID), Target: uint32(item.CompleteLimit), Proficiency: uint32(item.Proficiency)})
 		}
-		cfg.addLevel(proto.LifeType_LifeType_Cooking, uint32(row.ID), uint32(row.UpgradeLevelByProficiency), uint32(row.NeedItemID), int64(row.NeedItemCount), 0, 0, reqs)
+		cfg.addLevel(proto.LifeType_LIFE_TYPE_Cooking, uint32(row.ID), uint32(row.UpgradeLevelByProficiency), uint32(row.NeedItemID), int64(row.NeedItemCount), 0, 0, reqs)
 	}
 	for _, row := range making.GetMakeLevel().GetDatas() {
 		reqs := make([]LifeAchievementRequirement, 0, len(row.MakeLevelAchieve))
 		for _, item := range row.MakeLevelAchieve {
 			reqs = append(reqs, LifeAchievementRequirement{ID: uint32(item.AchieveConditionID), Target: uint32(item.CompleteLimit), Proficiency: uint32(item.Proficiency)})
 		}
-		cfg.addLevel(proto.LifeType_LifeType_Making, uint32(row.ID), uint32(row.UpgradeLevelByProficiency), uint32(row.NeedItemID), int64(row.NeedItemCount), 0, 0, reqs)
+		cfg.addLevel(proto.LifeType_LIFE_TYPE_Making, uint32(row.ID), uint32(row.UpgradeLevelByProficiency), uint32(row.NeedItemID), int64(row.NeedItemCount), 0, 0, reqs)
 	}
 	for _, row := range handicraft.GetHandicraftLevel().GetDatas() {
 		reqs := make([]LifeAchievementRequirement, 0, len(row.HandicraftLevelAchieve))
 		for _, item := range row.HandicraftLevelAchieve {
 			reqs = append(reqs, LifeAchievementRequirement{ID: uint32(item.AchieveConditionID), Target: uint32(item.CompleteLimit), Proficiency: uint32(item.Proficiency)})
 		}
-		cfg.addLevel(proto.LifeType_LifeType_Handicraft, uint32(row.ID), uint32(row.UpgradeLevelByProficiency), uint32(row.NeedItemID), int64(row.NeedItemCount), 0, 0, reqs)
+		cfg.addLevel(proto.LifeType_LIFE_TYPE_Handicraft, uint32(row.ID), uint32(row.UpgradeLevelByProficiency), uint32(row.NeedItemID), int64(row.NeedItemCount), 0, 0, reqs)
 	}
 	for _, row := range fishing.GetFishingInfo().GetDatas() {
 		refs := make([]LifeAchievementRef, 0, len(row.FishAchieveRewards))
@@ -583,7 +583,7 @@ func LoadLifeConfig(resourcePath string) (*LifeConfig, error) {
 			refs = append(refs, LifeAchievementRef{ID: uint32(item.AchieveConditionID), RewardID: uint32(item.RewardID)})
 		}
 		cfg.Fish[uint32(row.ID)] = &LifeFishConfig{ID: uint32(row.ID), Level: uint32(row.NeedLevel), ItemID: uint32(row.ItemID), IsShow: row.IsShow, MinSize: row.MinSize, MaxSize: row.MaxSize, Achievements: refs}
-		cfg.registerAchievements(proto.LifeType_LifeType_Fishing, refs)
+		cfg.registerAchievements(proto.LifeType_LIFE_TYPE_Fishing, refs)
 	}
 	for _, row := range cooking.GetCookFood().GetDatas() {
 		refs := make([]LifeAchievementRef, 0, len(row.CookFoodQuestRewards))
@@ -594,13 +594,13 @@ func LoadLifeConfig(resourcePath string) (*LifeConfig, error) {
 		for _, item := range row.CookFoodItems {
 			materials = append(materials, LifeMaterial{ItemID: uint32(item.FoodItemID), Count: int64(item.FoodItemCount)})
 		}
-		cfg.Recipes[proto.LifeType_LifeType_Cooking][uint32(row.ID)] = &LifeRecipe{
+		cfg.Recipes[proto.LifeType_LIFE_TYPE_Cooking][uint32(row.ID)] = &LifeRecipe{
 			ID: uint32(row.ID), Level: uint32(row.CookLevel), IsShow: row.IsShow, NeedTime: int64(row.NeedTime),
 			OpeningTime: row.OpeningTime, ClosingTime: row.ClosingTime, EnergyID: uint32(row.NeedItemID), EnergyCount: int64(row.NeedItemCount),
 			Materials: materials, Probability: row.SuccessfulProbability, OutputID: uint32(row.GetItemID), FormulaItemID: uint32(row.NeedFormulaItemID),
 			Achievements: refs, ToolType: row.NewCookToolType,
 		}
-		cfg.registerAchievements(proto.LifeType_LifeType_Cooking, refs)
+		cfg.registerAchievements(proto.LifeType_LIFE_TYPE_Cooking, refs)
 	}
 	for _, row := range making.GetMakeItem().GetDatas() {
 		refs := make([]LifeAchievementRef, 0, len(row.MakeAchieveRewards))
@@ -611,13 +611,13 @@ func LoadLifeConfig(resourcePath string) (*LifeConfig, error) {
 		for _, item := range row.MakeItems {
 			materials = append(materials, LifeMaterial{ItemID: uint32(item.ItemID), Count: int64(item.ItemCount)})
 		}
-		cfg.Recipes[proto.LifeType_LifeType_Making][uint32(row.ID)] = &LifeRecipe{
+		cfg.Recipes[proto.LifeType_LIFE_TYPE_Making][uint32(row.ID)] = &LifeRecipe{
 			ID: uint32(row.ID), Level: uint32(row.MakeLevel), IsShow: row.IsShow, NeedTime: int64(row.NeedTime),
 			OpeningTime: row.OpeningTime, ClosingTime: row.ClosingTime, EnergyID: uint32(row.NeedItemID), EnergyCount: int64(row.NeedItemCount),
 			Materials: materials, Probability: row.SuccessfulProbability, OutputID: uint32(row.GetItemID), FormulaItemID: uint32(row.NeedFormulaItemID),
 			Achievements: refs, ToolType: row.NewMakeToolType,
 		}
-		cfg.registerAchievements(proto.LifeType_LifeType_Making, refs)
+		cfg.registerAchievements(proto.LifeType_LIFE_TYPE_Making, refs)
 	}
 	for _, row := range handicraft.GetHandicraftItem().GetDatas() {
 		refs := make([]LifeAchievementRef, 0, len(row.HandicraftAchieveRewards))
@@ -628,34 +628,34 @@ func LoadLifeConfig(resourcePath string) (*LifeConfig, error) {
 		for _, item := range row.HandicraftItems {
 			materials = append(materials, LifeMaterial{ItemID: uint32(item.ItemID), Count: int64(item.ItemCount)})
 		}
-		cfg.Recipes[proto.LifeType_LifeType_Handicraft][uint32(row.ID)] = &LifeRecipe{
+		cfg.Recipes[proto.LifeType_LIFE_TYPE_Handicraft][uint32(row.ID)] = &LifeRecipe{
 			ID: uint32(row.ID), Level: uint32(row.HandicraftLevel), IsShow: row.IsShow, NeedTime: int64(row.NeedTime),
 			OpeningTime: row.OpeningTime, ClosingTime: row.ClosingTime, EnergyID: uint32(row.NeedItemID), EnergyCount: int64(row.NeedItemCount),
 			Materials: materials, Probability: row.SuccessfulProbability, OutputID: uint32(row.GetItemID), FormulaItemID: uint32(row.NeedFormulaItemID),
 			Achievements: refs, ToolType: row.NewHandicraftToolType,
 		}
-		cfg.registerAchievements(proto.LifeType_LifeType_Handicraft, refs)
+		cfg.registerAchievements(proto.LifeType_LIFE_TYPE_Handicraft, refs)
 	}
 	for _, row := range fishing.GetFishingSpell().GetDatas() {
-		skill := cfg.ensureSkill(proto.LifeType_LifeType_Fishing, uint32(row.ID))
+		skill := cfg.ensureSkill(proto.LifeType_LIFE_TYPE_Fishing, uint32(row.ID))
 		for _, item := range row.FishingSpellItems {
 			cfg.addSkill(skill, item.Level, item.NewLifeSpellEffectType, item.Param1, item.Param2, item.NeedFishLevel, item.NeedTime, item.NeedCurrencyID, item.NeedCurrencyCount, fishingMaterials(item.FishingNeedItem))
 		}
 	}
 	for _, row := range cooking.GetCookSpell().GetDatas() {
-		skill := cfg.ensureSkill(proto.LifeType_LifeType_Cooking, uint32(row.ID))
+		skill := cfg.ensureSkill(proto.LifeType_LIFE_TYPE_Cooking, uint32(row.ID))
 		for _, item := range row.CookSpellItems {
 			cfg.addSkill(skill, item.Level, item.NewLifeSpellEffectType, item.SpellParam1, item.SpellParam2, item.NeedCookLevel, item.NeedTime, item.NeedCurrencyID, item.NeedCurrencyCount, cookingMaterials(item.CookNeedItem))
 		}
 	}
 	for _, row := range making.GetMakeSpell().GetDatas() {
-		skill := cfg.ensureSkill(proto.LifeType_LifeType_Making, uint32(row.ID))
+		skill := cfg.ensureSkill(proto.LifeType_LIFE_TYPE_Making, uint32(row.ID))
 		for _, item := range row.MakeSpellItems {
 			cfg.addSkill(skill, item.Level, item.NewLifeSpellEffectType, item.SpellParam1, item.SpellParam2, item.NeedMakeLevel, item.NeedTime, item.NeedCurrencyID, item.NeedCurrencyCount, makeMaterials(item.MakeNeedItem))
 		}
 	}
 	for _, row := range handicraft.GetHandicraftSpell().GetDatas() {
-		skill := cfg.ensureSkill(proto.LifeType_LifeType_Handicraft, uint32(row.ID))
+		skill := cfg.ensureSkill(proto.LifeType_LIFE_TYPE_Handicraft, uint32(row.ID))
 		for _, item := range row.HandicraftSpellItems {
 			cfg.addSkill(skill, item.Level, item.NewLifeSpellEffectType, item.SpellParam1, item.SpellParam2, item.NeedHandicraftLevel, item.NeedTime, item.NeedCurrencyID, item.NeedCurrencyCount, handicraftMaterials(item.HandicraftNeedItem))
 		}
@@ -674,8 +674,8 @@ func LoadLifeConfig(resourcePath string) (*LifeConfig, error) {
 		}
 	}
 	for _, lifeType := range []proto.LifeType{
-		proto.LifeType_LifeType_Cooking, proto.LifeType_LifeType_Fishing,
-		proto.LifeType_LifeType_Making, proto.LifeType_LifeType_Handicraft,
+		proto.LifeType_LIFE_TYPE_Cooking, proto.LifeType_LIFE_TYPE_Fishing,
+		proto.LifeType_LIFE_TYPE_Making, proto.LifeType_LIFE_TYPE_Handicraft,
 	} {
 		if len(cfg.Levels[lifeType]) == 0 {
 			return nil, fmt.Errorf("生活技能配置缺失: %s", lifeType)
@@ -817,19 +817,19 @@ func lifeIntn(rng LifeRNG, n int) int {
 }
 
 func ValidLifeType(lifeType proto.LifeType) bool {
-	return lifeType >= proto.LifeType_LifeType_Cooking && lifeType <= proto.LifeType_LifeType_Handicraft
+	return lifeType >= proto.LifeType_LIFE_TYPE_Cooking && lifeType <= proto.LifeType_LIFE_TYPE_Handicraft
 }
 
 func (m *LifeModel) ProduceRecipe(items *ItemModel, cfg *LifeConfig, lifeType proto.LifeType, recipeID uint32, opts LifeProductionOptions) LifeReceipt {
 	return m.doOnce(opts.Token, items, opts.Persist, func() LifeReceipt {
-		receipt := LifeReceipt{Status: proto.StatusCode_StatusCode_Ok, LifeType: lifeType}
+		receipt := LifeReceipt{Status: proto.StatusCode_StatusCode_OK, LifeType: lifeType}
 		if !ValidLifeType(lifeType) || cfg == nil || items == nil {
-			receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+			receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return receipt
 		}
 		recipe := cfg.Recipes[lifeType][recipeID]
 		if recipe == nil || !recipe.IsShow {
-			receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+			receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return receipt
 		}
 		state := m.GetState(lifeType)
@@ -838,46 +838,46 @@ func (m *LifeModel) ProduceRecipe(items *ItemModel, cfg *LifeConfig, lifeType pr
 			return receipt
 		}
 		if ok, valid := lifeTimeAvailable(recipe.OpeningTime, recipe.ClosingTime, opts.Now); !valid {
-			receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+			receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return receipt
 		} else if !ok {
-			receipt.Status = proto.StatusCode_StatusCode_ActivityClose
+			receipt.Status = proto.StatusCode_StatusCode_Activity_Close
 			return receipt
 		}
-		if lifeType == proto.LifeType_LifeType_Cooking && recipe.ToolType == int32(proto.ELifeCookToolType_ELifeCookToolType_Bbqstove) && !opts.HasCampFire {
-			receipt.Status = proto.StatusCode_StatusCode_BadReq
+		if lifeType == proto.LifeType_LIFE_TYPE_Cooking && recipe.ToolType == int32(proto.ELifeCookToolType_ELifeCookToolType_BBQStove) && !opts.HasCampFire {
+			receipt.Status = proto.StatusCode_StatusCode_BAD_REQ
 			return receipt
 		}
 		if recipe.FormulaItemID != 0 {
-			if _, status := lifeBaseItem(cfg, recipe.FormulaItemID); status != proto.StatusCode_StatusCode_Ok {
+			if _, status := lifeBaseItem(cfg, recipe.FormulaItemID); status != proto.StatusCode_StatusCode_OK {
 				receipt.Status = status
 				return receipt
 			}
 			if info := items.GetItemBaseInfo(recipe.FormulaItemID); info == nil || info.Num < 1 {
-				receipt.Status = proto.StatusCode_StatusCode_ItemNotEnough
+				receipt.Status = proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 				return receipt
 			}
 		}
 		level := cfg.Levels[lifeType][state.Level]
 		if level == nil || (level.ProficiencyPerAction == 0 && cfg.Levels[lifeType][state.Level+1] != nil) {
-			receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+			receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return receipt
 		}
-		if _, status := lifeBaseItem(cfg, recipe.OutputID); status != proto.StatusCode_StatusCode_Ok {
+		if _, status := lifeBaseItem(cfg, recipe.OutputID); status != proto.StatusCode_StatusCode_OK {
 			receipt.Status = status
 			return receipt
 		}
 		if recipe.Probability < 0 || recipe.Probability > 1 || math.IsNaN(float64(recipe.Probability)) {
-			receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+			receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return receipt
 		}
 		if recipe.NeedTime < 0 || !validLifeEnergy(cfg, recipe.EnergyID, recipe.EnergyCount) {
-			receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+			receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return receipt
 		}
 		for _, material := range recipe.Materials {
 			if material.Count < 0 || (material.Count > 0 && !validLifeItem(cfg, material.ItemID)) {
-				receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+				receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 				return receipt
 			}
 		}
@@ -931,11 +931,11 @@ func (m *LifeModel) ProduceRecipe(items *ItemModel, cfg *LifeConfig, lifeType pr
 		}
 		additions = tagLifeItems(cfg, mergeLifeItems(additions))
 		tx, status := stageLifeCosts(items, cfg, costs)
-		if status != proto.StatusCode_StatusCode_Ok {
+		if status != proto.StatusCode_StatusCode_OK {
 			receipt.Status = status
 			return receipt
 		}
-		if status = validateLifeBalance(items, cfg, costs, additions); status != proto.StatusCode_StatusCode_Ok {
+		if status = validateLifeBalance(items, cfg, costs, additions); status != proto.StatusCode_StatusCode_OK {
 			tx.Rollback()
 			receipt.Status = status
 			return receipt
@@ -972,50 +972,50 @@ type FishingOptions struct {
 
 func (m *LifeModel) Fish(items *ItemModel, cfg *LifeConfig, opts FishingOptions) LifeReceipt {
 	return m.doOnce(opts.Token, items, opts.Persist, func() LifeReceipt {
-		receipt := LifeReceipt{Status: proto.StatusCode_StatusCode_Ok, LifeType: proto.LifeType_LifeType_Fishing}
+		receipt := LifeReceipt{Status: proto.StatusCode_StatusCode_OK, LifeType: proto.LifeType_LIFE_TYPE_Fishing}
 		if cfg == nil || items == nil || opts.PondID == 0 || opts.BoxID == 0 || opts.RodInstanceID == 0 {
-			receipt.Status = proto.StatusCode_StatusCode_BadReq
+			receipt.Status = proto.StatusCode_StatusCode_BAD_REQ
 			return receipt
 		}
 		rod := items.GetItemWeaponInfo(opts.RodInstanceID)
 		if rod == nil {
-			receipt.Status = proto.StatusCode_StatusCode_ItemNotEnough
+			receipt.Status = proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 			return receipt
 		}
 		weaponType, ok := cfg.WeaponTypes[rod.WeaponId]
 		if !ok {
-			receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+			receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return receipt
 		}
 		if weaponType != proto.EWeaponType_EWeaponType_FishingRod {
-			receipt.Status = proto.StatusCode_StatusCode_BadReq
+			receipt.Status = proto.StatusCode_StatusCode_BAD_REQ
 			return receipt
 		}
 		bait, status := lifeBaseItem(cfg, opts.BoxID)
-		if status != proto.StatusCode_StatusCode_Ok {
+		if status != proto.StatusCode_StatusCode_OK {
 			receipt.Status = status
 			return receipt
 		}
 		if proto.EBagItemTag(bait.NewBagItemTag) != proto.EBagItemTag_EBagItemTag_Baitbox {
-			receipt.Status = proto.StatusCode_StatusCode_BadReq
+			receipt.Status = proto.StatusCode_StatusCode_BAD_REQ
 			return receipt
 		}
 		if info := items.GetItemBaseInfo(opts.BoxID); info == nil || info.Num < 1 {
-			receipt.Status = proto.StatusCode_StatusCode_ItemNotEnough
+			receipt.Status = proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 			return receipt
 		}
-		state := m.GetState(proto.LifeType_LifeType_Fishing)
-		level := cfg.Levels[proto.LifeType_LifeType_Fishing][state.Level]
-		if level == nil || (level.ProficiencyPerAction == 0 && cfg.Levels[proto.LifeType_LifeType_Fishing][state.Level+1] != nil) {
-			receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+		state := m.GetState(proto.LifeType_LIFE_TYPE_Fishing)
+		level := cfg.Levels[proto.LifeType_LIFE_TYPE_Fishing][state.Level]
+		if level == nil || (level.ProficiencyPerAction == 0 && cfg.Levels[proto.LifeType_LIFE_TYPE_Fishing][state.Level+1] != nil) {
+			receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return receipt
 		}
 		if !validLifeEnergy(cfg, level.ActionEnergyID, level.ActionEnergyCount) {
-			receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+			receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return receipt
 		}
-		receipt.Persist = m.RefreshSkills(proto.LifeType_LifeType_Fishing, cfg, opts.Now)
-		effects := m.skillEffects(proto.LifeType_LifeType_Fishing, cfg)
+		receipt.Persist = m.RefreshSkills(proto.LifeType_LIFE_TYPE_Fishing, cfg, opts.Now)
+		effects := m.skillEffects(proto.LifeType_LIFE_TYPE_Fishing, cfg)
 		if lifeRandom(opts.RNG) >= 1+effects.successRate {
 			receipt.Proficiency = state.Proficiency
 			receipt.Level = state.Level
@@ -1024,14 +1024,14 @@ func (m *LifeModel) Fish(items *ItemModel, cfg *LifeConfig, opts FishingOptions)
 		fishList := make([]*LifeFishConfig, 0)
 		for _, fish := range cfg.Fish {
 			if fish != nil && fish.IsShow && fish.Level <= state.Level {
-				if _, itemStatus := lifeBaseItem(cfg, fish.ItemID); itemStatus == proto.StatusCode_StatusCode_Ok &&
+				if _, itemStatus := lifeBaseItem(cfg, fish.ItemID); itemStatus == proto.StatusCode_StatusCode_OK &&
 					validLifeFishSize(fish.MinSize, fish.MaxSize) {
 					fishList = append(fishList, fish)
 				}
 			}
 		}
 		if len(fishList) == 0 {
-			receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+			receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return receipt
 		}
 		sort.Slice(fishList, func(i, j int) bool { return fishList[i].ID < fishList[j].ID })
@@ -1047,11 +1047,11 @@ func (m *LifeModel) Fish(items *ItemModel, cfg *LifeConfig, opts FishingOptions)
 		costs = mergeLifeItems(costs)
 		outputs := tagLifeItems(cfg, []LifeItem{{ItemID: fish.ItemID, Count: outputCount}})
 		tx, status := stageLifeCosts(items, cfg, costs)
-		if status != proto.StatusCode_StatusCode_Ok {
+		if status != proto.StatusCode_StatusCode_OK {
 			receipt.Status = status
 			return receipt
 		}
-		if status = validateLifeBalance(items, cfg, costs, outputs); status != proto.StatusCode_StatusCode_Ok {
+		if status = validateLifeBalance(items, cfg, costs, outputs); status != proto.StatusCode_StatusCode_OK {
 			tx.Rollback()
 			receipt.Status = status
 			return receipt
@@ -1070,7 +1070,7 @@ func (m *LifeModel) Fish(items *ItemModel, cfg *LifeConfig, opts FishingOptions)
 		receipt.Proficiency = addProficiency(state.Proficiency, level.ProficiencyPerAction)
 		state.Proficiency = receipt.Proficiency
 		for _, ref := range fish.Achievements {
-			m.AddAchievement(proto.LifeType_LifeType_Fishing, ref.ID, uint32(outputCount))
+			m.AddAchievement(proto.LifeType_LIFE_TYPE_Fishing, ref.ID, uint32(outputCount))
 			receipt.AchieveIDs = append(receipt.AchieveIDs, ref.ID)
 		}
 		receipt.Level = state.Level
@@ -1087,9 +1087,9 @@ func optionalLifePersist(persist []func() error) func() error {
 
 func (m *LifeModel) LevelUp(items *ItemModel, cfg *LifeConfig, lifeType proto.LifeType, token string, persist ...func() error) LifeReceipt {
 	return m.doOnce(token, items, optionalLifePersist(persist), func() LifeReceipt {
-		receipt := LifeReceipt{Status: proto.StatusCode_StatusCode_Ok, LifeType: lifeType}
+		receipt := LifeReceipt{Status: proto.StatusCode_StatusCode_OK, LifeType: lifeType}
 		if !ValidLifeType(lifeType) || cfg == nil || items == nil {
-			receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+			receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return receipt
 		}
 		state := m.GetState(lifeType)
@@ -1111,7 +1111,7 @@ func (m *LifeModel) LevelUp(items *ItemModel, cfg *LifeConfig, lifeType proto.Li
 			costs = append(costs, LifeItem{ItemID: level.CostItemID, Count: level.CostItemCount})
 		}
 		tx, status := stageLifeCosts(items, cfg, costs)
-		if status != proto.StatusCode_StatusCode_Ok {
+		if status != proto.StatusCode_StatusCode_OK {
 			receipt.Status = status
 			return receipt
 		}
@@ -1127,9 +1127,9 @@ func (m *LifeModel) LevelUp(items *ItemModel, cfg *LifeConfig, lifeType proto.Li
 
 func (m *LifeModel) StudySkill(items *ItemModel, cfg *LifeConfig, lifeType proto.LifeType, skillID uint32, force bool, token string, now int64, persist ...func() error) LifeReceipt {
 	return m.doOnce(token, items, optionalLifePersist(persist), func() LifeReceipt {
-		receipt := LifeReceipt{Status: proto.StatusCode_StatusCode_Ok, LifeType: lifeType}
+		receipt := LifeReceipt{Status: proto.StatusCode_StatusCode_OK, LifeType: lifeType}
 		if !ValidLifeType(lifeType) || cfg == nil || items == nil {
-			receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+			receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return receipt
 		}
 		skillConf := cfg.Skills[lifeType][skillID]
@@ -1154,7 +1154,7 @@ func (m *LifeModel) StudySkill(items *ItemModel, cfg *LifeConfig, lifeType proto
 			return receipt
 		}
 		if level.NeedTime < 0 {
-			receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+			receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return receipt
 		}
 		if level.NeedLifeLevel > state.Level {
@@ -1179,7 +1179,7 @@ func (m *LifeModel) StudySkill(items *ItemModel, cfg *LifeConfig, lifeType proto
 			costs = append(costs, LifeItem{ItemID: material.ItemID, Count: material.Count})
 		}
 		tx, status := stageLifeCosts(items, cfg, costs)
-		if status != proto.StatusCode_StatusCode_Ok {
+		if status != proto.StatusCode_StatusCode_OK {
 			receipt.Status = status
 			return receipt
 		}
@@ -1205,42 +1205,42 @@ func (m *LifeModel) StudySkill(items *ItemModel, cfg *LifeConfig, lifeType proto
 
 func (m *LifeModel) ClaimAchievement(items *ItemModel, cfg *LifeConfig, lifeType proto.LifeType, achieveID uint32, token string, rng LifeRNG, persist ...func() error) LifeReceipt {
 	return m.doOnce(token, items, optionalLifePersist(persist), func() LifeReceipt {
-		receipt := LifeReceipt{Status: proto.StatusCode_StatusCode_Ok, LifeType: lifeType}
+		receipt := LifeReceipt{Status: proto.StatusCode_StatusCode_OK, LifeType: lifeType}
 		if !ValidLifeType(lifeType) || cfg == nil || items == nil || achieveID == 0 {
-			receipt.Status = proto.StatusCode_StatusCode_BadReq
+			receipt.Status = proto.StatusCode_StatusCode_BAD_REQ
 			return receipt
 		}
 		conf := cfg.Achievements[achieveID]
 		if conf == nil || conf.LifeType != lifeType || conf.Target == 0 || conf.RewardID == 0 {
-			receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+			receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return receipt
 		}
 		state := m.GetState(lifeType).Achievements[achieveID]
 		if state == nil {
-			receipt.Status = proto.StatusCode_StatusCode_BadReq
+			receipt.Status = proto.StatusCode_StatusCode_BAD_REQ
 			return receipt
 		}
 		if state.Rewarded {
-			receipt.Status = proto.StatusCode_StatusCode_RepeatGetReward
+			receipt.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 			return receipt
 		}
 		if state.Count < uint64(conf.Target) {
-			receipt.Status = proto.StatusCode_StatusCode_BadReq
+			receipt.Status = proto.StatusCode_StatusCode_BAD_REQ
 			return receipt
 		}
 		rewards := cfg.Rewards[conf.RewardID]
 		if len(rewards) == 0 {
-			receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+			receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return receipt
 		}
 		additions := make([]LifeItem, 0, len(rewards))
 		for _, reward := range rewards {
-			if _, status := lifeBaseItem(cfg, reward.ItemID); status != proto.StatusCode_StatusCode_Ok {
+			if _, status := lifeBaseItem(cfg, reward.ItemID); status != proto.StatusCode_StatusCode_OK {
 				receipt.Status = status
 				return receipt
 			}
 			if reward.Min <= 0 || reward.Max < reward.Min {
-				receipt.Status = proto.StatusCode_StatusCode_CfgNotFound
+				receipt.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 				return receipt
 			}
 			count := reward.Min
@@ -1250,7 +1250,7 @@ func (m *LifeModel) ClaimAchievement(items *ItemModel, cfg *LifeConfig, lifeType
 			additions = append(additions, LifeItem{ItemID: reward.ItemID, Count: count})
 		}
 		additions = tagLifeItems(cfg, mergeLifeItems(additions))
-		if status := validateLifeBalance(items, cfg, nil, additions); status != proto.StatusCode_StatusCode_Ok {
+		if status := validateLifeBalance(items, cfg, nil, additions); status != proto.StatusCode_StatusCode_OK {
 			receipt.Status = status
 			return receipt
 		}
@@ -1404,11 +1404,11 @@ func addProficiency(value, amount uint32) uint32 {
 
 func lifeBaseItem(cfg *LifeConfig, id uint32) (*excel.ItemConfigure, proto.StatusCode) {
 	if id == 0 || cfg == nil {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	item := cfg.Items[id]
 	if item == nil {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	switch proto.EBagItemTag(item.NewBagItemTag) {
 	case proto.EBagItemTag_EBagItemTag_AbilityItem,
@@ -1426,15 +1426,15 @@ func lifeBaseItem(cfg *LifeConfig, id uint32) (*excel.ItemConfigure, proto.Statu
 		proto.EBagItemTag_EBagItemTag_DyeStuff,
 		proto.EBagItemTag_EBagItemTag_StrengthStone,
 		proto.EBagItemTag_EBagItemTag_ExpBook:
-		return item, proto.StatusCode_StatusCode_Ok
+		return item, proto.StatusCode_StatusCode_OK
 	default:
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 }
 
 func validLifeItem(cfg *LifeConfig, id uint32) bool {
 	_, status := lifeBaseItem(cfg, id)
-	return status == proto.StatusCode_StatusCode_Ok
+	return status == proto.StatusCode_StatusCode_OK
 }
 
 func validLifeEnergy(cfg *LifeConfig, id uint32, count int64) bool {
@@ -1447,24 +1447,24 @@ func validLifeEnergy(cfg *LifeConfig, id uint32, count int64) bool {
 func stageLifeCosts(items *ItemModel, cfg *LifeConfig, costs []LifeItem) (*ItemTransaction, proto.StatusCode) {
 	for _, cost := range costs {
 		if cost.Count <= 0 {
-			return nil, proto.StatusCode_StatusCode_CfgNotFound
+			return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		}
-		if _, status := lifeBaseItem(cfg, cost.ItemID); status != proto.StatusCode_StatusCode_Ok {
+		if _, status := lifeBaseItem(cfg, cost.ItemID); status != proto.StatusCode_StatusCode_OK {
 			return nil, status
 		}
 	}
 	tx, err := items.Begin()
 	if err != nil {
-		return nil, proto.StatusCode_StatusCode_SysErr
+		return nil, proto.StatusCode_StatusCode_SYS_ERR
 	}
 	for _, cost := range costs {
 		tx.DelBaseItem(cost.ItemID, cost.Count)
 		if tx.Error != nil {
 			tx.Rollback()
-			return nil, proto.StatusCode_StatusCode_ItemNotEnough
+			return nil, proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 		}
 	}
-	return tx, proto.StatusCode_StatusCode_Ok
+	return tx, proto.StatusCode_StatusCode_OK
 }
 
 func validateLifeBalance(items *ItemModel, cfg *LifeConfig, costs, additions []LifeItem) proto.StatusCode {
@@ -1472,13 +1472,13 @@ func validateLifeBalance(items *ItemModel, cfg *LifeConfig, costs, additions []L
 	for _, list := range [][]LifeItem{costs, additions} {
 		for _, item := range list {
 			if item.Count <= 0 {
-				return proto.StatusCode_StatusCode_CfgNotFound
+				return proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
-			if _, status := lifeBaseItem(cfg, item.ItemID); status != proto.StatusCode_StatusCode_Ok {
+			if _, status := lifeBaseItem(cfg, item.ItemID); status != proto.StatusCode_StatusCode_OK {
 				return status
 			}
 			if item.Count > 0 && delta[item.ItemID] > math.MaxInt64-item.Count {
-				return proto.StatusCode_StatusCode_SysErr
+				return proto.StatusCode_StatusCode_SYS_ERR
 			}
 			delta[item.ItemID] += item.Count
 		}
@@ -1489,14 +1489,14 @@ func validateLifeBalance(items *ItemModel, cfg *LifeConfig, costs, additions []L
 			current = info.Num
 		}
 		if change > 0 && current > math.MaxInt64-change {
-			return proto.StatusCode_StatusCode_SysErr
+			return proto.StatusCode_StatusCode_SYS_ERR
 		}
 		current += change
 		if current < 0 {
-			return proto.StatusCode_StatusCode_ItemNotEnough
+			return proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 		}
 	}
-	return proto.StatusCode_StatusCode_Ok
+	return proto.StatusCode_StatusCode_OK
 }
 
 func applyLifeAdditions(items *ItemModel, cfg *LifeConfig, additions []LifeItem) {
@@ -1510,7 +1510,7 @@ func applyLifeAdditions(items *ItemModel, cfg *LifeConfig, additions []LifeItem)
 			item := cfg.Items[addition.ItemID]
 			info = &ItemBaseInfo{
 				ItemId: addition.ItemID, ItemType: proto.EBagItemTag(item.NewBagItemTag),
-				PackType: proto.PackType_PackType_Inventory,
+				PackType: proto.ItemDetail_PackType_Inventory,
 			}
 			list[addition.ItemID] = info
 		}

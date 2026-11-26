@@ -75,7 +75,7 @@ func (b *Bot) scenarioQuest(ctx context.Context) {
 		logOnce(&logLoginErrOnce, "任务烟测领奖失败:%v", err)
 		return
 	}
-	if claim.Body.(*proto.ClaimQuestRewardRsp).GetStatus() != proto.StatusCode_StatusCode_Ok {
+	if claim.Body.(*proto.ClaimQuestRewardRsp).GetStatus() != proto.StatusCode_StatusCode_OK {
 		logOnce(&logLoginErrOnce, "任务烟测领奖被拒:%v", claim.Body.(*proto.ClaimQuestRewardRsp).GetStatus())
 		return
 	}
@@ -159,7 +159,7 @@ func (b *Bot) scenarioScene(ctx context.Context) {
 					return
 				}
 				b.send(&proto.SendChatMsgReq{
-					Type:       proto.ChatChannelType_ChatChannelType_ChatChannelDefault,
+					Type:       proto.ChatChannelType_ChatChannel_Default,
 					PlayerId:   0,
 					Text:       b.username(),
 					Expression: 0,

@@ -149,8 +149,16 @@ func (g *Game) newRouter() {
 		cmd.RestaurantGameOperateReq:     g.RestaurantGameOperate,     // 餐厅经营
 		cmd.RestaurantGameEatReq:         g.RestaurantGameEat,         // 餐厅进食
 		cmd.RestaurantGameQuestRewardReq: g.RestaurantGameQuestReward, // 餐厅任务奖励
-		// Gm
-		cmd.GmCodeReq: g.GmCode, // gm code
+		// 五子棋与崩溃
+		cmd.CollapseFailReq:                 g.CollapseFail,
+		cmd.GomokuSinglePlayerRewardReq:     g.GomokuSinglePlayerReward,
+		cmd.GomokuOnlinePlayerReadyReq:      g.GomokuOnlinePlayerReady,
+		cmd.GomokuOnlinePlayerStartPlayReq:  g.GomokuOnlinePlayerStartPlay,
+		cmd.GomokuOnlinePlayerPlaceStoneReq: g.GomokuOnlinePlayerPlaceStone,
+		cmd.GomokuOnlinePlayerLeaveReq:      g.GomokuOnlinePlayerLeave,
+		cmd.GomokuOnlinePlayerWatchReq:      g.GomokuOnlinePlayerWatch,
+		cmd.GetGomokuOnlineChessboardReq:    g.GetGomokuOnlineChessboard,
+		cmd.GmCodeReq:                       g.GmCode,
 
 		cmd.PlayerVitalityReq:                   g.PlayerVitality,
 		cmd.BossRushInfoReq:                     g.BossRushInfo,

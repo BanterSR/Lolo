@@ -65,12 +65,12 @@ func configuredArmorEquipType(id uint32) (result proto.EEquipType, ok bool) {
 func tempPackErrorStatus(err error) proto.StatusCode {
 	switch {
 	case errors.Is(err, errTempPackFull):
-		return proto.StatusCode_StatusCode_TempPackIsFull
+		return proto.StatusCode_StatusCode_Temp_Pack_Is_Full
 	case errors.Is(err, errTempPackIndex), errors.Is(err, errTempPackType),
 		errors.Is(err, errTempPackOwner), errors.Is(err, errTempPackEquip):
-		return proto.StatusCode_StatusCode_BadReq
+		return proto.StatusCode_StatusCode_BAD_REQ
 	default:
-		return proto.StatusCode_StatusCode_ItemGetFail
+		return proto.StatusCode_StatusCode_Item_Get_Fail
 	}
 }
 
@@ -156,7 +156,7 @@ func tempPackSnapshot(pack *model.SceneTempPack) (*proto.TempPack, error) {
 			return nil, errTempPackItem
 		}
 		seen[item] = struct{}{}
-		item.SetPackType(proto.PackType_PackType_TempPack)
+		item.SetPackType(proto.ItemDetail_PackType_TempPack)
 		detail := item.ItemDetail()
 		main := detail.MainItem
 		main.TempPackIndex = uint32(index + 1)
@@ -208,7 +208,7 @@ func pickupTempPackItems(pack *model.SceneTempPack, dropIndex uint32, pickIndex 
 		}
 	}
 	for _, item := range selected {
-		item.SetPackType(proto.PackType_PackType_TempPack)
+		item.SetPackType(proto.ItemDetail_PackType_TempPack)
 		pack.TempPack = append(pack.TempPack, item)
 	}
 	items := make([]*proto.ItemDetail, 0, len(selected))
@@ -329,7 +329,7 @@ func commitTempPackItem(s *model.Player, item model.EBagItemTag) (model.EBagItem
 				return nil, errTempPackItem
 			}
 			existing.Num += typed.Num
-			typed.SetPackType(proto.PackType_PackType_Inventory)
+			typed.SetPackType(proto.ItemDetail_PackType_Inventory)
 			return existing, nil
 		}
 		items.GetItemBaseMap()[typed.ItemId] = typed
@@ -359,7 +359,7 @@ func commitTempPackItem(s *model.Player, item model.EBagItemTag) (model.EBagItem
 		return nil, errTempPackType
 	}
 	typed := item
-	typed.SetPackType(proto.PackType_PackType_Inventory)
+	typed.SetPackType(proto.ItemDetail_PackType_Inventory)
 	return typed, nil
 }
 
@@ -544,7 +544,7 @@ func configuredMonsterDrop(s *model.Player, pack *model.SceneTempPack, monsterID
 			return nil, errors.New("duplicate drop object")
 		}
 		seen[item] = struct{}{}
-		item.SetPackType(proto.PackType_PackType_TempStorageArea)
+		item.SetPackType(proto.ItemDetail_PackType_TempStorageArea)
 		items = append(items, item)
 	}
 	if len(items) == 0 {
@@ -578,12 +578,12 @@ func (g *Game) pickupTempPack(s *model.Player, req *proto.PickupReq) (proto.Stat
 	if len(items) > 0 {
 		g.PackNoticeByItems(s, items)
 	}
-	return proto.StatusCode_StatusCode_Ok, items
+	return proto.StatusCode_StatusCode_OK, items
 }
 
 func (g *Game) TempPackItemDrop(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.TempPackItemDropReq)
-	rsp := &proto.TempPackItemDropRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.TempPackItemDropRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	pack, err := g.currentTempPack(s)
 	if err == nil {
@@ -595,7 +595,7 @@ func (g *Game) TempPackItemDrop(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) TempPackItemStore(s *model.Player, msg *alg.GameMsg) {
-	rsp := &proto.TempPackItemStoreRsp{Status: proto.StatusCode_StatusCode_Ok, Items: make([]*proto.ItemDetail, 0)}
+	rsp := &proto.TempPackItemStoreRsp{Status: proto.StatusCode_StatusCode_OK, Items: make([]*proto.ItemDetail, 0)}
 	defer g.send(s, msg.PacketId, rsp)
 	pack, err := g.currentTempPack(s)
 	if err == nil {
@@ -611,7 +611,7 @@ func (g *Game) TempPackItemStore(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) TempPackSort(s *model.Player, msg *alg.GameMsg) {
-	rsp := &proto.TempPackSortRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.TempPackSortRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	pack, err := g.currentTempPack(s)
 	if err == nil {
@@ -624,7 +624,7 @@ func (g *Game) TempPackSort(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) TempPackWearEquip(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.TempPackWearEquipReq)
-	rsp := &proto.TempPackWearEquipRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.TempPackWearEquipRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	pack, err := g.currentTempPack(s)
 	var items []*proto.ItemDetail
@@ -637,6 +637,6 @@ func (g *Game) TempPackWearEquip(s *model.Player, msg *alg.GameMsg) {
 	}
 	if len(items) > 0 {
 		g.PackNoticeByItems(s, items)
-		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UpdateEquip, req.CharId)
+		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UPDATE_EQUIP, req.CharId)
 	}
 }

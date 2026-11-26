@@ -18,7 +18,7 @@ import (
 func (g *Game) GetPetReq(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.GetPetReq)
 	rsp := &proto.GetPetRsp{
-		Status:   proto.StatusCode_StatusCode_Ok,
+		Status:   proto.StatusCode_StatusCode_OK,
 		Pets:     make([]*proto.PetInstance, 0),
 		TotalNum: 0,
 		EndIndex: 0,
@@ -35,16 +35,16 @@ func (g *Game) GetPetReq(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) ChangePet(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ChangePetReq)
 	rsp := &proto.ChangePetRsp{
-		Status:        proto.StatusCode_StatusCode_Ok,
+		Status:        proto.StatusCode_StatusCode_OK,
 		PetInstanceId: req.PetInstanceId,
 	}
 	defer func() {
 		g.send(s, msg.PacketId, rsp)
-		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UpdataPet)
+		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UPDATA_PET)
 	}()
 	_, ok := s.GetItemModel().GetItemPetInfoMap()[req.PetInstanceId]
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_PetNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PET_NOT_FOUND
 		return
 	}
 	s.GetSceneModel().CurPetInstanceId = req.PetInstanceId
@@ -132,11 +132,11 @@ func captureAttemptKey(s *model.Player, sceneID uint32, req *proto.PetCaptureReq
 
 func validPetName(name string, maxLength int, pets map[uint32]*model.ItemPetInfo, self uint32) proto.StatusCode {
 	if !utf8.ValidString(name) || name == "" || name != strings.TrimSpace(name) || utf8.RuneCountInString(name) > maxLength {
-		return proto.StatusCode_StatusCode_IllegalLen
+		return proto.StatusCode_StatusCode_ILLEGAL_LEN
 	}
 	for _, r := range name {
 		if unicode.IsControl(r) {
-			return proto.StatusCode_StatusCode_IllegalChar
+			return proto.StatusCode_StatusCode_ILLEGAL_CHAR
 		}
 	}
 	lower := strings.ToLower(name)
@@ -145,50 +145,50 @@ func validPetName(name string, maxLength int, pets map[uint32]*model.ItemPetInfo
 		"傻逼", "操你", "fuck", "shit",
 	} {
 		if strings.Contains(lower, forbidden) {
-			return proto.StatusCode_StatusCode_BadWord
+			return proto.StatusCode_StatusCode_BAD_WORD
 		}
 	}
 	for id, pet := range pets {
 		if id != self && pet != nil && strings.EqualFold(pet.Name, name) {
-			return proto.StatusCode_StatusCode_DuplicatedName
+			return proto.StatusCode_StatusCode_DUPLICATED_NAME
 		}
 	}
-	return proto.StatusCode_StatusCode_Ok
+	return proto.StatusCode_StatusCode_OK
 }
 
 func (g *Game) PetCapture(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.PetCaptureReq)
-	rsp := &proto.PetCaptureRsp{Status: proto.StatusCode_StatusCode_Ok, Items: make([]*proto.ItemDetail, 0)}
+	rsp := &proto.PetCaptureRsp{Status: proto.StatusCode_StatusCode_OK, Items: make([]*proto.ItemDetail, 0)}
 	defer g.send(s, msg.PacketId, rsp)
 	if req.MonsterId == 0 || req.CatcherId == 0 || req.CatchAreaId == 0 || req.MaxHp == 0 || req.Hp > req.MaxHp {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	petConf, err := petConfigProvider()
 	if err != nil || petConf == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	expressionConf, err := expressionConfigProvider()
 	if err != nil || expressionConf == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	configuredPet := findPetConfigure(petConf, req.MonsterId)
 	catcher := findCatcherConfigure(expressionConf, req.CatcherId)
 	if configuredPet == nil || !configuredPet.DecisionCapture || catcher == nil || catcher.NeedItemID <= 0 || catcher.NeedItemCount <= 0 {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	sceneID := currentCoreSceneID(g, s)
 	areaID, ok := coreSceneAreaID(sceneID)
 	if sceneID == 0 || !ok || areaID != req.CatchAreaId {
-		rsp.Status = proto.StatusCode_StatusCode_SceneNotUnlock
+		rsp.Status = proto.StatusCode_StatusCode_SCENE_NOT_UNLOCK
 		return
 	}
 	area := s.GetSceneModel().GetSceneInfo(sceneID).GetAreaDatas()[req.CatchAreaId]
-	if area == nil || area.AreaState != proto.AreaState_AreaState_Unlock {
-		rsp.Status = proto.StatusCode_StatusCode_SceneNotUnlock
+	if area == nil || area.AreaState != proto.AreaData_Unlock {
+		rsp.Status = proto.StatusCode_StatusCode_SCENE_NOT_UNLOCK
 		return
 	}
 	key := captureAttemptKey(s, sceneID, req)
@@ -203,31 +203,31 @@ func (g *Game) PetCapture(s *model.Player, msg *alg.GameMsg) {
 	}
 	capacity, err := corePetCapacity()
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	if len(s.GetItemModel().GetItemPetInfoMap()) >= capacity {
-		rsp.Status = proto.StatusCode_StatusCode_PetGridFull
+		rsp.Status = proto.StatusCode_StatusCode_PET_GRID_FULL
 		return
 	}
 	catcherItem := coreItemConfigure(uint32(catcher.NeedItemID))
 	if catcherItem == nil || proto.EBagItemTag(catcherItem.NewBagItemTag) != proto.EBagItemTag_EBagItemTag_Catcher {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	petItem := coreItemConfigure(uint32(configuredPet.ID))
 	if petItem == nil || proto.EBagItemTag(petItem.NewBagItemTag) != proto.EBagItemTag_EBagItemTag_Pet {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	// Parma[0]为权威表的万分数捕获率；缺失或越界时拒绝，不回退到猜测值。
 	if len(configuredPet.Parma) == 0 || configuredPet.Parma[0] < 0 || configuredPet.Parma[0] > 10000 {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	rate := int(configuredPet.Parma[0])
 	tx, status := spendCoreItems(s, map[uint32]int64{uint32(catcher.NeedItemID): int64(catcher.NeedItemCount)})
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
@@ -241,13 +241,13 @@ func (g *Game) PetCapture(s *model.Player, msg *alg.GameMsg) {
 		ctx := coreGrantItem(s, uint32(configuredPet.ID), 1)
 		if ctx == nil || ctx.EBagItemTag == nil {
 			_ = coreGrantItem(s, uint32(catcher.NeedItemID), int64(catcher.NeedItemCount))
-			rsp.Status = proto.StatusCode_StatusCode_ItemGetFail
+			rsp.Status = proto.StatusCode_StatusCode_Item_Get_Fail
 			return
 		}
 		pet, ok := ctx.EBagItemTag.(*model.ItemPetInfo)
 		if !ok || pet == nil {
 			_ = coreGrantItem(s, uint32(catcher.NeedItemID), int64(catcher.NeedItemCount))
-			rsp.Status = proto.StatusCode_StatusCode_ItemGetFail
+			rsp.Status = proto.StatusCode_StatusCode_Item_Get_Fail
 			return
 		}
 		// AddItemPet保留旧默认值；捕获实例只写协议和权威表能确定的字段。
@@ -274,19 +274,19 @@ func (g *Game) PetCapture(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) PetRename(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.PetRenameReq)
-	rsp := &proto.PetRenameRsp{Status: proto.StatusCode_StatusCode_Ok, PetInstanceId: req.PetInstanceId}
+	rsp := &proto.PetRenameRsp{Status: proto.StatusCode_StatusCode_OK, PetInstanceId: req.PetInstanceId}
 	defer g.send(s, msg.PacketId, rsp)
 	pet := s.GetItemModel().GetItemPetInfoMap()[req.PetInstanceId]
 	if pet == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PetNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PET_NOT_FOUND
 		return
 	}
 	maxLength, err := corePetNameMaxLength()
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
-	if status := validPetName(req.Name, maxLength, s.GetItemModel().GetItemPetInfoMap(), req.PetInstanceId); status != proto.StatusCode_StatusCode_Ok {
+	if status := validPetName(req.Name, maxLength, s.GetItemModel().GetItemPetInfoMap(), req.PetInstanceId); status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
@@ -297,18 +297,18 @@ func (g *Game) PetRename(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) PetDecompose(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.PetDecomposeReq)
-	rsp := &proto.PetDecomposeRsp{Status: proto.StatusCode_StatusCode_Ok, Items: make([]*proto.ItemDetail, 0)}
+	rsp := &proto.PetDecomposeRsp{Status: proto.StatusCode_StatusCode_OK, Items: make([]*proto.ItemDetail, 0)}
 	defer func() {
 		g.send(s, msg.PacketId, rsp)
-		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UpdataPet)
+		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UPDATA_PET)
 	}()
 	if len(req.PetInstanceIds) == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	conf, err := petConfigProvider()
 	if err != nil || conf == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	petMap := s.GetItemModel().GetItemPetInfoMap()
@@ -322,12 +322,12 @@ func (g *Game) PetDecompose(s *model.Player, msg *alg.GameMsg) {
 		seen[id] = struct{}{}
 		pet := petMap[id]
 		if pet == nil {
-			rsp.Status = proto.StatusCode_StatusCode_PetNotFound
+			rsp.Status = proto.StatusCode_StatusCode_PET_NOT_FOUND
 			return
 		}
 		petConf := findPetConfigureByID(conf, pet.ItemId)
 		if petConf == nil || len(petConf.ReleaseReward) == 0 {
-			rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return
 		}
 		ids = append(ids, id)
@@ -345,18 +345,18 @@ func (g *Game) PetDecompose(s *model.Player, msg *alg.GameMsg) {
 		for _, rewardID := range configuredPets[id].ReleaseReward {
 			group := rewardGroups[rewardID]
 			if group == nil || len(group.ReleaseRewardItem) == 0 {
-				rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+				rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 				return
 			}
 			choice := group.ReleaseRewardItem[coreRollIntN(len(group.ReleaseRewardItem))]
 			if choice == nil || choice.ReleaseRewardID <= 0 || choice.ReleaseRewardCount <= 0 {
-				rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+				rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 				return
 			}
 			itemID := uint32(choice.ReleaseRewardID)
 			count := int64(choice.ReleaseRewardCount)
 			if count > maxCoreInt64-rewards[itemID] {
-				rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+				rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 				return
 			}
 			rewards[itemID] += count
@@ -373,7 +373,7 @@ func (g *Game) PetDecompose(s *model.Player, msg *alg.GameMsg) {
 		}
 	}
 	items, status := grantCoreRewards(s, rewards)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		if unloaded {
 			s.GetSceneModel().CurPetInstanceId = carried
 		}

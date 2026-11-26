@@ -13,7 +13,7 @@ import (
 
 func (g *Game) ChatUnLockExpressionNotice(s *model.Player) {
 	notice := &proto.ChatUnLockExpressionNotice{
-		Status:       proto.StatusCode_StatusCode_Ok,
+		Status:       proto.StatusCode_StatusCode_OK,
 		ExpressionId: s.GetChatModel().GetUnLockExpression(),
 	}
 	defer g.send(s, 0, notice)
@@ -21,38 +21,28 @@ func (g *Game) ChatUnLockExpressionNotice(s *model.Player) {
 
 func (g *Game) PrivateChatOfflineNotice(s *model.Player) {
 	notice := &proto.PrivateChatOfflineNotice{
-		Status:     proto.StatusCode_StatusCode_Ok,
+		Status:     proto.StatusCode_StatusCode_OK,
 		OfflineMsg: make([]*proto.PrivateChatOffline, 0),
 	}
 	defer g.send(s, 0, notice)
 	privates, err := db.GetAllChatPrivate(s.UserId)
 	if err != nil {
-		notice.Status = proto.StatusCode_StatusCode_ChatChannelNotExist
+		notice.Status = proto.StatusCode_StatusCode_CHAT_CHANNEL_NOT_EXIST
 		log.Game.Warnf("UserID:%v func db.GetAllChatPrivate err:%v", s.UserId, err)
 		return
 	}
 	for _, private := range privates {
 		alg.AddList(&notice.OfflineMsg, s.GetPrivateChatOffline(private))
 	}
-	// 添加bot
-	g.botCache.Range(func(_ uint32, bot BotInterface) bool {
-		alg.AddList(&notice.OfflineMsg, bot.GetBotInfo().GetPrivateChatOffline())
-		return true
-	})
 }
 
 func (g *Game) PrivateChatMsgRecord(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.PrivateChatMsgRecordReq)
 	rsp := &proto.PrivateChatMsgRecordRsp{
-		Status:    proto.StatusCode_StatusCode_Ok,
+		Status:    proto.StatusCode_StatusCode_OK,
 		MsgRecord: make([]*proto.ChatMsgData, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
-	// bot判断
-	if bot, ok := g.botCache.Get(req.TargetPlayerId); ok {
-		rsp.MsgRecord = bot.GetBotInfo().MsgRecords(s, bot.GetMsgRecords(s.UserId))
-		return
-	}
 	// 历史只按会话双方鉴权，删除好友或拉黑后仍保留可查询的历史。
 	privateMsgs, err := db.GetAllChatPrivateMsg(s.UserId, req.TargetPlayerId)
 	if err != nil {
@@ -68,7 +58,7 @@ func (g *Game) PrivateChatMsgRecord(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) ChangeChatChannel(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ChangeChatChannelReq)
 	rsp := &proto.ChangeChatChannelRsp{
-		Status:    proto.StatusCode_StatusCode_Ok,
+		Status:    proto.StatusCode_StatusCode_OK,
 		ChannelId: req.ChannelId,
 	}
 	defer g.send(s, msg.PacketId, rsp)
@@ -78,7 +68,7 @@ func (g *Game) ChangeChatChannel(s *model.Player, msg *alg.GameMsg) {
 	}
 	channel := g.getChatInfo().getChatChannel(req.ChannelId)
 	if channel == nil {
-		rsp.Status = proto.StatusCode_StatusCode_ChatChannelNotExist
+		rsp.Status = proto.StatusCode_StatusCode_CHAT_CHANNEL_NOT_EXIST
 		log.Game.Errorf("UserId:%v ChatChannel:%v 聊天房间不存在chatChannel.channel", s.UserId, req.ChannelId)
 		return
 	}
@@ -86,17 +76,12 @@ func (g *Game) ChangeChatChannel(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) SendChatMsg(s *model.Player, msg *alg.GameMsg) {
-	var isBot bool
 	req := msg.Body.(*proto.SendChatMsgReq)
 	rsp := &proto.SendChatMsgRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Text:   req.Text,
 	}
-	defer func() {
-		if !isBot {
-			g.send(s, msg.PacketId, rsp)
-		}
-	}()
+	defer g.send(s, msg.PacketId, rsp)
 	chatMsg := &db.OFChatMsg{
 		SendTime:   time.Now().UnixMilli(),
 		Text:       req.Text,
@@ -104,32 +89,21 @@ func (g *Game) SendChatMsg(s *model.Player, msg *alg.GameMsg) {
 	}
 	chatMsgData := model.GetUserChatMsgData(chatMsg, s.UserId)
 	switch req.Type {
-	case proto.ChatChannelType_ChatChannelType_ChatChannelDefault: // 默认消息是房间消息
+	case proto.ChatChannelType_ChatChannel_Default: // 默认消息是房间消息
 		scenePlayer := g.getWordInfo().getScenePlayer(s)
 		if scenePlayer != nil &&
 			scenePlayer.channelInfo != nil &&
 			scenePlayer.channelInfo.chatChannel != nil {
 			scenePlayer.channelInfo.chatChannel.allSendMsgChan <- chatMsgData
 		}
-	case proto.ChatChannelType_ChatChannelType_ChatChannelChatRoom: // 聊天房间
+	case proto.ChatChannelType_ChatChannel_ChatRoom: // 聊天房间
 		chatChannel := g.getChatInfo().getChannelUser(s)
 		if chatChannel.channel == nil {
 			log.Game.Warnf("User:%v 玩家没加入聊天房间", s.UserId)
 			return
 		}
 		chatChannel.channel.allSendMsgChan <- chatMsgData
-	case proto.ChatChannelType_ChatChannelType_ChatChannelPrivate: // 私聊
-		// bot判断
-		bot, ok := g.botCache.Get(req.PlayerId)
-		if ok {
-			if req.Text == "" {
-				return
-			}
-			isBot = true
-			g.send(s, msg.PacketId, rsp)
-			bot.Handle(s, req.Text)
-			return
-		}
+	case proto.ChatChannelType_ChatChannel_Private: // 私聊
 		// 黑名单、双向好友、消息写入和接收者未读更新由数据库在一个事务内完成。
 		privateMsg := &db.OFChatPrivateMsg{
 			UserId:    s.UserId,
@@ -150,18 +124,18 @@ func (g *Game) SendChatMsg(s *model.Player, msg *alg.GameMsg) {
 func privateChatErrorStatus(err error) proto.StatusCode {
 	switch {
 	case errors.Is(err, db.ErrPrivateChatBlocked):
-		return proto.StatusCode_StatusCode_FriendBlack
+		return proto.StatusCode_StatusCode_FRIEND_BLACK
 	case errors.Is(err, db.ErrPrivateChatNotAllowed), errors.Is(err, db.ErrInvalidSocialTarget):
-		return proto.StatusCode_StatusCode_FriendNotExist
+		return proto.StatusCode_StatusCode_FRIEND_NOT_EXIST
 	default:
-		return proto.StatusCode_StatusCode_ChatChannelNotExist
+		return proto.StatusCode_StatusCode_CHAT_CHANNEL_NOT_EXIST
 	}
 }
 
 // 历史消息同步通知
 func (g *Game) ChatMsgRecordInitNotice(s *model.Player, msgs []*proto.ChatMsgData, t proto.ChatChannelType) {
 	notice := &proto.ChatMsgRecordInitNotice{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Type:   t,
 		Msg:    msgs,
 	}
@@ -171,8 +145,8 @@ func (g *Game) ChatMsgRecordInitNotice(s *model.Player, msgs []*proto.ChatMsgDat
 // 实时消息通知
 func (g *Game) ChatPrivateMsgNotice(s *model.Player, msg *proto.ChatMsgData) {
 	notice := &proto.ChatMsgNotice{
-		Status: proto.StatusCode_StatusCode_Ok,
-		Type:   proto.ChatChannelType_ChatChannelType_ChatChannelPrivate,
+		Status: proto.StatusCode_StatusCode_OK,
+		Type:   proto.ChatChannelType_ChatChannel_Private,
 		Msg:    msg,
 	}
 	g.send(s, 0, notice)

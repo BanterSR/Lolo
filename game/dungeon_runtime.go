@@ -383,75 +383,75 @@ func dungeonServerDay(t time.Time) int64 {
 
 func (d *dungeonService) config(id uint32) (*dungeonConfig, proto.StatusCode) {
 	if d.loadConfig == nil {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	cfg, err := d.loadConfig(id)
 	if err != nil || cfg == nil || cfg.ID != id {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
-	return cfg, proto.StatusCode_StatusCode_Ok
+	return cfg, proto.StatusCode_StatusCode_OK
 }
 
 func (d *dungeonService) rewards(id uint32) ([]dungeonReward, proto.StatusCode) {
 	if d.loadReward == nil {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	rewards, err := d.loadReward(id)
 	if err != nil {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
-	return rewards, proto.StatusCode_StatusCode_Ok
+	return rewards, proto.StatusCode_StatusCode_OK
 }
 
 func (d *dungeonService) validateConfigRewards(cfg *dungeonConfig) proto.StatusCode {
 	clearRewards, status := d.rewards(cfg.RewardID)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return status
 	}
 	starRewards, status := d.rewards(cfg.StarRewardID)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return status
 	}
 	for _, rewards := range [][]dungeonReward{clearRewards, starRewards} {
 		if !d.rewardItemsValid(nil, rewards) {
-			return proto.StatusCode_StatusCode_CfgNotFound
+			return proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		}
 	}
 	for _, monster := range cfg.Monsters {
 		rewards, status := d.rewards(monster.RewardPoolID)
-		if status != proto.StatusCode_StatusCode_Ok {
+		if status != proto.StatusCode_StatusCode_OK {
 			return status
 		}
 		if !d.rewardItemsValid(nil, rewards) {
-			return proto.StatusCode_StatusCode_CfgNotFound
+			return proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		}
 	}
 	// Treasure rows include collection/riddle/game boxes whose rewards are not
 	// RewardPool references. Validate each box authoritatively when it is opened
 	// instead of rejecting the whole dungeon or fabricating loot for those rows.
-	return proto.StatusCode_StatusCode_Ok
+	return proto.StatusCode_StatusCode_OK
 }
 
 func (d *dungeonService) enterDungeon(s *model.Player, active *model.SceneDungeon, dungeonID uint32, team model.TeamInfo) (*model.DungeonRuntime, proto.StatusCode) {
 	if s == nil {
-		return nil, proto.StatusCode_StatusCode_PlayerNotFound
+		return nil, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
 	if active != nil {
-		return nil, proto.StatusCode_StatusCode_ExploreInProgress
+		return nil, proto.StatusCode_StatusCode_EXPLORE_IN_PROGRESS
 	}
 	cfg, status := d.config(dungeonID)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return nil, status
 	}
-	if status := d.validateConfigRewards(cfg); status != proto.StatusCode_StatusCode_Ok {
+	if status := d.validateConfigRewards(cfg); status != proto.StatusCode_StatusCode_OK {
 		return nil, status
 	}
 	level, ok := d.playerLevel(s)
 	if !ok {
-		return nil, proto.StatusCode_StatusCode_PlayerNotFound
+		return nil, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
 	if level < cfg.NeedPlayerLevel {
-		return nil, proto.StatusCode_StatusCode_PlayerLevelLimit
+		return nil, proto.StatusCode_StatusCode_PLAYER_LEVEL_LIMIT
 	}
 	if len(cfg.OpenWeekdays) > 0 {
 		weekday := int32(d.now().Weekday())
@@ -464,7 +464,7 @@ func (d *dungeonService) enterDungeon(s *model.Player, active *model.SceneDungeo
 			}
 		}
 		if !open {
-			return nil, proto.StatusCode_StatusCode_ActivityClose
+			return nil, proto.StatusCode_StatusCode_Activity_Close
 		}
 	}
 	characters := []uint32{team.Char1, team.Char2, team.Char3}
@@ -509,10 +509,10 @@ func (d *dungeonService) enterDungeon(s *model.Player, active *model.SceneDungeo
 	now := d.now()
 	day := dungeonServerDay(now)
 	if cfg.DailyLimit > 0 && info.LastEnterDay == day && info.DailyEnterCount >= cfg.DailyLimit {
-		return nil, proto.StatusCode_StatusCode_ExploreNumLimit
+		return nil, proto.StatusCode_StatusCode_EXPLORE_NUM_LIMIT
 	}
 	if info.EnterTimes == math.MaxUint32 || (info.LastEnterDay == day && info.DailyEnterCount == math.MaxUint32) {
-		return nil, proto.StatusCode_StatusCode_SysErr
+		return nil, proto.StatusCode_StatusCode_SYS_ERR
 	}
 	monsters := make(map[uint32]model.DungeonMonsterRuntime, len(cfg.Monsters))
 	for index, monster := range cfg.Monsters {
@@ -544,7 +544,7 @@ func (d *dungeonService) enterDungeon(s *model.Player, active *model.SceneDungeo
 	info.LastEnterTime = now.Unix()
 	info.LastRunToken = runtime.Token
 	info.ResetTreasureBoxes()
-	return runtime, proto.StatusCode_StatusCode_Ok
+	return runtime, proto.StatusCode_StatusCode_OK
 }
 
 func validDungeonRuntime(s *model.Player, sd *model.SceneDungeon) (*model.DungeonRuntime, proto.StatusCode) {
@@ -556,73 +556,73 @@ func validDungeonRuntime(s *model.Player, sd *model.SceneDungeon) (*model.Dungeo
 		sd.Runtime.State > model.DungeonRuntimeClaimed {
 		return nil, proto.StatusCode_StatusCode_PlayerNotInDungeon
 	}
-	return sd.Runtime, proto.StatusCode_StatusCode_Ok
+	return sd.Runtime, proto.StatusCode_StatusCode_OK
 }
 
 func (g *Game) getAuthorityDungeonScene(s *model.Player) (*model.SceneDungeon, proto.StatusCode) {
 	if g == nil || s == nil {
-		return nil, proto.StatusCode_StatusCode_PlayerNotInChannel
+		return nil, proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
 	}
 	scenePlayer := g.getWordInfo().getScenePlayer(s)
 	if scenePlayer == nil {
-		return nil, proto.StatusCode_StatusCode_PlayerNotInChannel
+		return nil, proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
 	}
 	sd, ok := scenePlayer.CurScene.(*model.SceneDungeon)
 	if !ok {
 		return nil, proto.StatusCode_StatusCode_PlayerNotInDungeon
 	}
-	if _, status := validDungeonRuntime(s, sd); status != proto.StatusCode_StatusCode_Ok {
+	if _, status := validDungeonRuntime(s, sd); status != proto.StatusCode_StatusCode_OK {
 		return nil, status
 	}
-	return sd, proto.StatusCode_StatusCode_Ok
+	return sd, proto.StatusCode_StatusCode_OK
 }
 
 func (d *dungeonService) start(s *model.Player, sd *model.SceneDungeon) proto.StatusCode {
 	runtime, status := validDungeonRuntime(s, sd)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return status
 	}
 	if runtime.State != model.DungeonRuntimeEntered {
-		return proto.StatusCode_StatusCode_BadReq
+		return proto.StatusCode_StatusCode_BAD_REQ
 	}
 	cfg, status := d.config(runtime.DungeonID)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return status
 	}
-	if status := d.validateConfigRewards(cfg); status != proto.StatusCode_StatusCode_Ok {
+	if status := d.validateConfigRewards(cfg); status != proto.StatusCode_StatusCode_OK {
 		return status
 	}
 	now := d.now()
 	runtime.StartedAt = now.Unix()
 	runtime.State = model.DungeonRuntimeRunning
 	sd.Info.LastEnterTime = runtime.StartedAt
-	return proto.StatusCode_StatusCode_Ok
+	return proto.StatusCode_StatusCode_OK
 }
 
 func (d *dungeonService) end(s *model.Player, sd *model.SceneDungeon) proto.StatusCode {
 	runtime, status := validDungeonRuntime(s, sd)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return status
 	}
 	if runtime.State != model.DungeonRuntimeRunning {
 		return proto.StatusCode_StatusCode_ChallengeNotStart
 	}
 	cfg, status := d.config(runtime.DungeonID)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return status
 	}
 	now := d.now()
 	elapsed := now.Unix() - runtime.StartedAt
 	if elapsed < 0 {
-		return proto.StatusCode_StatusCode_BadReq
+		return proto.StatusCode_StatusCode_BAD_REQ
 	}
 	if cfg.FightTime > 0 && elapsed > cfg.FightTime {
-		return proto.StatusCode_StatusCode_ExploreNotFinish
+		return proto.StatusCode_StatusCode_EXPLORE_NOT_FINISH
 	}
 	runtime.EndedAt = now.Unix()
 	runtime.Stars = dungeonStars(cfg, elapsed)
 	runtime.State = model.DungeonRuntimeFinished
-	return proto.StatusCode_StatusCode_Ok
+	return proto.StatusCode_StatusCode_OK
 }
 
 func dungeonStars(cfg *dungeonConfig, elapsed int64) uint32 {
@@ -650,7 +650,7 @@ func (d *dungeonService) allMonstersDead(runtime *model.DungeonRuntime) bool {
 
 func (d *dungeonService) monsterDead(s *model.Player, sd *model.SceneDungeon, monsterID, monsterIndex uint32) (*model.DropItem, proto.StatusCode) {
 	runtime, status := validDungeonRuntime(s, sd)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return nil, status
 	}
 	if runtime.State != model.DungeonRuntimeRunning {
@@ -673,21 +673,21 @@ func (d *dungeonService) monsterDead(s *model.Player, sd *model.SceneDungeon, mo
 		return nil, proto.StatusCode_StatusCode_DungeonCheat
 	}
 	rewards, status := d.rewards(monster.RewardPoolID)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return nil, status
 	}
 	if !d.rewardItemsValid(nil, rewards) {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	if !d.rewardItemsValid(s, rewards) {
-		return nil, proto.StatusCode_StatusCode_ItemNotEnough
+		return nil, proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 	}
 	runtime.DeadMonsters[monsterKey] = true
 	if runtime.MonstersByIndex {
-		runtime.Encounters[monsterKey] = proto.BattleState_BattleState_Finish
+		runtime.Encounters[monsterKey] = proto.BattleState_Finish
 	}
 	if len(rewards) == 0 {
-		return nil, proto.StatusCode_StatusCode_Ok
+		return nil, proto.StatusCode_StatusCode_OK
 	}
 	items := make([]model.EBagItemTag, 0, len(rewards))
 	for _, reward := range rewards {
@@ -696,7 +696,7 @@ func (d *dungeonService) monsterDead(s *model.Player, sd *model.SceneDungeon, mo
 			ItemId:   reward.ItemID,
 			Num:      count,
 			ItemType: reward.ItemType,
-			PackType: proto.PackType_PackType_TempStorageArea,
+			PackType: proto.ItemDetail_PackType_TempStorageArea,
 		})
 	}
 	drop := sd.GetTempPack().NewDrop(items)
@@ -705,39 +705,39 @@ func (d *dungeonService) monsterDead(s *model.Player, sd *model.SceneDungeon, mo
 		if runtime.MonstersByIndex {
 			delete(runtime.Encounters, monsterKey)
 		}
-		return nil, proto.StatusCode_StatusCode_SysErr
+		return nil, proto.StatusCode_StatusCode_SYS_ERR
 	}
 	runtime.Drops[drop.Index] = drop
-	return drop, proto.StatusCode_StatusCode_Ok
+	return drop, proto.StatusCode_StatusCode_OK
 }
 
 func (d *dungeonService) encounterState(s *model.Player, sd *model.SceneDungeon, encounterID uint32) (proto.BattleState, proto.StatusCode) {
 	runtime, status := validDungeonRuntime(s, sd)
-	if status != proto.StatusCode_StatusCode_Ok {
-		return proto.BattleState_BattleState_Start, status
+	if status != proto.StatusCode_StatusCode_OK {
+		return proto.BattleState_Start, status
 	}
 	if runtime.State != model.DungeonRuntimeEntered && runtime.State != model.DungeonRuntimeRunning &&
 		runtime.State != model.DungeonRuntimeFinished && runtime.State != model.DungeonRuntimeClaimed {
-		return proto.BattleState_BattleState_Start, proto.StatusCode_StatusCode_ChallengeNotStart
+		return proto.BattleState_Start, proto.StatusCode_StatusCode_ChallengeNotStart
 	}
 	if !runtime.MonstersByIndex {
-		return proto.BattleState_BattleState_Start, proto.StatusCode_StatusCode_DungeonCheat
+		return proto.BattleState_Start, proto.StatusCode_StatusCode_DungeonCheat
 	}
 	if _, ok := runtime.Monsters[encounterID]; !ok {
-		return proto.BattleState_BattleState_Start, proto.StatusCode_StatusCode_DungeonCheat
+		return proto.BattleState_Start, proto.StatusCode_StatusCode_DungeonCheat
 	}
 	if runtime.DeadMonsters[encounterID] {
-		return proto.BattleState_BattleState_Finish, proto.StatusCode_StatusCode_Ok
+		return proto.BattleState_Finish, proto.StatusCode_StatusCode_OK
 	}
 	if state, ok := runtime.Encounters[encounterID]; ok {
-		return state, proto.StatusCode_StatusCode_Ok
+		return state, proto.StatusCode_StatusCode_OK
 	}
-	return proto.BattleState_BattleState_Start, proto.StatusCode_StatusCode_Ok
+	return proto.BattleState_Start, proto.StatusCode_StatusCode_OK
 }
 
 func (d *dungeonService) updateEncounter(s *model.Player, sd *model.SceneDungeon, encounterID uint32, state proto.BattleState) proto.StatusCode {
 	runtime, status := validDungeonRuntime(s, sd)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return status
 	}
 	if runtime.State != model.DungeonRuntimeRunning {
@@ -749,18 +749,18 @@ func (d *dungeonService) updateEncounter(s *model.Player, sd *model.SceneDungeon
 	if _, ok := runtime.Monsters[encounterID]; !ok {
 		return proto.StatusCode_StatusCode_DungeonCheat
 	}
-	if state != proto.BattleState_BattleState_Start && state != proto.BattleState_BattleState_Reset &&
-		state != proto.BattleState_BattleState_Finish {
+	if state != proto.BattleState_Start && state != proto.BattleState_Reset &&
+		state != proto.BattleState_Finish {
 		return proto.StatusCode_StatusCode_DungeonCheat
 	}
-	if runtime.DeadMonsters[encounterID] && state != proto.BattleState_BattleState_Finish {
+	if runtime.DeadMonsters[encounterID] && state != proto.BattleState_Finish {
 		return proto.StatusCode_StatusCode_DungeonCheat
 	}
-	if state == proto.BattleState_BattleState_Finish && !runtime.DeadMonsters[encounterID] {
+	if state == proto.BattleState_Finish && !runtime.DeadMonsters[encounterID] {
 		return proto.StatusCode_StatusCode_DungeonCheat
 	}
 	runtime.Encounters[encounterID] = state
-	return proto.StatusCode_StatusCode_Ok
+	return proto.StatusCode_StatusCode_OK
 }
 
 type dungeonInventorySnapshot struct {
@@ -791,7 +791,7 @@ func (s dungeonInventorySnapshot) restore() {
 
 func (d *dungeonService) grantRewards(s *model.Player, rewards []dungeonReward) ([]*proto.ItemDetail, proto.StatusCode) {
 	if d.addReward == nil {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	snapshot := snapshotDungeonInventory(s)
 	items := make([]*proto.ItemDetail, 0, len(rewards))
@@ -799,45 +799,45 @@ func (d *dungeonService) grantRewards(s *model.Player, rewards []dungeonReward) 
 		item := d.addReward(s, reward)
 		if item == nil {
 			snapshot.restore()
-			return nil, proto.StatusCode_StatusCode_CfgNotFound
+			return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		}
 		items = append(items, item)
 	}
-	return items, proto.StatusCode_StatusCode_Ok
+	return items, proto.StatusCode_StatusCode_OK
 }
 
 func (d *dungeonService) finish(s *model.Player, sd *model.SceneDungeon) ([]*proto.ItemDetail, proto.StatusCode) {
 	runtime, status := validDungeonRuntime(s, sd)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return nil, status
 	}
 	if runtime.State == model.DungeonRuntimeClaimed {
-		return nil, proto.StatusCode_StatusCode_RepeatGetReward
+		return nil, proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 	}
 	if runtime.State != model.DungeonRuntimeFinished {
 		return nil, proto.StatusCode_StatusCode_ChallengeNotEnd
 	}
 	cfg, status := d.config(runtime.DungeonID)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return nil, status
 	}
 	if !d.allMonstersDead(runtime) {
-		return nil, proto.StatusCode_StatusCode_ExploreNotFinish
+		return nil, proto.StatusCode_StatusCode_EXPLORE_NOT_FINISH
 	}
 	clearRewards, status := d.rewards(cfg.RewardID)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return nil, status
 	}
 	starRewards, status := d.rewards(cfg.StarRewardID)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return nil, status
 	}
 	info := sd.Info
 	if info.LastRunToken != runtime.Token || info.RewardClaimedToken == runtime.Token {
-		return nil, proto.StatusCode_StatusCode_RepeatGetReward
+		return nil, proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 	}
 	if info.FinishTimes == math.MaxUint32 {
-		return nil, proto.StatusCode_StatusCode_SysErr
+		return nil, proto.StatusCode_StatusCode_SYS_ERR
 	}
 	grantNewStarReward := cfg.StarRewardID != 0 && runtime.Stars > 0 && info.StarRewardClaimed&starMask(runtime.Stars) != starMask(runtime.Stars)
 	grantedRewards := append([]dungeonReward(nil), clearRewards...)
@@ -845,10 +845,10 @@ func (d *dungeonService) finish(s *model.Player, sd *model.SceneDungeon) ([]*pro
 		grantedRewards = append(grantedRewards, starRewards...)
 	}
 	if !d.rewardItemsValid(nil, grantedRewards) {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	if !d.rewardItemsValid(s, grantedRewards) {
-		return nil, proto.StatusCode_StatusCode_ItemNotEnough
+		return nil, proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 	}
 
 	// Grant and persist in one logical settlement. Persisting the claim before
@@ -856,7 +856,7 @@ func (d *dungeonService) finish(s *model.Player, sd *model.SceneDungeon) ([]*pro
 	// those operations; saving after both lets a failed save retry safely.
 	inventory := snapshotDungeonInventory(s)
 	items, status := d.grantRewards(s, grantedRewards)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		inventory.restore()
 		return nil, status
 	}
@@ -875,11 +875,11 @@ func (d *dungeonService) finish(s *model.Player, sd *model.SceneDungeon) ([]*pro
 		if err := d.save(s); err != nil {
 			*info = previous
 			inventory.restore()
-			return nil, proto.StatusCode_StatusCode_PlayerNotFound
+			return nil, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		}
 	}
 	runtime.State = model.DungeonRuntimeClaimed
-	return items, proto.StatusCode_StatusCode_Ok
+	return items, proto.StatusCode_StatusCode_OK
 }
 
 func starMask(stars uint32) uint32 {
@@ -912,18 +912,18 @@ func clearDungeonRuntime(sd *model.SceneDungeon) {
 }
 
 func (d *dungeonService) exit(s *model.Player, sd *model.SceneDungeon) proto.StatusCode {
-	if _, status := validDungeonRuntime(s, sd); status != proto.StatusCode_StatusCode_Ok {
+	if _, status := validDungeonRuntime(s, sd); status != proto.StatusCode_StatusCode_OK {
 		return status
 	}
 	d.abandon(s, sd)
-	return proto.StatusCode_StatusCode_Ok
+	return proto.StatusCode_StatusCode_OK
 }
 
 func (d *dungeonService) abandon(s *model.Player, sd *model.SceneDungeon) {
 	if sd == nil {
 		return
 	}
-	if _, status := validDungeonRuntime(s, sd); status == proto.StatusCode_StatusCode_Ok && sd.Info.ExitTimes < math.MaxUint32 {
+	if _, status := validDungeonRuntime(s, sd); status == proto.StatusCode_StatusCode_OK && sd.Info.ExitTimes < math.MaxUint32 {
 		sd.Info.ExitTimes++
 	}
 	clearDungeonRuntime(sd)
@@ -946,14 +946,14 @@ func (g *Game) cleanupDungeonPlayer(s *model.Player) {
 
 func (d *dungeonService) pickup(s *model.Player, sd *model.SceneDungeon, dropIndex uint32, pickIndex int32) ([]*proto.ItemDetail, proto.StatusCode) {
 	runtime, status := validDungeonRuntime(s, sd)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return nil, status
 	}
 	if runtime.State == model.DungeonRuntimeEntered {
 		return nil, proto.StatusCode_StatusCode_ChallengeNotStart
 	}
 	if runtime.Drops[dropIndex] == nil || runtime.Drops[dropIndex] != sd.GetTempPack().GetTempAreaPack(dropIndex) {
-		return nil, proto.StatusCode_StatusCode_GachaAlreadyFullPick
+		return nil, proto.StatusCode_StatusCode_GACHA_ALREADY_FULL_PICK
 	}
 	return d.pickupDrop(s, sd, dropIndex, pickIndex)
 }
@@ -962,7 +962,7 @@ func (d *dungeonService) pickupDrop(s *model.Player, sd *model.SceneDungeon, dro
 	pack := sd.GetTempPack()
 	drop := pack.GetTempAreaPack(dropIndex)
 	if pack == nil || drop == nil || len(drop.Items) == 0 {
-		return nil, proto.StatusCode_StatusCode_GachaAlreadyFullPick
+		return nil, proto.StatusCode_StatusCode_GACHA_ALREADY_FULL_PICK
 	}
 	originalItems := append([]model.EBagItemTag(nil), drop.Items...)
 	restoreDrop := func() {
@@ -972,18 +972,18 @@ func (d *dungeonService) pickupDrop(s *model.Player, sd *model.SceneDungeon, dro
 	picked := pack.Pickup(dropIndex, pickIndex)
 	if len(picked) == 0 {
 		restoreDrop()
-		return nil, proto.StatusCode_StatusCode_GachaAlreadyFullPick
+		return nil, proto.StatusCode_StatusCode_GACHA_ALREADY_FULL_PICK
 	}
 	rewards := make([]dungeonReward, 0, len(picked))
 	for _, detail := range picked {
 		if detail == nil || detail.MainItem == nil || detail.MainItem.ItemId == 0 {
 			restoreDrop()
-			return nil, proto.StatusCode_StatusCode_CfgNotFound
+			return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		}
 		base := detail.MainItem.GetBaseItem()
 		if base == nil || base.ItemId != detail.MainItem.ItemId || base.Num <= 0 {
 			restoreDrop()
-			return nil, proto.StatusCode_StatusCode_CfgNotFound
+			return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		}
 		rewards = append(rewards, dungeonReward{
 			ItemID:   detail.MainItem.ItemId,
@@ -994,57 +994,57 @@ func (d *dungeonService) pickupDrop(s *model.Player, sd *model.SceneDungeon, dro
 	}
 	if !d.rewardItemsValid(nil, rewards) {
 		restoreDrop()
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	if !d.rewardItemsValid(s, rewards) {
 		restoreDrop()
-		return nil, proto.StatusCode_StatusCode_ItemNotEnough
+		return nil, proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 	}
 	items, status := d.grantRewards(s, rewards)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		restoreDrop()
 		return nil, status
 	}
-	return items, proto.StatusCode_StatusCode_Ok
+	return items, proto.StatusCode_StatusCode_OK
 }
 
 func (d *dungeonService) openTreasure(s *model.Player, sd *model.SceneDungeon, index uint32) ([]*proto.ItemDetail, proto.StatusCode) {
 	runtime, status := validDungeonRuntime(s, sd)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return nil, status
 	}
 	if runtime.State != model.DungeonRuntimeRunning {
 		return nil, proto.StatusCode_StatusCode_ChallengeNotStart
 	}
 	cfg, status := d.config(runtime.DungeonID)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return nil, status
 	}
 	box := sd.Info.GetTreasureBoxes()[index]
 	if box == nil || box.Index != index || cfg.Treasures[index] != box.BoxId {
-		return nil, proto.StatusCode_StatusCode_TreasureBoxNotExist
+		return nil, proto.StatusCode_StatusCode_TREASURE_BOX_NOT_EXIST
 	}
 	if treasure := runtime.Treasures[index]; treasure != nil {
 		if treasure.Picked {
 			return nil, proto.StatusCode_StatusCode_AlreadyGotReward
 		}
 		if treasure.Drop == nil {
-			return nil, proto.StatusCode_StatusCode_TreasureBoxNotExist
+			return nil, proto.StatusCode_StatusCode_TREASURE_BOX_NOT_EXIST
 		}
-		return treasure.Drop.PbDropItem().Items, proto.StatusCode_StatusCode_Ok
+		return treasure.Drop.PbDropItem().Items, proto.StatusCode_StatusCode_OK
 	}
 	if box.State != proto.TreasureBoxState_TreasureBoxState_Close {
-		return nil, proto.StatusCode_StatusCode_BadReq
+		return nil, proto.StatusCode_StatusCode_BAD_REQ
 	}
 	rewards, err := d.loadTreasureReward(box.BoxId)
 	if err != nil || len(rewards) == 0 {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	if !d.rewardItemsValid(nil, rewards) {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	if !d.rewardItemsValid(s, rewards) {
-		return nil, proto.StatusCode_StatusCode_ItemNotEnough
+		return nil, proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 	}
 	items := make([]model.EBagItemTag, 0, len(rewards))
 	for _, reward := range rewards {
@@ -1052,21 +1052,21 @@ func (d *dungeonService) openTreasure(s *model.Player, sd *model.SceneDungeon, i
 			ItemId:   reward.ItemID,
 			Num:      reward.Count(),
 			ItemType: reward.ItemType,
-			PackType: proto.PackType_PackType_TempStorageArea,
+			PackType: proto.ItemDetail_PackType_TempStorageArea,
 		})
 	}
 	drop := sd.GetTempPack().NewDrop(items)
 	if drop == nil {
-		return nil, proto.StatusCode_StatusCode_SysErr
+		return nil, proto.StatusCode_StatusCode_SYS_ERR
 	}
 	box.State = proto.TreasureBoxState_TreasureBoxState_Open
 	runtime.Treasures[index] = &model.DungeonTreasureRuntime{Drop: drop}
-	return drop.PbDropItem().Items, proto.StatusCode_StatusCode_Ok
+	return drop.PbDropItem().Items, proto.StatusCode_StatusCode_OK
 }
 
 func (d *dungeonService) pickupTreasure(s *model.Player, sd *model.SceneDungeon, index uint32, pickIndex int32) ([]*proto.ItemDetail, proto.StatusCode) {
 	runtime, status := validDungeonRuntime(s, sd)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return nil, status
 	}
 	if runtime.State == model.DungeonRuntimeEntered {
@@ -1074,18 +1074,18 @@ func (d *dungeonService) pickupTreasure(s *model.Player, sd *model.SceneDungeon,
 	}
 	treasure := runtime.Treasures[index]
 	if treasure == nil || treasure.Drop == nil {
-		return nil, proto.StatusCode_StatusCode_TreasureBoxNotExist
+		return nil, proto.StatusCode_StatusCode_TREASURE_BOX_NOT_EXIST
 	}
 	if treasure.Picked {
 		return nil, proto.StatusCode_StatusCode_AlreadyGotReward
 	}
 	if treasure.Drop != sd.GetTempPack().GetTempAreaPack(treasure.Drop.Index) {
-		return nil, proto.StatusCode_StatusCode_TreasureBoxNotExist
+		return nil, proto.StatusCode_StatusCode_TREASURE_BOX_NOT_EXIST
 	}
 	items, status := d.pickupDrop(s, sd, treasure.Drop.Index, pickIndex)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return nil, status
 	}
 	treasure.Picked = len(treasure.Drop.Items) == 0
-	return items, proto.StatusCode_StatusCode_Ok
+	return items, proto.StatusCode_StatusCode_OK
 }

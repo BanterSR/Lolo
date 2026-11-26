@@ -222,7 +222,7 @@ func TestPrivateChatHistoryReturnsLatest100InSendOrder(t *testing.T) {
 
 func TestFriendMigrationRejectsSelfRelationship(t *testing.T) {
 	setupSocialTestDB(t)
-	if err := db.Create(&OFFriend{UserId: 1, FriendId: 1, Status: proto.FriendStatus_FriendStatus_Friend}).Error; err != nil {
+	if err := db.Create(&OFFriend{UserId: 1, FriendId: 1, Status: proto.FriendStatus_FriendStatus_FRIEND}).Error; err != nil {
 		t.Fatal(err)
 	}
 	if err := migrateFriendData(db); err == nil {

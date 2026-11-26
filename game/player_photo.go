@@ -13,7 +13,7 @@ import (
 func (g *Game) PhotoShareSearch(s *model.Player, msg *alg.GameMsg) {
 	req, ok := msg.Body.(*proto.PhotoShareSearchReq)
 	rsp := &proto.PhotoShareSearchRsp{
-		Status:           proto.StatusCode_StatusCode_Ok,
+		Status:           proto.StatusCode_StatusCode_OK,
 		Photos:           make([]*proto.PhotoPreviewInfo, 0),
 		ActivityPhotos:   make([]*proto.PhotoPreviewInfo, 0),
 		TodayUploadLimit: 100,
@@ -21,7 +21,7 @@ func (g *Game) PhotoShareSearch(s *model.Player, msg *alg.GameMsg) {
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	if !ok || req == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 
@@ -31,7 +31,7 @@ func (g *Game) PhotoShareSearch(s *model.Player, msg *alg.GameMsg) {
 		rsp.UploadMaxNum = uint32(maxUpload)
 	}
 	codes := sortedPhotoCodes(archiveMap)
-	if req.SearchType == proto.PhotoSearchType_PhotoSearchType_MyFavorite {
+	if req.SearchType == proto.PhotoSearchType_PhotoSearchType_MY_FAVORITE {
 		// 收藏关系尚未建立，返回空列表而不是伪造收藏。
 		codes = nil
 	}
@@ -45,27 +45,27 @@ func (g *Game) PhotoShareSearch(s *model.Player, msg *alg.GameMsg) {
 		activity := archiveMap[prefix+"activity"] == "1"
 
 		switch req.SearchType {
-		case proto.PhotoSearchType_PhotoSearchType_Today:
+		case proto.PhotoSearchType_PhotoSearchType_TODAY:
 			if uploadTime < startOfDay {
 				continue
 			}
 		case proto.PhotoSearchType_PhotoSearchType_Activity,
-			proto.PhotoSearchType_PhotoSearchType_ActivityRank:
+			proto.PhotoSearchType_PhotoSearchType_Activity_Rank:
 			if !activity {
 				continue
 			}
 		}
 
 		switch req.TextType {
-		case proto.PhotoSearchTextType_PhotoSearchTextType_Code:
+		case proto.PhotoSearchTextType_PhotoSearchTextType_CODE:
 			if strconv.FormatInt(code, 10) != strings.TrimSpace(req.Text) {
 				continue
 			}
-		case proto.PhotoSearchTextType_PhotoSearchTextType_Uid:
+		case proto.PhotoSearchTextType_PhotoSearchTextType_UID:
 			if strconv.FormatUint(uint64(s.UserId), 10) != strings.TrimSpace(req.Text) {
 				continue
 			}
-		case proto.PhotoSearchTextType_PhotoSearchTextType_Text:
+		case proto.PhotoSearchTextType_PhotoSearchTextType_TEXT:
 			if keyword != "" {
 				fields := []string{
 					archiveMap[prefix+"title"],
@@ -109,12 +109,12 @@ func (g *Game) PhotoShareSearch(s *model.Player, msg *alg.GameMsg) {
 			PlayerName: s.NickName,
 			Title:      archiveMap[prefix+"title"],
 			ActivityId: activityID,
-			Status:     proto.AuditStatus_AuditStatus_Success,
+			Status:     proto.AuditStatus_AuditStatus_SUCCESS,
 		})
 	}
 	rsp.EndIndex = uint32(end)
 	if req.SearchType == proto.PhotoSearchType_PhotoSearchType_Activity ||
-		req.SearchType == proto.PhotoSearchType_PhotoSearchType_ActivityRank {
+		req.SearchType == proto.PhotoSearchType_PhotoSearchType_Activity_Rank {
 		rsp.ActivityPhotos = rsp.Photos
 		rsp.Photos = make([]*proto.PhotoPreviewInfo, 0)
 	}

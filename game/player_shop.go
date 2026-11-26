@@ -13,7 +13,7 @@ import (
 func (g *Game) ShopInfo(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ShopInfoReq)
 	rsp := &proto.ShopInfoRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		ShopId: req.ShopId,
 		Grids:  make([]*proto.ShopGrid, 0),
 	}
@@ -66,7 +66,7 @@ func shopPurchaseCosts(conf *excel.ShopPoolConfigureItem, buyTimes uint32) ([]sh
 func (g *Game) ShopBuy(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ShopBuyReq)
 	rsp := &proto.ShopBuyRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		ShopId: req.ShopId,
 		Grids:  new(proto.ShopGrid),
 		Items:  make([]*proto.ItemDetail, 0),
@@ -83,18 +83,18 @@ func (g *Game) ShopBuy(s *model.Player, msg *alg.GameMsg) {
 	conf := gdconf.GetPoolByGrid(req.ShopId, req.GridId, req.ItemId)
 	costs, valid := shopPurchaseCosts(conf, req.BuyTimes)
 	if shopConf == nil || gridConf == nil || gridInfo == nil || !valid {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	if gridConf.BuyMaxCount > 0 && (gridInfo.BuyTimes > uint32(gridConf.BuyMaxCount) ||
 		req.BuyTimes > uint32(gridConf.BuyMaxCount)-gridInfo.BuyTimes) {
-		rsp.Status = proto.StatusCode_StatusCode_ShopGridBuyNumLimit
+		rsp.Status = proto.StatusCode_StatusCode_SHOP_GRID_BUY_NUM_LIMIT
 		return
 	}
 
 	ctx, err := s.GetItemModel().Begin()
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	defer func() {
@@ -106,7 +106,7 @@ func (g *Game) ShopBuy(s *model.Player, msg *alg.GameMsg) {
 		ctx.DelBaseItem(cost.itemID, cost.amount)
 	}
 	if ctx.Error != nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 
@@ -114,27 +114,27 @@ func (g *Game) ShopBuy(s *model.Player, msg *alg.GameMsg) {
 	var bagItem *model.AddItemCtx
 	switch proto.EShopType(shopConf.NewShopType) {
 	case proto.EShopType_EShopType_BattlePass:
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
-	case proto.EShopType_EShopType_CharacterBp:
+	case proto.EShopType_EShopType_CharacterBP:
 		characterConf := gdconf.GetCharacterInfoByShop(req.ShopId)
 		if characterConf == nil {
-			rsp.Status = proto.StatusCode_StatusCode_BadReq
+			rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 			return
 		}
 		characterInfo = s.GetCharacterModel().GetCharacterInfo(uint32(characterConf.ID))
 		if characterInfo == nil || characterInfo.IsUnlockPayment {
-			rsp.Status = proto.StatusCode_StatusCode_CharacterPlaced
+			rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
 			return
 		}
 	default:
 		if conf.ItemID <= 0 || conf.ItemNum <= 0 || int64(conf.ItemNum) > math.MaxInt64/int64(req.BuyTimes) {
-			rsp.Status = proto.StatusCode_StatusCode_BadReq
+			rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 			return
 		}
 		bagItem = s.AddAllTypeItem(uint32(conf.ItemID), int64(conf.ItemNum)*int64(req.BuyTimes))
 		if bagItem == nil || bagItem.EBagItemTag == nil {
-			rsp.Status = proto.StatusCode_StatusCode_BadReq
+			rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 			return
 		}
 		alg.AddList(&rsp.Items, bagItem.AddItemDetail())
@@ -146,7 +146,7 @@ func (g *Game) ShopBuy(s *model.Player, msg *alg.GameMsg) {
 	if characterInfo != nil {
 		characterInfo.IsUnlockPayment = true
 		g.send(s, 0, &proto.CharacterBpBuyNotice{
-			Status:      proto.StatusCode_StatusCode_Ok,
+			Status:      proto.StatusCode_StatusCode_OK,
 			CharacterId: characterInfo.CharacterId,
 		})
 	}
@@ -155,15 +155,15 @@ func (g *Game) ShopBuy(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) CreatePayOrder(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.CreatePayOrderReq)
 	rsp := &proto.CreatePayOrderRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	// 本地私服没有支付渠道，不能伪造已支付订单；明确返回未支付，
 	// 避免客户端拿到一个永远无法回调成功的假订单号。
 	if req.ShopId == 0 || req.GridId == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
-	rsp.Status = proto.StatusCode_StatusCode_NotPayment
+	rsp.Status = proto.StatusCode_StatusCode_Not_Payment
 	rsp.ResultStr = "local server does not provide payment"
 }

@@ -23,7 +23,7 @@ func TestPetCaptureSuccessIsServerDecidedAndReplaySafe(t *testing.T) {
 
 	g.PetCapture(p, coreTestMessage(req))
 	rsp := conn.last(t).(*proto.PetCaptureRsp)
-	if rsp.Status != proto.StatusCode_StatusCode_Ok || !rsp.Success || len(p.GetItemModel().GetItemPetInfoMap()) != 1 {
+	if rsp.Status != proto.StatusCode_StatusCode_OK || !rsp.Success || len(p.GetItemModel().GetItemPetInfoMap()) != 1 {
 		t.Fatalf("capture response = %v/%v pets=%d", rsp.Status, rsp.Success, len(p.GetItemModel().GetItemPetInfoMap()))
 	}
 	if coreBaseCount(p, 200100001) != 0 {
@@ -49,7 +49,7 @@ func TestPetCaptureFailureCreatesNoPetAndIsReplaySafe(t *testing.T) {
 	req := captureRequest()
 
 	g.PetCapture(p, coreTestMessage(req))
-	if rsp := conn.last(t).(*proto.PetCaptureRsp); rsp.Status != proto.StatusCode_StatusCode_Ok || rsp.Success {
+	if rsp := conn.last(t).(*proto.PetCaptureRsp); rsp.Status != proto.StatusCode_StatusCode_OK || rsp.Success {
 		t.Fatalf("failed capture response = %v/%v", rsp.Status, rsp.Success)
 	}
 	if len(p.GetItemModel().GetItemPetInfoMap()) != 0 || coreBaseCount(p, 200100001) != 0 {
@@ -68,7 +68,7 @@ func TestPetCaptureRejectsInsufficientMaterialsAndWrongScene(t *testing.T) {
 	g, conn := newCoreTestGame(p)
 
 	g.PetCapture(p, coreTestMessage(captureRequest()))
-	if rsp := conn.last(t).(*proto.PetCaptureRsp); rsp.Status != proto.StatusCode_StatusCode_ItemNotEnough {
+	if rsp := conn.last(t).(*proto.PetCaptureRsp); rsp.Status != proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH {
 		t.Fatalf("material status = %v", rsp.Status)
 	}
 	if len(p.GetPetModel().Attempts) != 0 || len(p.GetItemModel().GetItemPetInfoMap()) != 0 {
@@ -79,7 +79,7 @@ func TestPetCaptureRejectsInsufficientMaterialsAndWrongScene(t *testing.T) {
 	req := captureRequest()
 	req.CatchAreaId = 11
 	g.PetCapture(p, coreTestMessage(req))
-	if rsp := conn.last(t).(*proto.PetCaptureRsp); rsp.Status != proto.StatusCode_StatusCode_SceneNotUnlock {
+	if rsp := conn.last(t).(*proto.PetCaptureRsp); rsp.Status != proto.StatusCode_StatusCode_SCENE_NOT_UNLOCK {
 		t.Fatalf("scene status = %v", rsp.Status)
 	}
 	if coreBaseCount(p, 200100001) != 1 {
@@ -96,19 +96,19 @@ func TestPetRenameLengthSensitiveContentAndUniqueness(t *testing.T) {
 	g, conn := newCoreTestGame(p)
 
 	g.PetRename(p, coreTestMessage(&proto.PetRenameReq{PetInstanceId: first.InstanceId, Name: "小可爱"}))
-	if rsp := conn.last(t).(*proto.PetRenameRsp); rsp.Status != proto.StatusCode_StatusCode_Ok || first.Name != "小可爱" {
+	if rsp := conn.last(t).(*proto.PetRenameRsp); rsp.Status != proto.StatusCode_StatusCode_OK || first.Name != "小可爱" {
 		t.Fatalf("valid rename = %v/%q", rsp.Status, first.Name)
 	}
 	g.PetRename(p, coreTestMessage(&proto.PetRenameReq{PetInstanceId: first.InstanceId, Name: "小可爱"}))
-	if conn.last(t).(*proto.PetRenameRsp).Status != proto.StatusCode_StatusCode_Ok {
+	if conn.last(t).(*proto.PetRenameRsp).Status != proto.StatusCode_StatusCode_OK {
 		t.Fatal("renaming to own current name should be idempotent")
 	}
 	g.PetRename(p, coreTestMessage(&proto.PetRenameReq{PetInstanceId: second.InstanceId, Name: "小可爱"}))
-	if conn.last(t).(*proto.PetRenameRsp).Status != proto.StatusCode_StatusCode_DuplicatedName {
+	if conn.last(t).(*proto.PetRenameRsp).Status != proto.StatusCode_StatusCode_DUPLICATED_NAME {
 		t.Fatal("duplicate pet name was accepted")
 	}
 	g.PetRename(p, coreTestMessage(&proto.PetRenameReq{PetInstanceId: second.InstanceId, Name: "一二三四"}))
-	if conn.last(t).(*proto.PetRenameRsp).Status != proto.StatusCode_StatusCode_Ok {
+	if conn.last(t).(*proto.PetRenameRsp).Status != proto.StatusCode_StatusCode_OK {
 		t.Fatal("name at configured rune limit was rejected")
 	}
 
@@ -116,12 +116,12 @@ func TestPetRenameLengthSensitiveContentAndUniqueness(t *testing.T) {
 		name   string
 		status proto.StatusCode
 	}{
-		{"", proto.StatusCode_StatusCode_IllegalLen},
-		{"一二三四五", proto.StatusCode_StatusCode_IllegalLen},
-		{"www.", proto.StatusCode_StatusCode_BadWord},
-		{"傻逼", proto.StatusCode_StatusCode_BadWord},
-		{"a\x00b", proto.StatusCode_StatusCode_IllegalChar},
-		{string([]byte{0xff}), proto.StatusCode_StatusCode_IllegalLen},
+		{"", proto.StatusCode_StatusCode_ILLEGAL_LEN},
+		{"一二三四五", proto.StatusCode_StatusCode_ILLEGAL_LEN},
+		{"www.", proto.StatusCode_StatusCode_BAD_WORD},
+		{"傻逼", proto.StatusCode_StatusCode_BAD_WORD},
+		{"a\x00b", proto.StatusCode_StatusCode_ILLEGAL_CHAR},
+		{string([]byte{0xff}), proto.StatusCode_StatusCode_ILLEGAL_LEN},
 	}
 	for _, tc := range cases {
 		g.PetRename(p, coreTestMessage(&proto.PetRenameReq{PetInstanceId: second.InstanceId, Name: tc.name}))
@@ -130,7 +130,7 @@ func TestPetRenameLengthSensitiveContentAndUniqueness(t *testing.T) {
 		}
 	}
 	g.PetRename(p, coreTestMessage(&proto.PetRenameReq{PetInstanceId: 999, Name: "有效"}))
-	if conn.last(t).(*proto.PetRenameRsp).Status != proto.StatusCode_StatusCode_PetNotFound {
+	if conn.last(t).(*proto.PetRenameRsp).Status != proto.StatusCode_StatusCode_PET_NOT_FOUND {
 		t.Fatal("nonexistent pet rename was accepted")
 	}
 }
@@ -144,7 +144,7 @@ func TestPetDecomposeValidatesAllInstancesAndUnloadsCarried(t *testing.T) {
 	g, conn := newCoreTestGame(p)
 
 	g.PetDecompose(p, coreTestMessage(&proto.PetDecomposeReq{PetInstanceIds: []uint32{pet.InstanceId, 999}}))
-	if rsp := conn.last(t).(*proto.PetDecomposeRsp); rsp.Status != proto.StatusCode_StatusCode_PetNotFound {
+	if rsp := conn.last(t).(*proto.PetDecomposeRsp); rsp.Status != proto.StatusCode_StatusCode_PET_NOT_FOUND {
 		t.Fatalf("missing pet status = %v", rsp.Status)
 	}
 	if p.GetItemModel().GetItemPetInfoMap()[pet.InstanceId] == nil || p.GetSceneModel().CurPetInstanceId != pet.InstanceId || coreBaseCount(p, 200101002) != 0 {
@@ -152,14 +152,14 @@ func TestPetDecomposeValidatesAllInstancesAndUnloadsCarried(t *testing.T) {
 	}
 
 	g.PetDecompose(p, coreTestMessage(&proto.PetDecomposeReq{PetInstanceIds: []uint32{pet.InstanceId}}))
-	if rsp := conn.last(t).(*proto.PetDecomposeRsp); rsp.Status != proto.StatusCode_StatusCode_Ok {
+	if rsp := conn.last(t).(*proto.PetDecomposeRsp); rsp.Status != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("decompose status = %v", rsp.Status)
 	}
 	if p.GetItemModel().GetItemPetInfoMap()[pet.InstanceId] != nil || p.GetSceneModel().CurPetInstanceId != 0 || coreBaseCount(p, 200101002) != 2 {
 		t.Fatal("decompose did not delete, unload, and grant configured output")
 	}
 	g.PetDecompose(p, coreTestMessage(&proto.PetDecomposeReq{PetInstanceIds: []uint32{pet.InstanceId}}))
-	if conn.last(t).(*proto.PetDecomposeRsp).Status != proto.StatusCode_StatusCode_PetNotFound || coreBaseCount(p, 200101002) != 2 {
+	if conn.last(t).(*proto.PetDecomposeRsp).Status != proto.StatusCode_StatusCode_PET_NOT_FOUND || coreBaseCount(p, 200101002) != 2 {
 		t.Fatal("duplicate decompose granted output again")
 	}
 }

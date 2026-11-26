@@ -100,15 +100,15 @@ func defaultProfilePlayerLevel(s *model.Player) (uint32, bool) {
 func requirePlayerProfile(s *model.Player) (*model.ProfileModel, proto.StatusCode) {
 	profile := profileAccessor(s)
 	if profile == nil {
-		return nil, proto.StatusCode_StatusCode_PlayerNotFound
+		return nil, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
 	profile.EnsureMaps()
-	return profile, proto.StatusCode_StatusCode_Ok
+	return profile, proto.StatusCode_StatusCode_OK
 }
 
 func saveProfileMutation(s *model.Player, status *proto.StatusCode) {
 	if err := profileSavePlayer(s); err != nil {
-		*status = proto.StatusCode_StatusCode_SysErr
+		*status = proto.StatusCode_StatusCode_SYS_ERR
 		log.Game.Errorf("UserId:%v 保存玩家档案失败:%s", s.UserId, err.Error())
 	}
 }
@@ -183,7 +183,7 @@ func ensureProfileEnergyItem(s *model.Player) *model.ItemBaseInfo {
 		ItemId:   itemID,
 		Num:      0,
 		ItemType: proto.EBagItemTag_EBagItemTag_Energy,
-		PackType: proto.PackType_PackType_Inventory,
+		PackType: proto.ItemDetail_PackType_Inventory,
 	}
 	items.GetItemBaseMap()[itemID] = info
 	return info
@@ -192,7 +192,7 @@ func ensureProfileEnergyItem(s *model.Player) *model.ItemBaseInfo {
 func recoverProfileEnergy(s *model.Player, profile *model.ProfileModel, rules profileEnergyRules, now int64) (*model.ItemBaseInfo, bool, proto.StatusCode) {
 	info := ensureProfileEnergyItem(s)
 	if info == nil || info.Num < 0 {
-		return nil, false, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, false, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	dirty := false
 	if info.Num > rules.maxEnergy {
@@ -201,19 +201,19 @@ func recoverProfileEnergy(s *model.Player, profile *model.ProfileModel, rules pr
 	}
 	if profile.EnergyLastRecoverAt <= 0 || profile.EnergyLastRecoverAt > now {
 		profile.EnergyLastRecoverAt = now
-		return info, true, proto.StatusCode_StatusCode_Ok
+		return info, true, proto.StatusCode_StatusCode_OK
 	}
 	if info.Num >= rules.maxEnergy {
 		if profile.EnergyLastRecoverAt != now {
 			profile.EnergyLastRecoverAt = now
 			dirty = true
 		}
-		return info, dirty, proto.StatusCode_StatusCode_Ok
+		return info, dirty, proto.StatusCode_StatusCode_OK
 	}
 	elapsed := now - profile.EnergyLastRecoverAt
 	steps := elapsed / rules.interval
 	if steps <= 0 {
-		return info, dirty, proto.StatusCode_StatusCode_Ok
+		return info, dirty, proto.StatusCode_StatusCode_OK
 	}
 	missing := rules.maxEnergy - info.Num
 	recovered := steps
@@ -225,7 +225,7 @@ func recoverProfileEnergy(s *model.Player, profile *model.ProfileModel, rules pr
 	if info.Num >= rules.maxEnergy {
 		profile.EnergyLastRecoverAt = now
 	}
-	return info, true, proto.StatusCode_StatusCode_Ok
+	return info, true, proto.StatusCode_StatusCode_OK
 }
 
 type profileEnergyTier struct {
@@ -263,27 +263,27 @@ func profileEnergyTierAt(index uint32) (profileEnergyTier, bool) {
 }
 
 func (g *Game) PlayerEnergyInfo(s *model.Player, msg *alg.GameMsg) {
-	rsp := &proto.PlayerEnergyInfoRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.PlayerEnergyInfoRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	profile, status := requirePlayerProfile(s)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	playerLevel, ok := profilePlayerLevel(s)
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		return
 	}
 	rules, ok := loadProfileEnergyRules(playerLevel)
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	now := profileNow().Unix()
 	normalizeProfileEnergyPurchases(profile, now)
 	info, dirty, status := recoverProfileEnergy(s, profile, rules, now)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
@@ -296,23 +296,23 @@ func (g *Game) PlayerEnergyInfo(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) PlayerEnergyBuy(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.PlayerEnergyBuyRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Items:  make([]*proto.ItemDetail, 0, 1),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	profile, status := requirePlayerProfile(s)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	playerLevel, ok := profilePlayerLevel(s)
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		return
 	}
 	rules, ok := loadProfileEnergyRules(playerLevel)
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	now := profileNow().Unix()
@@ -324,12 +324,12 @@ func (g *Game) PlayerEnergyBuy(s *model.Player, msg *alg.GameMsg) {
 		return
 	}
 	energy, _, status := recoverProfileEnergy(s, profile, rules, now)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	if energy.Num >= rules.maxEnergy {
-		rsp.Status = proto.StatusCode_StatusCode_Fail
+		rsp.Status = proto.StatusCode_StatusCode_FAIL
 		return
 	}
 	currency := s.GetItemModel().GetItemBaseInfo(tier.currencyID)
@@ -341,13 +341,13 @@ func (g *Game) PlayerEnergyBuy(s *model.Player, msg *alg.GameMsg) {
 	oldProfile := *profile
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	defer tx.Rollback()
 	tx.DelBaseItem(tier.currencyID, tier.price)
 	if tx.Error != nil {
-		rsp.Status = proto.StatusCode_StatusCode_ItemNotEnough
+		rsp.Status = proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 		return
 	}
 	amount := tier.amount
@@ -356,7 +356,7 @@ func (g *Game) PlayerEnergyBuy(s *model.Player, msg *alg.GameMsg) {
 	}
 	items, err := grantProfileBaseRewards(s, []profileItemReward{{itemID: constant.CurrencyVitality, count: amount}})
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	tx.Commit()
@@ -369,7 +369,7 @@ func (g *Game) PlayerEnergyBuy(s *model.Player, msg *alg.GameMsg) {
 		if currency != nil {
 			currency.Num = oldCurrency
 		}
-		rsp.Status = proto.StatusCode_StatusCode_SysErr
+		rsp.Status = proto.StatusCode_StatusCode_SYS_ERR
 		log.Game.Errorf("UserId:%v 精力购买落库失败:%s", s.UserId, err.Error())
 		return
 	}
@@ -441,26 +441,26 @@ func resolveProfileLevelRewards(rewardID int32, level uint32) ([]profileItemRewa
 
 func grantPlayerLevelReward(s *model.Player, profile *model.ProfileModel, level uint32) ([]*proto.ItemDetail, proto.StatusCode) {
 	if profile.HasPlayerLevelReward(level) {
-		return nil, proto.StatusCode_StatusCode_RepeatGetReward
+		return nil, proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 	}
 	row, configured := findProfilePlayerLevel(level)
 	if !configured || row == nil {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	playerLevel, ok := profilePlayerLevel(s)
 	if !ok {
-		return nil, proto.StatusCode_StatusCode_PlayerNotFound
+		return nil, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
 	if playerLevel < level {
-		return nil, proto.StatusCode_StatusCode_PlayerLevelLimit
+		return nil, proto.StatusCode_StatusCode_PLAYER_LEVEL_LIMIT
 	}
 	rewards, ok := resolveProfileLevelRewards(row.RewardID, level)
 	if !ok {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		return nil, proto.StatusCode_StatusCode_BadReq
+		return nil, proto.StatusCode_StatusCode_BAD_REQ
 	}
 	defer tx.Rollback()
 	oldCounts := make(map[uint32]int64, len(rewards))
@@ -474,7 +474,7 @@ func grantPlayerLevelReward(s *model.Player, profile *model.ProfileModel, level 
 	}
 	items, err := grantProfileBaseRewards(s, rewards)
 	if err != nil {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	tx.Commit()
 	profile.MarkPlayerLevelReward(level)
@@ -488,21 +488,21 @@ func grantPlayerLevelReward(s *model.Player, profile *model.ProfileModel, level 
 			}
 		}
 		delete(profile.PlayerLevelRewards, level)
-		return nil, proto.StatusCode_StatusCode_SysErr
+		return nil, proto.StatusCode_StatusCode_SYS_ERR
 	}
-	return items, proto.StatusCode_StatusCode_Ok
+	return items, proto.StatusCode_StatusCode_OK
 }
 
 func (g *Game) PlayerLevelReward(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.PlayerLevelRewardReq)
 	rsp := &proto.PlayerLevelRewardRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Level:  req.Level,
 		Items:  make([]*proto.ItemDetail, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	profile, status := requirePlayerProfile(s)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
@@ -541,42 +541,42 @@ func validOwnedProfileHead(s *model.Player, headID uint32) bool {
 
 func (g *Game) ChangeHead(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ChangeHeadReq)
-	rsp := &proto.ChangeHeadRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.ChangeHeadRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	if !validOwnedProfileHead(s, req.Head) {
-		rsp.Status = proto.StatusCode_StatusCode_HeadNotUnlock
+		rsp.Status = proto.StatusCode_StatusCode_HEAD_NOT_UNLOCK
 		return
 	}
 	if err := db.UpGameBasic(s.UserId, func(basic *db.OFGameBasic) bool {
 		basic.Head = req.Head
 		return true
 	}); err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		return
 	}
 	saveProfileMutation(s, &rsp.Status)
-	if rsp.Status == proto.StatusCode_StatusCode_Ok {
+	if rsp.Status == proto.StatusCode_StatusCode_OK {
 		rsp.Head = req.Head
 	}
 }
 
 func (g *Game) ChangePlayerSex(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ChangePlayerSexReq)
-	rsp := &proto.ChangePlayerSexRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.ChangePlayerSexRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	if req.Sex != proto.ESexType_ESexType_Male && req.Sex != proto.ESexType_ESexType_Female {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	if err := db.UpGameBasic(s.UserId, func(basic *db.OFGameBasic) bool {
 		basic.Sex = req.Sex
 		return true
 	}); err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		return
 	}
 	saveProfileMutation(s, &rsp.Status)
-	if rsp.Status == proto.StatusCode_StatusCode_Ok {
+	if rsp.Status == proto.StatusCode_StatusCode_OK {
 		rsp.Sex = req.Sex
 	}
 }
@@ -607,26 +607,26 @@ func validOwnedProfilePhoneCase(s *model.Player, phoneCase uint32) bool {
 
 func (g *Game) ChangePhoneCase(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ChangePhoneCaseReq)
-	rsp := &proto.ChangePhoneCaseRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.ChangePhoneCaseRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	profile, status := requirePlayerProfile(s)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	if !validOwnedProfilePhoneCase(s, req.PhoneCase) {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	oldPhoneCase := profile.PhoneCase
 	profile.PhoneCase = req.PhoneCase
 	saveProfileMutation(s, &rsp.Status)
-	if rsp.Status != proto.StatusCode_StatusCode_Ok {
+	if rsp.Status != proto.StatusCode_StatusCode_OK {
 		profile.PhoneCase = oldPhoneCase
 		return
 	}
 	rsp.PhoneCase = req.PhoneCase
-	g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UpdatePhoneCase)
+	g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UPDATE_PHONE_CASE)
 }
 
 func profileWorldLevelAvailable(profile *model.ProfileModel, level uint32) bool {
@@ -635,93 +635,93 @@ func profileWorldLevelAvailable(profile *model.ProfileModel, level uint32) bool 
 
 func validateProfileWorldPrerequisites(s *model.Player, profile *model.ProfileModel, conf *excel.WorldLevelConfigure, playerLevel uint32) proto.StatusCode {
 	if conf == nil || conf.Level < 0 {
-		return proto.StatusCode_StatusCode_CfgNotFound
+		return proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	if playerLevel < uint32(conf.Level) {
-		return proto.StatusCode_StatusCode_PlayerLevelLimit
+		return proto.StatusCode_StatusCode_PLAYER_LEVEL_LIMIT
 	}
 	for _, info := range conf.GetWorldLevelInfo() {
 		if info == nil {
-			return proto.StatusCode_StatusCode_CfgNotFound
+			return proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		}
 		if info.AchieveID > 0 && !profile.CompletedAchievements[uint32(info.AchieveID)] {
 			achieveID := uint32(info.AchieveID)
 			achieve := profileAchieveConfigure(achieveID)
 			if achieve == nil || achieve.CountParam <= 0 {
-				return proto.StatusCode_StatusCode_CfgNotFound
+				return proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 			if s.GetActivityModel().AchievementProgress(achieveID) < uint64(achieve.CountParam) {
-				return proto.StatusCode_StatusCode_WorldLevelAchieveNotFinish
+				return proto.StatusCode_StatusCode_WORLD_LEVEL_ACHIEVE_NOT_FINISH
 			}
 		}
 		if info.FlagID > 0 && !profile.CompletedFlags[uint32(info.FlagID)] {
-			return proto.StatusCode_StatusCode_WorldLevelAchieveNotFinish
+			return proto.StatusCode_StatusCode_WORLD_LEVEL_ACHIEVE_NOT_FINISH
 		}
 	}
-	return proto.StatusCode_StatusCode_Ok
+	return proto.StatusCode_StatusCode_OK
 }
 
 func unlockProfileWorldLevel(s *model.Player, profile *model.ProfileModel, level, playerLevel uint32) proto.StatusCode {
 	conf, configured := findProfileWorldLevel(level)
 	if !configured {
-		return proto.StatusCode_StatusCode_CfgNotFound
+		return proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	if conf == nil {
-		return proto.StatusCode_StatusCode_BadReq
+		return proto.StatusCode_StatusCode_BAD_REQ
 	}
 	if profileWorldLevelAvailable(profile, level) {
-		return proto.StatusCode_StatusCode_WorldLevelAlreadyUnlock
+		return proto.StatusCode_StatusCode_WORLD_LEVEL_ALREADY_UNLOCK
 	}
-	if status := validateProfileWorldPrerequisites(s, profile, conf, playerLevel); status != proto.StatusCode_StatusCode_Ok {
+	if status := validateProfileWorldPrerequisites(s, profile, conf, playerLevel); status != proto.StatusCode_StatusCode_OK {
 		return status
 	}
 	if level > 1 && !profile.IsWorldLevelUnlocked(level-1) {
-		return proto.StatusCode_StatusCode_WorldLevelLocked
+		return proto.StatusCode_StatusCode_WORLD_LEVEL_LOCKED
 	}
 	profile.MarkWorldLevelUnlocked(level)
-	return proto.StatusCode_StatusCode_Ok
+	return proto.StatusCode_StatusCode_OK
 }
 
 func changeProfileWorldLevel(s *model.Player, profile *model.ProfileModel, level, playerLevel uint32) proto.StatusCode {
 	conf, configured := findProfileWorldLevel(level)
 	if !configured {
-		return proto.StatusCode_StatusCode_CfgNotFound
+		return proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	if conf == nil {
-		return proto.StatusCode_StatusCode_BadReq
+		return proto.StatusCode_StatusCode_BAD_REQ
 	}
 	if !profileWorldLevelAvailable(profile, level) {
-		return proto.StatusCode_StatusCode_WorldLevelLocked
+		return proto.StatusCode_StatusCode_WORLD_LEVEL_LOCKED
 	}
 	if playerLevel < uint32(conf.Level) {
-		return proto.StatusCode_StatusCode_PlayerLevelLimit
+		return proto.StatusCode_StatusCode_PLAYER_LEVEL_LIMIT
 	}
 	if s.GetSceneModel().GetWorldLevel() == level {
-		return proto.StatusCode_StatusCode_WorldLevelNowIn
+		return proto.StatusCode_StatusCode_WORLD_LEVEL_NOW_IN
 	}
 	s.GetSceneModel().WorldLevel = level
-	return proto.StatusCode_StatusCode_Ok
+	return proto.StatusCode_StatusCode_OK
 }
 
 func (g *Game) UnlockWorldLevel(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.UnlockWorldLevelReq)
-	rsp := &proto.UnlockWorldLevelRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.UnlockWorldLevelRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	profile, status := requirePlayerProfile(s)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	playerLevel, ok := profilePlayerLevel(s)
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		return
 	}
 	rsp.Status = unlockProfileWorldLevel(s, profile, req.WorldLevel, playerLevel)
-	if rsp.Status == proto.StatusCode_StatusCode_Ok {
+	if rsp.Status == proto.StatusCode_StatusCode_OK {
 		rsp.WorldLevel = req.WorldLevel
 		saveProfileMutation(s, &rsp.Status)
-		if rsp.Status != proto.StatusCode_StatusCode_Ok {
+		if rsp.Status != proto.StatusCode_StatusCode_OK {
 			delete(profile.UnlockedWorldLevels, req.WorldLevel)
 		}
 	}
@@ -729,24 +729,24 @@ func (g *Game) UnlockWorldLevel(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) ChangeWorldLevel(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ChangeWorldLevelReq)
-	rsp := &proto.ChangeWorldLevelRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.ChangeWorldLevelRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	profile, status := requirePlayerProfile(s)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	playerLevel, ok := profilePlayerLevel(s)
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		return
 	}
 	oldWorldLevel := s.GetSceneModel().GetWorldLevel()
 	rsp.Status = changeProfileWorldLevel(s, profile, req.WorldLevel, playerLevel)
-	if rsp.Status == proto.StatusCode_StatusCode_Ok {
+	if rsp.Status == proto.StatusCode_StatusCode_OK {
 		rsp.WorldLevel = req.WorldLevel
 		saveProfileMutation(s, &rsp.Status)
-		if rsp.Status != proto.StatusCode_StatusCode_Ok {
+		if rsp.Status != proto.StatusCode_StatusCode_OK {
 			s.GetSceneModel().WorldLevel = oldWorldLevel
 		}
 	}
@@ -754,15 +754,15 @@ func (g *Game) ChangeWorldLevel(s *model.Player, msg *alg.GameMsg) {
 
 func applyProfileOutfitHide(s *model.Player, charID uint32, hide *proto.OutfitHideInfo) proto.StatusCode {
 	if hide == nil {
-		return proto.StatusCode_StatusCode_BadReq
+		return proto.StatusCode_StatusCode_BAD_REQ
 	}
 	character := s.GetCharacterModel().GetCharacterInfo(charID)
 	if character == nil {
-		return proto.StatusCode_StatusCode_BadReq
+		return proto.StatusCode_StatusCode_BAD_REQ
 	}
 	preset := character.GetOutfitPreset(character.InUseOutfitPresetIndex)
 	if preset == nil {
-		return proto.StatusCode_StatusCode_BadReq
+		return proto.StatusCode_StatusCode_BAD_REQ
 	}
 	if preset.OutfitHideInfo == nil {
 		preset.OutfitHideInfo = &model.OutfitHideInfo{}
@@ -770,12 +770,12 @@ func applyProfileOutfitHide(s *model.Player, charID uint32, hide *proto.OutfitHi
 	// 协议只开放这两个布尔字段，不整体替换或透传未知字段。
 	preset.OutfitHideInfo.HideOrn = hide.HideOrn
 	preset.OutfitHideInfo.HideBraid = hide.HideBraid
-	return proto.StatusCode_StatusCode_Ok
+	return proto.StatusCode_StatusCode_OK
 }
 
 func (g *Game) OutfitHideSwitch(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.OutfitHideSwitchReq)
-	rsp := &proto.OutfitHideSwitchRsp{Status: proto.StatusCode_StatusCode_Ok, CharId: req.CharId}
+	rsp := &proto.OutfitHideSwitchRsp{Status: proto.StatusCode_StatusCode_OK, CharId: req.CharId}
 	defer g.send(s, msg.PacketId, rsp)
 	character := s.GetCharacterModel().GetCharacterInfo(req.CharId)
 	var oldHide *model.OutfitHideInfo
@@ -786,14 +786,14 @@ func (g *Game) OutfitHideSwitch(s *model.Player, msg *alg.GameMsg) {
 		}
 	}
 	rsp.Status = applyProfileOutfitHide(s, req.CharId, req.HideInfo)
-	if rsp.Status != proto.StatusCode_StatusCode_Ok {
+	if rsp.Status != proto.StatusCode_StatusCode_OK {
 		return
 	}
 	rsp.HideInfo = character.GetOutfitPreset(character.InUseOutfitPresetIndex).OutfitHideInfo.OutfitHideInfo()
 	saveProfileMutation(s, &rsp.Status)
-	if rsp.Status != proto.StatusCode_StatusCode_Ok {
+	if rsp.Status != proto.StatusCode_StatusCode_OK {
 		character.GetOutfitPreset(character.InUseOutfitPresetIndex).OutfitHideInfo = oldHide
 		return
 	}
-	g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UpdateFashion, req.CharId)
+	g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UPDATE_FASHION, req.CharId)
 }

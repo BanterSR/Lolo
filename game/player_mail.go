@@ -23,7 +23,7 @@ var mailGrantItem = func(s *model.Player, itemID uint32, num int64) *proto.ItemD
 
 func (g *Game) GetMails(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.GetMailsRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Mails:  s.GetMailModel().Briefs(),
 	}
 	g.send(s, msg.PacketId, rsp)
@@ -32,46 +32,46 @@ func (g *Game) GetMails(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) OperateMails(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.OperateMailsReq)
 	rsp := &proto.OperateMailsRsp{
-		Status:         proto.StatusCode_StatusCode_Ok,
+		Status:         proto.StatusCode_StatusCode_OK,
 		Mails:          make([]*proto.MailBriefData, 0),
 		ClaimResult:    make([]*proto.ItemDetail, 0),
 		DeletedMailIds: make([]uint32, 0),
 		OperateType:    req.OperateType,
 	}
 	switch req.OperateType {
-	case proto.MailOperateType_MailOperateType_None:
+	case proto.MailOperateType_MailOperateType_NONE:
 		return
-	case proto.MailOperateType_MailOperateType_Read:
+	case proto.MailOperateType_MailOperateType_READ:
 		if !validMail(s, req.MailId) {
-			rsp.Status = proto.StatusCode_StatusCode_MailNotExist
+			rsp.Status = proto.StatusCode_StatusCode_MAIL_NOT_EXIST
 			return
 		}
 		s.GetMailModel().GetState(req.MailId).Read = true
-	case proto.MailOperateType_MailOperateType_DeleteAllReaded:
+	case proto.MailOperateType_MailOperateType_DELETE_ALL_READED:
 		rsp.DeletedMailIds = deleteReadMails(s)
-	case proto.MailOperateType_MailOperateType_Claim:
+	case proto.MailOperateType_MailOperateType_CLAIM:
 		items, status := claimMail(s, req.MailId)
 		rsp.Status = status
 		rsp.ClaimResult = items
-	case proto.MailOperateType_MailOperateType_ClaimAll:
+	case proto.MailOperateType_MailOperateType_CLAIM_ALL:
 		items, status := claimAllMails(s)
 		rsp.Status = status
 		rsp.ClaimResult = items
-	case proto.MailOperateType_MailOperateType_Collect:
+	case proto.MailOperateType_MailOperateType_COLLECT:
 		if !validMail(s, req.MailId) {
-			rsp.Status = proto.StatusCode_StatusCode_MailNotExist
+			rsp.Status = proto.StatusCode_StatusCode_MAIL_NOT_EXIST
 			return
 		}
 		state := s.GetMailModel().GetState(req.MailId)
 		if state.Collected {
-			rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+			rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 			return
 		}
 		state.Collected = true
 		state.Read = true
 		rsp.CollectStatus = true
 	default:
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 	}
 
 	rsp.Mails = s.GetMailModel().Briefs()
@@ -93,19 +93,19 @@ func validMail(s *model.Player, mailId uint32) bool {
 
 func claimMail(s *model.Player, mailId uint32) ([]*proto.ItemDetail, proto.StatusCode) {
 	if !validMail(s, mailId) {
-		return nil, proto.StatusCode_StatusCode_MailNotExist
+		return nil, proto.StatusCode_StatusCode_MAIL_NOT_EXIST
 	}
 	state := s.GetMailModel().GetState(mailId)
 	if state.Claimed {
-		return nil, proto.StatusCode_StatusCode_RepeatGetReward
+		return nil, proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 	}
 	items, status := grantMailAttachments(s, model.TestMails[mailId])
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return nil, status
 	}
 	state.Claimed = true
 	state.Read = true
-	return items, proto.StatusCode_StatusCode_Ok
+	return items, proto.StatusCode_StatusCode_OK
 }
 
 func claimAllMails(s *model.Player) ([]*proto.ItemDetail, proto.StatusCode) {
@@ -117,28 +117,28 @@ func claimAllMails(s *model.Player) ([]*proto.ItemDetail, proto.StatusCode) {
 
 	items := make([]*proto.ItemDetail, 0)
 	claimed := 0
-	lastStatus := proto.StatusCode_StatusCode_MailNoReward
+	lastStatus := proto.StatusCode_StatusCode_MAIL_NO_REWARD
 	for _, id := range ids {
 		result, status := claimMail(s, id)
-		if status == proto.StatusCode_StatusCode_Ok {
+		if status == proto.StatusCode_StatusCode_OK {
 			claimed++
 			items = append(items, result...)
 			continue
 		}
-		if status != proto.StatusCode_StatusCode_RepeatGetReward &&
-			status != proto.StatusCode_StatusCode_MailNoReward {
+		if status != proto.StatusCode_StatusCode_REPEAT_GET_REWARD &&
+			status != proto.StatusCode_StatusCode_MAIL_NO_REWARD {
 			lastStatus = status
 		}
 	}
 	if claimed == 0 {
 		return nil, lastStatus
 	}
-	return items, proto.StatusCode_StatusCode_Ok
+	return items, proto.StatusCode_StatusCode_OK
 }
 
 func grantMailAttachments(s *model.Player, mail *proto.MailBriefData) ([]*proto.ItemDetail, proto.StatusCode) {
 	if mail == nil {
-		return nil, proto.StatusCode_StatusCode_MailNotExist
+		return nil, proto.StatusCode_StatusCode_MAIL_NOT_EXIST
 	}
 	items := make([]*proto.ItemDetail, 0, len(mail.Items)+len(mail.Reward))
 	if len(mail.Items) > 0 {
@@ -148,7 +148,7 @@ func grantMailAttachments(s *model.Player, mail *proto.MailBriefData) ([]*proto.
 			}
 			item := mailGrantItem(s, attachment.ItemId, attachment.Num)
 			if item == nil {
-				return nil, proto.StatusCode_StatusCode_CfgNotFound
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 			items = append(items, item)
 		}
@@ -163,15 +163,15 @@ func grantMailAttachments(s *model.Player, mail *proto.MailBriefData) ([]*proto.
 			}
 			item := mailGrantItem(s, reward.MainItem.ItemId, num)
 			if item == nil {
-				return nil, proto.StatusCode_StatusCode_CfgNotFound
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 			items = append(items, item)
 		}
 	}
 	if len(items) == 0 {
-		return nil, proto.StatusCode_StatusCode_MailNoReward
+		return nil, proto.StatusCode_StatusCode_MAIL_NO_REWARD
 	}
-	return items, proto.StatusCode_StatusCode_Ok
+	return items, proto.StatusCode_StatusCode_OK
 }
 
 func deleteReadMails(s *model.Player) []uint32 {

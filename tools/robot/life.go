@@ -40,10 +40,10 @@ func (b *Bot) paceLifeSmoke(ctx context.Context) bool {
 
 func (b *Bot) scenarioLife(ctx context.Context) {
 	lifeTypes := []proto.LifeType{
-		proto.LifeType_LifeType_Cooking,
-		proto.LifeType_LifeType_Fishing,
-		proto.LifeType_LifeType_Making,
-		proto.LifeType_LifeType_Handicraft,
+		proto.LifeType_LIFE_TYPE_Cooking,
+		proto.LifeType_LIFE_TYPE_Fishing,
+		proto.LifeType_LIFE_TYPE_Making,
+		proto.LifeType_LIFE_TYPE_Handicraft,
 	}
 	for _, lifeType := range lifeTypes {
 		if ctx.Err() != nil || !b.paceLifeSmoke(ctx) {
@@ -61,7 +61,7 @@ func (b *Bot) scenarioLife(ctx context.Context) {
 			return
 		}
 		rsp := msg.Body.(*proto.GetLifeInfoRsp)
-		if rsp.GetStatus() != proto.StatusCode_StatusCode_Ok || rsp.GetLifeBaseInfo() == nil || rsp.GetLifeBaseInfo().GetLevel() < 1 || rsp.GetLifeSkill() == nil || rsp.GetLifeAchieve() == nil {
+		if rsp.GetStatus() != proto.StatusCode_StatusCode_OK || rsp.GetLifeBaseInfo() == nil || rsp.GetLifeBaseInfo().GetLevel() < 1 || rsp.GetLifeSkill() == nil || rsp.GetLifeAchieve() == nil {
 			logOnce(&logLifeErrOnce, "生活技能烟测信息不完整 type=%d status=%v", lifeType, rsp.GetStatus())
 			return
 		}
@@ -79,7 +79,7 @@ func (b *Bot) scenarioLife(ctx context.Context) {
 			logOnce(&logLifeErrOnce, "生活技能烟测获取技能失败 type=%d err=%v", lifeType, err)
 			return
 		}
-		if skillMsg.Body.(*proto.GetLifeSkillRsp).GetStatus() != proto.StatusCode_StatusCode_Ok {
+		if skillMsg.Body.(*proto.GetLifeSkillRsp).GetStatus() != proto.StatusCode_StatusCode_OK {
 			logOnce(&logLifeErrOnce, "生活技能烟测获取技能被拒 type=%d status=%v", lifeType, skillMsg.Body.(*proto.GetLifeSkillRsp).GetStatus())
 			return
 		}
@@ -97,7 +97,7 @@ func (b *Bot) scenarioLife(ctx context.Context) {
 			logOnce(&logLifeErrOnce, "生活技能烟测获取成就失败 type=%d err=%v", lifeType, err)
 			return
 		}
-		if achieveMsg.Body.(*proto.GetLifeAchieveRsp).GetStatus() != proto.StatusCode_StatusCode_Ok || achieveMsg.Body.(*proto.GetLifeAchieveRsp).GetLifeAchieve() == nil {
+		if achieveMsg.Body.(*proto.GetLifeAchieveRsp).GetStatus() != proto.StatusCode_StatusCode_OK || achieveMsg.Body.(*proto.GetLifeAchieveRsp).GetLifeAchieve() == nil {
 			logOnce(&logLifeErrOnce, "生活技能烟测获取成就被拒 type=%d status=%v", lifeType, achieveMsg.Body.(*proto.GetLifeAchieveRsp).GetStatus())
 			return
 		}

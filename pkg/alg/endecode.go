@@ -8,6 +8,7 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -300,10 +301,16 @@ func GetMD5Str(str string) string {
 	return hexBuilder.String()
 }
 
-func RandStr(length int, id uint32) string {
+func RandStr(length int) string {
 	key := make([]byte, length)
 	rand.Read(key)
 	return base64.URLEncoding.EncodeToString(key)
+}
+
+func RandHex(length int) string {
+	key := make([]byte, length)
+	rand.Read(key)
+	return hex.EncodeToString(key)
 }
 
 func ProxyGin(c *gin.Context, url string) {

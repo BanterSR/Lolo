@@ -22,13 +22,13 @@ func equipmentFailure(rspStatus *proto.StatusCode, err error) bool {
 func (g *Game) CharacterEquipPresetSwitch(s *model.Player, msg *alg.GameMsg) {
 	req, ok := msg.Body.(*proto.CharacterEquipPresetSwitchReq)
 	rsp := &proto.CharacterEquipPresetSwitchRsp{
-		Status:      proto.StatusCode_StatusCode_Ok,
+		Status:      proto.StatusCode_StatusCode_OK,
 		PresetIndex: reqPresetIndex(req),
 		Items:       make([]*proto.ItemDetail, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	if !ok || req == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	rsp.PresetIndex = req.PresetIndex
@@ -36,7 +36,7 @@ func (g *Game) CharacterEquipPresetSwitch(s *model.Player, msg *alg.GameMsg) {
 		equipmentFailure(&rsp.Status, err)
 		return
 	}
-	g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UpdateEquip, req.CharId)
+	g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UPDATE_EQUIP, req.CharId)
 }
 
 func reqPresetIndex(req *proto.CharacterEquipPresetSwitchReq) uint32 {
@@ -49,14 +49,14 @@ func reqPresetIndex(req *proto.CharacterEquipPresetSwitchReq) uint32 {
 func (g *Game) PosterStarUp(s *model.Player, msg *alg.GameMsg) {
 	req, ok := msg.Body.(*proto.PosterStarUpReq)
 	rsp := &proto.PosterStarUpRsp{
-		Status:               proto.StatusCode_StatusCode_Ok,
+		Status:               proto.StatusCode_StatusCode_OK,
 		PosterInstanceId:     posterReqInstance(req),
 		CostPosterInstanceId: append([]uint32(nil), posterReqCosts(req)...),
 		Character:            make([]*proto.Character, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	if !ok || req == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	costIDs, characterIDs, err := s.StarUpPoster(req.PosterInstanceId, req.CostPosterInstanceId)
@@ -98,12 +98,12 @@ func posterReqCosts(req *proto.PosterStarUpReq) []uint32 {
 func (g *Game) PosterIllustrationReward(s *model.Player, msg *alg.GameMsg) {
 	req, ok := msg.Body.(*proto.PosterIllustrationRewardReq)
 	rsp := &proto.PosterIllustrationRewardRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Items:  make([]*proto.ItemDetail, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	if !ok || req == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	entry, err := s.ClaimPosterIllustration(req.PosterIllustrationId)
@@ -118,10 +118,10 @@ func (g *Game) PosterIllustrationReward(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) LockEquip(s *model.Player, msg *alg.GameMsg) {
 	req, ok := msg.Body.(*proto.LockEquipReq)
-	rsp := &proto.LockEquipRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.LockEquipRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	if !ok || req == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	item, err := s.ToggleEquipmentLock(req.InstanceId, req.EquipType)
@@ -134,14 +134,14 @@ func (g *Game) LockEquip(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) WeaponInscriptionInlaid(s *model.Player, msg *alg.GameMsg) {
 	req, ok := msg.Body.(*proto.WeaponInscriptionInlaidReq)
 	rsp := &proto.WeaponInscriptionInlaidRsp{
-		Status:          proto.StatusCode_StatusCode_Ok,
+		Status:          proto.StatusCode_StatusCode_OK,
 		WeaponInstances: make([]*proto.WeaponInstance, 0),
 		Inscriptions:    make([]*proto.Inscription, 0),
 		Items:           make([]*proto.ItemDetail, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	if !ok || req == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	weapons, inscriptions, err := s.InscribeWeapon(req.WeaponInstanceId, req.InscriptionId)
@@ -155,12 +155,12 @@ func (g *Game) WeaponInscriptionInlaid(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) WeaponInscriptionRemove(s *model.Player, msg *alg.GameMsg) {
 	req, ok := msg.Body.(*proto.WeaponInscriptionRemoveReq)
 	rsp := &proto.WeaponInscriptionRemoveRsp{
-		Status:           proto.StatusCode_StatusCode_Ok,
+		Status:           proto.StatusCode_StatusCode_OK,
 		WeaponInstanceId: inscriptionRemoveReqInstance(req),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	if !ok || req == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	weapon, inscription, err := s.RemoveWeaponInscription(req.WeaponInstanceId)
@@ -194,7 +194,7 @@ func weaponItemDetail(s *model.Player, instanceID uint32) *proto.ItemDetail {
 func (g *Game) EquipDisassemble(s *model.Player, msg *alg.GameMsg) {
 	req, ok := msg.Body.(*proto.EquipDisassembleReq)
 	rsp := &proto.EquipDisassembleRsp{
-		Status:    proto.StatusCode_StatusCode_Ok,
+		Status:    proto.StatusCode_StatusCode_OK,
 		Items:     make([]*proto.ItemDetail, 0),
 		Character: make([]*proto.Character, 0),
 		WeaponIds: append([]uint32(nil), disassembleReqWeapons(req)...),
@@ -202,7 +202,7 @@ func (g *Game) EquipDisassemble(s *model.Player, msg *alg.GameMsg) {
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	if !ok || req == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	items, err := s.DisassembleEquipment(req.WeaponIds, req.ArmorIds)
@@ -229,17 +229,17 @@ func disassembleReqArmors(req *proto.EquipDisassembleReq) []uint32 {
 func (g *Game) ItemUse(s *model.Player, msg *alg.GameMsg) {
 	req, ok := msg.Body.(*proto.ItemUseReq)
 	rsp := &proto.ItemUseRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Items:  make([]*proto.ItemDetail, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	if !ok || req == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	basic, ok := db.GetGameBasic(s.UserId)
 	if !ok || basic == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		return
 	}
 	result, err := s.UseItem(req.ItemId, req.Num, req.ChooseItemId, basic.Level, time.Now())
@@ -253,7 +253,7 @@ func (g *Game) ItemUse(s *model.Player, msg *alg.GameMsg) {
 	}
 	if len(result.PlayerBuffs) > 0 {
 		g.send(s, 0, &proto.PlayerBuffNotice{
-			Status:      proto.StatusCode_StatusCode_Ok,
+			Status:      proto.StatusCode_StatusCode_OK,
 			PlayerBuffs: result.PlayerBuffs,
 		})
 	}
@@ -262,12 +262,12 @@ func (g *Game) ItemUse(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) WeaponStrength(s *model.Player, msg *alg.GameMsg) {
 	req, ok := msg.Body.(*proto.WeaponStrengthReq)
 	rsp := &proto.WeaponStrengthRsp{
-		Status:           proto.StatusCode_StatusCode_Ok,
+		Status:           proto.StatusCode_StatusCode_OK,
 		WeaponInstanceId: weaponStrengthReqInstance(req),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	if !ok || req == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	notice, level, err := s.StrengthenWeapon(req.WeaponInstanceId)
@@ -294,12 +294,12 @@ func weaponStrengthReqInstance(req *proto.WeaponStrengthReq) uint32 {
 func (g *Game) ArmorStrength(s *model.Player, msg *alg.GameMsg) {
 	req, ok := msg.Body.(*proto.ArmorStrengthReq)
 	rsp := &proto.ArmorStrengthRsp{
-		Status:          proto.StatusCode_StatusCode_Ok,
+		Status:          proto.StatusCode_StatusCode_OK,
 		ArmorInstanceId: armorStrengthReqInstance(req),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	if !ok || req == nil {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	notice, level, err := s.StrengthenArmor(req.ArmorInstanceId)

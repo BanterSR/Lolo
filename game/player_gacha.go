@@ -11,7 +11,7 @@ import (
 
 func (g *Game) GachaList(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.GachaListRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Gachas: make([]*proto.GachaInfo, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
@@ -30,7 +30,7 @@ func (g *Game) GachaList(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) GachaRecord(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GachaRecordReq)
 	rsp := &proto.GachaRecordRsp{
-		Status:    proto.StatusCode_StatusCode_Ok,
+		Status:    proto.StatusCode_StatusCode_OK,
 		GachaId:   req.GachaId,
 		Page:      req.Page, // 当前页
 		TotalPage: 0,        // 总页
@@ -52,7 +52,7 @@ func (g *Game) GachaRecord(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) Gacha(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GachaReq)
 	rsp := &proto.GachaRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		Items:  nil,
 		Info:   nil,
 	}
@@ -63,12 +63,12 @@ func (g *Game) Gacha(s *model.Player, msg *alg.GameMsg) {
 		g.send(s, msg.PacketId, rsp)
 	}()
 	if gdconf.GetGachaData(req.GachaId) == nil {
-		rsp.Status = proto.StatusCode_StatusCode_GachaTypeNotExist
+		rsp.Status = proto.StatusCode_StatusCode_GACHA_TYPE_NOT_EXIST
 		return
 	}
 	ctx, err := s.NewGachaCtx(req)
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_GachaErr
+		rsp.Status = proto.StatusCode_StatusCode_GACHA_ERR
 		log.Game.Errorf("NewGachaCtx err:%v", err)
 		return
 	}
@@ -101,69 +101,69 @@ func gachaOptionalItemValid(gachaID, itemID uint32) bool {
 
 func (g *Game) OptionalUpPoolItem(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.OptionalUpPoolItemReq)
-	rsp := &proto.OptionalUpPoolItemRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.OptionalUpPoolItemRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	if req.ItemId != 0 && !gachaOptionalItemValid(req.GachaId, req.ItemId) {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	info := s.GetGachaModel().GetGachaInfo(req.GachaId)
 	info.OptionalItemId = req.ItemId
 	rsp.Info = info.GachaInfo()
 	if err := s.SavePlayerNow(); err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_SysErr
+		rsp.Status = proto.StatusCode_StatusCode_SYS_ERR
 	}
 }
 
 func (g *Game) ChooseGacha(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ChooseGachaReq)
 	rsp := &proto.ChooseGachaRsp{
-		Status:  proto.StatusCode_StatusCode_Ok,
+		Status:  proto.StatusCode_StatusCode_OK,
 		GachaId: req.GachaId,
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	selected := gdconf.GetGachaData(req.ChooseGachaPool)
 	if selected == nil || selected.Conf == nil || req.ChooseGachaPool == req.GachaId {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	info := s.GetGachaModel().GetGachaInfo(req.GachaId)
 	info.ChoosePoolId = req.ChooseGachaPool
 	rsp.ChooseGachaPool = info.ChoosePoolId
 	if err := s.SavePlayerNow(); err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_SysErr
+		rsp.Status = proto.StatusCode_StatusCode_SYS_ERR
 	}
 }
 
 func (g *Game) GachaFullPick(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GachaFullPickReq)
-	rsp := &proto.GachaFullPickRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.GachaFullPickRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	data := gdconf.GetGachaData(req.GachaId)
 	info := s.GetGachaModel().GetGachaInfo(req.GachaId)
 	if data == nil || data.Conf == nil || data.Conf.OptionalNum <= 0 ||
 		info.GachaTimes < uint32(data.Conf.OptionalNum) || info.FullPickRewarded {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	if !gachaOptionalItemValid(req.GachaId, req.ItemId) {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	item := s.AddAllTypeItem(req.ItemId, 1)
 	if item == nil || item.EBagItemTag == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	detail := item.AddItemDetail()
 	if detail == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	info.FullPickRewarded = true
 	rsp.Item = []*proto.ItemDetail{detail}
-	g.send(s, 0, &proto.PackNotice{Status: proto.StatusCode_StatusCode_Ok, Items: rsp.Item})
+	g.send(s, 0, &proto.PackNotice{Status: proto.StatusCode_StatusCode_OK, Items: rsp.Item})
 	if err := s.SavePlayerNow(); err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_SysErr
+		rsp.Status = proto.StatusCode_StatusCode_SYS_ERR
 	}
 }

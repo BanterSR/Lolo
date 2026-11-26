@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"gucooing/lolo/command"
 	"gucooing/lolo/game"
 	"net/http"
 	"os"
@@ -92,7 +91,7 @@ func runLolo(cmd *cobra.Command, args []string) error {
 			return
 		}
 	}
-	fmt.Printf("%s\n", alg.GmNotice)
+	fmt.Printf("%s\n", alg.ProjectNotice)
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println("\n程序异常退出,原因:")
@@ -130,10 +129,8 @@ func newLolo() error {
 	s := sdk.New(ginRouter)
 	// 初始化game
 	gs := game.NewGame(ginRouter)
-	// 初始化command
-	command.NewCommand(ginRouter, gs)
 	// 初始化gateWay
-	g := gateway.NewGateway(ginRouter, gs)
+	ga := gateway.NewGateway(ginRouter, gs)
 	// 初始化logserver
 	l := logserver.NewLogServer(ginRouter)
 
@@ -154,7 +151,7 @@ func newLolo() error {
 	// 启动GateWay服务器
 	go func() {
 		log.App.Info("Lolo GateWay Start!")
-		if err := g.RunGateway(); err != nil {
+		if err := ga.RunGateway(); err != nil {
 			log.App.Errorf("GateWay服务器错误:%s", err.Error())
 			done <- syscall.SIGTERM
 		}
@@ -176,7 +173,7 @@ func newLolo() error {
 		defer cancel()
 		log.App.Info("Lolo Close...")
 		s.Close()
-		g.Close()
+		ga.Close()
 		l.Close()
 		if err := db.Close(); err != nil { // 排空异步落库队列并关闭连接
 			log.App.Errorf("数据库关闭失败:%s", err.Error())
@@ -209,6 +206,7 @@ func NewGin() (*gin.Engine, *http.Server, *http.Server) {
 		gzip.Gzip(gzip.DefaultCompression),
 		log.GinLog(log.App),
 	)
+	router.ForwardedByClientIP = true
 	if config.GetMode() == config.ModeDev {
 		pprof.Register(router)
 	}

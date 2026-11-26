@@ -11,7 +11,8 @@ type logHandler = func(conn ofnet.Conn, msg *alg.GameMsg)
 
 func (g *LogServer) routerInit() {
 	g.handlerFuncRouteMap = map[uint32]logHandler{
-		cmd.PlayerPingReq: g.PlayerPing,
+		cmd.PlayerPingReq:       g.PlayerPing,
+		cmd.ClientLogMessageReq: g.ClientLogMessage,
 	}
 }
 

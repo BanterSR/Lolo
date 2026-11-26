@@ -81,8 +81,8 @@ func validArmorSlot(slot proto.EEquipType) bool {
 	return ok
 }
 
-func validPosterSlot(slot proto.PosterIndex) bool {
-	_, ok := proto.PosterIndex_name[int32(slot)]
+func validPosterSlot(slot proto.PosterInfo_PosterIndex) bool {
+	_, ok := proto.PosterInfo_PosterIndex_name[int32(slot)]
 	return ok
 }
 
@@ -122,7 +122,7 @@ func equipmentInstanceId(preset *model.EquipmentPreset, kind equipmentKind, slot
 			return armor.InstanceId
 		}
 	case equipmentPoster:
-		if poster := preset.Posters[proto.PosterIndex(slot)]; poster != nil {
+		if poster := preset.Posters[proto.PosterInfo_PosterIndex(slot)]; poster != nil {
 			return poster.InstanceId
 		}
 	}
@@ -136,7 +136,7 @@ func setEquipmentInstanceId(preset *model.EquipmentPreset, kind equipmentKind, s
 	case equipmentArmor:
 		preset.GetArmor(proto.EEquipType(slot)).InstanceId = instanceId
 	case equipmentPoster:
-		preset.GetPoster(proto.PosterIndex(slot)).InstanceId = instanceId
+		preset.GetPoster(proto.PosterInfo_PosterIndex(slot)).InstanceId = instanceId
 	}
 }
 
@@ -321,7 +321,7 @@ func buildEquipmentUpdate(s *model.Player, req *proto.CharacterEquipUpdateReq) (
 		key := uint64(equipmentArmor)<<32 | uint64(slot)
 		finalIds[key] = equipmentInstanceId(preset, equipmentArmor, uint32(slot))
 	}
-	for _, slot := range proto.PosterIndex_value {
+	for _, slot := range proto.PosterInfo_PosterIndex_value {
 		key := uint64(equipmentPoster)<<32 | uint64(slot)
 		finalIds[key] = equipmentInstanceId(preset, equipmentPoster, uint32(slot))
 	}
@@ -361,7 +361,7 @@ func applyCharacterEquipment(s *model.Player, req *proto.CharacterEquipUpdateReq
 	if rsp == nil {
 		return nil
 	}
-	rsp.Status = proto.StatusCode_StatusCode_BadReq
+	rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 	if s == nil || req == nil {
 		return nil
 	}
@@ -434,7 +434,7 @@ func applyCharacterEquipment(s *model.Player, req *proto.CharacterEquipUpdateReq
 		}
 	}
 
-	rsp.Status = proto.StatusCode_StatusCode_Ok
+	rsp.Status = proto.StatusCode_StatusCode_OK
 	for _, affected := range affectedCharacters {
 		rsp.Character = append(rsp.Character, affected.Character())
 	}

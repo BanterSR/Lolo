@@ -1,34 +1,55 @@
 # Iridium-OverField
 
-A KCP packet sniffer + visualizer in one, backend rewritten in Go.
+Iridium is Lolo's TCP game-protocol sniffer, decoder, and visualizer. Humans can inspect live packets at `http://127.0.0.1:1984/`; automation can consume the JSON API and per-session NDJSON artifacts.
 
-![Build](https://github.com/Akka0/Iridium-NG/actions/workflows/build.yml/badge.svg)
+Captured values are preserved as observed. Session output stays under the local, gitignored `captures/` directory unless `outputDir` is overridden.
 
-[中文说明](/README-zh.md)
+## Requirements
 
-# Usage
+- Npcap or a compatible capture driver supplied by Wireshark.
+- Current protocol definitions under `protocol/proto` and `protocol/cmd`.
+- Start capture before entering the scene or triggering the target action.
 
-You can download the binary(win/linux) from Actions, or build from source
+## Run
 
-0. Bring your `packetIds.json` and `OverField.proto` to the `data/` folder.
-1. Make sure you have installed [Npcap driver](https://npcap.com/#download) or wireshark.
-2. Use cmd `-l` to list the network devices on your computer and edit `config.json` to set the device by its name, or use cmd `-ip 192.x.x.x` to let it auto find the device by its ip.
-3. Set `minPort` and `maxPort` in `config.json`.
-4. Open http://localhost:1984/
+From the repository root:
 
-**Notice: START CAPTURE BEFORE YOU ENTER THE DOOR**
+```powershell
+go run ./tools/Iridium -l -format json
+go run ./tools/Iridium -config ./tools/Iridium/config.json -ip 192.168.1.20
+```
 
-# Config.json
+The `-listen`, `-output-dir`, and `-auto-start` flags override the corresponding runtime behavior. The default listener is loopback-only at `127.0.0.1:1984`.
+
+## API
+
+```text
+GET  /api/health
+GET  /api/status
+GET  /api/devices
+GET  /api/packets?afterId=0&limit=200
+GET  /api/packets?name=PlayerMainDataRsp&direction=server_to_client
+GET  /api/stream
+POST /api/capture/start
+POST /api/capture/stop
+POST /api/upload
+```
+
+Start request:
 
 ```json
 {
-  "deviceName" : "", // network device name, such as eth0
-  "packetFilter" : [ // the packets listed here will not show in frontend
-    ""
-  ],
-  "autoSavePcapFiles" : true, // auto save capture to current folder
-  "maxPort": 11100, // 端口监听范围
-  "minPort": 11000
+  "label": "feature-baseline",
+  "ip": "192.168.1.20",
+  "dumpJson": true,
+  "includeRaw": true
 }
 ```
 
+Wait for `GET /api/status` to report `capturing` before the client action. After stopping, wait for `stopped` and use the absolute `sessionDir` from the response. HTTP 409 means another session is active.
+
+Each session contains `manifest.json`, `packets.ndjson`, and, for live capture when enabled, `capture.pcapng`. NDJSON contains one complete packet record per line with direction, message and request IDs, sequence ID, decoded object, decode error, and optional raw body base64. Parse it line by line, not as a JSON array.
+
+The bundled frontend continues to use the compatible legacy `GET /api/start` and `GET /api/stop` routes. A slow or closed SSE client does not block capture; the NDJSON output remains authoritative.
+
+See [README-zh.md](README-zh.md) for the full configuration and workflow reference.

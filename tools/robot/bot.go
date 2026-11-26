@@ -263,7 +263,7 @@ func (b *Bot) login() bool {
 		logOnce(&logLoginErrOnce, "PlayerLogin 无响应: %v", err)
 		return false
 	}
-	if rsp := pmsg.Body.(*proto.PlayerLoginRsp); rsp.GetStatus() != proto.StatusCode_StatusCode_Ok {
+	if rsp := pmsg.Body.(*proto.PlayerLoginRsp); rsp.GetStatus() != proto.StatusCode_StatusCode_OK {
 		atomic.AddInt64(&b.m.loginFail, 1)
 		logOnce(&logLoginErrOnce, "PlayerLogin 被拒: status=%v", rsp.GetStatus())
 		return false

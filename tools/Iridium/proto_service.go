@@ -37,13 +37,13 @@ func parseProtoToJson(id uint32, data []byte) (string, error) {
 	return string(marshalJSON), nil
 }
 
-func parseProtoToInterface(id uint32, data []byte) (*interface{}, error) {
+func parseProtoToInterface(id uint32, data []byte) (any, error) {
 	object, err := parseProtoToJson(id, data)
 	if err != nil {
 		return nil, err
 	}
 
-	var result *interface{}
+	var result any
 	err = json.Unmarshal([]byte(object), &result)
 	if err != nil {
 		return nil, err

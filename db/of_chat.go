@@ -202,7 +202,7 @@ func CreateChatPrivateMsg(userId uint32, msg *OFChatPrivateMsg) error {
 		friends := make([]OFFriend, 0, 2)
 		if err = tx.Clauses(clause.Locking{Strength: "UPDATE"}).
 			Where("((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) AND status = ?",
-				msg.UserId, userId, userId, msg.UserId, proto.FriendStatus_FriendStatus_Friend).
+				msg.UserId, userId, userId, msg.UserId, proto.FriendStatus_FriendStatus_FRIEND).
 			Find(&friends).Error; err != nil {
 			return err
 		}

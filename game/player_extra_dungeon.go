@@ -26,7 +26,7 @@ func (g *Game) currentDungeon(s *model.Player) *model.SceneDungeon {
 func (g *Game) DungeonRepeatEnter(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.DungeonRepeatEnterReq)
 	rsp := &proto.DungeonRepeatEnterRsp{
-		Status:               proto.StatusCode_StatusCode_Ok,
+		Status:               proto.StatusCode_StatusCode_OK,
 		UpdateItem:           make([]*proto.ItemDetail, 0),
 		TreasureBoxes:        make([]*proto.TreasureBoxData, 0),
 		CurrentGatherGroupId: 0,
@@ -59,87 +59,87 @@ func dungeonStarMask(stars uint32) uint32 {
 
 func (g *Game) DungeonStarReward(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.DungeonStarRewardReq)
-	rsp := &proto.DungeonStarRewardRsp{Status: proto.StatusCode_StatusCode_Ok, Rewards: make([]*proto.ItemDetail, 0)}
+	rsp := &proto.DungeonStarRewardRsp{Status: proto.StatusCode_StatusCode_OK, Rewards: make([]*proto.ItemDetail, 0)}
 	defer g.send(s, msg.PacketId, rsp)
 	cfg, status := authoritativeDungeons.config(req.DungeonId)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	info := s.GetDungeonModel().GetDungeonInfo(req.DungeonId)
 	if info.Stars == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	mask := dungeonStarMask(info.Stars)
 	if info.StarRewardClaimed&mask == mask {
-		rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 		return
 	}
 	rewards, status := authoritativeDungeons.rewards(cfg.StarRewardID)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	items, status := authoritativeDungeons.grantRewards(s, rewards)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	info.StarRewardClaimed |= mask
 	rsp.Rewards = items
 	if err := s.SavePlayerNow(); err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
 }
 
 func (g *Game) DungeonTaskFinishReward(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.DungeonTaskFinishRewardReq)
-	rsp := &proto.DungeonTaskFinishRewardRsp{Status: proto.StatusCode_StatusCode_Ok, Rewards: make([]*proto.ItemDetail, 0)}
+	rsp := &proto.DungeonTaskFinishRewardRsp{Status: proto.StatusCode_StatusCode_OK, Rewards: make([]*proto.ItemDetail, 0)}
 	defer g.send(s, msg.PacketId, rsp)
 	cfg, status := authoritativeDungeons.config(req.DungeonId)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	info := s.GetDungeonModel().GetDungeonInfo(req.DungeonId)
 	if info.FinishTimes == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	if info.FirstClearRewardClaimed {
-		rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 		return
 	}
 	rewards, status := authoritativeDungeons.rewards(cfg.RewardID)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	items, status := authoritativeDungeons.grantRewards(s, rewards)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	info.FirstClearRewardClaimed = true
 	rsp.Rewards = items
 	if err := s.SavePlayerNow(); err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
 }
 
 func (g *Game) DungeonSweep(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.DungeonSweepReq)
-	rsp := &proto.DungeonSweepRsp{Status: proto.StatusCode_StatusCode_Ok, Rewards: make([]*proto.ItemDetail, 0)}
+	rsp := &proto.DungeonSweepRsp{Status: proto.StatusCode_StatusCode_OK, Rewards: make([]*proto.ItemDetail, 0)}
 	defer g.send(s, msg.PacketId, rsp)
 	cfg, status := authoritativeDungeons.config(req.DungeonId)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	info := s.GetDungeonModel().GetDungeonInfo(req.DungeonId)
 	if info.FinishTimes == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	today := time.Now().Unix() / 86400
@@ -148,22 +148,22 @@ func (g *Game) DungeonSweep(s *model.Player, msg *alg.GameMsg) {
 		info.DailySweepCount = 0
 	}
 	if cfg.DailyLimit > 0 && info.DailySweepCount >= cfg.DailyLimit {
-		rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 		return
 	}
 	rewards, status := authoritativeDungeons.rewards(cfg.RewardID)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	items, status := authoritativeDungeons.grantRewards(s, rewards)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	info.DailySweepCount++
 	rsp.Rewards = items
 	if err := s.SavePlayerNow(); err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
 }

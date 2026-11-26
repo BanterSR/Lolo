@@ -130,7 +130,7 @@ func addEquipmentTestBase(t *testing.T, p *Player, cfg *equipmentGrowthConfig, i
 		t.Fatalf("missing test item config %d", itemID)
 	}
 	info := &ItemBaseInfo{
-		ItemId: itemID, Num: count, ItemType: proto.EBagItemTag(conf.NewBagItemTag), PackType: proto.PackType_PackType_Inventory,
+		ItemId: itemID, Num: count, ItemType: proto.EBagItemTag(conf.NewBagItemTag), PackType: proto.ItemDetail_PackType_Inventory,
 	}
 	p.Item.ItemBaseInfo[itemID] = info
 	return info
@@ -138,7 +138,7 @@ func addEquipmentTestBase(t *testing.T, p *Player, cfg *equipmentGrowthConfig, i
 
 func addEquipmentTestWeapon(p *Player, instanceID uint32) *ItemWeaponInfo {
 	info := &ItemWeaponInfo{
-		ItemBaseInfo: &ItemBaseInfo{ItemId: 1, ItemType: proto.EBagItemTag_EBagItemTag_Weapon, PackType: proto.PackType_PackType_Inventory},
+		ItemBaseInfo: &ItemBaseInfo{ItemId: 1, ItemType: proto.EBagItemTag_EBagItemTag_Weapon, PackType: proto.ItemDetail_PackType_Inventory},
 		WeaponId:     1, InstanceId: instanceID, Level: 1, Attack: 10, Star: 1,
 	}
 	p.Item.ItemWeaponMap[instanceID] = info
@@ -147,7 +147,7 @@ func addEquipmentTestWeapon(p *Player, instanceID uint32) *ItemWeaponInfo {
 
 func addEquipmentTestArmor(p *Player, instanceID uint32) *ItemArmorInfo {
 	info := &ItemArmorInfo{
-		ItemBaseInfo: &ItemBaseInfo{ItemId: 2, ItemType: proto.EBagItemTag_EBagItemTag_Armor, PackType: proto.PackType_PackType_Inventory},
+		ItemBaseInfo: &ItemBaseInfo{ItemId: 2, ItemType: proto.EBagItemTag_EBagItemTag_Armor, PackType: proto.ItemDetail_PackType_Inventory},
 		ArmorId:      2, InstanceId: instanceID, Level: 1, Star: 1,
 	}
 	p.Item.ItemArmorMap[instanceID] = info
@@ -156,7 +156,7 @@ func addEquipmentTestArmor(p *Player, instanceID uint32) *ItemArmorInfo {
 
 func addEquipmentTestPoster(p *Player, instanceID uint32) *ItemPosterInfo {
 	info := &ItemPosterInfo{
-		ItemBaseInfo: &ItemBaseInfo{ItemId: 3, ItemType: proto.EBagItemTag_EBagItemTag_Poster, PackType: proto.PackType_PackType_Inventory},
+		ItemBaseInfo: &ItemBaseInfo{ItemId: 3, ItemType: proto.EBagItemTag_EBagItemTag_Poster, PackType: proto.ItemDetail_PackType_Inventory},
 		PosterId:     3, InstanceId: instanceID, Star: 1,
 	}
 	p.Item.ItemPosterMap[instanceID] = info
@@ -165,7 +165,7 @@ func addEquipmentTestPoster(p *Player, instanceID uint32) *ItemPosterInfo {
 
 func addEquipmentTestInscription(p *Player, inscriptionID uint32) *ItemInscriptionInfo {
 	info := &ItemInscriptionInfo{
-		ItemBaseInfo:  &ItemBaseInfo{ItemId: inscriptionID, ItemType: proto.EBagItemTag_EBagItemTag_Inscription, PackType: proto.PackType_PackType_Inventory},
+		ItemBaseInfo:  &ItemBaseInfo{ItemId: inscriptionID, ItemType: proto.EBagItemTag_EBagItemTag_Inscription, PackType: proto.ItemDetail_PackType_Inventory},
 		InscriptionId: inscriptionID, Level: 1,
 	}
 	p.Item.ItemInscriptionMap[inscriptionID] = info
@@ -211,7 +211,7 @@ func TestEquipmentGrowthRejectsGhostAndWrongType(t *testing.T) {
 	if _, _, err := sStrengthenWeaponForTest(p, armor.InstanceId); err == nil {
 		t.Fatal("armor instance was accepted as a weapon")
 	}
-	if _, err := p.ToggleEquipmentLock(armor.InstanceId, proto.LockEquip_EquipType_LockEquip_EquipType_Weapon); err == nil {
+	if _, err := p.ToggleEquipmentLock(armor.InstanceId, proto.LockEquipReq_LockEquip_EquipType_Weapon); err == nil {
 		t.Fatal("armor instance was locked as a weapon")
 	}
 	if _, _, err := p.InscribeWeapon(armor.InstanceId, 4); err == nil {
@@ -240,7 +240,7 @@ func TestWeaponStrengthCostsAreAtomicAndLevelCapped(t *testing.T) {
 	material := addEquipmentTestBase(t, p, cfg, 270, 1)
 
 	_, _, err := p.StrengthenWeapon(1)
-	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_ItemNotEnough)
+	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH)
 	if weapon.StrengthLevel != 0 || weapon.Attack != 10 || gold.Num != 10 || material.Num != 1 {
 		t.Fatal("failed strengthening partially changed player state")
 	}
@@ -260,7 +260,7 @@ func TestWeaponStrengthCostsAreAtomicAndLevelCapped(t *testing.T) {
 	gold.Num = 100
 	material.Num = 100
 	_, _, err = p.StrengthenWeapon(1)
-	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_WeaponMaxStrengthLevel)
+	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_WEAPON_MAX_STRENGTH_LEVEL)
 	if gold.Num != 100 || material.Num != 100 || weapon.StrengthLevel != 1 {
 		t.Fatal("max-level strengthening consumed resources")
 	}
@@ -274,7 +274,7 @@ func TestArmorStrengthRejectsInsufficientMaterials(t *testing.T) {
 	material := addEquipmentTestBase(t, p, cfg, 250, 2)
 
 	_, _, err := p.StrengthenArmor(2)
-	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_ItemNotEnough)
+	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH)
 	if armor.StrengthLevel != 0 || gold.Num != 7 || material.Num != 2 {
 		t.Fatal("failed armor strengthening changed player state")
 	}
@@ -284,7 +284,7 @@ func TestArmorStrengthRejectsInsufficientMaterials(t *testing.T) {
 		t.Fatalf("armor strengthening failed: level=%d gold=%d material=%d err=%v", level, gold.Num, material.Num, err)
 	}
 	_, _, err = p.StrengthenArmor(2)
-	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_ArmorMaxStrengthLevel)
+	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_ARMOR_MAX_STRENGTH_LEVEL)
 }
 
 func TestWeaponInscriptionMovesWithoutCopy(t *testing.T) {
@@ -375,7 +375,7 @@ func TestPosterStarUpConsumesMaterialsAndDetachesEquipment(t *testing.T) {
 	gold := addEquipmentTestBase(t, p, cfg, 101, 10)
 	character := &CharacterInfo{CharacterId: 10, EquipmentPresetList: make(map[uint32]*EquipmentPreset)}
 	preset := newEquipmentPreset(0)
-	preset.Posters[proto.PosterIndex_PosterIndex_First].InstanceId = 2
+	preset.Posters[proto.PosterInfo_PosterIndex_First].InstanceId = 2
 	character.EquipmentPresetList[0] = preset
 	p.Character.CharacterMap[10] = character
 	material.SetWearer(10, 0)
@@ -387,7 +387,7 @@ func TestPosterStarUpConsumesMaterialsAndDetachesEquipment(t *testing.T) {
 	if target.Star != 2 || gold.Num != 0 || p.Item.GetItemPosterInfo(2) != nil || material.WearerId != 0 {
 		t.Fatal("poster star-up did not apply star, cost, and detach atomically")
 	}
-	if preset.Posters[proto.PosterIndex_PosterIndex_First].InstanceId != 0 {
+	if preset.Posters[proto.PosterInfo_PosterIndex_First].InstanceId != 0 {
 		t.Fatal("consumed poster remained in an equipment preset")
 	}
 }
@@ -398,13 +398,13 @@ func TestPosterIllustrationRewardIsOneTime(t *testing.T) {
 	addEquipmentTestPoster(p, 1)
 
 	entry, err := p.ClaimPosterIllustration(3)
-	if err != nil || entry.RewardStatus != proto.RewardStatus_RewardStatus_Reward {
+	if err != nil || entry.RewardStatus != proto.RewardStatus_Reward {
 		t.Fatalf("illustration reward failed: %v", err)
 	}
 	_, err = p.ClaimPosterIllustration(3)
-	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_PosterIllustrationRewarded)
+	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_POSTER_ILLUSTRATION_REWARDED)
 	illustrations := p.PosterIllustrations()
-	if len(illustrations) != 1 || illustrations[0].RewardStatus != proto.RewardStatus_RewardStatus_Reward {
+	if len(illustrations) != 1 || illustrations[0].RewardStatus != proto.RewardStatus_Reward {
 		t.Fatal("illustration list did not preserve rewarded status")
 	}
 }
@@ -448,7 +448,7 @@ func TestItemUseGiftValidatesChoiceQuantityAndCooldown(t *testing.T) {
 	}
 	gift.Num = 1
 	_, err = p.UseItem(6000010, 1, 900, 1, now.Add(time.Second))
-	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_RequestsTooFrequent)
+	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_REQUESTS_TOO_FREQUENT)
 	if gift.Num != 1 || p.Item.GetItemBaseInfo(900).Num != 4 {
 		t.Fatal("cooldown failure changed inventory")
 	}
@@ -472,7 +472,7 @@ func TestItemUseFoodAppliesConfiguredBuffAndRejectsActiveReuse(t *testing.T) {
 		t.Fatalf("unexpected food buff: %+v", buff)
 	}
 	_, err = p.UseItem(5013000, 1, 0, 1, now.Add(time.Second))
-	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_RequestsTooFrequent)
+	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_REQUESTS_TOO_FREQUENT)
 	if food.Num != 1 {
 		t.Fatal("active food reuse consumed an item")
 	}
@@ -485,9 +485,9 @@ func TestItemUseRejectsZeroCountAndUnsupportedPurpose(t *testing.T) {
 	now := time.Unix(1000, 0)
 
 	_, err := p.UseItem(270, 0, 0, 1, now)
-	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_BadReq)
+	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_BAD_REQ)
 	_, err = p.UseItem(270, 1, 0, 1, now)
-	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_BadReq)
+	requireGrowthStatus(t, err, proto.StatusCode_StatusCode_BAD_REQ)
 	if material.Num != 3 {
 		t.Fatal("invalid item use consumed material")
 	}

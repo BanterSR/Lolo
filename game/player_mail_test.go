@@ -48,14 +48,14 @@ func TestGetMailsReturnsBuiltinTemplates(t *testing.T) {
 	if !ok {
 		t.Fatalf("响应类型错误: %T", conn.sent[0])
 	}
-	if rsp.GetStatus() != proto.StatusCode_StatusCode_Ok {
+	if rsp.GetStatus() != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("获取邮件失败: %v", rsp.GetStatus())
 	}
 	if len(rsp.GetMails()) != len(model.TestMails) {
 		t.Fatalf("邮件数量错误: got %d want %d", len(rsp.GetMails()), len(model.TestMails))
 	}
 	first := rsp.GetMails()[0]
-	if first.GetMailId() != 1 || first.GetMailState() != proto.MailState_MailState_Unclaim {
+	if first.GetMailId() != 1 || first.GetMailState() != proto.MailState_MailState_UNCLAIM {
 		t.Fatalf("补偿邮件状态错误: %+v", first)
 	}
 	if len(first.GetItems()) != 2 {
@@ -72,7 +72,7 @@ func TestClaimMailGrantsAttachmentsOnce(t *testing.T) {
 			info = &model.ItemBaseInfo{
 				ItemId:   itemID,
 				ItemType: proto.EBagItemTag_EBagItemTag_Currency,
-				PackType: proto.PackType_PackType_Inventory,
+				PackType: proto.ItemDetail_PackType_Inventory,
 			}
 			bag[itemID] = info
 		}
@@ -84,12 +84,12 @@ func TestClaimMailGrantsAttachmentsOnce(t *testing.T) {
 	conn := &lifeTestConn{}
 	player := newMailPlayer(conn)
 	(&Game{}).OperateMails(player, mailMsg(&proto.OperateMailsReq{
-		OperateType: proto.MailOperateType_MailOperateType_Claim,
+		OperateType: proto.MailOperateType_MailOperateType_CLAIM,
 		MailId:      1,
 	}))
 
 	rsp := lastMailResponse(t, conn)
-	if rsp.GetStatus() != proto.StatusCode_StatusCode_Ok {
+	if rsp.GetStatus() != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("领取邮件失败: %v", rsp.GetStatus())
 	}
 	if len(rsp.GetClaimResult()) != 2 {
@@ -107,7 +107,7 @@ func TestClaimMailGrantsAttachmentsOnce(t *testing.T) {
 		t.Fatalf("邮件状态未更新: %+v", state)
 	}
 	for _, mail := range rsp.GetMails() {
-		if mail.GetMailId() == 1 && mail.GetMailState() != proto.MailState_MailState_Claimed {
+		if mail.GetMailId() == 1 && mail.GetMailState() != proto.MailState_MailState_CLAIMED {
 			t.Fatalf("领取后邮件状态错误: %v", mail.GetMailState())
 		}
 	}
@@ -115,11 +115,11 @@ func TestClaimMailGrantsAttachmentsOnce(t *testing.T) {
 	// 第二次领取必须拒绝，且不能重复发货。
 	conn.sent = nil
 	(&Game{}).OperateMails(player, mailMsg(&proto.OperateMailsReq{
-		OperateType: proto.MailOperateType_MailOperateType_Claim,
+		OperateType: proto.MailOperateType_MailOperateType_CLAIM,
 		MailId:      1,
 	}))
 	again := lastMailResponse(t, conn)
-	if again.GetStatus() != proto.StatusCode_StatusCode_RepeatGetReward {
+	if again.GetStatus() != proto.StatusCode_StatusCode_REPEAT_GET_REWARD {
 		t.Fatalf("重复领取未被拒绝: %v", again.GetStatus())
 	}
 	if got := player.GetItemModel().GetItemBaseInfo(102); got == nil || got.Num != 700 {
@@ -131,17 +131,17 @@ func TestReadAndDeleteMail(t *testing.T) {
 	conn := &lifeTestConn{}
 	player := newMailPlayer(conn)
 	(&Game{}).OperateMails(player, mailMsg(&proto.OperateMailsReq{
-		OperateType: proto.MailOperateType_MailOperateType_Read,
+		OperateType: proto.MailOperateType_MailOperateType_READ,
 		MailId:      2,
 	}))
 	readRsp := lastMailResponse(t, conn)
-	if readRsp.GetStatus() != proto.StatusCode_StatusCode_Ok {
+	if readRsp.GetStatus() != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("读取邮件失败: %v", readRsp.GetStatus())
 	}
 	foundRead := false
 	for _, mail := range readRsp.GetMails() {
 		if mail.GetMailId() == 2 {
-			foundRead = mail.GetMailState() == proto.MailState_MailState_Readed
+			foundRead = mail.GetMailState() == proto.MailState_MailState_READED
 		}
 	}
 	if !foundRead {
@@ -150,10 +150,10 @@ func TestReadAndDeleteMail(t *testing.T) {
 
 	conn.sent = nil
 	(&Game{}).OperateMails(player, mailMsg(&proto.OperateMailsReq{
-		OperateType: proto.MailOperateType_MailOperateType_DeleteAllReaded,
+		OperateType: proto.MailOperateType_MailOperateType_DELETE_ALL_READED,
 	}))
 	deleteRsp := lastMailResponse(t, conn)
-	if deleteRsp.GetStatus() != proto.StatusCode_StatusCode_Ok {
+	if deleteRsp.GetStatus() != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("删除已读邮件失败: %v", deleteRsp.GetStatus())
 	}
 	if len(deleteRsp.GetDeletedMailIds()) != 1 || deleteRsp.GetDeletedMailIds()[0] != 2 {
@@ -175,7 +175,7 @@ func TestClaimAllSkipsClaimedMail(t *testing.T) {
 			info = &model.ItemBaseInfo{
 				ItemId:   itemID,
 				ItemType: proto.EBagItemTag_EBagItemTag_Currency,
-				PackType: proto.PackType_PackType_Inventory,
+				PackType: proto.ItemDetail_PackType_Inventory,
 			}
 			bag[itemID] = info
 		}
@@ -187,19 +187,19 @@ func TestClaimAllSkipsClaimedMail(t *testing.T) {
 	conn := &lifeTestConn{}
 	player := newMailPlayer(conn)
 	(&Game{}).OperateMails(player, mailMsg(&proto.OperateMailsReq{
-		OperateType: proto.MailOperateType_MailOperateType_ClaimAll,
+		OperateType: proto.MailOperateType_MailOperateType_CLAIM_ALL,
 	}))
 	first := lastMailResponse(t, conn)
-	if first.GetStatus() != proto.StatusCode_StatusCode_Ok || len(first.GetClaimResult()) != 2 {
+	if first.GetStatus() != proto.StatusCode_StatusCode_OK || len(first.GetClaimResult()) != 2 {
 		t.Fatalf("一键领取失败: status=%v items=%d", first.GetStatus(), len(first.GetClaimResult()))
 	}
 
 	conn.sent = nil
 	(&Game{}).OperateMails(player, mailMsg(&proto.OperateMailsReq{
-		OperateType: proto.MailOperateType_MailOperateType_ClaimAll,
+		OperateType: proto.MailOperateType_MailOperateType_CLAIM_ALL,
 	}))
 	second := lastMailResponse(t, conn)
-	if second.GetStatus() != proto.StatusCode_StatusCode_MailNoReward {
+	if second.GetStatus() != proto.StatusCode_StatusCode_MAIL_NO_REWARD {
 		t.Fatalf("无邮件可领时状态错误: %v", second.GetStatus())
 	}
 	if got := player.GetItemModel().GetItemBaseInfo(102); got == nil || got.Num != 700 {

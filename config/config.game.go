@@ -5,9 +5,8 @@ import (
 )
 
 type Game struct {
-	Log         *Log   `json:"Log"`
-	MsgChanSize int    `json:"MsgChanSize"`
-	BotList     []*Bot `json:"BotList"`
+	Log         *Log `json:"Log"`
+	MsgChanSize int  `json:"MsgChanSize"`
 }
 
 var defaultGame = &Game{
@@ -17,7 +16,6 @@ var defaultGame = &Game{
 		AppName: "Game",
 	},
 	MsgChanSize: 100,
-	BotList:     make([]*Bot, 0),
 }
 
 func GetGame() *Game {
@@ -33,8 +31,4 @@ func (x *Game) GetLog() *Log {
 
 func (x *Game) GetMsgChanSize() int {
 	return x.MsgChanSize
-}
-
-func (x *Game) GetBotList() []*Bot {
-	return x.BotList
 }

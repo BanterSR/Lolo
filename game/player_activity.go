@@ -724,7 +724,7 @@ func ActivityErrorStatus(err error) proto.StatusCode {
 	if errors.As(err, &statusErr) {
 		return statusErr.status
 	}
-	return proto.StatusCode_StatusCode_SysErr
+	return proto.StatusCode_StatusCode_SYS_ERR
 }
 
 type activityItemGranter func(*model.Player, []activityItem) ([]*proto.ItemDetail, error)
@@ -786,7 +786,7 @@ func (a *activityService) weekToken(now int64) string {
 func (a *activityService) commit(s *model.Player, fn func() ([]*proto.ItemDetail, error)) ([]*proto.ItemDetail, error) {
 	snapshot, err := sonic.Marshal(s)
 	if err != nil {
-		return nil, activityErr(proto.StatusCode_StatusCode_SysErr, "序列化活动事务失败: %w", err)
+		return nil, activityErr(proto.StatusCode_StatusCode_SYS_ERR, "序列化活动事务失败: %w", err)
 	}
 	items, err := fn()
 	if err == nil {
@@ -816,24 +816,24 @@ func (a *activityService) commit(s *model.Player, fn func() ([]*proto.ItemDetail
 
 func (a *activityService) consume(s *model.Player, itemID uint32, count int64) (*proto.PackNotice, error) {
 	if itemID == 0 || count <= 0 {
-		return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "活动消耗配置缺失")
+		return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "活动消耗配置缺失")
 	}
 	if _, ok := a.conf.Items[itemID]; !ok {
-		return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "消耗物品配置缺失:%d", itemID)
+		return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "消耗物品配置缺失:%d", itemID)
 	}
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		return nil, activityErr(proto.StatusCode_StatusCode_SysErr, "创建物品事务失败:%w", err)
+		return nil, activityErr(proto.StatusCode_StatusCode_SYS_ERR, "创建物品事务失败:%w", err)
 	}
 	tx.DelBaseItem(itemID, count)
 	if tx.Error != nil {
 		tx.Rollback()
-		return nil, &activityStatusError{status: proto.StatusCode_StatusCode_ItemNotEnough, cause: tx.Error}
+		return nil, &activityStatusError{status: proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH, cause: tx.Error}
 	}
 	tx.Commit()
 	if tx.Error != nil {
 		tx.Rollback()
-		return nil, &activityStatusError{status: proto.StatusCode_StatusCode_ItemNotEnough, cause: tx.Error}
+		return nil, &activityStatusError{status: proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH, cause: tx.Error}
 	}
 	return tx.PackNotice, nil
 }
@@ -893,14 +893,14 @@ func activityStackableItem(tag proto.EBagItemTag) bool {
 
 func (a *activityService) grantItems(s *model.Player, items []activityItem) ([]*proto.ItemDetail, error) {
 	if len(items) == 0 {
-		return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "活动奖励配置缺失")
+		return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "活动奖励配置缺失")
 	}
 	for _, item := range items {
 		if item.ID == 0 || item.Num <= 0 {
-			return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "活动奖励配置无效")
+			return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "活动奖励配置无效")
 		}
 		if _, ok := a.conf.Items[item.ID]; !ok {
-			return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "奖励物品配置缺失:%d", item.ID)
+			return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "奖励物品配置缺失:%d", item.ID)
 		}
 	}
 	granter := a.grant
@@ -914,11 +914,11 @@ func (a *activityService) grantItems(s *model.Player, items []activityItem) ([]*
 					bag := s.GetItemModel().GetItemBaseMap()
 					info := bag[item.ID]
 					if info == nil {
-						info = &model.ItemBaseInfo{ItemId: item.ID, ItemType: tag, PackType: proto.PackType_PackType_Inventory}
+						info = &model.ItemBaseInfo{ItemId: item.ID, ItemType: tag, PackType: proto.ItemDetail_PackType_Inventory}
 						bag[item.ID] = info
 					}
 					if info.Num > int64(^uint64(0)>>1)-item.Num {
-						return nil, activityErr(proto.StatusCode_StatusCode_SysErr, "奖励物品数量溢出:%d", item.ID)
+						return nil, activityErr(proto.StatusCode_StatusCode_SYS_ERR, "奖励物品数量溢出:%d", item.ID)
 					}
 					info.Num += item.Num
 					details = append(details, info.ItemDetail())
@@ -926,11 +926,11 @@ func (a *activityService) grantItems(s *model.Player, items []activityItem) ([]*
 				}
 				ctx := s.AddAllTypeItem(item.ID, item.Num)
 				if ctx == nil {
-					return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "奖励物品无法发放:%d", item.ID)
+					return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "奖励物品无法发放:%d", item.ID)
 				}
 				detail := ctx.AddItemDetail()
 				if detail == nil {
-					return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "奖励物品详情缺失:%d", item.ID)
+					return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "奖励物品详情缺失:%d", item.ID)
 				}
 				details = append(details, detail)
 			}
@@ -942,7 +942,7 @@ func (a *activityService) grantItems(s *model.Player, items []activityItem) ([]*
 
 func (a *activityService) resolveReward(s *model.Player, rewardID uint32) ([]activityItem, error) {
 	if rewardID == 0 {
-		return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "奖励池ID缺失")
+		return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "奖励池ID缺失")
 	}
 	level := a.playerLevel(s)
 	items := make([]activityItem, 0)
@@ -950,7 +950,7 @@ func (a *activityService) resolveReward(s *model.Player, rewardID uint32) ([]act
 	if !ok {
 		itemPool, exists := a.conf.RewardItemPools[rewardID]
 		if !exists {
-			return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "奖励池配置缺失:%d", rewardID)
+			return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "奖励池配置缺失:%d", rewardID)
 		}
 		poolItems, err := a.resolveRewardItemPool(itemPool, level)
 		if err != nil {
@@ -961,7 +961,7 @@ func (a *activityService) resolveReward(s *model.Player, rewardID uint32) ([]act
 	for _, group := range pool.Groups {
 		itemPool, exists := a.conf.RewardItemPools[group.ID]
 		if !exists {
-			return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "奖励物品池缺失:%d", group.ID)
+			return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "奖励物品池缺失:%d", group.ID)
 		}
 		poolItems, err := a.resolveRewardItemPool(itemPool, level)
 		if err != nil {
@@ -970,7 +970,7 @@ func (a *activityService) resolveReward(s *model.Player, rewardID uint32) ([]act
 		items = append(items, poolItems...)
 	}
 	if len(items) == 0 {
-		return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "奖励池为空:%d", rewardID)
+		return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "奖励池为空:%d", rewardID)
 	}
 	return items, nil
 }
@@ -979,7 +979,7 @@ func (a *activityService) resolveRewardItemPool(pool rewardItemPoolConfig, level
 	items := make([]activityItem, 0, len(pool.Groups))
 	for _, group := range pool.Groups {
 		if group.ItemID == 0 {
-			return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "奖励池物品ID缺失")
+			return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "奖励池物品ID缺失")
 		}
 		if group.MinLevel > 0 && level < group.MinLevel {
 			continue
@@ -1001,14 +1001,14 @@ func (a *activityService) resolveRewardItemPool(pool rewardItemPoolConfig, level
 		if maxCount > minCount {
 			span := maxCount - minCount
 			if span >= int64(^uint(0)>>1) {
-				return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "奖励数量范围无效")
+				return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "奖励数量范围无效")
 			}
 			count = minCount + int64(a.randomInt(int(span)+1))
 		}
 		items = append(items, activityItem{ID: group.ItemID, Num: count})
 	}
 	if len(items) == 0 {
-		return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "奖励物品池为空或不满足等级:%d", pool.ID)
+		return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "奖励物品池为空或不满足等级:%d", pool.ID)
 	}
 	return items, nil
 }
@@ -1017,12 +1017,12 @@ func (a *activityService) directItems(items []activityDirectItem) ([]activityIte
 	result := make([]activityItem, 0, len(items))
 	for _, item := range items {
 		if item.ItemID == 0 || item.ItemNum <= 0 {
-			return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "活动奖励条目无效")
+			return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "活动奖励条目无效")
 		}
 		result = append(result, activityItem{ID: item.ItemID, Num: item.ItemNum})
 	}
 	if len(result) == 0 {
-		return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "活动奖励条目为空")
+		return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "活动奖励条目为空")
 	}
 	return result, nil
 }
@@ -1030,12 +1030,12 @@ func (a *activityService) directItems(items []activityDirectItem) ([]activityIte
 func (c *activityConfigs) resolveActivity(id uint32, activityType proto.EActivityType, now int64) (activityConfigRow, proto.StatusCode) {
 	if row, ok := c.Activities[id]; ok {
 		if proto.EActivityType(row.NewActivityType) != activityType {
-			return activityConfigRow{}, proto.StatusCode_StatusCode_CfgNotFound
+			return activityConfigRow{}, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		}
 		if !row.open(now) {
-			return activityConfigRow{}, proto.StatusCode_StatusCode_ActivityClose
+			return activityConfigRow{}, proto.StatusCode_StatusCode_Activity_Close
 		}
-		return row, proto.StatusCode_StatusCode_Ok
+		return row, proto.StatusCode_StatusCode_OK
 	}
 	matches := make([]activityConfigRow, 0, 1)
 	closedTemplate := false
@@ -1049,15 +1049,15 @@ func (c *activityConfigs) resolveActivity(id uint32, activityType proto.EActivit
 		}
 	}
 	if len(matches) == 1 {
-		return matches[0], proto.StatusCode_StatusCode_Ok
+		return matches[0], proto.StatusCode_StatusCode_OK
 	}
 	if len(matches) > 1 {
-		return activityConfigRow{}, proto.StatusCode_StatusCode_BadReq
+		return activityConfigRow{}, proto.StatusCode_StatusCode_BAD_REQ
 	}
 	if closedTemplate {
-		return activityConfigRow{}, proto.StatusCode_StatusCode_ActivityClose
+		return activityConfigRow{}, proto.StatusCode_StatusCode_Activity_Close
 	}
-	return activityConfigRow{}, proto.StatusCode_StatusCode_CfgNotFound
+	return activityConfigRow{}, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 }
 
 func (r activityConfigRow) open(now int64) bool {
@@ -1117,25 +1117,25 @@ func (a *activityService) achievementProgress(s *model.Player, row activityConfi
 func (a *activityService) requireAchievement(s *model.Player, row activityConfigRow, achieveID uint32, now int64) error {
 	target, ok := a.achievementTarget(achieveID)
 	if !ok {
-		return activityErr(proto.StatusCode_StatusCode_CfgNotFound, "成就配置缺失:%d", achieveID)
+		return activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "成就配置缺失:%d", achieveID)
 	}
 	if a.achievementProgress(s, row, achieveID, now) < target {
-		return activityErr(proto.StatusCode_StatusCode_QuestNotFinish, "成就未完成:%d", achieveID)
+		return activityErr(proto.StatusCode_StatusCode_Quest_Not_Finish, "成就未完成:%d", achieveID)
 	}
 	return nil
 }
 
 func (a *activityService) signIn(s *model.Player, req *proto.ActivitySignInReq) (*proto.ActivitySignInRsp, []*proto.ItemDetail) {
-	rsp := &proto.ActivitySignInRsp{Day: req.GetDay(), Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.ActivitySignInRsp{Day: req.GetDay(), Status: proto.StatusCode_StatusCode_OK}
 	now := a.now()
 	row, status := a.conf.resolveActivity(req.GetActivityId(), proto.EActivityType_EActivityType_SevenDaySign, now)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return rsp, nil
 	}
 	conf, ok := a.conf.Signs[row.templateID()]
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	state := a.period(s, row)
@@ -1167,18 +1167,18 @@ func (a *activityService) signIn(s *model.Player, req *proto.ActivitySignInReq) 
 		break
 	}
 	if len(rewards) == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	for day := uint32(1); day < req.GetDay(); day++ {
 		if !state.IsClaimed(fmt.Sprintf("sign:%d", day)) {
-			rsp.Status = proto.StatusCode_StatusCode_BadReq
+			rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 			return rsp, nil
 		}
 	}
 	claimKey := fmt.Sprintf("sign:%d", req.GetDay())
 	if state.IsClaimed(claimKey) {
-		rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 		return rsp, nil
 	}
 	items, err := a.commit(s, func() ([]*proto.ItemDetail, error) {
@@ -1210,34 +1210,34 @@ func (a *activityService) directItemsFromSign(items []activitySignReward) ([]act
 	result := make([]activityItem, 0, len(items))
 	for _, item := range items {
 		if item.ItemID == 0 || item.ItemNum <= 0 {
-			return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "签到奖励配置无效")
+			return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "签到奖励配置无效")
 		}
 		result = append(result, activityItem{ID: item.ItemID, Num: item.ItemNum})
 	}
 	if len(result) == 0 {
-		return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "签到奖励配置为空")
+		return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "签到奖励配置为空")
 	}
 	return result, nil
 }
 
 func (a *activityService) activityQuestReward(s *model.Player, req *proto.ActivityQuestRewardReq) (*proto.ActivityQuestRewardRsp, []*proto.ItemDetail) {
-	rsp := &proto.ActivityQuestRewardRsp{Param: req.GetParam(), IsProgress: req.GetIsProgress(), Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.ActivityQuestRewardRsp{Param: req.GetParam(), IsProgress: req.GetIsProgress(), Status: proto.StatusCode_StatusCode_OK}
 	now := a.now()
 	row, status := a.conf.resolveActivity(req.GetActivityId(), proto.EActivityType_EActivityType_SevenDayQuest, now)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return rsp, nil
 	}
 	conf, ok := a.conf.Quests[row.templateID()]
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	state := a.period(s, row)
 	if req.GetIsProgress() {
 		rewardConf, ok := a.conf.QuestRewards[conf.RewardID]
 		if !ok {
-			rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return rsp, nil
 		}
 		var selected *activityQuestProgressReward
@@ -1248,21 +1248,21 @@ func (a *activityService) activityQuestReward(s *model.Player, req *proto.Activi
 			}
 		}
 		if selected == nil || selected.ConditionItemID == 0 || selected.ConditionItemNum <= 0 || selected.RewardItemID == 0 || selected.RewardItemNum <= 0 {
-			rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return rsp, nil
 		}
 		if _, ok := a.conf.Items[selected.ConditionItemID]; !ok {
-			rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return rsp, nil
 		}
 		have := s.GetItemModel().GetItemBaseInfo(selected.ConditionItemID)
 		if have == nil || have.Num < selected.ConditionItemNum {
-			rsp.Status = proto.StatusCode_StatusCode_ItemNotEnough
+			rsp.Status = proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 			return rsp, nil
 		}
 		claimKey := fmt.Sprintf("quest:progress:%d", req.GetParam())
 		if state.IsClaimed(claimKey) {
-			rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+			rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 			return rsp, nil
 		}
 		rewards := []activityItem{{ID: selected.RewardItemID, Num: selected.RewardItemNum}}
@@ -1300,14 +1300,14 @@ func (a *activityService) activityQuestReward(s *model.Player, req *proto.Activi
 		claimable = append(claimable, item)
 	}
 	if !dayConfigured {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	if len(claimable) == 0 {
 		if allFinished {
-			rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+			rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 		} else {
-			rsp.Status = proto.StatusCode_StatusCode_QuestNotFinish
+			rsp.Status = proto.StatusCode_StatusCode_Quest_Not_Finish
 		}
 		return rsp, nil
 	}
@@ -1316,7 +1316,7 @@ func (a *activityService) activityQuestReward(s *model.Player, req *proto.Activi
 	for _, item := range claimable {
 		for _, reward := range item.Rewards {
 			if reward.ItemID == 0 || reward.ItemNum <= 0 {
-				rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+				rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 				return rsp, nil
 			}
 			if _, ok := totals[reward.ItemID]; !ok {
@@ -1345,16 +1345,16 @@ func (a *activityService) activityQuestReward(s *model.Player, req *proto.Activi
 }
 
 func (a *activityService) activityRegularReward(s *model.Player, req *proto.ActivityRegularRewardReq) (*proto.ActivityRegularRewardRsp, []*proto.ItemDetail) {
-	rsp := &proto.ActivityRegularRewardRsp{Param: req.GetParam(), PoolType: req.GetPoolType(), Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.ActivityRegularRewardRsp{Param: req.GetParam(), PoolType: req.GetPoolType(), Status: proto.StatusCode_StatusCode_OK}
 	now := a.now()
 	row, status := a.conf.resolveActivity(req.GetActivityId(), proto.EActivityType_EActivityType_ActivityRegular, now)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return rsp, nil
 	}
 	conf, ok := a.conf.Regulars[row.templateID()]
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	var poolID uint32
@@ -1368,12 +1368,12 @@ func (a *activityService) activityRegularReward(s *model.Player, req *proto.Acti
 	case 4:
 		poolID = conf.DailyRefreshPoolID
 	default:
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return rsp, nil
 	}
 	pool, ok := a.conf.RegularPools[poolID]
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	var selected *activityRegularAchieveConfig
@@ -1384,7 +1384,7 @@ func (a *activityService) activityRegularReward(s *model.Player, req *proto.Acti
 		}
 	}
 	if selected == nil || selected.Days > activityOpenDay(row, now) {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	if err := a.requireAchievement(s, row, selected.AchieveID, now); err != nil {
@@ -1402,7 +1402,7 @@ func (a *activityService) activityRegularReward(s *model.Player, req *proto.Acti
 		claimKey += ":d:" + a.dayToken(now)
 	}
 	if state.IsClaimed(claimKey) {
-		rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 		return rsp, nil
 	}
 	items, err := a.commit(s, func() ([]*proto.ItemDetail, error) {
@@ -1418,16 +1418,16 @@ func (a *activityService) activityRegularReward(s *model.Player, req *proto.Acti
 }
 
 func (a *activityService) activityGiftReward(s *model.Player, req *proto.ActivityGiftRewardReq) (*proto.ActivityGiftRewardRsp, []*proto.ItemDetail) {
-	rsp := &proto.ActivityGiftRewardRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.ActivityGiftRewardRsp{Status: proto.StatusCode_StatusCode_OK}
 	now := a.now()
 	row, status := a.conf.resolveActivity(req.GetActivityId(), proto.EActivityType_EActivityType_ActivityGift, now)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return rsp, nil
 	}
 	conf, ok := a.conf.Gifts[row.templateID()]
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	var selected *activityGiftAchieveConfig
@@ -1438,7 +1438,7 @@ func (a *activityService) activityGiftReward(s *model.Player, req *proto.Activit
 		}
 	}
 	if selected == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	if err := a.requireAchievement(s, row, selected.AchieveID, now); err != nil {
@@ -1447,12 +1447,12 @@ func (a *activityService) activityGiftReward(s *model.Player, req *proto.Activit
 	}
 	state := a.period(s, row)
 	if !state.GetGift().HasBuy {
-		rsp.Status = proto.StatusCode_StatusCode_NotPayment
+		rsp.Status = proto.StatusCode_StatusCode_Not_Payment
 		return rsp, nil
 	}
 	claimKey := fmt.Sprintf("gift:%d", req.GetAchieveId())
 	if state.IsClaimed(claimKey) {
-		rsp.Status = proto.StatusCode_StatusCode_ActivityGiftRewarded
+		rsp.Status = proto.StatusCode_StatusCode_ActivityGift_Rewarded
 		return rsp, nil
 	}
 	rewards, err := a.directItems(selected.Rewards)
@@ -1474,11 +1474,11 @@ func (a *activityService) activityGiftReward(s *model.Player, req *proto.Activit
 
 func (a *activityService) validateBattlePass(pass battlePassConfig) error {
 	if pass.MaxExp == 0 || len(pass.Levels) == 0 {
-		return activityErr(proto.StatusCode_StatusCode_CfgNotFound, "战令等级配置缺失")
+		return activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "战令等级配置缺失")
 	}
 	for i, level := range pass.Levels {
 		if level.Level != uint32(i+1) || level.Exp == 0 || len(level.Rewards) < 2 {
-			return activityErr(proto.StatusCode_StatusCode_CfgNotFound, "战令等级奖励配置无效")
+			return activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "战令等级奖励配置无效")
 		}
 	}
 	return nil
@@ -1510,12 +1510,12 @@ func battlePassLevelFromTotal(pass battlePassConfig, total uint32) (uint32, uint
 
 func (a *activityService) addBattlePassExp(s *model.Player, row activityConfigRow, pass battlePassConfig, add uint32, now int64) (*model.ActivityBattlePassState, error) {
 	if add == 0 {
-		return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "战令经验配置缺失")
+		return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "战令经验配置缺失")
 	}
 	state := a.period(s, row).GetBattlePass()
 	maxTotal := battlePassMaxTotal(pass)
 	if state.TotalExp >= maxTotal {
-		return nil, activityErr(proto.StatusCode_StatusCode_BattlePassMaxLevel, "战令已满级")
+		return nil, activityErr(proto.StatusCode_StatusCode_BattlePass_MaxLevel, "战令已满级")
 	}
 	next := uint64(state.TotalExp) + uint64(add)
 	if next > uint64(maxTotal) {
@@ -1535,16 +1535,16 @@ func (a *activityService) addBattlePassExp(s *model.Player, row activityConfigRo
 }
 
 func (a *activityService) battlePassBuyExp(s *model.Player, req *proto.ActivityBattlePassBuyExpReq) (*proto.ActivityBattlePassBuyExpRsp, []*proto.ItemDetail) {
-	rsp := &proto.ActivityBattlePassBuyExpRsp{ActivityBattlePassId: req.GetActivityBattlePassId(), Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.ActivityBattlePassBuyExpRsp{ActivityBattlePassId: req.GetActivityBattlePassId(), Status: proto.StatusCode_StatusCode_OK}
 	now := a.now()
 	row, status := a.conf.resolveActivity(req.GetActivityBattlePassId(), proto.EActivityType_EActivityType_BattlePass, now)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return rsp, nil
 	}
 	pass, ok := a.conf.BattlePasses[row.templateID()]
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	if err := a.validateBattlePass(pass); err != nil {
@@ -1558,7 +1558,7 @@ func (a *activityService) battlePassBuyExp(s *model.Player, req *proto.ActivityB
 	}
 	state := a.period(s, row).GetBattlePass()
 	if state.TotalExp >= battlePassMaxTotal(pass) {
-		rsp.Status = proto.StatusCode_StatusCode_BattlePassMaxLevel
+		rsp.Status = proto.StatusCode_StatusCode_BattlePass_MaxLevel
 		return rsp, nil
 	}
 	var pack []*proto.ItemDetail
@@ -1586,32 +1586,32 @@ func (a *activityService) battlePassBuyExp(s *model.Player, req *proto.ActivityB
 func (a *activityService) battlePassBuyExpConfig() (uint32, int64, uint32, error) {
 	values := a.conf.Globals["BattlePass_BuyExp_Currency"]
 	if len(values) == 0 {
-		return 0, 0, 0, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "战令购买经验配置缺失")
+		return 0, 0, 0, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "战令购买经验配置缺失")
 	}
 	parts := strings.Split(values[0], ":")
 	if len(parts) != 3 {
-		return 0, 0, 0, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "战令购买经验配置无效")
+		return 0, 0, 0, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "战令购买经验配置无效")
 	}
 	currency, err1 := strconv.ParseUint(strings.TrimSpace(parts[0]), 10, 32)
 	cost, err2 := strconv.ParseInt(strings.TrimSpace(parts[1]), 10, 64)
 	exp, err3 := strconv.ParseUint(strings.TrimSpace(parts[2]), 10, 32)
 	if err1 != nil || err2 != nil || err3 != nil || currency == 0 || cost <= 0 || exp == 0 {
-		return 0, 0, 0, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "战令购买经验配置无效")
+		return 0, 0, 0, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "战令购买经验配置无效")
 	}
 	return uint32(currency), cost, uint32(exp), nil
 }
 
 func (a *activityService) battlePassLevelReward(s *model.Player, req *proto.GetActivityBattlePassLevelRewardReq) (*proto.GetActivityBattlePassLevelRewardRsp, []*proto.ItemDetail) {
-	rsp := &proto.GetActivityBattlePassLevelRewardRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.GetActivityBattlePassLevelRewardRsp{Status: proto.StatusCode_StatusCode_OK}
 	now := a.now()
 	row, status := a.conf.resolveActivity(req.GetActivityBattlePassId(), proto.EActivityType_EActivityType_BattlePass, now)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return rsp, nil
 	}
 	pass, ok := a.conf.BattlePasses[row.templateID()]
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	if err := a.validateBattlePass(pass); err != nil {
@@ -1626,13 +1626,13 @@ func (a *activityService) battlePassLevelReward(s *model.Player, req *proto.GetA
 		}
 	}
 	if level == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	period := a.period(s, row)
 	state := period.GetBattlePass()
 	if state.Level < req.GetLevel() {
-		rsp.Status = proto.StatusCode_StatusCode_BattlePassLevelLimit
+		rsp.Status = proto.StatusCode_StatusCode_BattlePass_LevelLimit
 		return rsp, nil
 	}
 	index := 1
@@ -1641,11 +1641,11 @@ func (a *activityService) battlePassLevelReward(s *model.Player, req *proto.GetA
 		index = 0
 		kind = "free"
 	} else if !state.HasBuy {
-		rsp.Status = proto.StatusCode_StatusCode_BattlePassNotBuy
+		rsp.Status = proto.StatusCode_StatusCode_BattlePass_Not_Buy
 		return rsp, nil
 	}
 	if index >= len(level.Rewards) {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	rewards, err := a.directItems(level.Rewards[index : index+1])
@@ -1655,7 +1655,7 @@ func (a *activityService) battlePassLevelReward(s *model.Player, req *proto.GetA
 	}
 	claimKey := fmt.Sprintf("bp:level:%d:%s", req.GetLevel(), kind)
 	if period.IsClaimed(claimKey) {
-		rsp.Status = proto.StatusCode_StatusCode_BattlePassLvRewarded
+		rsp.Status = proto.StatusCode_StatusCode_BattlePass_LvRewarded
 		return rsp, nil
 	}
 	items, err := a.commit(s, func() ([]*proto.ItemDetail, error) {
@@ -1671,16 +1671,16 @@ func (a *activityService) battlePassLevelReward(s *model.Player, req *proto.GetA
 }
 
 func (a *activityService) battlePassQuestReward(s *model.Player, req *proto.GetActivityBattlePassQuestRewardReq) (*proto.GetActivityBattlePassQuestRewardRsp, []*proto.ItemDetail) {
-	rsp := &proto.GetActivityBattlePassQuestRewardRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.GetActivityBattlePassQuestRewardRsp{Status: proto.StatusCode_StatusCode_OK}
 	now := a.now()
 	row, status := a.conf.resolveActivity(req.GetActivityBattlePassId(), proto.EActivityType_EActivityType_BattlePass, now)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return rsp, nil
 	}
 	pass, ok := a.conf.BattlePasses[row.templateID()]
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	if err := a.validateBattlePass(pass); err != nil {
@@ -1696,7 +1696,7 @@ func (a *activityService) battlePassQuestReward(s *model.Player, req *proto.GetA
 		for _, item := range a.conf.BattlePassQuests[group.id].Items {
 			if item.AchieveID == req.GetAchieveId() {
 				if item.Exp == 0 {
-					rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+					rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 					return rsp, nil
 				}
 				exp, scope = item.Exp, group.scope
@@ -1708,7 +1708,7 @@ func (a *activityService) battlePassQuestReward(s *model.Player, req *proto.GetA
 		}
 	}
 	if exp == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	if err := a.requireAchievement(s, row, req.GetAchieveId(), now); err != nil {
@@ -1724,7 +1724,7 @@ func (a *activityService) battlePassQuestReward(s *model.Player, req *proto.GetA
 		claimKey += ":w:" + a.weekToken(now)
 	}
 	if state.IsClaimed(claimKey) {
-		rsp.Status = proto.StatusCode_StatusCode_BattlePassQuestRewarded
+		rsp.Status = proto.StatusCode_StatusCode_BattlePass_QuestRewarded
 		return rsp, nil
 	}
 	_, err := a.commit(s, func() ([]*proto.ItemDetail, error) {
@@ -1746,41 +1746,41 @@ func (a *activityService) battlePassQuestReward(s *model.Player, req *proto.GetA
 }
 
 func (a *activityService) monthCardReward(s *model.Player) (*proto.MonthCardRewardRsp, []*proto.ItemDetail) {
-	rsp := &proto.MonthCardRewardRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.MonthCardRewardRsp{Status: proto.StatusCode_StatusCode_OK}
 	now := a.now()
 	state := s.GetActivityModel().GetMonthCard()
 	rsp.MonthCardRewardDays = state.RewardDays
 	if state.OverDueTime == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_NotPayment
+		rsp.Status = proto.StatusCode_StatusCode_Not_Payment
 		return rsp, nil
 	}
 	if now >= state.OverDueTime {
-		rsp.Status = proto.StatusCode_StatusCode_Fail
+		rsp.Status = proto.StatusCode_StatusCode_FAIL
 		return rsp, nil
 	}
 	day := a.dayToken(now)
 	if state.LastClaimDay == day {
-		rsp.Status = proto.StatusCode_StatusCode_MoonCardDaysLimit
+		rsp.Status = proto.StatusCode_StatusCode_MOON_CARD_DAYS_LIMIT
 		return rsp, nil
 	}
 	values := a.conf.Globals["MoonCard_Rveryday_Currency"]
 	if len(values) == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	parts := strings.Split(values[0], ":")
 	if len(parts) != 2 {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	itemID, err1 := strconv.ParseUint(strings.TrimSpace(parts[0]), 10, 32)
 	count, err2 := strconv.ParseInt(strings.TrimSpace(parts[1]), 10, 64)
 	if err1 != nil || err2 != nil || itemID == 0 || count <= 0 {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	if state.RewardDays == ^uint32(0) {
-		rsp.Status = proto.StatusCode_StatusCode_MoonCardDaysLimit
+		rsp.Status = proto.StatusCode_StatusCode_MOON_CARD_DAYS_LIMIT
 		return rsp, nil
 	}
 	items, err := a.commit(s, func() ([]*proto.ItemDetail, error) {
@@ -1799,25 +1799,25 @@ func (a *activityService) monthCardReward(s *model.Player) (*proto.MonthCardRewa
 func (a *activityService) supplyBoxInterval() (int64, error) {
 	values := a.conf.Globals["SupplyBox_Random_Time"]
 	if len(values) < 2 {
-		return 0, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "补给箱冷却配置缺失")
+		return 0, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "补给箱冷却配置缺失")
 	}
 	low, err1 := strconv.ParseInt(strings.TrimSpace(values[0]), 10, 64)
 	high, err2 := strconv.ParseInt(strings.TrimSpace(values[1]), 10, 64)
 	if err1 != nil || err2 != nil || low <= 0 || high <= 0 {
-		return 0, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "补给箱冷却配置无效")
+		return 0, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "补给箱冷却配置无效")
 	}
 	if low > high {
 		low, high = high, low
 	}
 	span := high - low
 	if span >= int64(^uint(0)>>1) || low > int64(^uint64(0)>>1)/60 {
-		return 0, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "补给箱冷却配置范围无效")
+		return 0, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "补给箱冷却配置范围无效")
 	}
 	return (low + int64(a.randomInt(int(span)+1))) * 60, nil
 }
 
 func (a *activityService) supplyBoxInfo(s *model.Player) (*proto.SupplyBoxInfoRsp, []*proto.ItemDetail) {
-	rsp := &proto.SupplyBoxInfoRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.SupplyBoxInfoRsp{Status: proto.StatusCode_StatusCode_OK}
 	interval, err := a.supplyBoxInterval()
 	if err != nil {
 		rsp.Status = ActivityErrorStatus(err)
@@ -1847,7 +1847,7 @@ func (a *activityService) supplyBoxRewards(s *model.Player) ([]activityItem, err
 	if values := a.conf.Globals["SupplyBox_RewardID"]; len(values) > 0 {
 		id, err := strconv.ParseUint(strings.TrimSpace(values[0]), 10, 32)
 		if err != nil || id == 0 {
-			return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "补给箱奖励池配置无效")
+			return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "补给箱奖励池配置无效")
 		}
 		return a.resolveReward(s, uint32(id))
 	}
@@ -1856,19 +1856,19 @@ func (a *activityService) supplyBoxRewards(s *model.Player) ([]activityItem, err
 		values = a.conf.Globals["SupplyBox_Rewards"]
 	}
 	if len(values) == 0 {
-		return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "补给箱奖励配置缺失")
+		return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "补给箱奖励配置缺失")
 	}
 	items := make([]activityItem, 0)
 	for _, value := range values {
 		for _, entry := range strings.Split(value, ",") {
 			parts := strings.Split(strings.TrimSpace(entry), ":")
 			if len(parts) != 2 {
-				return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "补给箱奖励配置无效")
+				return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "补给箱奖励配置无效")
 			}
 			id, err1 := strconv.ParseUint(strings.TrimSpace(parts[0]), 10, 32)
 			count, err2 := strconv.ParseInt(strings.TrimSpace(parts[1]), 10, 64)
 			if err1 != nil || err2 != nil || id == 0 || count <= 0 {
-				return nil, activityErr(proto.StatusCode_StatusCode_CfgNotFound, "补给箱奖励配置无效")
+				return nil, activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "补给箱奖励配置无效")
 			}
 			items = append(items, activityItem{ID: uint32(id), Num: count})
 		}
@@ -1877,7 +1877,7 @@ func (a *activityService) supplyBoxRewards(s *model.Player) ([]activityItem, err
 }
 
 func (a *activityService) supplyBoxReward(s *model.Player) (*proto.SupplyBoxRewardRsp, []*proto.ItemDetail) {
-	rsp := &proto.SupplyBoxRewardRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.SupplyBoxRewardRsp{Status: proto.StatusCode_StatusCode_OK}
 	interval, err := a.supplyBoxInterval()
 	if err != nil {
 		rsp.Status = ActivityErrorStatus(err)
@@ -1891,7 +1891,7 @@ func (a *activityService) supplyBoxReward(s *model.Player) (*proto.SupplyBoxRewa
 	now := a.now()
 	state := s.GetActivityModel().GetSupplyBox()
 	if state.NextRewardTime != 0 && now < state.NextRewardTime {
-		rsp.Status = proto.StatusCode_StatusCode_IntervalRewardIsGet
+		rsp.Status = proto.StatusCode_StatusCode_Interval_Reward_Is_Get
 		rsp.NextRewardTime = state.NextRewardTime
 		return rsp, nil
 	}
@@ -1902,7 +1902,7 @@ func (a *activityService) supplyBoxReward(s *model.Player) (*proto.SupplyBoxRewa
 			base = now
 		}
 		if now < base {
-			rsp.Status = proto.StatusCode_StatusCode_IntervalRewardIsGet
+			rsp.Status = proto.StatusCode_StatusCode_Interval_Reward_Is_Get
 			rsp.NextRewardTime = base + interval
 			return rsp, nil
 		}
@@ -1921,30 +1921,30 @@ func (a *activityService) supplyBoxReward(s *model.Player) (*proto.SupplyBoxRewa
 }
 
 func (a *activityService) activityTurntableDraw(s *model.Player, req *proto.ActivityTurntableDrawReq) (*proto.ActivityTurntableDrawRsp, []*proto.ItemDetail) {
-	rsp := &proto.ActivityTurntableDrawRsp{ActivityId: req.GetActivityId(), Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.ActivityTurntableDrawRsp{ActivityId: req.GetActivityId(), Status: proto.StatusCode_StatusCode_OK}
 	now := a.now()
 	row, status := a.conf.resolveActivity(req.GetActivityId(), proto.EActivityType_EActivityType_ActivityTurntable, now)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return rsp, nil
 	}
 	conf, ok := a.conf.Turntables[row.templateID()]
 	if !ok || conf.CostItemID == 0 || conf.FirstOneNeedItemNum <= 0 || conf.OneNeedItemNum <= 0 {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	pool, ok := a.conf.TurntablePools[conf.PoolID]
 	if !ok || len(pool.Items) == 0 || req.GetDrawTimes() == 0 || req.GetDrawTimes() > 10 {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		if req.GetDrawTimes() > 10 {
-			rsp.Status = proto.StatusCode_StatusCode_BadReq
+			rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		}
 		return rsp, nil
 	}
 	seen := make(map[uint32]bool)
 	for _, item := range pool.Items {
 		if item.Index == 0 || seen[item.Index] || item.ItemID == 0 || item.ItemNum <= 0 || item.Weight == 0 {
-			rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return rsp, nil
 		}
 		seen[item.Index] = true
@@ -1969,7 +1969,7 @@ func (a *activityService) activityTurntableDraw(s *model.Player, req *proto.Acti
 			break
 		}
 		if totalWeight == 0 || totalWeight >= uint64(^uint(0)>>1) {
-			rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return rsp, nil
 		}
 		roll := uint64(a.randomInt(int(totalWeight)))
@@ -1983,14 +1983,14 @@ func (a *activityService) activityTurntableDraw(s *model.Player, req *proto.Acti
 			roll -= weight
 		}
 		if selected == nil {
-			rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return rsp, nil
 		}
 		used[selected.Index]++
 		plan = append(plan, *selected)
 	}
 	if len(plan) == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_TurntableNoRewardRemain
+		rsp.Status = proto.StatusCode_StatusCode_TURNTABLE_NO_REWARD_REMAIN
 		return rsp, nil
 	}
 	cost := conf.OneNeedItemNum * int64(len(plan))
@@ -2034,20 +2034,20 @@ func (a *activityService) activityTurntableDraw(s *model.Player, req *proto.Acti
 }
 
 func (a *activityService) activityTurntableRecord(s *model.Player, req *proto.ActivityTurntableRecordReq) *proto.ActivityTurntableRecordRsp {
-	rsp := &proto.ActivityTurntableRecordRsp{ActivityId: req.GetActivityId(), Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.ActivityTurntableRecordRsp{ActivityId: req.GetActivityId(), Status: proto.StatusCode_StatusCode_OK}
 	now := a.now()
 	row, status := a.conf.resolveActivity(req.GetActivityId(), proto.EActivityType_EActivityType_ActivityTurntable, now)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return rsp
 	}
 	conf, ok := a.conf.Turntables[row.templateID()]
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp
 	}
 	if _, ok := a.conf.TurntablePools[conf.PoolID]; !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp
 	}
 	page := req.GetPage()
@@ -2075,20 +2075,20 @@ func (a *activityService) activityTurntableRecord(s *model.Player, req *proto.Ac
 }
 
 func (a *activityService) abyssQuestReward(s *model.Player, req *proto.AbyssQuestRewardReq) (*proto.AbyssQuestRewardRsp, []*proto.ItemDetail) {
-	rsp := &proto.AbyssQuestRewardRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.AbyssQuestRewardRsp{Status: proto.StatusCode_StatusCode_OK}
 	now := a.now()
 	season, ok := a.conf.AbyssSeasons[req.GetSeasonId()]
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	if season.openUnix == 0 || now < season.openUnix || (season.EndTime != "" && season.closeUnix == 0) || (season.closeUnix != 0 && now > season.closeUnix) {
-		rsp.Status = proto.StatusCode_StatusCode_ActivityClose
+		rsp.Status = proto.StatusCode_StatusCode_Activity_Close
 		return rsp, nil
 	}
 	achieves, ok := a.conf.AbyssAchieves[season.SeasonAchieve]
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	var rewardID uint32
@@ -2099,12 +2099,12 @@ func (a *activityService) abyssQuestReward(s *model.Player, req *proto.AbyssQues
 		}
 	}
 	if rewardID == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	target, ok := a.achievementTarget(req.GetConditionId())
 	if !ok || s.GetActivityModel().AchievementProgress(req.GetConditionId()) < target {
-		rsp.Status = proto.StatusCode_StatusCode_QuestNotFinish
+		rsp.Status = proto.StatusCode_StatusCode_Quest_Not_Finish
 		return rsp, nil
 	}
 	rewards, err := a.resolveReward(s, rewardID)
@@ -2116,7 +2116,7 @@ func (a *activityService) abyssQuestReward(s *model.Player, req *proto.AbyssQues
 	state := a.period(s, row)
 	claimKey := fmt.Sprintf("abyss:%d", req.GetConditionId())
 	if state.IsClaimed(claimKey) {
-		rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 		return rsp, nil
 	}
 	items, err := a.commit(s, func() ([]*proto.ItemDetail, error) {
@@ -2132,19 +2132,19 @@ func (a *activityService) abyssQuestReward(s *model.Player, req *proto.AbyssQues
 }
 
 func (a *activityService) getOneAchieveAward(s *model.Player, req *proto.GetOneAchieveAwardReq) (*proto.GetOneAchieveAwardRsp, []*proto.ItemDetail) {
-	rsp := &proto.GetOneAchieveAwardRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.GetOneAchieveAwardRsp{Status: proto.StatusCode_StatusCode_OK}
 	target, ok := a.achievementTarget(req.GetAchieveId())
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	if s.GetActivityModel().AchievementProgress(req.GetAchieveId()) < target {
-		rsp.Status = proto.StatusCode_StatusCode_QuestNotFinish
+		rsp.Status = proto.StatusCode_StatusCode_Quest_Not_Finish
 		return rsp, nil
 	}
 	rewardID, ok := a.conf.AchieveRewards[req.GetAchieveId()]
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	rewards, err := a.resolveReward(s, rewardID)
@@ -2153,7 +2153,7 @@ func (a *activityService) getOneAchieveAward(s *model.Player, req *proto.GetOneA
 		return rsp, nil
 	}
 	if s.GetActivityModel().GetRewardedAchievements()[req.GetAchieveId()] {
-		rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 		return rsp, nil
 	}
 	items, err := a.commit(s, func() ([]*proto.ItemDetail, error) {
@@ -2169,21 +2169,21 @@ func (a *activityService) getOneAchieveAward(s *model.Player, req *proto.GetOneA
 }
 
 func (a *activityService) getAchieveGroupAward(s *model.Player, req *proto.GetAchieveGroupAwardReq) (*proto.GetAchieveGroupAwardRsp, []*proto.ItemDetail) {
-	rsp := &proto.GetAchieveGroupAwardRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.GetAchieveGroupAwardRsp{Status: proto.StatusCode_StatusCode_OK}
 	quest, ok := a.conf.AchieveQuestByGroup[req.GetGroupId()]
 	if !ok || quest.RewardID == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	group, ok := a.conf.AchieveQuestGroups[req.GetGroupId()]
 	if !ok || len(group.Items) == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp, nil
 	}
 	for _, item := range group.Items {
 		target, ok := a.achievementTarget(item.AchieveID)
 		if !ok || s.GetActivityModel().AchievementProgress(item.AchieveID) < target {
-			rsp.Status = proto.StatusCode_StatusCode_QuestNotFinish
+			rsp.Status = proto.StatusCode_StatusCode_Quest_Not_Finish
 			return rsp, nil
 		}
 	}
@@ -2193,7 +2193,7 @@ func (a *activityService) getAchieveGroupAward(s *model.Player, req *proto.GetAc
 		return rsp, nil
 	}
 	if s.GetActivityModel().GetRewardedAchieveGroups()[req.GetGroupId()] {
-		rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 		return rsp, nil
 	}
 	items, err := a.commit(s, func() ([]*proto.ItemDetail, error) {
@@ -2213,7 +2213,7 @@ func (a *activityService) recordAchievement(s *model.Player, achieveID uint32, d
 		return nil
 	}
 	if _, ok := a.conf.Achieves[achieveID]; !ok {
-		return activityErr(proto.StatusCode_StatusCode_CfgNotFound, "成就配置缺失:%d", achieveID)
+		return activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "成就配置缺失:%d", achieveID)
 	}
 	specs := a.conf.AchievementSpecs[achieveID]
 	if len(specs) == 0 {
@@ -2238,7 +2238,7 @@ func (a *activityService) recordAchievement(s *model.Player, achieveID uint32, d
 		}
 	}
 	if !recorded {
-		return activityErr(proto.StatusCode_StatusCode_ActivityClose, "成就所属活动未开放")
+		return activityErr(proto.StatusCode_StatusCode_Activity_Close, "成就所属活动未开放")
 	}
 	return nil
 }
@@ -2301,7 +2301,7 @@ func RecordAchieveCondition(s *model.Player, condition proto.EAchieveCondition, 
 	for _, achieveID := range service.conf.AchievesByCondition[int32(condition)] {
 		if err := service.recordAchievement(s, achieveID, delta, now); err != nil {
 			var statusErr *activityStatusError
-			if errors.As(err, &statusErr) && statusErr.status == proto.StatusCode_StatusCode_ActivityClose {
+			if errors.As(err, &statusErr) && statusErr.status == proto.StatusCode_StatusCode_Activity_Close {
 				continue
 			}
 			errs = append(errs, err)
@@ -2312,15 +2312,15 @@ func RecordAchieveCondition(s *model.Player, condition proto.EAchieveCondition, 
 
 func (a *activityService) recordGiftPurchased(s *model.Player, activityID uint32, now int64) error {
 	row, status := a.conf.resolveActivity(activityID, proto.EActivityType_EActivityType_ActivityGift, now)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return activityErr(status, "活动未开放")
 	}
 	if _, ok := a.conf.Gifts[row.templateID()]; !ok {
-		return activityErr(proto.StatusCode_StatusCode_CfgNotFound, "活动礼物配置缺失")
+		return activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "活动礼物配置缺失")
 	}
 	state := a.period(s, row).GetGift()
 	if state.HasBuy {
-		return activityErr(proto.StatusCode_StatusCode_ActivityGiftHasBuy, "活动礼物已购买")
+		return activityErr(proto.StatusCode_StatusCode_ActivityGift_HasBuy, "活动礼物已购买")
 	}
 	_, err := a.commit(s, func() ([]*proto.ItemDetail, error) {
 		state.HasBuy = true
@@ -2331,19 +2331,19 @@ func (a *activityService) recordGiftPurchased(s *model.Player, activityID uint32
 
 func (a *activityService) recordBattlePassPurchased(s *model.Player, activityID uint32, now int64) error {
 	row, status := a.conf.resolveActivity(activityID, proto.EActivityType_EActivityType_BattlePass, now)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return activityErr(status, "活动未开放")
 	}
 	pass, ok := a.conf.BattlePasses[row.templateID()]
 	if !ok {
-		return activityErr(proto.StatusCode_StatusCode_CfgNotFound, "战令配置缺失")
+		return activityErr(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "战令配置缺失")
 	}
 	if err := a.validateBattlePass(pass); err != nil {
 		return err
 	}
 	state := a.period(s, row).GetBattlePass()
 	if state.HasBuy {
-		return activityErr(proto.StatusCode_StatusCode_BattlePassHasBuy, "战令已购买")
+		return activityErr(proto.StatusCode_StatusCode_BattlePass_HasBuy, "战令已购买")
 	}
 	_, err := a.commit(s, func() ([]*proto.ItemDetail, error) {
 		state.HasBuy = true
@@ -2369,12 +2369,12 @@ func (a *activityService) activityIDForShop(shopID uint32, activityType proto.EA
 			continue
 		}
 		if selected != 0 {
-			return 0, activityErr(proto.StatusCode_StatusCode_BadReq, "商店对应多个开放活动")
+			return 0, activityErr(proto.StatusCode_StatusCode_BAD_REQ, "商店对应多个开放活动")
 		}
 		selected = row.ID
 	}
 	if selected == 0 {
-		return 0, activityErr(proto.StatusCode_StatusCode_ActivityClose, "商店对应活动未开放")
+		return 0, activityErr(proto.StatusCode_StatusCode_Activity_Close, "商店对应活动未开放")
 	}
 	return selected, nil
 }
@@ -2407,7 +2407,7 @@ func RecordBattlePassPurchased(s *model.Player, activityID uint32) error {
 
 func ActivateMonthCard(s *model.Player, overDueTime int64) error {
 	if overDueTime <= time.Now().Unix() {
-		return activityErr(proto.StatusCode_StatusCode_BadReq, "月卡到期时间无效")
+		return activityErr(proto.StatusCode_StatusCode_BAD_REQ, "月卡到期时间无效")
 	}
 	service := defaultActivityService()
 	_, err := service.commit(s, func() ([]*proto.ItemDetail, error) {
@@ -2433,17 +2433,17 @@ func (a *activityService) activeAbyssSeason(now int64) (abyssSeasonConfig, bool)
 }
 
 func (a *activityService) abyssInfo(s *model.Player) *proto.AbyssInfoRsp {
-	rsp := &proto.AbyssInfoRsp{Status: proto.StatusCode_StatusCode_Ok, AbyssInfo: &proto.AbyssInfo{PlayerId: s.UserId, SeasonInfo: make(map[uint32]*proto.AbyssSeasonInfo)}}
+	rsp := &proto.AbyssInfoRsp{Status: proto.StatusCode_StatusCode_OK, AbyssInfo: &proto.AbyssInfo{PlayerId: s.UserId, SeasonInfo: make(map[uint32]*proto.AbyssSeasonInfo)}}
 	season, ok := a.activeAbyssSeason(a.now())
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_ActivityClose
+		rsp.Status = proto.StatusCode_StatusCode_Activity_Close
 		return rsp
 	}
 	rsp.InProgressSeasonId = season.ID
-	info := &proto.AbyssSeasonInfo{SeasonId: season.ID, DungeonInfo: make(map[uint32]*proto.AbyssDungeonInfo), DungeonInfo0: make(map[uint32]*proto.AbyssDungeonInfo)}
+	info := &proto.AbyssSeasonInfo{SeasonId: season.ID, DungeonInfo: make(map[uint32]*proto.AbyssDungeonInfo), DungeonInfo_0: make(map[uint32]*proto.AbyssDungeonInfo)}
 	stage, ok := a.conf.AbyssStages[season.SeasonStage]
 	if !ok {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return rsp
 	}
 	dungeons := s.GetDungeonModel().GetDungeonMap()
@@ -2456,7 +2456,7 @@ func (a *activityService) abyssInfo(s *model.Player) *proto.AbyssInfoRsp {
 			dungeonInfo.FinishTime = uint32(dungeon.LastFinishTime)
 		}
 		if group.Challenge {
-			info.DungeonInfo0[group.DungeonID] = dungeonInfo
+			info.DungeonInfo_0[group.DungeonID] = dungeonInfo
 		} else {
 			info.DungeonInfo[group.DungeonID] = dungeonInfo
 		}
@@ -2468,7 +2468,7 @@ func (a *activityService) abyssInfo(s *model.Player) *proto.AbyssInfoRsp {
 func (a *activityService) monthCardNotice(s *model.Player) *proto.MonthCardNotice {
 	state := s.GetActivityModel().GetMonthCard()
 	return &proto.MonthCardNotice{
-		Status:        proto.StatusCode_StatusCode_Ok,
+		Status:        proto.StatusCode_StatusCode_OK,
 		OverDueTime:   state.OverDueTime,
 		IsRewardToday: state.LastClaimDay == a.dayToken(a.now()),
 	}
@@ -2480,7 +2480,7 @@ func (g *Game) MonthCardNotice(s *model.Player) {
 
 func (g *Game) sendActivityItems(s *model.Player, items []*proto.ItemDetail) {
 	if len(items) > 0 {
-		g.send(s, 0, &proto.PackNotice{Status: proto.StatusCode_StatusCode_Ok, Items: items})
+		g.send(s, 0, &proto.PackNotice{Status: proto.StatusCode_StatusCode_OK, Items: items})
 	}
 }
 

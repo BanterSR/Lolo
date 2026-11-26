@@ -74,6 +74,8 @@ func NewGateway(router *gin.Engine, gs *game.Game) *Gateway {
 	return g
 }
 
+func (g *Gateway) ConnNum() int64 { return g.net.GetConnNum() }
+
 func (g *Gateway) RunGateway() error {
 	for {
 		select {
@@ -146,7 +148,7 @@ func (g *Gateway) receive(se *session) {
 		g.game.GetGateTask() <- &game.KillPlayer{
 			UserId:     se.userId,
 			UUID:       se.uuid,
-			Reason:     proto.PlayerOfflineReason_PlayerOfflineReason_None,
+			Reason:     proto.PlayerOfflineReason_PlayerOfflineReason_NONE,
 			KillPlayer: false,
 		}
 		ose, ok := g.sessionMap.Get(se.userId)

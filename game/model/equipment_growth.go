@@ -51,7 +51,7 @@ func EquipmentErrorStatus(err error) proto.StatusCode {
 	if errors.As(err, &e) && e != nil {
 		return e.Status
 	}
-	return proto.StatusCode_StatusCode_Fail
+	return proto.StatusCode_StatusCode_FAIL
 }
 
 type equipmentGrowthConfig struct {
@@ -362,103 +362,103 @@ func parseConfiguredItemCost(c *equipmentGrowthConfig, key string) (uint32, int6
 func (s *Player) validGrowthBaseItem(itemID uint32, count int64) (*ItemBaseInfo, *excel.ItemConfigure, error) {
 	cfg, err := getEquipmentGrowthConfig()
 	if err != nil {
-		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_CfgNotFound, Err: err}
+		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, Err: err}
 	}
 	conf := cfg.items[itemID]
 	if conf == nil {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "item %d is not configured", itemID)
+		return nil, nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "item %d is not configured", itemID)
 	}
 	info := s.GetItemModel().GetItemBaseInfo(itemID)
 	if info == nil || info.ItemId != itemID || info.ItemType != proto.EBagItemTag(conf.NewBagItemTag) ||
-		info.PackType != proto.PackType_PackType_Inventory {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "item %d is not an owned inventory item", itemID)
+		info.PackType != proto.ItemDetail_PackType_Inventory {
+		return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "item %d is not an owned inventory item", itemID)
 	}
 	if count < 0 || info.Num < count {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_ItemNotEnough, "item %d is insufficient", itemID)
+		return nil, nil, growthError(proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH, "item %d is insufficient", itemID)
 	}
 	return info, conf, nil
 }
 
 func (s *Player) validGrowthWeapon(instanceID uint32) (*ItemWeaponInfo, *excel.WeaponConfigure, error) {
 	if instanceID == 0 {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "weapon instance id is zero")
+		return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "weapon instance id is zero")
 	}
 	info := s.GetItemModel().GetItemWeaponInfo(instanceID)
 	if info == nil || info.ItemBaseInfo == nil || info.InstanceId != instanceID {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "weapon instance %d is not owned", instanceID)
+		return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "weapon instance %d is not owned", instanceID)
 	}
 	cfg, err := getEquipmentGrowthConfig()
 	if err != nil {
-		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_CfgNotFound, Err: err}
+		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, Err: err}
 	}
 	conf := cfg.weapons[info.WeaponId]
 	if conf == nil || info.ItemType != proto.EBagItemTag_EBagItemTag_Weapon ||
 		info.WeaponSystemType != proto.EWeaponSystemType(conf.NewWeaponSystemType) ||
-		info.ItemId != uint32(conf.ItemID) || info.PackType != proto.PackType_PackType_Inventory {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "weapon instance %d has invalid type or configuration", instanceID)
+		info.ItemId != uint32(conf.ItemID) || info.PackType != proto.ItemDetail_PackType_Inventory {
+		return nil, nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "weapon instance %d has invalid type or configuration", instanceID)
 	}
 	return info, conf, nil
 }
 
 func (s *Player) validGrowthArmor(instanceID uint32) (*ItemArmorInfo, *excel.ArmorConfigure, error) {
 	if instanceID == 0 {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "armor instance id is zero")
+		return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "armor instance id is zero")
 	}
 	info := s.GetItemModel().GetItemArmorInfo(instanceID)
 	if info == nil || info.ItemBaseInfo == nil || info.InstanceId != instanceID {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "armor instance %d is not owned", instanceID)
+		return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "armor instance %d is not owned", instanceID)
 	}
 	cfg, err := getEquipmentGrowthConfig()
 	if err != nil {
-		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_CfgNotFound, Err: err}
+		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, Err: err}
 	}
 	conf := cfg.armors[info.ArmorId]
 	if conf == nil || info.ItemType != proto.EBagItemTag_EBagItemTag_Armor ||
 		info.WeaponSystemType != proto.EWeaponSystemType(conf.NewWeaponSystemType) ||
-		info.ItemId != uint32(conf.ItemID) || info.PackType != proto.PackType_PackType_Inventory {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "armor instance %d has invalid type or configuration", instanceID)
+		info.ItemId != uint32(conf.ItemID) || info.PackType != proto.ItemDetail_PackType_Inventory {
+		return nil, nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "armor instance %d has invalid type or configuration", instanceID)
 	}
 	return info, conf, nil
 }
 
 func (s *Player) validGrowthPoster(instanceID uint32) (*ItemPosterInfo, *excel.PosterConfigure, error) {
 	if instanceID == 0 {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "poster instance id is zero")
+		return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "poster instance id is zero")
 	}
 	info := s.GetItemModel().GetItemPosterInfo(instanceID)
 	if info == nil || info.ItemBaseInfo == nil || info.InstanceId != instanceID {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "poster instance %d is not owned", instanceID)
+		return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "poster instance %d is not owned", instanceID)
 	}
 	cfg, err := getEquipmentGrowthConfig()
 	if err != nil {
-		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_CfgNotFound, Err: err}
+		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, Err: err}
 	}
 	conf := cfg.posters[info.PosterId]
 	illustration := cfg.posterIllustrations[uint32(conf.GetIllustrationID())]
 	if conf == nil || illustration == nil || !illustration.IsShow ||
 		info.ItemType != proto.EBagItemTag_EBagItemTag_Poster ||
-		info.ItemId != uint32(conf.ItemID) || info.PackType != proto.PackType_PackType_Inventory {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "poster instance %d has invalid type or configuration", instanceID)
+		info.ItemId != uint32(conf.ItemID) || info.PackType != proto.ItemDetail_PackType_Inventory {
+		return nil, nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "poster instance %d has invalid type or configuration", instanceID)
 	}
 	return info, conf, nil
 }
 
 func (s *Player) validGrowthInscription(inscriptionID uint32) (*ItemInscriptionInfo, *excel.InscriptionConfigure, error) {
 	if inscriptionID == 0 {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "inscription id is zero")
+		return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "inscription id is zero")
 	}
 	info := s.GetItemModel().GetItemInscriptionMap()[inscriptionID]
 	if info == nil || info.ItemBaseInfo == nil || info.InscriptionId != inscriptionID || info.Level == 0 {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "inscription %d is not owned", inscriptionID)
+		return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "inscription %d is not owned", inscriptionID)
 	}
 	cfg, err := getEquipmentGrowthConfig()
 	if err != nil {
-		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_CfgNotFound, Err: err}
+		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, Err: err}
 	}
 	conf := cfg.inscriptions[inscriptionID]
 	if conf == nil || info.ItemType != proto.EBagItemTag_EBagItemTag_Inscription ||
-		info.ItemId != uint32(conf.ItemID) || info.PackType != proto.PackType_PackType_Inventory {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "inscription %d has invalid type or configuration", inscriptionID)
+		info.ItemId != uint32(conf.ItemID) || info.PackType != proto.ItemDetail_PackType_Inventory {
+		return nil, nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "inscription %d has invalid type or configuration", inscriptionID)
 	}
 	return info, conf, nil
 }
@@ -515,22 +515,22 @@ func findArmorStrengthenGroup(groups []*excel.ArmorStrengthenGroupInfo, level ui
 
 func validateGrowthCost(tx *ItemTransaction, cfg *equipmentGrowthConfig, itemID uint32, count int64) error {
 	if count < 0 {
-		return growthError(proto.StatusCode_StatusCode_CfgNotFound, "negative cost for item %d", itemID)
+		return growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "negative cost for item %d", itemID)
 	}
 	if count == 0 {
 		return nil
 	}
 	conf := cfg.items[itemID]
 	if conf == nil || !isGrowthBaseItemTag(proto.EBagItemTag(conf.NewBagItemTag)) {
-		return growthError(proto.StatusCode_StatusCode_CfgNotFound, "cost item %d is not a configured stackable item", itemID)
+		return growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "cost item %d is not a configured stackable item", itemID)
 	}
 	info := tx.i.GetItemBaseInfo(itemID)
 	if info == nil || info.ItemType != proto.EBagItemTag(conf.NewBagItemTag) ||
-		info.PackType != proto.PackType_PackType_Inventory {
-		return growthError(proto.StatusCode_StatusCode_BadReq, "cost item %d is not an owned inventory item", itemID)
+		info.PackType != proto.ItemDetail_PackType_Inventory {
+		return growthError(proto.StatusCode_StatusCode_BAD_REQ, "cost item %d is not an owned inventory item", itemID)
 	}
 	if tx.DelBaseItem(itemID, count).Error != nil {
-		return &GrowthError{Status: proto.StatusCode_StatusCode_ItemNotEnough, Err: tx.Error}
+		return &GrowthError{Status: proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH, Err: tx.Error}
 	}
 	return nil
 }
@@ -546,7 +546,7 @@ func (s *Player) addGrowthBaseReward(conf *excel.ItemConfigure, count int64) *It
 		info = &ItemBaseInfo{
 			ItemId:   itemID,
 			ItemType: proto.EBagItemTag(conf.NewBagItemTag),
-			PackType: proto.PackType_PackType_Inventory,
+			PackType: proto.ItemDetail_PackType_Inventory,
 		}
 		list[itemID] = info
 	}
@@ -634,7 +634,7 @@ func calculateWeaponStrengthAttack(current uint32, oldLevel uint32, oldConf, new
 func (s *Player) StrengthenWeapon(instanceID uint32) (*proto.PackNotice, uint32, error) {
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		return nil, 0, &GrowthError{Status: proto.StatusCode_StatusCode_ItemNotEnough, Err: err}
+		return nil, 0, &GrowthError{Status: proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH, Err: err}
 	}
 	defer tx.Rollback()
 	info, weaponConf, err := s.validGrowthWeapon(instanceID)
@@ -644,34 +644,34 @@ func (s *Player) StrengthenWeapon(instanceID uint32) (*proto.PackNotice, uint32,
 	cfg, _ := getEquipmentGrowthConfig()
 	property, err := findWeaponPropertyGroup(cfg, weaponConf, info.Level)
 	if err != nil || property.StrengthenID == 0 {
-		return nil, 0, &GrowthError{Status: proto.StatusCode_StatusCode_CfgNotFound, Err: err}
+		return nil, 0, &GrowthError{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, Err: err}
 	}
 	strengthenConf := cfg.weaponStrengthen[property.StrengthenID]
 	if strengthenConf == nil {
-		return nil, 0, growthError(proto.StatusCode_StatusCode_CfgNotFound, "weapon strength configuration %d is missing", property.StrengthenID)
+		return nil, 0, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "weapon strength configuration %d is missing", property.StrengthenID)
 	}
 	if info.StrengthLevel == math.MaxUint32 {
-		return nil, 0, growthError(proto.StatusCode_StatusCode_WeaponMaxStrengthLevel, "weapon instance %d is at max strength level", instanceID)
+		return nil, 0, growthError(proto.StatusCode_StatusCode_WEAPON_MAX_STRENGTH_LEVEL, "weapon instance %d is at max strength level", instanceID)
 	}
 	newLevel := info.StrengthLevel + 1
 	newGroup := findWeaponStrengthenGroup(strengthenConf.WeaponStrengthenGroupInfo, newLevel)
 	if newGroup == nil {
-		return nil, 0, growthError(proto.StatusCode_StatusCode_WeaponMaxStrengthLevel, "weapon instance %d is at max strength level", instanceID)
+		return nil, 0, growthError(proto.StatusCode_StatusCode_WEAPON_MAX_STRENGTH_LEVEL, "weapon instance %d is at max strength level", instanceID)
 	}
 	oldGroup := findWeaponStrengthenGroup(strengthenConf.WeaponStrengthenGroupInfo, info.StrengthLevel)
 	newAttack, err := calculateWeaponStrengthAttack(info.Attack, info.StrengthLevel, oldGroup, newGroup)
 	if err != nil {
-		return nil, 0, &GrowthError{Status: proto.StatusCode_StatusCode_CfgNotFound, Err: err}
+		return nil, 0, &GrowthError{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, Err: err}
 	}
 	if newGroup.NeedGoldCount < 0 {
-		return nil, 0, growthError(proto.StatusCode_StatusCode_CfgNotFound, "negative weapon strength gold cost")
+		return nil, 0, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "negative weapon strength gold cost")
 	}
 	if err := validateGrowthCost(tx, cfg, constant.CurrencyGold, int64(newGroup.NeedGoldCount)); err != nil {
 		return nil, 0, err
 	}
 	for _, cost := range newGroup.WeaponStrengthNeedItem {
 		if cost == nil || cost.NeedItemCount < 0 {
-			return nil, 0, growthError(proto.StatusCode_StatusCode_CfgNotFound, "invalid weapon strength material cost")
+			return nil, 0, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "invalid weapon strength material cost")
 		}
 		if err := validateGrowthCost(tx, cfg, uint32(cost.NeedItemID), int64(cost.NeedItemCount)); err != nil {
 			return nil, 0, err
@@ -686,7 +686,7 @@ func (s *Player) StrengthenWeapon(instanceID uint32) (*proto.PackNotice, uint32,
 func (s *Player) StrengthenArmor(instanceID uint32) (*proto.PackNotice, uint32, error) {
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		return nil, 0, &GrowthError{Status: proto.StatusCode_StatusCode_ItemNotEnough, Err: err}
+		return nil, 0, &GrowthError{Status: proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH, Err: err}
 	}
 	defer tx.Rollback()
 	info, armorConf, err := s.validGrowthArmor(instanceID)
@@ -696,29 +696,29 @@ func (s *Player) StrengthenArmor(instanceID uint32) (*proto.PackNotice, uint32, 
 	cfg, _ := getEquipmentGrowthConfig()
 	property, err := findArmorPropertyGroup(cfg, armorConf, info.Level)
 	if err != nil || property.StrengthenID == 0 {
-		return nil, 0, &GrowthError{Status: proto.StatusCode_StatusCode_CfgNotFound, Err: err}
+		return nil, 0, &GrowthError{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, Err: err}
 	}
 	strengthenConf := cfg.armorStrengthen[property.StrengthenID]
 	if strengthenConf == nil {
-		return nil, 0, growthError(proto.StatusCode_StatusCode_CfgNotFound, "armor strength configuration %d is missing", property.StrengthenID)
+		return nil, 0, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "armor strength configuration %d is missing", property.StrengthenID)
 	}
 	if info.StrengthLevel == math.MaxUint32 {
-		return nil, 0, growthError(proto.StatusCode_StatusCode_ArmorMaxStrengthLevel, "armor instance %d is at max strength level", instanceID)
+		return nil, 0, growthError(proto.StatusCode_StatusCode_ARMOR_MAX_STRENGTH_LEVEL, "armor instance %d is at max strength level", instanceID)
 	}
 	newLevel := info.StrengthLevel + 1
 	newGroup := findArmorStrengthenGroup(strengthenConf.ArmorStrengthenGroupInfo, newLevel)
 	if newGroup == nil {
-		return nil, 0, growthError(proto.StatusCode_StatusCode_ArmorMaxStrengthLevel, "armor instance %d is at max strength level", instanceID)
+		return nil, 0, growthError(proto.StatusCode_StatusCode_ARMOR_MAX_STRENGTH_LEVEL, "armor instance %d is at max strength level", instanceID)
 	}
 	if newGroup.NeedGoldCount < 0 {
-		return nil, 0, growthError(proto.StatusCode_StatusCode_CfgNotFound, "negative armor strength gold cost")
+		return nil, 0, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "negative armor strength gold cost")
 	}
 	if err := validateGrowthCost(tx, cfg, constant.CurrencyGold, int64(newGroup.NeedGoldCount)); err != nil {
 		return nil, 0, err
 	}
 	for _, cost := range newGroup.ArmorStrengthNeedItem {
 		if cost == nil || cost.NeedItemCount < 0 {
-			return nil, 0, growthError(proto.StatusCode_StatusCode_CfgNotFound, "invalid armor strength material cost")
+			return nil, 0, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "invalid armor strength material cost")
 		}
 		if err := validateGrowthCost(tx, cfg, uint32(cost.NeedItemID), int64(cost.NeedItemCount)); err != nil {
 			return nil, 0, err
@@ -729,14 +729,14 @@ func (s *Player) StrengthenArmor(instanceID uint32) (*proto.PackNotice, uint32, 
 	return tx.PackNotice, info.StrengthLevel, nil
 }
 
-func (s *Player) ToggleEquipmentLock(instanceID uint32, equipType proto.LockEquip_EquipType) (*proto.ItemDetail, error) {
+func (s *Player) ToggleEquipmentLock(instanceID uint32, equipType proto.LockEquipReq_LockEquip_EquipType) (*proto.ItemDetail, error) {
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		return nil, &GrowthError{Status: proto.StatusCode_StatusCode_ItemNotEnough, Err: err}
+		return nil, &GrowthError{Status: proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH, Err: err}
 	}
 	defer tx.Rollback()
 	switch equipType {
-	case proto.LockEquip_EquipType_LockEquip_EquipType_Weapon:
+	case proto.LockEquipReq_LockEquip_EquipType_Weapon:
 		info, _, err := s.validGrowthWeapon(instanceID)
 		if err != nil {
 			return nil, err
@@ -744,7 +744,7 @@ func (s *Player) ToggleEquipmentLock(instanceID uint32, equipType proto.LockEqui
 		info.IsLock = !info.IsLock
 		tx.Commit()
 		return info.ItemDetail(), nil
-	case proto.LockEquip_EquipType_LockEquip_EquipType_Armor:
+	case proto.LockEquipReq_LockEquip_EquipType_Armor:
 		info, _, err := s.validGrowthArmor(instanceID)
 		if err != nil {
 			return nil, err
@@ -753,7 +753,7 @@ func (s *Player) ToggleEquipmentLock(instanceID uint32, equipType proto.LockEqui
 		tx.Commit()
 		return info.ItemDetail(), nil
 	default:
-		return nil, growthError(proto.StatusCode_StatusCode_BadReq, "unknown equipment lock type %d", equipType)
+		return nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "unknown equipment lock type %d", equipType)
 	}
 }
 
@@ -764,7 +764,7 @@ func (s *Player) SwitchEquipmentPreset(characterID, presetIndex uint32) error {
 	}
 	preset, ok := character.EquipmentPresetList[presetIndex]
 	if !ok || preset == nil || preset.PresetIndex != presetIndex {
-		return growthError(proto.StatusCode_StatusCode_BadReq, "equipment preset %d does not exist", presetIndex)
+		return growthError(proto.StatusCode_StatusCode_BAD_REQ, "equipment preset %d does not exist", presetIndex)
 	}
 	character.InUseEquipmentPresetIndex = presetIndex
 	return nil
@@ -773,7 +773,7 @@ func (s *Player) SwitchEquipmentPreset(characterID, presetIndex uint32) error {
 func (s *Player) InscribeWeapon(weaponInstanceID, inscriptionID uint32) ([]*proto.WeaponInstance, []*proto.Inscription, error) {
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_ItemNotEnough, Err: err}
+		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH, Err: err}
 	}
 	defer tx.Rollback()
 	weapon, _, err := s.validGrowthWeapon(weaponInstanceID)
@@ -786,22 +786,22 @@ func (s *Player) InscribeWeapon(weaponInstanceID, inscriptionID uint32) ([]*prot
 	}
 	if inscriptionConf.NewWeaponSystemType != 0 &&
 		proto.EWeaponSystemType(inscriptionConf.NewWeaponSystemType) != weapon.WeaponSystemType {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "inscription %d does not match the weapon type", inscriptionID)
+		return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "inscription %d does not match the weapon type", inscriptionID)
 	}
 	if weapon.Inscription1 == inscriptionID {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "inscription %d is already installed", inscriptionID)
+		return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "inscription %d is already installed", inscriptionID)
 	}
 	if inscription.WeaponInstanceId != 0 {
 		oldWeapon, _, err := s.validGrowthWeapon(inscription.WeaponInstanceId)
 		if err != nil || oldWeapon.Inscription1 != inscriptionID {
-			return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "inscription %d has an invalid owner", inscriptionID)
+			return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "inscription %d has an invalid owner", inscriptionID)
 		}
 	}
 	var replaced *ItemInscriptionInfo
 	if weapon.Inscription1 != 0 {
 		replaced, _, err = s.validGrowthInscription(weapon.Inscription1)
 		if err != nil || replaced.WeaponInstanceId != weaponInstanceID {
-			return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "weapon instance %d has an invalid inscription", weaponInstanceID)
+			return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "weapon instance %d has an invalid inscription", weaponInstanceID)
 		}
 	}
 
@@ -831,7 +831,7 @@ func (s *Player) InscribeWeapon(weaponInstanceID, inscriptionID uint32) ([]*prot
 func (s *Player) RemoveWeaponInscription(weaponInstanceID uint32) (*proto.WeaponInstance, *proto.Inscription, error) {
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_ItemNotEnough, Err: err}
+		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH, Err: err}
 	}
 	defer tx.Rollback()
 	weapon, _, err := s.validGrowthWeapon(weaponInstanceID)
@@ -839,11 +839,11 @@ func (s *Player) RemoveWeaponInscription(weaponInstanceID uint32) (*proto.Weapon
 		return nil, nil, err
 	}
 	if weapon.Inscription1 == 0 {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "weapon instance %d has no inscription", weaponInstanceID)
+		return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "weapon instance %d has no inscription", weaponInstanceID)
 	}
 	inscription, _, err := s.validGrowthInscription(weapon.Inscription1)
 	if err != nil || inscription.WeaponInstanceId != weaponInstanceID {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "weapon instance %d has an invalid inscription owner", weaponInstanceID)
+		return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "weapon instance %d has an invalid inscription owner", weaponInstanceID)
 	}
 	weapon.Inscription1 = 0
 	inscription.WeaponInstanceId = 0
@@ -940,11 +940,11 @@ func (s *Player) posterMaxStar(conf *excel.PosterConfigure, cfg *equipmentGrowth
 
 func (s *Player) StarUpPoster(posterInstanceID uint32, costPosterInstanceIDs []uint32) ([]uint32, []uint32, error) {
 	if len(costPosterInstanceIDs) == 0 {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "poster star-up materials are empty")
+		return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "poster star-up materials are empty")
 	}
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_ItemNotEnough, Err: err}
+		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH, Err: err}
 	}
 	defer tx.Rollback()
 	target, targetConf, err := s.validGrowthPoster(posterInstanceID)
@@ -954,20 +954,20 @@ func (s *Player) StarUpPoster(posterInstanceID uint32, costPosterInstanceIDs []u
 	cfg, _ := getEquipmentGrowthConfig()
 	maxStar, err := s.posterMaxStar(targetConf, cfg)
 	if err != nil {
-		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_CfgNotFound, Err: err}
+		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, Err: err}
 	}
 	if target.Star == 0 || target.Star > maxStar {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "poster instance %d has an invalid star", posterInstanceID)
+		return nil, nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "poster instance %d has an invalid star", posterInstanceID)
 	}
 	if target.Star == maxStar {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_PosterMaxStar, "poster instance %d is at max star", posterInstanceID)
+		return nil, nil, growthError(proto.StatusCode_StatusCode_POSTER_MAX_STAR, "poster instance %d is at max star", posterInstanceID)
 	}
 	if uint32(len(costPosterInstanceIDs)) > maxStar-target.Star {
-		return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "poster star-up materials exceed max star")
+		return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "poster star-up materials exceed max star")
 	}
 	costItemID, costCount, err := parseConfiguredItemCost(cfg, "UpgradeStarNeedItem")
 	if err != nil {
-		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_CfgNotFound, Err: err}
+		return nil, nil, &GrowthError{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, Err: err}
 	}
 	if err := validateGrowthCost(tx, cfg, costItemID, costCount*int64(len(costPosterInstanceIDs))); err != nil {
 		return nil, nil, err
@@ -975,10 +975,10 @@ func (s *Player) StarUpPoster(posterInstanceID uint32, costPosterInstanceIDs []u
 	seen := make(map[uint32]struct{}, len(costPosterInstanceIDs))
 	for _, id := range costPosterInstanceIDs {
 		if id == posterInstanceID {
-			return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "poster cannot consume itself")
+			return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "poster cannot consume itself")
 		}
 		if _, ok := seen[id]; ok {
-			return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "duplicate poster material %d", id)
+			return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "duplicate poster material %d", id)
 		}
 		seen[id] = struct{}{}
 		_, conf, err := s.validGrowthPoster(id)
@@ -986,7 +986,7 @@ func (s *Player) StarUpPoster(posterInstanceID uint32, costPosterInstanceIDs []u
 			return nil, nil, err
 		}
 		if conf.ID != targetConf.ID {
-			return nil, nil, growthError(proto.StatusCode_StatusCode_BadReq, "poster material %d has a different type", id)
+			return nil, nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "poster material %d has a different type", id)
 		}
 	}
 	affected := make(map[uint32]struct{})
@@ -1040,20 +1040,20 @@ func configuredArmorDisassembleCount(item *excel.ArmorDisassembleItem) (int64, b
 
 func (s *Player) DisassembleEquipment(weaponIDs, armorIDs []uint32) ([]*proto.ItemDetail, error) {
 	if len(weaponIDs)+len(armorIDs) == 0 {
-		return nil, growthError(proto.StatusCode_StatusCode_BadReq, "disassemble list is empty")
+		return nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "disassemble list is empty")
 	}
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		return nil, &GrowthError{Status: proto.StatusCode_StatusCode_ItemNotEnough, Err: err}
+		return nil, &GrowthError{Status: proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH, Err: err}
 	}
 	defer tx.Rollback()
 	cfg, _ := getEquipmentGrowthConfig()
 	maxCount, configured, err := cfg.globalInt("Equip_Disassemble_MaxCount")
 	if err != nil || !configured || maxCount <= 0 {
-		return nil, &GrowthError{Status: proto.StatusCode_StatusCode_CfgNotFound, Err: fmt.Errorf("invalid Equip_Disassemble_MaxCount: %v", err)}
+		return nil, &GrowthError{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, Err: fmt.Errorf("invalid Equip_Disassemble_MaxCount: %v", err)}
 	}
 	if int64(len(weaponIDs)+len(armorIDs)) > maxCount {
-		return nil, growthError(proto.StatusCode_StatusCode_BadReq, "disassemble count exceeds limit")
+		return nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "disassemble count exceeds limit")
 	}
 	type equipmentKey struct {
 		armor bool
@@ -1065,7 +1065,7 @@ func (s *Player) DisassembleEquipment(weaponIDs, armorIDs []uint32) ([]*proto.It
 	for _, id := range weaponIDs {
 		key := equipmentKey{id: id}
 		if _, ok := seen[key]; ok {
-			return nil, growthError(proto.StatusCode_StatusCode_BadReq, "duplicate weapon instance %d", id)
+			return nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "duplicate weapon instance %d", id)
 		}
 		seen[key] = struct{}{}
 		info, conf, err := s.validGrowthWeapon(id)
@@ -1073,22 +1073,22 @@ func (s *Player) DisassembleEquipment(weaponIDs, armorIDs []uint32) ([]*proto.It
 			return nil, err
 		}
 		if info.IsLock || info.WearerId != 0 || info.WearerIndex != 0 || s.weaponHasPresetReference(id) {
-			return nil, growthError(proto.StatusCode_StatusCode_BadReq, "weapon instance %d is locked or equipped", id)
+			return nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "weapon instance %d is locked or equipped", id)
 		}
 		property, err := findWeaponPropertyGroup(cfg, conf, info.Level)
 		if err != nil || property.DisassembleID == 0 {
-			return nil, &GrowthError{Status: proto.StatusCode_StatusCode_CfgNotFound, Err: err}
+			return nil, &GrowthError{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, Err: err}
 		}
 		rewardConf := cfg.weaponDisassemble[property.DisassembleID]
 		if rewardConf == nil || len(rewardConf.WeaponDisassembleItem) == 0 {
-			return nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "weapon disassemble configuration %d is missing", property.DisassembleID)
+			return nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "weapon disassemble configuration %d is missing", property.DisassembleID)
 		}
 		weaponRewards[property.DisassembleID] = rewardConf.WeaponDisassembleItem
 	}
 	for _, id := range armorIDs {
 		key := equipmentKey{armor: true, id: id}
 		if _, ok := seen[key]; ok {
-			return nil, growthError(proto.StatusCode_StatusCode_BadReq, "duplicate armor instance %d", id)
+			return nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "duplicate armor instance %d", id)
 		}
 		seen[key] = struct{}{}
 		info, conf, err := s.validGrowthArmor(id)
@@ -1096,37 +1096,37 @@ func (s *Player) DisassembleEquipment(weaponIDs, armorIDs []uint32) ([]*proto.It
 			return nil, err
 		}
 		if info.IsLock || info.WearerId != 0 || info.WearerIndex != 0 || s.armorHasPresetReference(id) {
-			return nil, growthError(proto.StatusCode_StatusCode_BadReq, "armor instance %d is locked or equipped", id)
+			return nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "armor instance %d is locked or equipped", id)
 		}
 		property, err := findArmorPropertyGroup(cfg, conf, info.Level)
 		if err != nil || property.DisassembleID == 0 {
-			return nil, &GrowthError{Status: proto.StatusCode_StatusCode_CfgNotFound, Err: err}
+			return nil, &GrowthError{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, Err: err}
 		}
 		rewardConf := cfg.armorDisassemble[property.DisassembleID]
 		if rewardConf == nil || len(rewardConf.ArmorDisassembleItem) == 0 {
-			return nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "armor disassemble configuration %d is missing", property.DisassembleID)
+			return nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "armor disassemble configuration %d is missing", property.DisassembleID)
 		}
 		armorRewards[property.DisassembleID] = rewardConf.ArmorDisassembleItem
 	}
 	for _, rewards := range weaponRewards {
 		for _, reward := range rewards {
 			if reward == nil || reward.ItemMinCount < 0 || reward.ItemMaxCount < reward.ItemMinCount {
-				return nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "invalid weapon disassemble reward")
+				return nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "invalid weapon disassemble reward")
 			}
 			conf := cfg.items[uint32(reward.ItemID)]
 			if conf == nil || !isGrowthBaseItemTag(proto.EBagItemTag(conf.NewBagItemTag)) {
-				return nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "weapon disassemble reward item %d is invalid", reward.ItemID)
+				return nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "weapon disassemble reward item %d is invalid", reward.ItemID)
 			}
 		}
 	}
 	for _, rewards := range armorRewards {
 		for _, reward := range rewards {
 			if reward == nil || reward.ItemMinCount < 0 || reward.ItemMaxCount < reward.ItemMinCount {
-				return nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "invalid armor disassemble reward")
+				return nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "invalid armor disassemble reward")
 			}
 			conf := cfg.items[uint32(reward.ItemID)]
 			if conf == nil || !isGrowthBaseItemTag(proto.EBagItemTag(conf.NewBagItemTag)) {
-				return nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "armor disassemble reward item %d is invalid", reward.ItemID)
+				return nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "armor disassemble reward item %d is invalid", reward.ItemID)
 			}
 		}
 	}
@@ -1144,7 +1144,7 @@ func (s *Player) DisassembleEquipment(weaponIDs, armorIDs []uint32) ([]*proto.It
 		if info.Inscription1 != 0 {
 			inscription, _, err := s.validGrowthInscription(info.Inscription1)
 			if err != nil || inscription.WeaponInstanceId != id {
-				return nil, growthError(proto.StatusCode_StatusCode_BadReq, "weapon instance %d has an invalid inscription", id)
+				return nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "weapon instance %d has an invalid inscription", id)
 			}
 		}
 	}
@@ -1173,7 +1173,7 @@ func (s *Player) DisassembleEquipment(weaponIDs, armorIDs []uint32) ([]*proto.It
 	for itemID, count := range totals {
 		info := s.addGrowthBaseReward(cfg.items[itemID], count)
 		if info == nil {
-			return nil, growthError(proto.StatusCode_StatusCode_ItemGetFail, "failed to add disassemble reward item %d", itemID)
+			return nil, growthError(proto.StatusCode_StatusCode_Item_Get_Fail, "failed to add disassemble reward item %d", itemID)
 		}
 		items = append(items, info.ItemDetail())
 	}
@@ -1209,10 +1209,10 @@ func (s *Player) PosterIllustrations() []*PosterIllustration {
 			continue
 		}
 		seen[illustrationID] = struct{}{}
-		status := proto.RewardStatus_RewardStatus_NotReward
+		status := proto.RewardStatus_NotReward
 		if entry := archive.PosterIllustrationMap[illustrationID]; entry != nil &&
-			entry.RewardStatus == proto.RewardStatus_RewardStatus_Reward {
-			status = proto.RewardStatus_RewardStatus_Reward
+			entry.RewardStatus == proto.RewardStatus_Reward {
+			status = proto.RewardStatus_Reward
 		}
 		result = append(result, &PosterIllustration{
 			PosterIllustrationId: illustrationID,
@@ -1225,13 +1225,13 @@ func (s *Player) PosterIllustrations() []*PosterIllustration {
 func (s *Player) ClaimPosterIllustration(illustrationID uint32) (*PosterIllustration, error) {
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		return nil, &GrowthError{Status: proto.StatusCode_StatusCode_ItemNotEnough, Err: err}
+		return nil, &GrowthError{Status: proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH, Err: err}
 	}
 	defer tx.Rollback()
 	cfg, _ := getEquipmentGrowthConfig()
 	illustrationConf := cfg.posterIllustrations[illustrationID]
 	if illustrationConf == nil || !illustrationConf.IsShow {
-		return nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "poster illustration %d is not configured", illustrationID)
+		return nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "poster illustration %d is not configured", illustrationID)
 	}
 	owned := false
 	for _, poster := range s.GetItemModel().GetItemPosterMap() {
@@ -1242,19 +1242,19 @@ func (s *Player) ClaimPosterIllustration(illustrationID uint32) (*PosterIllustra
 		}
 	}
 	if !owned {
-		return nil, growthError(proto.StatusCode_StatusCode_PosterIllustrationNotActive, "poster illustration %d is not active", illustrationID)
+		return nil, growthError(proto.StatusCode_StatusCode_POSTER_ILLUSTRATION_NOT_ACTIVE, "poster illustration %d is not active", illustrationID)
 	}
 	archive := s.GetArchive()
 	if archive.PosterIllustrationMap == nil {
 		archive.PosterIllustrationMap = make(map[uint32]*PosterIllustration)
 	}
 	if entry := archive.PosterIllustrationMap[illustrationID]; entry != nil &&
-		entry.RewardStatus == proto.RewardStatus_RewardStatus_Reward {
-		return nil, growthError(proto.StatusCode_StatusCode_PosterIllustrationRewarded, "poster illustration %d was already rewarded", illustrationID)
+		entry.RewardStatus == proto.RewardStatus_Reward {
+		return nil, growthError(proto.StatusCode_StatusCode_POSTER_ILLUSTRATION_REWARDED, "poster illustration %d was already rewarded", illustrationID)
 	}
 	entry := &PosterIllustration{
 		PosterIllustrationId: illustrationID,
-		RewardStatus:         proto.RewardStatus_RewardStatus_Reward,
+		RewardStatus:         proto.RewardStatus_Reward,
 	}
 	archive.PosterIllustrationMap[illustrationID] = entry
 	tx.Commit()
@@ -1313,7 +1313,7 @@ func (s *Player) PlayerBuffs(now time.Time) []*proto.PlayerBuff {
 		return nil
 	}
 	return []*proto.PlayerBuff{{
-		SystemType: proto.BuffSystemType_BuffSystemType_Global,
+		SystemType: proto.PlayerBuff_BuffSystemType_GLOBAL,
 		BuffLst:    buffs,
 	}}
 }
@@ -1349,11 +1349,11 @@ func (s *Player) itemUseCooldownSeconds(cfg *equipmentGrowthConfig, itemID uint3
 
 func (s *Player) UseItem(itemID uint32, count uint32, chooseItemID uint32, playerLevel uint32, now time.Time) (*ItemUseResult, error) {
 	if count == 0 {
-		return nil, growthError(proto.StatusCode_StatusCode_BadReq, "item use count is zero")
+		return nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "item use count is zero")
 	}
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		return nil, &GrowthError{Status: proto.StatusCode_StatusCode_ItemNotEnough, Err: err}
+		return nil, &GrowthError{Status: proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH, Err: err}
 	}
 	defer tx.Rollback()
 	item, itemConf, err := s.validGrowthBaseItem(itemID, int64(count))
@@ -1363,13 +1363,13 @@ func (s *Player) UseItem(itemID uint32, count uint32, chooseItemID uint32, playe
 	cfg, _ := getEquipmentGrowthConfig()
 	cooldown, err := s.itemUseCooldownSeconds(cfg, itemID)
 	if err != nil {
-		return nil, &GrowthError{Status: proto.StatusCode_StatusCode_CfgNotFound, Err: err}
+		return nil, &GrowthError{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, Err: err}
 	}
 	cooldownKey := fmt.Sprintf("%s%d", itemUseCooldownKeyPrefix, itemID)
 	if cooldown > 0 {
 		lastUse, _ := strconv.ParseInt(s.GetArchive().GetArchiveValue(cooldownKey), 10, 64)
 		if now.Unix() < lastUse+cooldown {
-			return nil, growthError(proto.StatusCode_StatusCode_RequestsTooFrequent, "item %d is on cooldown", itemID)
+			return nil, growthError(proto.StatusCode_StatusCode_REQUESTS_TOO_FREQUENT, "item %d is on cooldown", itemID)
 		}
 	}
 
@@ -1381,50 +1381,50 @@ func (s *Player) UseItem(itemID uint32, count uint32, chooseItemID uint32, playe
 	case proto.EBagItemTag_EBagItemTag_Gift:
 		gift := cfg.giftBags[int32(itemConf.RelateID)]
 		if gift == nil || len(gift.GiftBagGroup) == 0 {
-			return nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "gift bag %d is not configured", itemConf.RelateID)
+			return nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "gift bag %d is not configured", itemConf.RelateID)
 		}
 		if playerLevel < uint32(gift.PlayerLv) {
-			return nil, growthError(proto.StatusCode_StatusCode_PlayerLevelLimit, "player level is too low for gift bag %d", gift.ID)
+			return nil, growthError(proto.StatusCode_StatusCode_PLAYER_LEVEL_LIMIT, "player level is too low for gift bag %d", gift.ID)
 		}
 		if gift.UseItemID < 0 || gift.UseItemCount < 0 || (gift.UseItemID == 0) != (gift.UseItemCount == 0) {
-			return nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "gift bag %d has invalid use cost", gift.ID)
+			return nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "gift bag %d has invalid use cost", gift.ID)
 		}
 		for i := uint32(0); i < count; i++ {
 			selected, err := selectGiftRewards(cfg, gift, chooseItemID, playerLevel)
 			if err != nil {
-				return nil, &GrowthError{Status: proto.StatusCode_StatusCode_CfgNotFound, Err: err}
+				return nil, &GrowthError{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, Err: err}
 			}
 			rewards = append(rewards, selected...)
 		}
 	case proto.EBagItemTag_EBagItemTag_Food:
 		if count != 1 || chooseItemID != 0 {
-			return nil, growthError(proto.StatusCode_StatusCode_BadReq, "food must be used one at a time without a choice")
+			return nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "food must be used one at a time without a choice")
 		}
 		affect := cfg.cookAffects[itemConf.RelateID]
 		if affect == nil || affect.NewCookFoodEffectType != 1 || affect.FoodEffectTypeParam <= 0 || affect.BuffID == 0 {
-			return nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "food %d has no configured duration buff", itemID)
+			return nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "food %d has no configured duration buff", itemID)
 		}
 		buff := cfg.buffs[affect.BuffID]
 		if buff == nil || buff.ScriptID == 0 {
-			return nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "food buff %d is not configured", affect.BuffID)
+			return nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "food buff %d is not configured", affect.BuffID)
 		}
 		active, err := s.foodBuffs(now)
 		if err != nil {
-			return nil, &GrowthError{Status: proto.StatusCode_StatusCode_SysErr, Err: err}
+			return nil, &GrowthError{Status: proto.StatusCode_StatusCode_SYS_ERR, Err: err}
 		}
 		if _, ok := active[strconv.FormatUint(uint64(affect.BuffID), 10)]; ok {
-			return nil, growthError(proto.StatusCode_StatusCode_RequestsTooFrequent, "food buff %d is already active", affect.BuffID)
+			return nil, growthError(proto.StatusCode_StatusCode_REQUESTS_TOO_FREQUENT, "food buff %d is already active", affect.BuffID)
 		}
 		foodBuffID = uint32(affect.BuffID)
 		foodEndTime = now.UnixMilli() + int64(affect.FoodEffectTypeParam)*1000
 	default:
-		return nil, growthError(proto.StatusCode_StatusCode_BadReq, "item %d has no usable effect", itemID)
+		return nil, growthError(proto.StatusCode_StatusCode_BAD_REQ, "item %d has no usable effect", itemID)
 	}
 
 	for _, reward := range rewards {
 		conf := cfg.items[reward.itemID]
 		if conf == nil || !canReceiveGrowthReward(cfg, conf) || reward.count <= 0 {
-			return nil, growthError(proto.StatusCode_StatusCode_CfgNotFound, "gift reward item %d is invalid", reward.itemID)
+			return nil, growthError(proto.StatusCode_StatusCode_CFG_NOT_FOUND, "gift reward item %d is invalid", reward.itemID)
 		}
 	}
 	if err := validateGrowthCost(tx, cfg, itemID, int64(count)); err != nil {
@@ -1453,14 +1453,14 @@ func (s *Player) UseItem(itemID uint32, count uint32, chooseItemID uint32, playe
 		if isGrowthBaseItemTag(proto.EBagItemTag(conf.NewBagItemTag)) {
 			info := s.addGrowthBaseReward(conf, rewardCount)
 			if info == nil {
-				return nil, growthError(proto.StatusCode_StatusCode_ItemGetFail, "failed to add gift reward item %d", rewardItemID)
+				return nil, growthError(proto.StatusCode_StatusCode_Item_Get_Fail, "failed to add gift reward item %d", rewardItemID)
 			}
 			result.Items = append(result.Items, info.ItemDetail())
 			continue
 		}
 		ctx := s.AddAllTypeItem(rewardItemID, rewardCount)
 		if ctx == nil {
-			return nil, growthError(proto.StatusCode_StatusCode_ItemGetFail, "failed to add gift reward item %d", rewardItemID)
+			return nil, growthError(proto.StatusCode_StatusCode_Item_Get_Fail, "failed to add gift reward item %d", rewardItemID)
 		}
 		if detail := ctx.AddItemDetail(); detail != nil {
 			result.Items = append(result.Items, detail)
@@ -1472,12 +1472,12 @@ func (s *Player) UseItem(itemID uint32, count uint32, chooseItemID uint32, playe
 	if foodBuffID != 0 {
 		active, err := s.foodBuffs(now)
 		if err != nil {
-			return nil, &GrowthError{Status: proto.StatusCode_StatusCode_SysErr, Err: err}
+			return nil, &GrowthError{Status: proto.StatusCode_StatusCode_SYS_ERR, Err: err}
 		}
 		active[strconv.FormatUint(uint64(foodBuffID), 10)] = foodEndTime
 		data, err := sonic.MarshalString(active)
 		if err != nil {
-			return nil, &GrowthError{Status: proto.StatusCode_StatusCode_SysErr, Err: err}
+			return nil, &GrowthError{Status: proto.StatusCode_StatusCode_SYS_ERR, Err: err}
 		}
 		s.GetArchive().SetArchiveMap(foodBuffsArchiveKey, data)
 		result.PlayerBuffs = s.PlayerBuffs(now)

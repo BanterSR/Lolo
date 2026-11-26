@@ -125,7 +125,7 @@ type restaurantFoodKey struct {
 func buildRestaurantRules(activityID uint32) (*restaurantRules, proto.StatusCode) {
 	conf, err := restaurantConfigProvider()
 	if err != nil || conf == nil {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	rules := &restaurantRules{
 		activityID:       activityID,
@@ -138,27 +138,27 @@ func buildRestaurantRules(activityID uint32) (*restaurantRules, proto.StatusCode
 	}
 	for _, dungeon := range conf.GetRestaurantDungeon().GetDatas() {
 		if dungeon == nil || dungeon.ID <= 0 || uint32(dungeon.ActivityID) != activityID || len(dungeon.RestaurantDungeonGroupInfo) == 0 {
-			return nil, proto.StatusCode_StatusCode_CfgNotFound
+			return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		}
 		if _, exists := rules.dungeonByID[uint32(dungeon.ID)]; exists {
-			return nil, proto.StatusCode_StatusCode_CfgNotFound
+			return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		}
 		rules.dungeons = append(rules.dungeons, dungeon)
 		rules.dungeonByID[uint32(dungeon.ID)] = dungeon
 	}
 	if len(rules.dungeons) == 0 {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	sort.Slice(rules.dungeons, func(i, j int) bool { return rules.dungeons[i].ID < rules.dungeons[j].ID })
 	for _, dungeon := range rules.dungeons {
 		if dungeon.UnlockDungeonID != 0 {
 			if _, ok := rules.dungeonByID[uint32(dungeon.UnlockDungeonID)]; !ok {
-				return nil, proto.StatusCode_StatusCode_CfgNotFound
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 		}
 		for _, group := range dungeon.RestaurantDungeonGroupInfo {
 			if group == nil || group.FoodLevel <= 0 || group.FoodType <= 0 || group.OrderQuantity <= 0 {
-				return nil, proto.StatusCode_StatusCode_CfgNotFound
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 		}
 	}
@@ -168,21 +168,21 @@ func buildRestaurantRules(activityID uint32) (*restaurantRules, proto.StatusCode
 		}
 		for _, bag := range bagConf.RestaurantDeskBagGroupInfo {
 			if bag == nil || bag.BagID <= 0 {
-				return nil, proto.StatusCode_StatusCode_CfgNotFound
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 			if _, exists := rules.bags[uint32(bag.BagID)]; exists {
-				return nil, proto.StatusCode_StatusCode_CfgNotFound
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 			if bag.UnlockDungonID != 0 {
 				if _, ok := rules.dungeonByID[uint32(bag.UnlockDungonID)]; !ok {
-					return nil, proto.StatusCode_StatusCode_CfgNotFound
+					return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 				}
 			}
 			rules.bags[uint32(bag.BagID)] = bag
 		}
 	}
 	if len(rules.bags) == 0 {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	for _, foodConf := range conf.GetRestaurantGameFood().GetDatas() {
 		if foodConf == nil || uint32(foodConf.ID) != activityID {
@@ -191,10 +191,10 @@ func buildRestaurantRules(activityID uint32) (*restaurantRules, proto.StatusCode
 		for _, food := range foodConf.RestaurantGameFoodGroupInfo {
 			if food == nil || food.FoodID <= 0 || food.FoodLevel <= 0 || food.FoodType <= 0 ||
 				food.RecyclingPriceMin < 0 || food.RecyclingPriceMax < food.RecyclingPriceMin {
-				return nil, proto.StatusCode_StatusCode_CfgNotFound
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 			if _, exists := rules.foods[uint32(food.FoodID)]; exists {
-				return nil, proto.StatusCode_StatusCode_CfgNotFound
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 			rules.foods[uint32(food.FoodID)] = food
 			key := restaurantFoodKey{level: food.FoodLevel, type_: food.FoodType}
@@ -205,7 +205,7 @@ func buildRestaurantRules(activityID uint32) (*restaurantRules, proto.StatusCode
 		food := rules.foods[id]
 		if food.SyntheticTarget != 0 {
 			if _, ok := rules.foods[uint32(food.SyntheticTarget)]; !ok {
-				return nil, proto.StatusCode_StatusCode_CfgNotFound
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 		}
 	}
@@ -217,17 +217,17 @@ func buildRestaurantRules(activityID uint32) (*restaurantRules, proto.StatusCode
 			continue
 		}
 		if pool.ID <= 0 || pool.RateMin < 0 || pool.RateMax < pool.RateMin || len(pool.RestaurantRandomPoolGroupInfo) == 0 {
-			return nil, proto.StatusCode_StatusCode_CfgNotFound
+			return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		}
 		if _, exists := rules.pools[uint32(pool.ID)]; exists {
-			return nil, proto.StatusCode_StatusCode_CfgNotFound
+			return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		}
 		for _, group := range pool.RestaurantRandomPoolGroupInfo {
 			if group == nil {
-				return nil, proto.StatusCode_StatusCode_CfgNotFound
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 			if _, ok := rules.foods[uint32(group.FoodId)]; !ok {
-				return nil, proto.StatusCode_StatusCode_CfgNotFound
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 		}
 		rules.pools[uint32(pool.ID)] = pool
@@ -239,34 +239,34 @@ func buildRestaurantRules(activityID uint32) (*restaurantRules, proto.StatusCode
 		for _, quest := range questConf.RestaurantGameQuestGroupInfo {
 			if quest == nil || quest.GameQuestID <= 0 || quest.GameCoin < 0 || quest.GameIntegral < 0 ||
 				quest.GameCoinID <= 0 || quest.Param <= 0 {
-				return nil, proto.StatusCode_StatusCode_CfgNotFound
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 			if quest.NewRestaurantGameQuestType < 0 || quest.NewRestaurantGameQuestType > 1 {
-				return nil, proto.StatusCode_StatusCode_CfgNotFound
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 			if quest.GameIntegral > 0 && quest.GameIntegralItem <= 0 {
-				return nil, proto.StatusCode_StatusCode_CfgNotFound
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 			if rules.coinItemID != 0 && rules.coinItemID != uint32(quest.GameCoinID) {
-				return nil, proto.StatusCode_StatusCode_CfgNotFound
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 			rules.coinItemID = uint32(quest.GameCoinID)
 			if _, exists := rules.quests[uint32(quest.GameQuestID)]; exists {
-				return nil, proto.StatusCode_StatusCode_CfgNotFound
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 			rules.quests[uint32(quest.GameQuestID)] = quest
 		}
 	}
 	if len(rules.quests) == 0 || rules.coinItemID == 0 {
-		return nil, proto.StatusCode_StatusCode_CfgNotFound
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
-	return rules, proto.StatusCode_StatusCode_Ok
+	return rules, proto.StatusCode_StatusCode_OK
 }
 
 func restaurantActivityStatus(activityID uint32, now time.Time) proto.StatusCode {
 	conf, err := activityConfigProvider()
 	if err != nil || conf == nil {
-		return proto.StatusCode_StatusCode_CfgNotFound
+		return proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
 	for _, activity := range conf.GetActivity().GetDatas() {
 		if activity == nil || uint32(activity.ID) != activityID {
@@ -274,18 +274,18 @@ func restaurantActivityStatus(activityID uint32, now time.Time) proto.StatusCode
 		}
 		opening, err := time.ParseInLocation("2006-01-02 15:04:05", activity.OpeningTime, time.Local)
 		if err != nil || activity.ClosingTime == "" {
-			return proto.StatusCode_StatusCode_CfgNotFound
+			return proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		}
 		closing, err := time.ParseInLocation("2006-01-02 15:04:05", activity.ClosingTime, time.Local)
 		if err != nil || closing.Before(opening) {
-			return proto.StatusCode_StatusCode_CfgNotFound
+			return proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		}
 		if now.Before(opening) || !now.Before(closing) {
-			return proto.StatusCode_StatusCode_ActivityClose
+			return proto.StatusCode_StatusCode_Activity_Close
 		}
-		return proto.StatusCode_StatusCode_Ok
+		return proto.StatusCode_StatusCode_OK
 	}
-	return proto.StatusCode_StatusCode_CfgNotFound
+	return proto.StatusCode_StatusCode_CFG_NOT_FOUND
 }
 
 func restaurantDay(now time.Time) int32 {
@@ -343,14 +343,14 @@ func newRestaurantDungeonState(conf *excel.RestaurantDungeonConfigure, rules *re
 }
 
 func ensureRestaurantContext(s *model.Player, activityID uint32, now time.Time) (*restaurantRules, *model.RestaurantActivityState, *excel.RestaurantDungeonConfigure, *model.RestaurantDungeonState, proto.StatusCode, bool) {
-	if status := restaurantActivityStatus(activityID, now); status != proto.StatusCode_StatusCode_Ok {
+	if status := restaurantActivityStatus(activityID, now); status != proto.StatusCode_StatusCode_OK {
 		return nil, nil, nil, nil, status, false
 	}
 	if !restaurantTeamValid(s) {
 		return nil, nil, nil, nil, proto.StatusCode_StatusCode_DungeonTeamError, false
 	}
 	rules, status := buildRestaurantRules(activityID)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		return nil, nil, nil, nil, status, false
 	}
 	day := restaurantDay(now)
@@ -439,15 +439,15 @@ func ensureRestaurantContext(s *model.Player, activityID uint32, now time.Time) 
 		var err error
 		dungeon, err = newRestaurantDungeonState(selected, rules)
 		if err != nil {
-			return nil, nil, nil, nil, proto.StatusCode_StatusCode_CfgNotFound, false
+			return nil, nil, nil, nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND, false
 		}
 		activity.Dungeons[activity.CurrentDungeonID] = dungeon
 		dirty = true
 	}
 	if len(dungeon.Customers) != len(selected.RestaurantDungeonGroupInfo) || dungeon.Grids == nil {
-		return nil, nil, nil, nil, proto.StatusCode_StatusCode_CfgNotFound, false
+		return nil, nil, nil, nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND, false
 	}
-	return rules, activity, selected, dungeon, proto.StatusCode_StatusCode_Ok, dirty
+	return rules, activity, selected, dungeon, proto.StatusCode_StatusCode_OK, dirty
 }
 
 func restaurantGridList(rules *restaurantRules, activity *model.RestaurantActivityState, dungeon *model.RestaurantDungeonState) []*proto.RestaurantGameGridInfo {
@@ -497,7 +497,7 @@ func restaurantDungeonInfo(rules *restaurantRules, activity *model.RestaurantAct
 
 func saveCoreMutation(s *model.Player, rspStatus *proto.StatusCode) {
 	if err := coreSavePlayer(s); err != nil {
-		*rspStatus = proto.StatusCode_StatusCode_PlayerNotFound
+		*rspStatus = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 		log.Game.Errorf("UserId:%v 核心玩法落库失败:%s", s.UserId, err.Error())
 	}
 }
@@ -513,25 +513,25 @@ func coreCosts(items map[uint32]int64) []model.ItemBaseInfo {
 
 func spendCoreItems(s *model.Player, costs map[uint32]int64) (*model.ItemTransaction, proto.StatusCode) {
 	if len(costs) == 0 {
-		return nil, proto.StatusCode_StatusCode_Ok
+		return nil, proto.StatusCode_StatusCode_OK
 	}
 	tx, err := s.GetItemModel().Begin()
 	if err != nil {
-		return nil, proto.StatusCode_StatusCode_ItemNotEnough
+		return nil, proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 	}
 	for _, cost := range coreCosts(costs) {
 		if cost.Num <= 0 {
 			tx.Rollback()
-			return nil, proto.StatusCode_StatusCode_BadReq
+			return nil, proto.StatusCode_StatusCode_BAD_REQ
 		}
 		tx.DelBaseItem(cost.ItemId, cost.Num)
 		if tx.Error != nil {
 			tx.Rollback()
-			return nil, proto.StatusCode_StatusCode_ItemNotEnough
+			return nil, proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 		}
 	}
 	tx.Commit()
-	return tx, proto.StatusCode_StatusCode_Ok
+	return tx, proto.StatusCode_StatusCode_OK
 }
 
 func isCoreStackableTag(tag proto.EBagItemTag) bool {
@@ -584,7 +584,7 @@ func grantCoreRewards(s *model.Player, rewards map[uint32]int64) ([]*proto.ItemD
 		}
 		conf := coreItemConfigure(reward.ItemId)
 		if conf == nil || !isCoreStackableTag(proto.EBagItemTag(conf.NewBagItemTag)) {
-			return nil, proto.StatusCode_StatusCode_CfgNotFound
+			return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		}
 	}
 	for _, reward := range coreCosts(rewards) {
@@ -593,13 +593,13 @@ func grantCoreRewards(s *model.Player, rewards map[uint32]int64) ([]*proto.ItemD
 		}
 		ctx := coreGrantItem(s, reward.ItemId, reward.Num)
 		if ctx == nil || ctx.EBagItemTag == nil {
-			return nil, proto.StatusCode_StatusCode_ItemGetFail
+			return nil, proto.StatusCode_StatusCode_Item_Get_Fail
 		}
 		if detail := ctx.AddItemDetail(); detail != nil {
 			items = append(items, detail)
 		}
 	}
-	return items, proto.StatusCode_StatusCode_Ok
+	return items, proto.StatusCode_StatusCode_OK
 }
 
 func restaurantOperationKey(activityID, dungeonID uint32, operateType proto.RestaurantGameOperateType, poolID uint32, grids []uint32) string {
@@ -628,36 +628,36 @@ func restaurantOperationMatches(record model.RestaurantOperationRecord, day int3
 
 func validateRestaurantGrids(rules *restaurantRules, activity *model.RestaurantActivityState, dungeon *model.RestaurantDungeonState, grids []uint32, empty bool) ([]uint32, proto.StatusCode) {
 	if len(grids) == 0 {
-		return nil, proto.StatusCode_StatusCode_BadReq
+		return nil, proto.StatusCode_StatusCode_BAD_REQ
 	}
 	seen := make(map[uint32]struct{}, len(grids))
 	result := append([]uint32(nil), grids...)
 	for _, index := range result {
 		if _, exists := seen[index]; exists {
-			return nil, proto.StatusCode_StatusCode_BadReq
+			return nil, proto.StatusCode_StatusCode_BAD_REQ
 		}
 		seen[index] = struct{}{}
 		if !restaurantGridUnlocked(rules, activity, index) {
-			return nil, proto.StatusCode_StatusCode_MinigameRestaurantGridNotExist
+			return nil, proto.StatusCode_StatusCode_MINIGAME_RESTAURANT_GRID_NOT_EXIST
 		}
 		food := dungeon.Grids[index]
 		if empty && food != 0 {
-			return nil, proto.StatusCode_StatusCode_MinigameRestaurantGridFull
+			return nil, proto.StatusCode_StatusCode_MINIGAME_RESTAURANT_GRID_FULL
 		}
 		if !empty && food == 0 {
-			return nil, proto.StatusCode_StatusCode_MinigameRestaurantGridEmpty
+			return nil, proto.StatusCode_StatusCode_MINIGAME_RESTAURANT_GRID_EMPTY
 		}
 	}
 	sort.Slice(result, func(i, j int) bool { return result[i] < result[j] })
-	return result, proto.StatusCode_StatusCode_Ok
+	return result, proto.StatusCode_StatusCode_OK
 }
 
 func (g *Game) RestaurantGameInfo(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.RestaurantGameInfoReq)
-	rsp := &proto.RestaurantGameInfoRsp{Status: proto.StatusCode_StatusCode_Ok, ActivityId: req.ActivityId}
+	rsp := &proto.RestaurantGameInfoRsp{Status: proto.StatusCode_StatusCode_OK, ActivityId: req.ActivityId}
 	defer g.send(s, msg.PacketId, rsp)
 	rules, activity, conf, dungeon, status, dirty := ensureRestaurantContext(s, req.ActivityId, coreNow())
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
@@ -671,19 +671,19 @@ func (g *Game) RestaurantGameInfo(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) RestaurantGameOperate(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.RestaurantGameOperateReq)
 	rsp := &proto.RestaurantGameOperateRsp{
-		Status:      proto.StatusCode_StatusCode_Ok,
+		Status:      proto.StatusCode_StatusCode_OK,
 		ActivityId:  req.ActivityId,
 		Grid:        make([]*proto.RestaurantGameGridInfo, 0),
 		ItemDetails: make([]*proto.ItemDetail, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	rules, activity, conf, dungeon, status, _ := ensureRestaurantContext(s, req.ActivityId, coreNow())
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	if dungeon.Cleared {
-		rsp.Status = proto.StatusCode_StatusCode_MinigameRestaurantCustomerFinish
+		rsp.Status = proto.StatusCode_StatusCode_MINIGAME_RESTAURANT_CUSTOMER_FINISH
 		return
 	}
 	day := restaurantDay(coreNow())
@@ -696,11 +696,11 @@ func (g *Game) RestaurantGameOperate(s *model.Player, msg *alg.GameMsg) {
 	case proto.RestaurantGameOperateType_RestaurantGameOperateType_Buy:
 		pool := rules.pools[req.BuyPoolId]
 		if pool == nil {
-			rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return
 		}
 		grids, status := validateRestaurantGrids(rules, activity, dungeon, req.Grid, true)
-		if status != proto.StatusCode_StatusCode_Ok {
+		if status != proto.StatusCode_StatusCode_OK {
 			rsp.Status = status
 			return
 		}
@@ -719,7 +719,7 @@ func (g *Game) RestaurantGameOperate(s *model.Player, msg *alg.GameMsg) {
 			costs[rules.coinItemID] += price
 		}
 		tx, status := spendCoreItems(s, costs)
-		if status != proto.StatusCode_StatusCode_Ok {
+		if status != proto.StatusCode_StatusCode_OK {
 			rsp.Status = status
 			return
 		}
@@ -732,34 +732,34 @@ func (g *Game) RestaurantGameOperate(s *model.Player, msg *alg.GameMsg) {
 		}
 	case proto.RestaurantGameOperateType_RestaurantGameOperateType_Mix:
 		grids, status := validateRestaurantGrids(rules, activity, dungeon, req.Grid, false)
-		if status != proto.StatusCode_StatusCode_Ok {
+		if status != proto.StatusCode_StatusCode_OK {
 			rsp.Status = status
 			return
 		}
 		if len(grids) != 2 {
-			rsp.Status = proto.StatusCode_StatusCode_MinigameRestaurantMixErr
+			rsp.Status = proto.StatusCode_StatusCode_MINIGAME_RESTAURANT_MIX_ERR
 			return
 		}
 		foodID := dungeon.Grids[grids[0]]
 		if dungeon.Grids[grids[1]] != foodID {
-			rsp.Status = proto.StatusCode_StatusCode_MinigameRestaurantMixErr
+			rsp.Status = proto.StatusCode_StatusCode_MINIGAME_RESTAURANT_MIX_ERR
 			return
 		}
 		food := rules.foods[foodID]
 		if food == nil || food.SyntheticTarget == 0 {
-			rsp.Status = proto.StatusCode_StatusCode_MinigameRestaurantFoodMaxLevel
+			rsp.Status = proto.StatusCode_StatusCode_MINIGAME_RESTAURANT_FOOD_MAX_LEVEL
 			return
 		}
 		target := uint32(food.SyntheticTarget)
 		if rules.foods[target] == nil {
-			rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return
 		}
 		dungeon.Grids[grids[0]] = target
 		dungeon.Grids[grids[1]] = 0
 	case proto.RestaurantGameOperateType_RestaurantGameOperateType_Recycle:
 		grids, status := validateRestaurantGrids(rules, activity, dungeon, req.Grid, false)
-		if status != proto.StatusCode_StatusCode_Ok {
+		if status != proto.StatusCode_StatusCode_OK {
 			rsp.Status = status
 			return
 		}
@@ -767,7 +767,7 @@ func (g *Game) RestaurantGameOperate(s *model.Player, msg *alg.GameMsg) {
 		for _, index := range grids {
 			food := rules.foods[dungeon.Grids[index]]
 			if food == nil {
-				rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+				rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 				return
 			}
 			price := int64(food.RecyclingPriceMin)
@@ -777,7 +777,7 @@ func (g *Game) RestaurantGameOperate(s *model.Player, msg *alg.GameMsg) {
 			rewards[rules.coinItemID] += price
 		}
 		items, status := grantCoreRewards(s, rewards)
-		if status != proto.StatusCode_StatusCode_Ok {
+		if status != proto.StatusCode_StatusCode_OK {
 			rsp.Status = status
 			return
 		}
@@ -786,7 +786,7 @@ func (g *Game) RestaurantGameOperate(s *model.Player, msg *alg.GameMsg) {
 		}
 		rsp.ItemDetails = append(rsp.ItemDetails, items...)
 	default:
-		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	record := model.RestaurantOperationRecord{Day: day, Grids: make(map[uint32]uint32, len(req.Grid))}
@@ -801,37 +801,37 @@ func (g *Game) RestaurantGameOperate(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) RestaurantGameEat(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.RestaurantGameEatReq)
 	rsp := &proto.RestaurantGameEatRsp{
-		Status:        proto.StatusCode_StatusCode_Ok,
+		Status:        proto.StatusCode_StatusCode_OK,
 		CustomerIndex: req.CustomerIndex,
 		ActivityId:    req.ActivityId,
 		Grid:          make([]*proto.RestaurantGameGridInfo, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	rules, activity, conf, dungeon, status, _ := ensureRestaurantContext(s, req.ActivityId, coreNow())
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	if dungeon.Cleared || int(req.CustomerIndex) >= len(dungeon.Customers) {
-		rsp.Status = proto.StatusCode_StatusCode_MinigameRestaurantCustomerFinish
+		rsp.Status = proto.StatusCode_StatusCode_MINIGAME_RESTAURANT_CUSTOMER_FINISH
 		return
 	}
 	customer := &dungeon.Customers[req.CustomerIndex]
 	if customer.Done {
-		rsp.Status = proto.StatusCode_StatusCode_MinigameRestaurantCustomerFinish
+		rsp.Status = proto.StatusCode_StatusCode_MINIGAME_RESTAURANT_CUSTOMER_FINISH
 		return
 	}
 	if !restaurantGridUnlocked(rules, activity, req.Grid) {
-		rsp.Status = proto.StatusCode_StatusCode_MinigameRestaurantGridNotExist
+		rsp.Status = proto.StatusCode_StatusCode_MINIGAME_RESTAURANT_GRID_NOT_EXIST
 		return
 	}
 	foodID := dungeon.Grids[req.Grid]
 	if foodID == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_MinigameRestaurantGridEmpty
+		rsp.Status = proto.StatusCode_StatusCode_MINIGAME_RESTAURANT_GRID_EMPTY
 		return
 	}
 	if foodID != customer.Food || rules.foods[foodID] == nil {
-		rsp.Status = proto.StatusCode_StatusCode_MinigameRestaurantFoodErr
+		rsp.Status = proto.StatusCode_StatusCode_MINIGAME_RESTAURANT_FOOD_ERR
 		return
 	}
 	dungeon.Grids[req.Grid] = 0
@@ -868,28 +868,28 @@ func (g *Game) RestaurantGameEat(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) RestaurantGameQuestReward(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.RestaurantGameQuestRewardReq)
 	rsp := &proto.RestaurantGameQuestRewardRsp{
-		Status:      proto.StatusCode_StatusCode_Ok,
+		Status:      proto.StatusCode_StatusCode_OK,
 		ActivityId:  req.ActivityId,
 		ItemDetails: make([]*proto.ItemDetail, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
 	rules, activity, _, _, status, _ := ensureRestaurantContext(s, req.ActivityId, coreNow())
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
 	questConf := rules.quests[req.QuestId]
 	quest := activity.Quests[req.QuestId]
 	if questConf == nil || quest == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	if quest.Rewarded || quest.Status == proto.QuestStatus_QuestStatus_Finish {
-		rsp.Status = proto.StatusCode_StatusCode_RepeatGetReward
+		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 		return
 	}
 	if quest.Status != proto.QuestStatus_QuestStatus_Completed {
-		rsp.Status = proto.StatusCode_StatusCode_QuestNotFinish
+		rsp.Status = proto.StatusCode_StatusCode_Quest_Not_Finish
 		return
 	}
 	rewards := make(map[uint32]int64)
@@ -900,7 +900,7 @@ func (g *Game) RestaurantGameQuestReward(s *model.Player, msg *alg.GameMsg) {
 		rewards[uint32(questConf.GameIntegralItem)] += int64(questConf.GameIntegral)
 	}
 	items, status := grantCoreRewards(s, rewards)
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}

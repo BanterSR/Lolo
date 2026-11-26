@@ -12,10 +12,10 @@ var TestMails = map[uint32]*proto.MailBriefData{
 	1: {
 		MailId:      1,
 		ModelId:     0,
-		MailState:   proto.MailState_MailState_Unclaim,
+		MailState:   proto.MailState_MailState_UNCLAIM,
 		Sender:      "Lolo",
 		SendTime:    1795000000,
-		ContentType: proto.MailContentType_MailContentType_Text,
+		ContentType: proto.MailContentType_MailContentType_TEXT,
 		Title:       "维护补偿",
 		Content:     "亲爱的队长：\n\n感谢您在《开放空间》维护期间的耐心等待！\n本次维护补偿：星石*700、限定券*10。\n请在邮箱中领取。\n\n《开放空间》运营团队",
 		OverdueDay:  3650,
@@ -30,10 +30,10 @@ var TestMails = map[uint32]*proto.MailBriefData{
 	2: {
 		MailId:          2,
 		ModelId:         0,
-		MailState:       proto.MailState_MailState_Unread,
+		MailState:       proto.MailState_MailState_UNREAD,
 		Sender:          "Lolo",
 		SendTime:        1795000000,
-		ContentType:     proto.MailContentType_MailContentType_Text,
+		ContentType:     proto.MailContentType_MailContentType_TEXT,
 		Title:           "私服使用说明",
 		Content:         "欢迎来到本地私服。\n\n单机进度保存在本地数据库中；切换模式或更换电脑前，请先在启动器内备份存档。\n\n祝游戏愉快。",
 		OverdueDay:      3650,
@@ -137,20 +137,20 @@ func (m *MailModel) brief(template *proto.MailBriefData) *proto.MailBriefData {
 	state := m.getStates()[template.MailId]
 	if state == nil {
 		if hasReward {
-			mail.MailState = proto.MailState_MailState_Unclaim
+			mail.MailState = proto.MailState_MailState_UNCLAIM
 		}
 		return mail
 	}
 	mail.CollectStatus = mail.CollectStatus || state.Collected
 	switch {
 	case state.Claimed:
-		mail.MailState = proto.MailState_MailState_Claimed
+		mail.MailState = proto.MailState_MailState_CLAIMED
 	case hasReward:
-		mail.MailState = proto.MailState_MailState_Unclaim
+		mail.MailState = proto.MailState_MailState_UNCLAIM
 	case state.Read:
-		mail.MailState = proto.MailState_MailState_Readed
+		mail.MailState = proto.MailState_MailState_READED
 	default:
-		mail.MailState = proto.MailState_MailState_Unread
+		mail.MailState = proto.MailState_MailState_UNREAD
 	}
 	return mail
 }

@@ -64,7 +64,7 @@ func TestEquipmentHandlersRejectGhostInstances(t *testing.T) {
 		Body:       &proto.WeaponStrengthReq{WeaponInstanceId: 999},
 	})
 	rsp := lastEquipmentResponse(t, conn, 1962).(*proto.WeaponStrengthRsp)
-	if rsp.Status == proto.StatusCode_StatusCode_Ok {
+	if rsp.Status == proto.StatusCode_StatusCode_OK {
 		t.Fatal("ghost weapon strengthening returned success")
 	}
 
@@ -73,7 +73,7 @@ func TestEquipmentHandlersRejectGhostInstances(t *testing.T) {
 		Body:       &proto.EquipDisassembleReq{WeaponIds: []uint32{999}},
 	})
 	rspDisassemble := lastEquipmentResponse(t, conn, 1958).(*proto.EquipDisassembleRsp)
-	if rspDisassemble.Status == proto.StatusCode_StatusCode_Ok {
+	if rspDisassemble.Status == proto.StatusCode_StatusCode_OK {
 		t.Fatal("ghost weapon disassembly returned success")
 	}
 }
@@ -90,11 +90,11 @@ func TestLockEquipHandlerRejectsWrongInstanceType(t *testing.T) {
 		PacketHead: &proto.PacketHead{PacketId: 1428},
 		Body: &proto.LockEquipReq{
 			InstanceId: 7,
-			EquipType:  proto.LockEquip_EquipType_LockEquip_EquipType_Weapon,
+			EquipType:  proto.LockEquipReq_LockEquip_EquipType_Weapon,
 		},
 	})
 	rsp := lastEquipmentResponse(t, conn, 1428).(*proto.LockEquipRsp)
-	if rsp.Status == proto.StatusCode_StatusCode_Ok {
+	if rsp.Status == proto.StatusCode_StatusCode_OK {
 		t.Fatal("armor instance was locked through the weapon type")
 	}
 }
@@ -113,7 +113,7 @@ func TestCharacterEquipPresetSwitchHandlerRequiresExistingPreset(t *testing.T) {
 		Body:       &proto.CharacterEquipPresetSwitchReq{CharId: 10, PresetIndex: 1},
 	})
 	rsp := lastEquipmentResponse(t, conn, 1420).(*proto.CharacterEquipPresetSwitchRsp)
-	if rsp.Status == proto.StatusCode_StatusCode_Ok || character.InUseEquipmentPresetIndex != 0 {
+	if rsp.Status == proto.StatusCode_StatusCode_OK || character.InUseEquipmentPresetIndex != 0 {
 		t.Fatal("missing equipment preset was accepted")
 	}
 
@@ -123,7 +123,7 @@ func TestCharacterEquipPresetSwitchHandlerRequiresExistingPreset(t *testing.T) {
 		Body:       &proto.CharacterEquipPresetSwitchReq{CharId: 10, PresetIndex: 1},
 	})
 	rsp = lastEquipmentResponse(t, conn, 1421).(*proto.CharacterEquipPresetSwitchRsp)
-	if rsp.Status != proto.StatusCode_StatusCode_Ok || character.InUseEquipmentPresetIndex != 1 {
+	if rsp.Status != proto.StatusCode_StatusCode_OK || character.InUseEquipmentPresetIndex != 1 {
 		t.Fatal("existing equipment preset was not activated")
 	}
 }

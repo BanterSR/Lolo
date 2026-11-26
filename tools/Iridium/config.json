@@ -1,10 +1,12 @@
 {
   "deviceName": "",
-  "packetFilter": [
-    ""
-  ],
+  "packetFilter": [],
   "autoSavePcapFiles": true,
-  "dumpJson": false,
+  "dumpJson": true,
+  "includeRawInDump": true,
   "maxPort": 11100,
-  "minPort": 11000
+  "minPort": 11000,
+  "listenAddr": "127.0.0.1:1984",
+  "outputDir": "./captures",
+  "packetBufferSize": 2000
 }

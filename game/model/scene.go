@@ -28,7 +28,7 @@ func NewWorldTask() *WorldTask {
 		seed:        time.Now().Unix(),
 		tickCount:   0,
 		curDay:      0,
-		weatherType: proto.WeatherType_WeatherType_Sunny,
+		weatherType: proto.WeatherType_WeatherType_SUNNY,
 	}
 }
 
@@ -213,9 +213,9 @@ func (p *PBCollectionRewardData) PBCollectionRewardData() *proto.PBCollectionRew
 }
 
 type AreaData struct {
-	AreaId    uint32          `json:"areaId,omitempty"`
-	AreaState proto.AreaState `json:"areaState,omitempty"`
-	Level     uint32          `json:"level,omitempty"`
+	AreaId    uint32                   `json:"areaId,omitempty"`
+	AreaState proto.AreaData_AreaState `json:"areaState,omitempty"`
+	Level     uint32                   `json:"level,omitempty"`
 }
 
 func (a *AreaData) AreaData() *proto.AreaData {
@@ -429,7 +429,7 @@ func (p *ScenePlayerInfo) GetPbSceneCharacter(characterId uint32) (info *proto.S
 		IsDead:              false,
 		InscriptionId:       0,
 		InscriptionLv:       0,
-		MpGameWeapon:        0,
+		MPGameWeapon:        0,
 	}
 	// 基础
 	p.UpdateCharacterBasic(info)

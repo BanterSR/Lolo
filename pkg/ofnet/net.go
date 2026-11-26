@@ -25,6 +25,7 @@ type Net interface {
 	Stats() NetStats
 	StartStatsLoop()
 	StopStatsLoop()
+	GetConnNum() int64
 }
 
 type NetStats struct {
@@ -105,8 +106,8 @@ type netBase struct {
 	log         *slog.SugaredLogger
 	fileLog     *slog.SugaredLogger
 	blackPackId map[uint32]struct{}
-	connNum     int64 // current connections
-	maxConnNum  int64 // max connections
+	connNum     atomic.Int64 // current connections
+	maxConnNum  int64        // max connections
 	stat        netStats
 	statsTag    string
 	statsDone   chan struct{}
@@ -147,15 +148,15 @@ func (c *netBase) SetMaxConnNum(maxConnNum int64) {
 }
 
 func (c *netBase) GetConnNum() int64 {
-	return atomic.LoadInt64(&c.connNum)
+	return c.connNum.Load()
 }
 
 func (c *netBase) onConnOpen() {
-	atomic.AddInt64(&c.connNum, 1)
+	c.connNum.Add(1)
 }
 
 func (c *netBase) onConnClose() {
-	atomic.AddInt64(&c.connNum, -1)
+	c.connNum.Add(-1)
 }
 
 func (c *netBase) recordSendBytes(n int) {
@@ -197,7 +198,7 @@ func (c *netBase) recordMinute(recv, send, requests int64) {
 
 func (c *netBase) GetStats() NetStats {
 	now := time.Now().Unix()
-	connNum := atomic.LoadInt64(&c.connNum)
+	connNum := c.connNum.Load()
 
 	var minuteSend, minuteRecv, minuteReq int64
 	c.stat.mu.Lock()

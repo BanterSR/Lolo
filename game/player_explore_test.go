@@ -45,8 +45,8 @@ func newExploreTestPlayer() *model.Player {
 	player.GetCharacterModel().CharacterMap[1] = &model.CharacterInfo{CharacterId: 1}
 	player.GetCharacterModel().CharacterMap[2] = &model.CharacterInfo{CharacterId: 2}
 	player.GetItemModel().ItemBaseInfo = map[uint32]*model.ItemBaseInfo{
-		102: {ItemId: 102, Num: 5, ItemType: proto.EBagItemTag_EBagItemTag_Currency, PackType: proto.PackType_PackType_Inventory},
-		50:  {ItemId: 50, Num: 1, ItemType: proto.EBagItemTag_EBagItemTag_Quest, PackType: proto.PackType_PackType_Inventory},
+		102: {ItemId: 102, Num: 5, ItemType: proto.EBagItemTag_EBagItemTag_Currency, PackType: proto.ItemDetail_PackType_Inventory},
+		50:  {ItemId: 50, Num: 1, ItemType: proto.EBagItemTag_EBagItemTag_Quest, PackType: proto.ItemDetail_PackType_Inventory},
 	}
 	return player
 }
@@ -75,7 +75,7 @@ func exploreTestDeps() (exploreDeps, map[uint32]int64, *int) {
 			return &proto.ItemDetail{MainItem: &proto.ItemInfo{
 				ItemId: id, ItemTag: proto.EBagItemTag_EBagItemTag_Material,
 				Item: &proto.ItemInfo_BaseItem{BaseItem: &proto.BaseItem{ItemId: id, Num: count}},
-			}, PackType: proto.PackType_PackType_Inventory}
+			}, PackType: proto.ItemDetail_PackType_Inventory}
 		},
 	}
 	return deps, granted, &consumptions
@@ -88,29 +88,29 @@ func TestExploreCompletionSettlesOnlyOnce(t *testing.T) {
 	now := time.Date(2030, 5, 1, 12, 0, 0, 0, time.Local)
 	team := [3]uint32{1, 2, 0}
 	started, status := startExplore(player, deps, 10101, false, 1, 2, team, now)
-	if status != proto.StatusCode_StatusCode_Ok || started.Times != 0 {
+	if status != proto.StatusCode_StatusCode_OK || started.Times != 0 {
 		t.Fatalf("start status = %v times = %d", status, started.Times)
 	}
-	if _, _, status := quickFinishExplore(player, deps, 10101, false); status != proto.StatusCode_StatusCode_Ok {
+	if _, _, status := quickFinishExplore(player, deps, 10101, false); status != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("quick status = %v", status)
 	}
 	_, items, status := claimExploreReward(player, deps, 10101, false, now)
-	if status != proto.StatusCode_StatusCode_Ok || len(items) != 2 {
+	if status != proto.StatusCode_StatusCode_OK || len(items) != 2 {
 		t.Fatalf("claim status=%v items=%d", status, len(items))
 	}
 	_, again, status := claimExploreReward(player, deps, 10101, false, now)
-	if status != proto.StatusCode_StatusCode_ExploreNotFinish || len(again) != 0 {
+	if status != proto.StatusCode_StatusCode_EXPLORE_NOT_FINISH || len(again) != 0 {
 		t.Fatalf("duplicate claim status=%v items=%d", status, len(again))
 	}
 	if granted[101] != 1 || granted[109] != 1 {
 		t.Fatalf("completion rewards = %v, want one grant each", granted)
 	}
 	_, items, status = claimExploreCollectReward(player, deps, 10101, false)
-	if status != proto.StatusCode_StatusCode_Ok || len(items) != 2 {
+	if status != proto.StatusCode_StatusCode_OK || len(items) != 2 {
 		t.Fatalf("collect status=%v items=%d", status, len(items))
 	}
 	_, again, status = claimExploreCollectReward(player, deps, 10101, false)
-	if status != proto.StatusCode_StatusCode_RepeatGetReward || len(again) != 0 {
+	if status != proto.StatusCode_StatusCode_REPEAT_GET_REWARD || len(again) != 0 {
 		t.Fatalf("duplicate collect status=%v items=%d", status, len(again))
 	}
 }
@@ -120,16 +120,16 @@ func TestExploreCancelPreventsAllRewards(t *testing.T) {
 	player := newExploreTestPlayer()
 	deps, granted, _ := exploreTestDeps()
 	now := time.Date(2030, 5, 1, 12, 0, 0, 0, time.Local)
-	if _, status := startExplore(player, deps, 10101, false, 1, 2, [3]uint32{1, 2, 0}, now); status != proto.StatusCode_StatusCode_Ok {
+	if _, status := startExplore(player, deps, 10101, false, 1, 2, [3]uint32{1, 2, 0}, now); status != proto.StatusCode_StatusCode_OK {
 		t.Fatal(status)
 	}
-	if _, status := cancelExplore(player, 10101, false); status != proto.StatusCode_StatusCode_Ok {
+	if _, status := cancelExplore(player, 10101, false); status != proto.StatusCode_StatusCode_OK {
 		t.Fatal(status)
 	}
-	if _, _, status := claimExploreReward(player, deps, 10101, false, now.Add(time.Hour)); status != proto.StatusCode_StatusCode_ExploreNotFinish {
+	if _, _, status := claimExploreReward(player, deps, 10101, false, now.Add(time.Hour)); status != proto.StatusCode_StatusCode_EXPLORE_NOT_FINISH {
 		t.Fatalf("reward after cancel status = %v", status)
 	}
-	if _, _, status := claimExploreCollectReward(player, deps, 10101, false); status != proto.StatusCode_StatusCode_ExploreCollectNotFinish {
+	if _, _, status := claimExploreCollectReward(player, deps, 10101, false); status != proto.StatusCode_StatusCode_EXPLORE_COLLECT_NOT_FINISH {
 		t.Fatalf("collect after cancel status = %v", status)
 	}
 	if len(granted) != 0 {
@@ -142,13 +142,13 @@ func TestExploreQuickFinishChargesOnlyOnce(t *testing.T) {
 	player := newExploreTestPlayer()
 	deps, _, consumptions := exploreTestDeps()
 	now := time.Date(2030, 5, 1, 12, 0, 0, 0, time.Local)
-	if _, status := startExplore(player, deps, 10101, false, 1, 2, [3]uint32{1, 0, 0}, now); status != proto.StatusCode_StatusCode_Ok {
+	if _, status := startExplore(player, deps, 10101, false, 1, 2, [3]uint32{1, 0, 0}, now); status != proto.StatusCode_StatusCode_OK {
 		t.Fatal(status)
 	}
-	if _, _, status := quickFinishExplore(player, deps, 10101, false); status != proto.StatusCode_StatusCode_Ok {
+	if _, _, status := quickFinishExplore(player, deps, 10101, false); status != proto.StatusCode_StatusCode_OK {
 		t.Fatal(status)
 	}
-	if _, item, status := quickFinishExplore(player, deps, 10101, false); status != proto.StatusCode_StatusCode_Ok || item != nil {
+	if _, item, status := quickFinishExplore(player, deps, 10101, false); status != proto.StatusCode_StatusCode_OK || item != nil {
 		t.Fatalf("repeat quick status=%v item=%v", status, item)
 	}
 	if *consumptions != 1 || player.GetItemModel().GetItemBaseInfo(102).Num != 4 {
@@ -157,10 +157,10 @@ func TestExploreQuickFinishChargesOnlyOnce(t *testing.T) {
 
 	other := newExploreTestPlayer()
 	other.GetItemModel().GetItemBaseInfo(102).Num = 0
-	if _, status := startExplore(other, deps, 10101, false, 1, 2, [3]uint32{1, 0, 0}, now); status != proto.StatusCode_StatusCode_Ok {
+	if _, status := startExplore(other, deps, 10101, false, 1, 2, [3]uint32{1, 0, 0}, now); status != proto.StatusCode_StatusCode_OK {
 		t.Fatal(status)
 	}
-	if _, _, status := quickFinishExplore(other, deps, 10101, false); status != proto.StatusCode_StatusCode_ItemNotEnough {
+	if _, _, status := quickFinishExplore(other, deps, 10101, false); status != proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH {
 		t.Fatalf("insufficient quick item status = %v", status)
 	}
 	state, _ := other.LoadExploreModel()
@@ -180,19 +180,19 @@ func TestExploreStartValidatesSceneLevelTeamAndItems(t *testing.T) {
 		mutate func(*model.Player, exploreDeps) exploreDeps
 		want   proto.StatusCode
 	}{
-		{name: "wrong scene", scene: 2, level: 2, team: [3]uint32{1}, want: proto.StatusCode_StatusCode_SceneNotUnlock},
-		{name: "low level", scene: 1, level: 1, team: [3]uint32{1}, want: proto.StatusCode_StatusCode_PlayerLevelLimit},
-		{name: "missing captain", scene: 1, level: 2, team: [3]uint32{}, want: proto.StatusCode_StatusCode_BadReq},
-		{name: "duplicate member", scene: 1, level: 2, team: [3]uint32{1, 1}, want: proto.StatusCode_StatusCode_BadReq},
-		{name: "unknown member", scene: 1, level: 2, team: [3]uint32{1, 99}, want: proto.StatusCode_StatusCode_BadReq},
+		{name: "wrong scene", scene: 2, level: 2, team: [3]uint32{1}, want: proto.StatusCode_StatusCode_SCENE_NOT_UNLOCK},
+		{name: "low level", scene: 1, level: 1, team: [3]uint32{1}, want: proto.StatusCode_StatusCode_PLAYER_LEVEL_LIMIT},
+		{name: "missing captain", scene: 1, level: 2, team: [3]uint32{}, want: proto.StatusCode_StatusCode_BAD_REQ},
+		{name: "duplicate member", scene: 1, level: 2, team: [3]uint32{1, 1}, want: proto.StatusCode_StatusCode_BAD_REQ},
+		{name: "unknown member", scene: 1, level: 2, team: [3]uint32{1, 99}, want: proto.StatusCode_StatusCode_BAD_REQ},
 		{name: "missing entry item", scene: 1, level: 2, team: [3]uint32{1}, mutate: func(p *model.Player, d exploreDeps) exploreDeps {
 			p.GetItemModel().GetItemBaseInfo(50).Num = 0
 			return d
-		}, want: proto.StatusCode_StatusCode_ItemNotEnough},
+		}, want: proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH},
 		{name: "missing reward config", scene: 1, level: 2, team: [3]uint32{1}, mutate: func(_ *model.Player, d exploreDeps) exploreDeps {
 			d.itemExists = func(id uint32) bool { return id != 109 }
 			return d
-		}, want: proto.StatusCode_StatusCode_CfgNotFound},
+		}, want: proto.StatusCode_StatusCode_CFG_NOT_FOUND},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -213,7 +213,7 @@ func TestExploreReconnectRestoresActiveState(t *testing.T) {
 	player := newExploreTestPlayer()
 	deps, granted, _ := exploreTestDeps()
 	now := time.Date(2030, 5, 1, 12, 0, 0, 0, time.Local)
-	if _, status := startExplore(player, deps, 10101, false, 1, 2, [3]uint32{1}, now); status != proto.StatusCode_StatusCode_Ok {
+	if _, status := startExplore(player, deps, 10101, false, 1, 2, [3]uint32{1}, now); status != proto.StatusCode_StatusCode_OK {
 		t.Fatal(status)
 	}
 	blob, err := sonic.Marshal(player)
@@ -224,10 +224,10 @@ func TestExploreReconnectRestoresActiveState(t *testing.T) {
 	if err := sonic.Unmarshal(blob, restored); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, status := quickFinishExplore(restored, deps, 10101, false); status != proto.StatusCode_StatusCode_Ok {
+	if _, _, status := quickFinishExplore(restored, deps, 10101, false); status != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("quick after reconnect status = %v", status)
 	}
-	if _, _, status := claimExploreReward(restored, deps, 10101, false, now); status != proto.StatusCode_StatusCode_Ok {
+	if _, _, status := claimExploreReward(restored, deps, 10101, false, now); status != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("claim after reconnect status = %v", status)
 	}
 	if granted[101] != 1 || granted[109] != 1 {
@@ -240,25 +240,25 @@ func TestExploreLimitsConcurrentAndActivityAttempts(t *testing.T) {
 	player := newExploreTestPlayer()
 	deps, _, _ := exploreTestDeps()
 	now := time.Date(2030, 5, 1, 12, 0, 0, 0, time.Local)
-	if _, status := startExplore(player, deps, 901, true, 1, 2, [3]uint32{1}, now); status != proto.StatusCode_StatusCode_Ok {
+	if _, status := startExplore(player, deps, 901, true, 1, 2, [3]uint32{1}, now); status != proto.StatusCode_StatusCode_OK {
 		t.Fatal(status)
 	}
-	if _, status := startExplore(player, deps, 10101, false, 1, 2, [3]uint32{1}, now); status != proto.StatusCode_StatusCode_ExploreInProgress {
+	if _, status := startExplore(player, deps, 10101, false, 1, 2, [3]uint32{1}, now); status != proto.StatusCode_StatusCode_EXPLORE_IN_PROGRESS {
 		t.Fatalf("concurrent start status = %v", status)
 	}
-	if _, _, status := quickFinishExplore(player, deps, 901, true); status != proto.StatusCode_StatusCode_Ok {
+	if _, _, status := quickFinishExplore(player, deps, 901, true); status != proto.StatusCode_StatusCode_OK {
 		t.Fatal(status)
 	}
-	if _, _, status := claimExploreReward(player, deps, 901, true, now); status != proto.StatusCode_StatusCode_Ok {
+	if _, _, status := claimExploreReward(player, deps, 901, true, now); status != proto.StatusCode_StatusCode_OK {
 		t.Fatal(status)
 	}
-	if _, status := startExplore(player, deps, 901, true, 1, 2, [3]uint32{1}, now); status != proto.StatusCode_StatusCode_Ok {
+	if _, status := startExplore(player, deps, 901, true, 1, 2, [3]uint32{1}, now); status != proto.StatusCode_StatusCode_OK {
 		t.Fatal(status)
 	}
-	if _, status := cancelExplore(player, 901, true); status != proto.StatusCode_StatusCode_Ok {
+	if _, status := cancelExplore(player, 901, true); status != proto.StatusCode_StatusCode_OK {
 		t.Fatal(status)
 	}
-	if _, status := startExplore(player, deps, 901, true, 1, 2, [3]uint32{1}, now); status != proto.StatusCode_StatusCode_ExploreMaxTimes {
+	if _, status := startExplore(player, deps, 901, true, 1, 2, [3]uint32{1}, now); status != proto.StatusCode_StatusCode_EXPLORE_MAX_TIMES {
 		t.Fatalf("third activity attempt status = %v", status)
 	}
 }
@@ -268,7 +268,7 @@ func TestExploreMissingConfigurationFailsClosed(t *testing.T) {
 	player := newExploreTestPlayer()
 	deps, _, _ := exploreTestDeps()
 	deps.loadConfig = func() (*model.ExploreConfig, error) { return nil, errors.New("missing") }
-	if _, status := startExplore(player, deps, 10101, false, 1, 2, [3]uint32{1}, time.Now()); status != proto.StatusCode_StatusCode_CfgNotFound {
+	if _, status := startExplore(player, deps, 10101, false, 1, 2, [3]uint32{1}, time.Now()); status != proto.StatusCode_StatusCode_CFG_NOT_FOUND {
 		t.Fatalf("status = %v", status)
 	}
 }

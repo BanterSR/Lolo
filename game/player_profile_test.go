@@ -196,7 +196,7 @@ func profileMessage(body protobuf.Message) *alg.GameMsg {
 
 func addProfileBase(f *profileFixture, id uint32, count int64, tag proto.EBagItemTag) {
 	f.player.GetItemModel().GetItemBaseMap()[id] = &model.ItemBaseInfo{
-		ItemId: id, Num: count, ItemType: tag, PackType: proto.PackType_PackType_Inventory,
+		ItemId: id, Num: count, ItemType: tag, PackType: proto.ItemDetail_PackType_Inventory,
 	}
 }
 
@@ -210,7 +210,7 @@ func TestProfileEnergyRecoveryUsesElapsedTimeAndCap(t *testing.T) {
 	addProfileBase(f, 11, 0, proto.EBagItemTag_EBagItemTag_Energy)
 	f.profile.EnergyLastRecoverAt = f.now.Unix() - 2*600 - 59
 	info, dirty, status := recoverProfileEnergy(f.player, f.profile, rules, f.now.Unix())
-	if status != proto.StatusCode_StatusCode_Ok || !dirty || info.Num != 2 {
+	if status != proto.StatusCode_StatusCode_OK || !dirty || info.Num != 2 {
 		t.Fatalf("recovery = %d dirty=%v status=%v", info.Num, dirty, status)
 	}
 	if f.profile.EnergyLastRecoverAt != f.now.Unix()-59 {
@@ -218,14 +218,14 @@ func TestProfileEnergyRecoveryUsesElapsedTimeAndCap(t *testing.T) {
 	}
 	f.now = f.now.Add(601 * time.Second)
 	info, _, status = recoverProfileEnergy(f.player, f.profile, rules, f.now.Unix())
-	if status != proto.StatusCode_StatusCode_Ok || info.Num != 3 {
+	if status != proto.StatusCode_StatusCode_OK || info.Num != 3 {
 		t.Fatalf("second recovery = %d status=%v", info.Num, status)
 	}
 
 	addProfileBase(f, 11, 599, proto.EBagItemTag_EBagItemTag_Energy)
 	f.profile.EnergyLastRecoverAt = f.now.Unix() - 10*600
 	info, _, status = recoverProfileEnergy(f.player, f.profile, rules, f.now.Unix())
-	if status != proto.StatusCode_StatusCode_Ok || info.Num != rules.maxEnergy || f.profile.EnergyLastRecoverAt != f.now.Unix() {
+	if status != proto.StatusCode_StatusCode_OK || info.Num != rules.maxEnergy || f.profile.EnergyLastRecoverAt != f.now.Unix() {
 		t.Fatalf("cap recovery = %d last=%d status=%v", info.Num, f.profile.EnergyLastRecoverAt, status)
 	}
 	f.now = f.now.Add(600 * time.Second)
@@ -240,14 +240,14 @@ func TestProfileEnergyBuyChecksPriceCountAndLimit(t *testing.T) {
 	addProfileBase(f, 11, 0, proto.EBagItemTag_EBagItemTag_Energy)
 	f.game.PlayerEnergyBuy(f.player, profileMessage(&proto.PlayerEnergyBuyReq{}))
 	first := f.conn.last(t).(*proto.PlayerEnergyBuyRsp)
-	if first.Status != proto.StatusCode_StatusCode_Ok || first.EnergyBuyNum != 1 ||
+	if first.Status != proto.StatusCode_StatusCode_OK || first.EnergyBuyNum != 1 ||
 		f.player.GetItemModel().GetItemBaseInfo(102).Num != 70 || f.player.GetItemModel().GetItemBaseInfo(11).Num != 200 {
 		t.Fatalf("unexpected first purchase: %+v currency=%d energy=%d", first,
 			f.player.GetItemModel().GetItemBaseInfo(102).Num, f.player.GetItemModel().GetItemBaseInfo(11).Num)
 	}
 	f.game.PlayerEnergyBuy(f.player, profileMessage(&proto.PlayerEnergyBuyReq{}))
 	second := f.conn.last(t).(*proto.PlayerEnergyBuyRsp)
-	if second.Status != proto.StatusCode_StatusCode_Ok || second.EnergyBuyNum != 2 ||
+	if second.Status != proto.StatusCode_StatusCode_OK || second.EnergyBuyNum != 2 ||
 		f.player.GetItemModel().GetItemBaseInfo(102).Num != 30 || f.player.GetItemModel().GetItemBaseInfo(11).Num != 400 {
 		t.Fatalf("unexpected second purchase: %+v", second)
 	}
@@ -275,12 +275,12 @@ func TestProfileLevelRewardIsOneTime(t *testing.T) {
 	f.level = 2
 	f.game.PlayerLevelReward(f.player, profileMessage(&proto.PlayerLevelRewardReq{Level: 2}))
 	first := f.conn.last(t).(*proto.PlayerLevelRewardRsp)
-	if first.Status != proto.StatusCode_StatusCode_Ok || len(first.Items) != 1 || f.player.GetItemModel().GetItemBaseInfo(200).Num != 2 {
+	if first.Status != proto.StatusCode_StatusCode_OK || len(first.Items) != 1 || f.player.GetItemModel().GetItemBaseInfo(200).Num != 2 {
 		t.Fatalf("first reward failed: %+v", first)
 	}
 	f.game.PlayerLevelReward(f.player, profileMessage(&proto.PlayerLevelRewardReq{Level: 2}))
 	second := f.conn.last(t).(*proto.PlayerLevelRewardRsp)
-	if second.Status != proto.StatusCode_StatusCode_RepeatGetReward || f.player.GetItemModel().GetItemBaseInfo(200).Num != 2 {
+	if second.Status != proto.StatusCode_StatusCode_REPEAT_GET_REWARD || f.player.GetItemModel().GetItemBaseInfo(200).Num != 2 {
 		t.Fatalf("duplicate reward was granted: %+v", second)
 	}
 }
@@ -305,46 +305,46 @@ func TestProfileGhostHeadAndWrongItemTypeAreRejected(t *testing.T) {
 
 func TestProfileWorldLevelBoundsAndPrerequisites(t *testing.T) {
 	f := newProfileFixture(t)
-	if status := unlockProfileWorldLevel(f.player, f.profile, 99, 5); status != proto.StatusCode_StatusCode_BadReq {
+	if status := unlockProfileWorldLevel(f.player, f.profile, 99, 5); status != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("out-of-range world level status = %v", status)
 	}
-	if status := unlockProfileWorldLevel(f.player, f.profile, 1, 0); status != proto.StatusCode_StatusCode_PlayerLevelLimit {
+	if status := unlockProfileWorldLevel(f.player, f.profile, 1, 0); status != proto.StatusCode_StatusCode_PLAYER_LEVEL_LIMIT {
 		t.Fatalf("player level prerequisite status = %v", status)
 	}
-	if status := unlockProfileWorldLevel(f.player, f.profile, 1, 1); status != proto.StatusCode_StatusCode_WorldLevelAchieveNotFinish {
+	if status := unlockProfileWorldLevel(f.player, f.profile, 1, 1); status != proto.StatusCode_StatusCode_WORLD_LEVEL_ACHIEVE_NOT_FINISH {
 		t.Fatalf("missing achievement status = %v", status)
 	}
 	f.profile.CompletedAchievements[100] = true
-	if status := unlockProfileWorldLevel(f.player, f.profile, 1, 1); status != proto.StatusCode_StatusCode_WorldLevelAchieveNotFinish {
+	if status := unlockProfileWorldLevel(f.player, f.profile, 1, 1); status != proto.StatusCode_StatusCode_WORLD_LEVEL_ACHIEVE_NOT_FINISH {
 		t.Fatalf("missing flag status = %v", status)
 	}
 	f.profile.CompletedFlags[200] = true
-	if status := unlockProfileWorldLevel(f.player, f.profile, 1, 1); status != proto.StatusCode_StatusCode_Ok {
+	if status := unlockProfileWorldLevel(f.player, f.profile, 1, 1); status != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("valid unlock status = %v", status)
 	}
-	if status := unlockProfileWorldLevel(f.player, f.profile, 1, 1); status != proto.StatusCode_StatusCode_WorldLevelAlreadyUnlock {
+	if status := unlockProfileWorldLevel(f.player, f.profile, 1, 1); status != proto.StatusCode_StatusCode_WORLD_LEVEL_ALREADY_UNLOCK {
 		t.Fatalf("duplicate unlock status = %v", status)
 	}
-	if status := changeProfileWorldLevel(f.player, f.profile, 2, 5); status != proto.StatusCode_StatusCode_WorldLevelLocked {
+	if status := changeProfileWorldLevel(f.player, f.profile, 2, 5); status != proto.StatusCode_StatusCode_WORLD_LEVEL_LOCKED {
 		t.Fatalf("locked switch status = %v", status)
 	}
-	if status := changeProfileWorldLevel(f.player, f.profile, 1, 1); status != proto.StatusCode_StatusCode_Ok {
+	if status := changeProfileWorldLevel(f.player, f.profile, 1, 1); status != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("valid switch status = %v", status)
 	}
-	if status := changeProfileWorldLevel(f.player, f.profile, 1, 1); status != proto.StatusCode_StatusCode_WorldLevelNowIn {
+	if status := changeProfileWorldLevel(f.player, f.profile, 1, 1); status != proto.StatusCode_StatusCode_WORLD_LEVEL_NOW_IN {
 		t.Fatalf("same-level switch status = %v", status)
 	}
 }
 
 func TestProfileOutfitHideOnlyChangesSupportedFields(t *testing.T) {
 	f := newProfileFixture(t)
-	if status := applyProfileOutfitHide(f.player, 1, nil); status != proto.StatusCode_StatusCode_BadReq {
+	if status := applyProfileOutfitHide(f.player, 1, nil); status != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("nil hide info status = %v", status)
 	}
-	if status := applyProfileOutfitHide(f.player, 999, &proto.OutfitHideInfo{}); status != proto.StatusCode_StatusCode_BadReq {
+	if status := applyProfileOutfitHide(f.player, 999, &proto.OutfitHideInfo{}); status != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("missing character status = %v", status)
 	}
-	if status := applyProfileOutfitHide(f.player, 1, &proto.OutfitHideInfo{HideOrn: true, HideBraid: true}); status != proto.StatusCode_StatusCode_Ok {
+	if status := applyProfileOutfitHide(f.player, 1, &proto.OutfitHideInfo{HideOrn: true, HideBraid: true}); status != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("valid hide status = %v", status)
 	}
 	preset := f.player.GetCharacterModel().GetCharacterInfo(1).GetOutfitPreset(0)
@@ -356,56 +356,56 @@ func TestProfileOutfitHideOnlyChangesSupportedFields(t *testing.T) {
 func TestProfileSocialActionsValidateFrequencyAndParameters(t *testing.T) {
 	f := newProfileFixture(t)
 	f.game.PopEmoji(f.player, profileMessage(&proto.PopEmojiReq{EmojiId: 3000}))
-	if rsp := f.conn.last(t).(*proto.PopEmojiRsp); rsp.Status != proto.StatusCode_StatusCode_Ok {
+	if rsp := f.conn.last(t).(*proto.PopEmojiRsp); rsp.Status != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("valid emoji status = %v", rsp.Status)
 	}
 	f.game.PopEmoji(f.player, profileMessage(&proto.PopEmojiReq{EmojiId: 3000}))
-	if rsp := f.conn.last(t).(*proto.PopEmojiRsp); rsp.Status != proto.StatusCode_StatusCode_RequestsTooFrequent {
+	if rsp := f.conn.last(t).(*proto.PopEmojiRsp); rsp.Status != proto.StatusCode_StatusCode_REQUESTS_TOO_FREQUENT {
 		t.Fatalf("emoji frequency status = %v", rsp.Status)
 	}
 	f.now = f.now.Add(socialActionCooldown)
 	f.game.PopEmoji(f.player, profileMessage(&proto.PopEmojiReq{EmojiId: 1130}))
-	if rsp := f.conn.last(t).(*proto.PopEmojiRsp); rsp.Status != proto.StatusCode_StatusCode_ActionNotUnlock {
+	if rsp := f.conn.last(t).(*proto.PopEmojiRsp); rsp.Status != proto.StatusCode_StatusCode_ACTION_NOT_UNLOCK {
 		t.Fatalf("non-emoji action status = %v", rsp.Status)
 	}
 
 	f.game.Clap(f.player, profileMessage(&proto.ClapReq{MovementId: 1004}))
-	if rsp := f.conn.last(t).(*proto.ClapRsp); rsp.Status != proto.StatusCode_StatusCode_BadReq {
+	if rsp := f.conn.last(t).(*proto.ClapRsp); rsp.Status != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("wrong clap action status = %v", rsp.Status)
 	}
 	clap := &proto.ClapReq{MovementId: 1130, Position: &proto.Vector3{X: 1}, Forward: &proto.Vector3{Z: 1}}
 	f.game.Clap(f.player, profileMessage(clap))
-	if rsp := f.conn.last(t).(*proto.ClapRsp); rsp.Status != proto.StatusCode_StatusCode_Ok {
+	if rsp := f.conn.last(t).(*proto.ClapRsp); rsp.Status != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("valid clap status = %v", rsp.Status)
 	}
 	f.game.Clap(f.player, profileMessage(clap))
-	if rsp := f.conn.last(t).(*proto.ClapRsp); rsp.Status != proto.StatusCode_StatusCode_RequestsTooFrequent {
+	if rsp := f.conn.last(t).(*proto.ClapRsp); rsp.Status != proto.StatusCode_StatusCode_REQUESTS_TOO_FREQUENT {
 		t.Fatalf("clap frequency status = %v", rsp.Status)
 	}
 	f.now = f.now.Add(socialActionCooldown)
 	badClap := &proto.ClapReq{MovementId: 1130, Position: &proto.Vector3{X: 1_000_001}, Forward: &proto.Vector3{Z: 1}}
 	f.game.Clap(f.player, profileMessage(badClap))
-	if rsp := f.conn.last(t).(*proto.ClapRsp); rsp.Status != proto.StatusCode_StatusCode_BadReq {
+	if rsp := f.conn.last(t).(*proto.ClapRsp); rsp.Status != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("out-of-range clap position status = %v", rsp.Status)
 	}
 
 	for _, pips := range []uint32{0, 7} {
 		f.game.ThrowDice(f.player, profileMessage(&proto.ThrowDiceReq{DiceId: 2020, Pips: pips, Position: &proto.Vector3{X: 1}}))
-		if rsp := f.conn.last(t).(*proto.ThrowDiceRsp); rsp.Status != proto.StatusCode_StatusCode_BadReq {
+		if rsp := f.conn.last(t).(*proto.ThrowDiceRsp); rsp.Status != proto.StatusCode_StatusCode_BAD_REQ {
 			t.Fatalf("invalid pips %d status = %v", pips, rsp.Status)
 		}
 	}
 	f.game.ThrowDice(f.player, profileMessage(&proto.ThrowDiceReq{DiceId: 2020, Pips: 3}))
-	if rsp := f.conn.last(t).(*proto.ThrowDiceRsp); rsp.Status != proto.StatusCode_StatusCode_BadReq {
+	if rsp := f.conn.last(t).(*proto.ThrowDiceRsp); rsp.Status != proto.StatusCode_StatusCode_BAD_REQ {
 		t.Fatalf("nil dice position status = %v", rsp.Status)
 	}
 	dice := &proto.ThrowDiceReq{DiceId: 2020, Pips: 3, Position: &proto.Vector3{X: 1}}
 	f.game.ThrowDice(f.player, profileMessage(dice))
-	if rsp := f.conn.last(t).(*proto.ThrowDiceRsp); rsp.Status != proto.StatusCode_StatusCode_Ok {
+	if rsp := f.conn.last(t).(*proto.ThrowDiceRsp); rsp.Status != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("valid dice status = %v", rsp.Status)
 	}
 	f.game.ThrowDice(f.player, profileMessage(dice))
-	if rsp := f.conn.last(t).(*proto.ThrowDiceRsp); rsp.Status != proto.StatusCode_StatusCode_RequestsTooFrequent {
+	if rsp := f.conn.last(t).(*proto.ThrowDiceRsp); rsp.Status != proto.StatusCode_StatusCode_REQUESTS_TOO_FREQUENT {
 		t.Fatalf("dice frequency status = %v", rsp.Status)
 	}
 }
@@ -414,7 +414,7 @@ func TestProfileSocialActionsRequireScene(t *testing.T) {
 	f := newProfileFixture(t)
 	f.game.wordInfo = &WordInfo{}
 	f.game.PopEmoji(f.player, profileMessage(&proto.PopEmojiReq{EmojiId: 3000}))
-	if rsp := f.conn.last(t).(*proto.PopEmojiRsp); rsp.Status != proto.StatusCode_StatusCode_PlayerNotInChannel {
+	if rsp := f.conn.last(t).(*proto.PopEmojiRsp); rsp.Status != proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL {
 		t.Fatalf("missing scene status = %v", rsp.Status)
 	}
 }
@@ -425,7 +425,7 @@ func TestProfileEnergyPurchaseSaveFailureRollsBack(t *testing.T) {
 	addProfileBase(f, 11, 0, proto.EBagItemTag_EBagItemTag_Energy)
 	f.game.PlayerEnergyBuy(f.player, profileMessage(&proto.PlayerEnergyBuyReq{}))
 	rsp := f.conn.last(t).(*proto.PlayerEnergyBuyRsp)
-	if rsp.Status != proto.StatusCode_StatusCode_SysErr || f.profile.EnergyBuyNum != 0 ||
+	if rsp.Status != proto.StatusCode_StatusCode_SYS_ERR || f.profile.EnergyBuyNum != 0 ||
 		f.player.GetItemModel().GetItemBaseInfo(102).Num != 100 || f.player.GetItemModel().GetItemBaseInfo(11).Num != 0 {
 		t.Fatalf("failed save did not roll back purchase: %+v", rsp)
 	}
@@ -437,7 +437,7 @@ func TestProfileLevelRewardSaveFailureRollsBack(t *testing.T) {
 	f.saveErr = errors.New("save failed")
 	f.game.PlayerLevelReward(f.player, profileMessage(&proto.PlayerLevelRewardReq{Level: 2}))
 	rsp := f.conn.last(t).(*proto.PlayerLevelRewardRsp)
-	if rsp.Status != proto.StatusCode_StatusCode_SysErr || f.profile.HasPlayerLevelReward(2) ||
+	if rsp.Status != proto.StatusCode_StatusCode_SYS_ERR || f.profile.HasPlayerLevelReward(2) ||
 		f.player.GetItemModel().GetItemBaseInfo(200) != nil {
 		t.Fatalf("failed save did not roll back reward: %+v", rsp)
 	}

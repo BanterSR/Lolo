@@ -42,27 +42,27 @@ func saveLifePlayer(s *model.Player) error {
 
 func prepareLifeRead(s *model.Player, lifeType proto.LifeType, now int64) (*model.LifeModel, *model.LifeConfig, proto.StatusCode, bool) {
 	if !model.ValidLifeType(lifeType) {
-		return nil, nil, proto.StatusCode_StatusCode_BadReq, false
+		return nil, nil, proto.StatusCode_StatusCode_BAD_REQ, false
 	}
 	cfg, err := getLifeConfig()
 	if err != nil {
 		log.Game.Errorf("UserId:%v 生活技能配置加载失败:%s", s.UserId, err.Error())
-		return nil, nil, proto.StatusCode_StatusCode_CfgNotFound, false
+		return nil, nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND, false
 	}
 	life := s.GetLifeModel()
 	changed, err := life.RefreshSkillsAndSave(lifeType, cfg, now, func() error { return saveLifePlayer(s) })
 	if err != nil {
-		return life, cfg, proto.StatusCode_StatusCode_SysErr, false
+		return life, cfg, proto.StatusCode_StatusCode_SYS_ERR, false
 	}
-	return life, cfg, proto.StatusCode_StatusCode_Ok, changed
+	return life, cfg, proto.StatusCode_StatusCode_OK, changed
 }
 
 func (g *Game) GetLifeInfo(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GetLifeInfoReq)
-	rsp := &proto.GetLifeInfoRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.GetLifeInfoRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	life, cfg, status, changed := prepareLifeRead(s, req.LifeType, time.Now().Unix())
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
@@ -71,7 +71,7 @@ func (g *Game) GetLifeInfo(s *model.Player, msg *alg.GameMsg) {
 	rsp.LifeAchieve = life.AchieveInfo(req.LifeType, cfg)
 	if changed {
 		g.send(s, 0, &proto.LifeSkillLevelUpNotice{
-			Status: proto.StatusCode_StatusCode_Ok,
+			Status: proto.StatusCode_StatusCode_OK,
 			LifeSkills: []*proto.LifeSkill{{
 				LifeType: req.LifeType, LifeSkillInfo: rsp.LifeSkill.LifeSkillInfo,
 			}},
@@ -81,10 +81,10 @@ func (g *Game) GetLifeInfo(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) GetLifeSkill(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GetLifeSkillReq)
-	rsp := &proto.GetLifeSkillRsp{Status: proto.StatusCode_StatusCode_Ok, LifeType: req.LifeType}
+	rsp := &proto.GetLifeSkillRsp{Status: proto.StatusCode_StatusCode_OK, LifeType: req.LifeType}
 	defer g.send(s, msg.PacketId, rsp)
 	life, cfg, status, _ := prepareLifeRead(s, req.LifeType, time.Now().Unix())
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
@@ -93,10 +93,10 @@ func (g *Game) GetLifeSkill(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) GetLifeAchieve(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GetLifeAchieveReq)
-	rsp := &proto.GetLifeAchieveRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.GetLifeAchieveRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	life, cfg, status, _ := prepareLifeRead(s, req.LifeType, time.Now().Unix())
-	if status != proto.StatusCode_StatusCode_Ok {
+	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
@@ -106,13 +106,13 @@ func (g *Game) GetLifeAchieve(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) produceLifeRecipe(s *model.Player, msg *alg.GameMsg, lifeType proto.LifeType, recipeID uint32, hasCampFire bool) model.LifeReceipt {
 	cfg, err := getLifeConfig()
 	if err != nil {
-		return model.LifeReceipt{Status: proto.StatusCode_StatusCode_CfgNotFound, LifeType: lifeType}
+		return model.LifeReceipt{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, LifeType: lifeType}
 	}
 	receipt := s.GetLifeModel().ProduceRecipe(s.GetItemModel(), cfg, lifeType, recipeID, model.LifeProductionOptions{
 		Token: lifeRequestToken(s, msg, "produce", recipeID), Now: time.Now().Unix(), HasCampFire: hasCampFire,
 		Persist: func() error { return saveLifePlayer(s) },
 	})
-	if receipt.Status == proto.StatusCode_StatusCode_Ok && receipt.Success {
+	if receipt.Status == proto.StatusCode_StatusCode_OK && receipt.Success {
 		g.sendLifeProductionNotices(s, receipt)
 	}
 	return receipt
@@ -120,9 +120,9 @@ func (g *Game) produceLifeRecipe(s *model.Player, msg *alg.GameMsg, lifeType pro
 
 func (g *Game) CookingFood(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.CookingFoodReq)
-	receipt := g.produceLifeRecipe(s, msg, proto.LifeType_LifeType_Cooking, req.FoodId, req.HasCampFire)
+	receipt := g.produceLifeRecipe(s, msg, proto.LifeType_LIFE_TYPE_Cooking, req.FoodId, req.HasCampFire)
 	rsp := &proto.CookingFoodRsp{Status: receipt.Status}
-	if receipt.Status == proto.StatusCode_StatusCode_Ok {
+	if receipt.Status == proto.StatusCode_StatusCode_OK {
 		rsp.LifeCommonResult = lifeCommonResult(receipt)
 	}
 	g.send(s, msg.PacketId, rsp)
@@ -130,9 +130,9 @@ func (g *Game) CookingFood(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) MakeProp(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.MakePropReq)
-	receipt := g.produceLifeRecipe(s, msg, proto.LifeType_LifeType_Making, req.MakeId, false)
+	receipt := g.produceLifeRecipe(s, msg, proto.LifeType_LIFE_TYPE_Making, req.MakeId, false)
 	rsp := &proto.MakePropRsp{Status: receipt.Status}
-	if receipt.Status == proto.StatusCode_StatusCode_Ok {
+	if receipt.Status == proto.StatusCode_StatusCode_OK {
 		rsp.LifeCommonResult = lifeCommonResult(receipt)
 	}
 	g.send(s, msg.PacketId, rsp)
@@ -140,9 +140,9 @@ func (g *Game) MakeProp(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) Handicraft(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.HandicraftReq)
-	receipt := g.produceLifeRecipe(s, msg, proto.LifeType_LifeType_Handicraft, req.HandicraftId, false)
+	receipt := g.produceLifeRecipe(s, msg, proto.LifeType_LIFE_TYPE_Handicraft, req.HandicraftId, false)
 	rsp := &proto.HandicraftRsp{Status: receipt.Status}
-	if receipt.Status == proto.StatusCode_StatusCode_Ok {
+	if receipt.Status == proto.StatusCode_StatusCode_OK {
 		rsp.LifeCommonResult = lifeCommonResult(receipt)
 	}
 	g.send(s, msg.PacketId, rsp)
@@ -150,14 +150,14 @@ func (g *Game) Handicraft(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) Fishing(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.FishingReq)
-	rsp := &proto.FishingRsp{Status: proto.StatusCode_StatusCode_Ok, IsCancel: req.IsCancel}
+	rsp := &proto.FishingRsp{Status: proto.StatusCode_StatusCode_OK, IsCancel: req.IsCancel}
 	defer g.send(s, msg.PacketId, rsp)
 	if req.IsCancel {
 		return
 	}
 	cfg, err := getLifeConfig()
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	receipt := s.GetLifeModel().Fish(s.GetItemModel(), cfg, model.FishingOptions{
@@ -165,13 +165,13 @@ func (g *Game) Fishing(s *model.Player, msg *alg.GameMsg) {
 		PondID: req.FishingPondId, BoxID: req.FishingBoxId, RodInstanceID: req.FishingRodId,
 		Persist: func() error { return saveLifePlayer(s) },
 	})
-	if receipt.Status != proto.StatusCode_StatusCode_Ok {
+	if receipt.Status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = receipt.Status
 		return
 	}
 	if receipt.Success {
 		g.sendLifeProductionNotices(s, receipt)
-		g.send(s, 0, &proto.FishingResultNotice{Status: proto.StatusCode_StatusCode_Ok, Items: lifeItemDetails(receipt.ResultItems)})
+		g.send(s, 0, &proto.FishingResultNotice{Status: proto.StatusCode_StatusCode_OK, Items: lifeItemDetails(receipt.ResultItems)})
 	}
 	rsp.FishingEventResult = &proto.FishingEventResult{
 		CostEndurance: receipt.CostEndurance,
@@ -183,15 +183,15 @@ func (g *Game) Fishing(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) LifeLeveUp(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.LifeLeveUpReq)
 	cfg, err := getLifeConfig()
-	rsp := &proto.LifeLeveUpRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.LifeLeveUpRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	receipt := s.GetLifeModel().LevelUp(s.GetItemModel(), cfg, req.LifeType, lifeRequestToken(s, msg, "level-up", uint32(req.LifeType)),
 		func() error { return saveLifePlayer(s) })
-	if receipt.Status != proto.StatusCode_StatusCode_Ok {
+	if receipt.Status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = receipt.Status
 		return
 	}
@@ -202,15 +202,15 @@ func (g *Game) LifeLeveUp(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) LifeSkillLevelUp(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.LifeSkillLevelUpReq)
 	cfg, err := getLifeConfig()
-	rsp := &proto.LifeSkillLevelUpRsp{Status: proto.StatusCode_StatusCode_Ok, IsForceStudy: req.IsForceStudy}
+	rsp := &proto.LifeSkillLevelUpRsp{Status: proto.StatusCode_StatusCode_OK, IsForceStudy: req.IsForceStudy}
 	defer g.send(s, msg.PacketId, rsp)
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	receipt := s.GetLifeModel().StudySkill(s.GetItemModel(), cfg, req.LifeType, req.SkillId, req.IsForceStudy,
 		lifeRequestToken(s, msg, "skill", req.SkillId), time.Now().Unix(), func() error { return saveLifePlayer(s) })
-	if receipt.Status != proto.StatusCode_StatusCode_Ok {
+	if receipt.Status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = receipt.Status
 		return
 	}
@@ -219,23 +219,23 @@ func (g *Game) LifeSkillLevelUp(s *model.Player, msg *alg.GameMsg) {
 	rsp.Items = lifeItemDetails(receipt.Items)
 	g.sendLifePack(s, receipt.Items)
 	g.send(s, 0, &proto.LifeSkillLevelUpNotice{
-		Status: proto.StatusCode_StatusCode_Ok, LifeSkills: []*proto.LifeSkill{rsp.LifeSkills}, Items: rsp.Items,
+		Status: proto.StatusCode_StatusCode_OK, LifeSkills: []*proto.LifeSkill{rsp.LifeSkills}, Items: rsp.Items,
 	})
 }
 
 func (g *Game) GetLifeAchievementReward(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GetLifeAchievementRewardReq)
 	cfg, err := getLifeConfig()
-	rsp := &proto.GetLifeAchievementRewardRsp{Status: proto.StatusCode_StatusCode_Ok}
+	rsp := &proto.GetLifeAchievementRewardRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	if err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
 	receipt := s.GetLifeModel().ClaimAchievement(s.GetItemModel(), cfg, req.LifeType, req.AchieveId,
 		lifeRequestToken(s, msg, "achievement", req.AchieveId), rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), uint64(s.UserId))),
 		func() error { return saveLifePlayer(s) })
-	if receipt.Status != proto.StatusCode_StatusCode_Ok {
+	if receipt.Status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = receipt.Status
 		return
 	}
@@ -243,7 +243,7 @@ func (g *Game) GetLifeAchievementReward(s *model.Player, msg *alg.GameMsg) {
 	rsp.RewardedAchieveIds = receipt.RewardedAchieveIDs
 	g.sendLifePack(s, receipt.Items)
 	g.send(s, 0, &proto.LifeAchieveNotice{
-		Status:       proto.StatusCode_StatusCode_Ok,
+		Status:       proto.StatusCode_StatusCode_OK,
 		LifeAchieves: []*proto.LifeAchieve{s.GetLifeModel().AchieveInfo(req.LifeType, cfg)},
 	})
 }
@@ -292,14 +292,14 @@ func (g *Game) sendLifePack(s *model.Player, items []model.LifeItem) {
 	if len(items) == 0 {
 		return
 	}
-	g.send(s, 0, &proto.PackNotice{Status: proto.StatusCode_StatusCode_Ok, Items: lifeItemDetails(items)})
+	g.send(s, 0, &proto.PackNotice{Status: proto.StatusCode_StatusCode_OK, Items: lifeItemDetails(items)})
 }
 
 func (g *Game) sendLifeProductionNotices(s *model.Player, receipt model.LifeReceipt) {
 	g.sendLifePack(s, receipt.Items)
 	life := s.GetLifeModel()
 	g.send(s, 0, &proto.LifeProficiencyNotice{
-		Status: proto.StatusCode_StatusCode_Ok,
+		Status: proto.StatusCode_StatusCode_OK,
 		LifeProficiency: &proto.LifeProficiency{
 			LifeType: receipt.LifeType, ProficiencyValue: receipt.Proficiency,
 		},
@@ -308,7 +308,7 @@ func (g *Game) sendLifeProductionNotices(s *model.Player, receipt model.LifeRece
 		cfg, err := getLifeConfig()
 		if err == nil {
 			g.send(s, 0, &proto.LifeAchieveNotice{
-				Status:       proto.StatusCode_StatusCode_Ok,
+				Status:       proto.StatusCode_StatusCode_OK,
 				LifeAchieves: []*proto.LifeAchieve{life.AchieveInfo(receipt.LifeType, cfg)},
 			})
 		}

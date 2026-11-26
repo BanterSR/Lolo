@@ -70,28 +70,28 @@ func lifeTestConfig() *LifeConfig {
 		WeaponTypes: map[uint32]proto.EWeaponType{1006: proto.EWeaponType_EWeaponType_FishingRod},
 	}
 	for _, lifeType := range []proto.LifeType{
-		proto.LifeType_LifeType_Cooking, proto.LifeType_LifeType_Fishing,
-		proto.LifeType_LifeType_Making, proto.LifeType_LifeType_Handicraft,
+		proto.LifeType_LIFE_TYPE_Cooking, proto.LifeType_LIFE_TYPE_Fishing,
+		proto.LifeType_LIFE_TYPE_Making, proto.LifeType_LIFE_TYPE_Handicraft,
 	} {
 		cfg.Levels[lifeType] = make(map[uint32]*LifeLevelConfig)
 		cfg.Recipes[lifeType] = make(map[uint32]*LifeRecipe)
 		cfg.Skills[lifeType] = make(map[uint32]*LifeSkillConfig)
 	}
-	cfg.Levels[proto.LifeType_LifeType_Cooking][1] = &LifeLevelConfig{
+	cfg.Levels[proto.LifeType_LIFE_TYPE_Cooking][1] = &LifeLevelConfig{
 		Level: 1, Proficiency: 100, CostItemID: 101, CostItemCount: 5, ProficiencyPerAction: 10,
 	}
-	cfg.Levels[proto.LifeType_LifeType_Cooking][2] = &LifeLevelConfig{
+	cfg.Levels[proto.LifeType_LIFE_TYPE_Cooking][2] = &LifeLevelConfig{
 		Level: 2, Proficiency: 200, CostItemID: 101, CostItemCount: 5, ProficiencyPerAction: 10,
 	}
-	cfg.Levels[proto.LifeType_LifeType_Fishing][1] = &LifeLevelConfig{
+	cfg.Levels[proto.LifeType_LIFE_TYPE_Fishing][1] = &LifeLevelConfig{
 		Level: 1, Proficiency: 100, ActionEnergyID: 11, ActionEnergyCount: 2, ProficiencyPerAction: 10,
 	}
-	cfg.Recipes[proto.LifeType_LifeType_Cooking][1] = &LifeRecipe{
+	cfg.Recipes[proto.LifeType_LIFE_TYPE_Cooking][1] = &LifeRecipe{
 		ID: 1, Level: 1, IsShow: true, NeedTime: 4, EnergyID: 11, EnergyCount: 2,
 		Materials: []LifeMaterial{{ItemID: 100, Count: 3}}, Probability: 1, OutputID: 200,
 		Achievements: []LifeAchievementRef{{ID: 7, RewardID: 70}},
 	}
-	cfg.Skills[proto.LifeType_LifeType_Cooking][1000] = &LifeSkillConfig{
+	cfg.Skills[proto.LifeType_LIFE_TYPE_Cooking][1000] = &LifeSkillConfig{
 		ID: 1000,
 		Levels: map[uint32]*LifeSkillLevelConfig{
 			1: {Level: 1, Effect: proto.ELifeSpellEffectType_ELifeSpellEffectType_CookReduceMaterials, Param1: 0.5, NeedLifeLevel: 1, NeedTime: 10, CurrencyID: 101, CurrencyCount: 1},
@@ -102,8 +102,8 @@ func lifeTestConfig() *LifeConfig {
 		ID: 300, Level: 1, ItemID: 300, IsShow: true, MinSize: 10, MaxSize: 20,
 		Achievements: []LifeAchievementRef{{ID: 9, RewardID: 90}},
 	}
-	cfg.Achievements[7] = &LifeAchievementConfig{ID: 7, LifeType: proto.LifeType_LifeType_Cooking, Target: 2, RewardID: 70}
-	cfg.Achievements[9] = &LifeAchievementConfig{ID: 9, LifeType: proto.LifeType_LifeType_Fishing, Target: 1, RewardID: 90}
+	cfg.Achievements[7] = &LifeAchievementConfig{ID: 7, LifeType: proto.LifeType_LIFE_TYPE_Cooking, Target: 2, RewardID: 70}
+	cfg.Achievements[9] = &LifeAchievementConfig{ID: 9, LifeType: proto.LifeType_LIFE_TYPE_Fishing, Target: 1, RewardID: 90}
 	cfg.Rewards[70] = []LifeReward{{ItemID: 600, Min: 2, Max: 2}}
 	cfg.Rewards[90] = []LifeReward{{ItemID: 600, Min: 1, Max: 1}}
 	return cfg
@@ -111,11 +111,11 @@ func lifeTestConfig() *LifeConfig {
 
 func lifeTestItems() *ItemModel {
 	return &ItemModel{ItemBaseInfo: map[uint32]*ItemBaseInfo{
-		11:  {ItemId: 11, Num: 20, ItemType: proto.EBagItemTag_EBagItemTag_Currency, PackType: proto.PackType_PackType_Inventory},
-		100: {ItemId: 100, Num: 20, ItemType: proto.EBagItemTag_EBagItemTag_Material, PackType: proto.PackType_PackType_Inventory},
-		101: {ItemId: 101, Num: 20, ItemType: proto.EBagItemTag_EBagItemTag_Currency, PackType: proto.PackType_PackType_Inventory},
-		400: {ItemId: 400, Num: 5, ItemType: proto.EBagItemTag_EBagItemTag_Baitbox, PackType: proto.PackType_PackType_Inventory},
-		600: {ItemId: 600, Num: 0, ItemType: proto.EBagItemTag_EBagItemTag_Material, PackType: proto.PackType_PackType_Inventory},
+		11:  {ItemId: 11, Num: 20, ItemType: proto.EBagItemTag_EBagItemTag_Currency, PackType: proto.ItemDetail_PackType_Inventory},
+		100: {ItemId: 100, Num: 20, ItemType: proto.EBagItemTag_EBagItemTag_Material, PackType: proto.ItemDetail_PackType_Inventory},
+		101: {ItemId: 101, Num: 20, ItemType: proto.EBagItemTag_EBagItemTag_Currency, PackType: proto.ItemDetail_PackType_Inventory},
+		400: {ItemId: 400, Num: 5, ItemType: proto.EBagItemTag_EBagItemTag_Baitbox, PackType: proto.ItemDetail_PackType_Inventory},
+		600: {ItemId: 600, Num: 0, ItemType: proto.EBagItemTag_EBagItemTag_Material, PackType: proto.ItemDetail_PackType_Inventory},
 	}}
 }
 
@@ -137,13 +137,13 @@ func lifeNum(items *ItemModel, id uint32) int64 {
 
 func TestLifeModelJSONRoundTrip(t *testing.T) {
 	original := DefaultLifeModel()
-	state := original.GetState(proto.LifeType_LifeType_Cooking)
+	state := original.GetState(proto.LifeType_LIFE_TYPE_Cooking)
 	state.Level = 3
 	state.Proficiency = 321
 	state.Skills[1000] = &LifeSkillState{Lv: 2}
 	state.Achievements[7] = &LifeAchieveState{Count: 4, Rewarded: true}
 	original.DoOnce("token", func() LifeReceipt {
-		return LifeReceipt{Status: proto.StatusCode_StatusCode_Ok, LifeType: proto.LifeType_LifeType_Cooking, Success: true, Level: 3, Proficiency: 321}
+		return LifeReceipt{Status: proto.StatusCode_StatusCode_OK, LifeType: proto.LifeType_LIFE_TYPE_Cooking, Success: true, Level: 3, Proficiency: 321}
 	})
 	data, err := sonic.Marshal(original)
 	if err != nil {
@@ -154,11 +154,11 @@ func TestLifeModelJSONRoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 	restored.normalize()
-	got := restored.GetState(proto.LifeType_LifeType_Cooking)
+	got := restored.GetState(proto.LifeType_LIFE_TYPE_Cooking)
 	if got.Level != 3 || got.Proficiency != 321 || got.Skills[1000].Lv != 2 || !got.Achievements[7].Rewarded {
 		t.Fatalf("生活技能状态未恢复: %+v", got)
 	}
-	if receipt := restored.DoOnce("token", func() LifeReceipt { return LifeReceipt{Status: proto.StatusCode_StatusCode_Fail} }); receipt.Status != proto.StatusCode_StatusCode_Ok {
+	if receipt := restored.DoOnce("token", func() LifeReceipt { return LifeReceipt{Status: proto.StatusCode_StatusCode_FAIL} }); receipt.Status != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("幂等凭证未恢复: %+v", receipt)
 	}
 }
@@ -167,16 +167,16 @@ func TestProduceRecipeAtomicAndIdempotent(t *testing.T) {
 	cfg := lifeTestConfig()
 	items := lifeTestItems()
 	life := DefaultLifeModel()
-	life.GetState(proto.LifeType_LifeType_Cooking).Skills[1000] = &LifeSkillState{Lv: 1}
+	life.GetState(proto.LifeType_LIFE_TYPE_Cooking).Skills[1000] = &LifeSkillState{Lv: 1}
 	rng := &lifeTestRNG{floats: []float64{0}}
-	receipt := life.ProduceRecipe(items, cfg, proto.LifeType_LifeType_Cooking, 1, LifeProductionOptions{Token: "cook-1", Now: 100, RNG: rng})
-	if receipt.Status != proto.StatusCode_StatusCode_Ok || !receipt.Success {
+	receipt := life.ProduceRecipe(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1, LifeProductionOptions{Token: "cook-1", Now: 100, RNG: rng})
+	if receipt.Status != proto.StatusCode_StatusCode_OK || !receipt.Success {
 		t.Fatalf("生产失败: %+v", receipt)
 	}
 	if lifeNum(items, 11) != 18 || lifeNum(items, 100) != 18 || lifeNum(items, 200) != 1 {
 		t.Fatalf("材料或产出数量错误: energy=%d material=%d output=%d", lifeNum(items, 11), lifeNum(items, 100), lifeNum(items, 200))
 	}
-	state := life.GetState(proto.LifeType_LifeType_Cooking)
+	state := life.GetState(proto.LifeType_LIFE_TYPE_Cooking)
 	if state.Proficiency != 10 || state.Achievements[7].Count != 1 {
 		t.Fatalf("熟练度或成就进度错误: %+v", state)
 	}
@@ -184,7 +184,7 @@ func TestProduceRecipeAtomicAndIdempotent(t *testing.T) {
 		t.Fatalf("产出物品标签错误: %+v", receipt.ResultItems)
 	}
 	calls := rng.calls
-	duplicate := life.ProduceRecipe(items, cfg, proto.LifeType_LifeType_Cooking, 1, LifeProductionOptions{Token: "cook-1", Now: 100, RNG: rng})
+	duplicate := life.ProduceRecipe(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1, LifeProductionOptions{Token: "cook-1", Now: 100, RNG: rng})
 	if duplicate.Status != receipt.Status || !duplicate.Success || rng.calls != calls {
 		t.Fatalf("重复请求未命中幂等凭证: %+v", duplicate)
 	}
@@ -195,19 +195,19 @@ func TestProduceRecipeAtomicAndIdempotent(t *testing.T) {
 
 func TestProduceRecipeFailureAndMissingConfigDoNotConsume(t *testing.T) {
 	cfg := lifeTestConfig()
-	cfg.Recipes[proto.LifeType_LifeType_Cooking][1].Probability = 0
+	cfg.Recipes[proto.LifeType_LIFE_TYPE_Cooking][1].Probability = 0
 	items := lifeTestItems()
 	life := DefaultLifeModel()
-	receipt := life.ProduceRecipe(items, cfg, proto.LifeType_LifeType_Cooking, 1, LifeProductionOptions{Token: "failed", Now: 100, RNG: &lifeTestRNG{}})
-	if receipt.Status != proto.StatusCode_StatusCode_Ok || receipt.Success {
+	receipt := life.ProduceRecipe(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1, LifeProductionOptions{Token: "failed", Now: 100, RNG: &lifeTestRNG{}})
+	if receipt.Status != proto.StatusCode_StatusCode_OK || receipt.Success {
 		t.Fatalf("概率失败响应错误: %+v", receipt)
 	}
-	if lifeNum(items, 11) != 20 || lifeNum(items, 100) != 20 || lifeNum(items, 200) != 0 || life.GetState(proto.LifeType_LifeType_Cooking).Proficiency != 0 {
+	if lifeNum(items, 11) != 20 || lifeNum(items, 100) != 20 || lifeNum(items, 200) != 0 || life.GetState(proto.LifeType_LIFE_TYPE_Cooking).Proficiency != 0 {
 		t.Fatal("生产失败扣除了材料或增加了熟练度")
 	}
 	delete(cfg.Items, 200)
-	missing := life.ProduceRecipe(items, cfg, proto.LifeType_LifeType_Cooking, 1, LifeProductionOptions{Token: "missing", Now: 100, RNG: &lifeTestRNG{}})
-	if missing.Status != proto.StatusCode_StatusCode_CfgNotFound {
+	missing := life.ProduceRecipe(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1, LifeProductionOptions{Token: "missing", Now: 100, RNG: &lifeTestRNG{}})
+	if missing.Status != proto.StatusCode_StatusCode_CFG_NOT_FOUND {
 		t.Fatalf("缺失产出配置未拒绝: %+v", missing)
 	}
 	if lifeNum(items, 11) != 20 || lifeNum(items, 100) != 20 || lifeNum(items, 200) != 0 {
@@ -221,12 +221,12 @@ func TestProduceRecipeValidationBeforeCosts(t *testing.T) {
 		mutate func(*LifeConfig, *ItemModel)
 		status proto.StatusCode
 	}{
-		{name: "level", mutate: func(cfg *LifeConfig, _ *ItemModel) { cfg.Recipes[proto.LifeType_LifeType_Cooking][1].Level = 2 }, status: proto.StatusCode_StatusCode_LifeLvNotEnough},
-		{name: "campfire", mutate: func(cfg *LifeConfig, _ *ItemModel) { cfg.Recipes[proto.LifeType_LifeType_Cooking][1].ToolType = 2 }, status: proto.StatusCode_StatusCode_BadReq},
-		{name: "material", mutate: func(_ *LifeConfig, items *ItemModel) { items.ItemBaseInfo[100].Num = 1 }, status: proto.StatusCode_StatusCode_ItemNotEnough},
+		{name: "level", mutate: func(cfg *LifeConfig, _ *ItemModel) { cfg.Recipes[proto.LifeType_LIFE_TYPE_Cooking][1].Level = 2 }, status: proto.StatusCode_StatusCode_LifeLvNotEnough},
+		{name: "campfire", mutate: func(cfg *LifeConfig, _ *ItemModel) { cfg.Recipes[proto.LifeType_LIFE_TYPE_Cooking][1].ToolType = 2 }, status: proto.StatusCode_StatusCode_BAD_REQ},
+		{name: "material", mutate: func(_ *LifeConfig, items *ItemModel) { items.ItemBaseInfo[100].Num = 1 }, status: proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH},
 		{name: "formula", mutate: func(cfg *LifeConfig, _ *ItemModel) {
-			cfg.Recipes[proto.LifeType_LifeType_Cooking][1].FormulaItemID = 500
-		}, status: proto.StatusCode_StatusCode_ItemNotEnough},
+			cfg.Recipes[proto.LifeType_LIFE_TYPE_Cooking][1].FormulaItemID = 500
+		}, status: proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -234,7 +234,7 @@ func TestProduceRecipeValidationBeforeCosts(t *testing.T) {
 			items := lifeTestItems()
 			test.mutate(cfg, items)
 			beforeEnergy, beforeMaterial := lifeNum(items, 11), lifeNum(items, 100)
-			receipt := DefaultLifeModel().ProduceRecipe(items, cfg, proto.LifeType_LifeType_Cooking, 1, LifeProductionOptions{Token: test.name, Now: 100, RNG: &lifeTestRNG{}})
+			receipt := DefaultLifeModel().ProduceRecipe(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1, LifeProductionOptions{Token: test.name, Now: 100, RNG: &lifeTestRNG{}})
 			if receipt.Status != test.status {
 				t.Fatalf("状态错误: got=%v want=%v", receipt.Status, test.status)
 			}
@@ -249,22 +249,22 @@ func TestLifeLevelUpUsesProficiencyAndCost(t *testing.T) {
 	cfg := lifeTestConfig()
 	items := lifeTestItems()
 	life := DefaultLifeModel()
-	state := life.GetState(proto.LifeType_LifeType_Cooking)
+	state := life.GetState(proto.LifeType_LIFE_TYPE_Cooking)
 	state.Proficiency = 99
-	receipt := life.LevelUp(items, cfg, proto.LifeType_LifeType_Cooking, "level-1")
+	receipt := life.LevelUp(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, "level-1")
 	if receipt.Status != proto.StatusCode_StatusCode_ProficiencyNotEnough || state.Level != 1 || lifeNum(items, 101) != 20 {
 		t.Fatalf("熟练度不足时错误升级: %+v", receipt)
 	}
 	state.Proficiency = 100
-	receipt = life.LevelUp(items, cfg, proto.LifeType_LifeType_Cooking, "level-2")
-	if receipt.Status != proto.StatusCode_StatusCode_Ok || receipt.Level != 2 || lifeNum(items, 101) != 15 {
+	receipt = life.LevelUp(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, "level-2")
+	if receipt.Status != proto.StatusCode_StatusCode_OK || receipt.Level != 2 || lifeNum(items, 101) != 15 {
 		t.Fatalf("升级失败: %+v", receipt)
 	}
-	duplicate := life.LevelUp(items, cfg, proto.LifeType_LifeType_Cooking, "level-2")
+	duplicate := life.LevelUp(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, "level-2")
 	if duplicate.Level != 2 || lifeNum(items, 101) != 15 {
 		t.Fatal("重复升级请求重复扣费")
 	}
-	receipt = life.LevelUp(items, cfg, proto.LifeType_LifeType_Cooking, "level-3")
+	receipt = life.LevelUp(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, "level-3")
 	if receipt.Status != proto.StatusCode_StatusCode_LifeMaxLv || state.Level != 2 {
 		t.Fatalf("最高等级处理错误: %+v", receipt)
 	}
@@ -274,27 +274,27 @@ func TestLifeSkillLearningAndCompletion(t *testing.T) {
 	cfg := lifeTestConfig()
 	items := lifeTestItems()
 	life := DefaultLifeModel()
-	receipt := life.StudySkill(items, cfg, proto.LifeType_LifeType_Cooking, 1000, false, "skill-1", 100)
-	if receipt.Status != proto.StatusCode_StatusCode_Ok || lifeNum(items, 101) != 19 {
+	receipt := life.StudySkill(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1000, false, "skill-1", 100)
+	if receipt.Status != proto.StatusCode_StatusCode_OK || lifeNum(items, 101) != 19 {
 		t.Fatalf("学习技能失败: %+v", receipt)
 	}
-	state := life.GetState(proto.LifeType_LifeType_Cooking).Skills[1000]
+	state := life.GetState(proto.LifeType_LIFE_TYPE_Cooking).Skills[1000]
 	if state.Lv != 0 || state.StartStudyTime != 100 || state.ReadyAt != 110 {
 		t.Fatalf("学习状态错误: %+v", state)
 	}
-	duplicate := life.StudySkill(items, cfg, proto.LifeType_LifeType_Cooking, 1000, false, "skill-1", 100)
-	if duplicate.Status != proto.StatusCode_StatusCode_Ok || lifeNum(items, 101) != 19 {
+	duplicate := life.StudySkill(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1000, false, "skill-1", 100)
+	if duplicate.Status != proto.StatusCode_StatusCode_OK || lifeNum(items, 101) != 19 {
 		t.Fatal("重复学习请求重复扣费")
 	}
-	receipt = life.StudySkill(items, cfg, proto.LifeType_LifeType_Cooking, 1000, false, "skill-2", 105)
+	receipt = life.StudySkill(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1000, false, "skill-2", 105)
 	if receipt.Status != proto.StatusCode_StatusCode_IsLearning || lifeNum(items, 101) != 19 {
 		t.Fatalf("学习未完成时处理错误: %+v", receipt)
 	}
-	if !life.RefreshSkills(proto.LifeType_LifeType_Cooking, cfg, 110) || state.Lv != 1 || state.StartStudyTime != 0 {
+	if !life.RefreshSkills(proto.LifeType_LIFE_TYPE_Cooking, cfg, 110) || state.Lv != 1 || state.StartStudyTime != 0 {
 		t.Fatalf("技能到时未完成: %+v", state)
 	}
-	receipt = life.StudySkill(items, cfg, proto.LifeType_LifeType_Cooking, 1000, true, "skill-3", 110)
-	if receipt.Status != proto.StatusCode_StatusCode_Ok || state.Lv != 2 || lifeNum(items, 101) != 18 {
+	receipt = life.StudySkill(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1000, true, "skill-3", 110)
+	if receipt.Status != proto.StatusCode_StatusCode_OK || state.Lv != 2 || lifeNum(items, 101) != 18 {
 		t.Fatalf("强制升级失败: %+v", receipt)
 	}
 }
@@ -303,24 +303,24 @@ func TestLifeAchievementRewardOnce(t *testing.T) {
 	cfg := lifeTestConfig()
 	items := lifeTestItems()
 	life := DefaultLifeModel()
-	life.AddAchievement(proto.LifeType_LifeType_Cooking, 7, 2)
-	receipt := life.ClaimAchievement(items, cfg, proto.LifeType_LifeType_Cooking, 7, "reward-1", &lifeTestRNG{})
-	if receipt.Status != proto.StatusCode_StatusCode_Ok || lifeNum(items, 600) != 2 {
+	life.AddAchievement(proto.LifeType_LIFE_TYPE_Cooking, 7, 2)
+	receipt := life.ClaimAchievement(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 7, "reward-1", &lifeTestRNG{})
+	if receipt.Status != proto.StatusCode_StatusCode_OK || lifeNum(items, 600) != 2 {
 		t.Fatalf("成就领奖失败: %+v", receipt)
 	}
-	duplicate := life.ClaimAchievement(items, cfg, proto.LifeType_LifeType_Cooking, 7, "reward-1", &lifeTestRNG{})
-	if duplicate.Status != proto.StatusCode_StatusCode_Ok || lifeNum(items, 600) != 2 {
+	duplicate := life.ClaimAchievement(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 7, "reward-1", &lifeTestRNG{})
+	if duplicate.Status != proto.StatusCode_StatusCode_OK || lifeNum(items, 600) != 2 {
 		t.Fatal("重复领奖请求重复发奖")
 	}
-	receipt = life.ClaimAchievement(items, cfg, proto.LifeType_LifeType_Cooking, 7, "reward-2", &lifeTestRNG{})
-	if receipt.Status != proto.StatusCode_StatusCode_RepeatGetReward || lifeNum(items, 600) != 2 {
+	receipt = life.ClaimAchievement(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 7, "reward-2", &lifeTestRNG{})
+	if receipt.Status != proto.StatusCode_StatusCode_REPEAT_GET_REWARD || lifeNum(items, 600) != 2 {
 		t.Fatalf("重复领奖未拒绝: %+v", receipt)
 	}
 	delete(cfg.Rewards, 70)
 	life2 := DefaultLifeModel()
-	life2.AddAchievement(proto.LifeType_LifeType_Cooking, 7, 2)
-	receipt = life2.ClaimAchievement(items, cfg, proto.LifeType_LifeType_Cooking, 7, "reward-missing", &lifeTestRNG{})
-	if receipt.Status != proto.StatusCode_StatusCode_CfgNotFound || life2.GetState(proto.LifeType_LifeType_Cooking).Achievements[7].Rewarded || lifeNum(items, 600) != 2 {
+	life2.AddAchievement(proto.LifeType_LIFE_TYPE_Cooking, 7, 2)
+	receipt = life2.ClaimAchievement(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 7, "reward-missing", &lifeTestRNG{})
+	if receipt.Status != proto.StatusCode_StatusCode_CFG_NOT_FOUND || life2.GetState(proto.LifeType_LIFE_TYPE_Cooking).Achievements[7].Rewarded || lifeNum(items, 600) != 2 {
 		t.Fatalf("奖励配置缺失时错误发奖: %+v", receipt)
 	}
 }
@@ -330,10 +330,10 @@ func TestFishingValidatesEquipmentAndBait(t *testing.T) {
 	items := lifeTestItemsWithRod()
 	life := DefaultLifeModel()
 	receipt := life.Fish(items, cfg, FishingOptions{Token: "fish-1", Now: 100, PondID: 1, BoxID: 400, RodInstanceID: 7, RNG: &lifeTestRNG{floats: []float64{0, 0, 0}}})
-	if receipt.Status != proto.StatusCode_StatusCode_Ok || !receipt.Success || len(receipt.Fish) != 1 || receipt.Fish[0].Length != 10 {
+	if receipt.Status != proto.StatusCode_StatusCode_OK || !receipt.Success || len(receipt.Fish) != 1 || receipt.Fish[0].Length != 10 {
 		t.Fatalf("钓鱼失败: %+v", receipt)
 	}
-	if lifeNum(items, 11) != 18 || lifeNum(items, 400) != 4 || lifeNum(items, 300) != 1 || life.GetState(proto.LifeType_LifeType_Fishing).Proficiency != 10 {
+	if lifeNum(items, 11) != 18 || lifeNum(items, 400) != 4 || lifeNum(items, 300) != 1 || life.GetState(proto.LifeType_LIFE_TYPE_Fishing).Proficiency != 10 {
 		t.Fatal("钓鱼消耗或产出错误")
 	}
 	duplicate := life.Fish(items, cfg, FishingOptions{Token: "fish-1", Now: 100, PondID: 1, BoxID: 400, RodInstanceID: 7, RNG: &lifeTestRNG{}})
@@ -343,13 +343,13 @@ func TestFishingValidatesEquipmentAndBait(t *testing.T) {
 	cfg.WeaponTypes[1006] = proto.EWeaponType_EWeaponType_Sword
 	beforeEnergy := lifeNum(items, 11)
 	receipt = life.Fish(items, cfg, FishingOptions{Token: "fish-bad-rod", Now: 100, PondID: 1, BoxID: 400, RodInstanceID: 7, RNG: &lifeTestRNG{}})
-	if receipt.Status != proto.StatusCode_StatusCode_BadReq || lifeNum(items, 11) != beforeEnergy {
+	if receipt.Status != proto.StatusCode_StatusCode_BAD_REQ || lifeNum(items, 11) != beforeEnergy {
 		t.Fatalf("错误鱼竿未拒绝: %+v", receipt)
 	}
 	cfg.WeaponTypes[1006] = proto.EWeaponType_EWeaponType_FishingRod
 	cfg.Items[400].NewBagItemTag = int32(proto.EBagItemTag_EBagItemTag_Currency)
 	receipt = life.Fish(items, cfg, FishingOptions{Token: "fish-bad-bait", Now: 100, PondID: 1, BoxID: 400, RodInstanceID: 7, RNG: &lifeTestRNG{}})
-	if receipt.Status != proto.StatusCode_StatusCode_BadReq || lifeNum(items, 11) != beforeEnergy {
+	if receipt.Status != proto.StatusCode_StatusCode_BAD_REQ || lifeNum(items, 11) != beforeEnergy {
 		t.Fatalf("错误鱼饵未拒绝: %+v", receipt)
 	}
 }
@@ -397,14 +397,14 @@ func TestLifeConfigIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, lifeType := range []proto.LifeType{
-		proto.LifeType_LifeType_Cooking, proto.LifeType_LifeType_Fishing,
-		proto.LifeType_LifeType_Making, proto.LifeType_LifeType_Handicraft,
+		proto.LifeType_LIFE_TYPE_Cooking, proto.LifeType_LIFE_TYPE_Fishing,
+		proto.LifeType_LIFE_TYPE_Making, proto.LifeType_LIFE_TYPE_Handicraft,
 	} {
 		if len(cfg.Levels[lifeType]) != 10 || len(cfg.Skills[lifeType]) == 0 {
 			t.Fatalf("真实生活配置不完整 type=%v levels=%d skills=%d", lifeType, len(cfg.Levels[lifeType]), len(cfg.Skills[lifeType]))
 		}
 	}
-	for _, lifeType := range []proto.LifeType{proto.LifeType_LifeType_Cooking, proto.LifeType_LifeType_Making, proto.LifeType_LifeType_Handicraft} {
+	for _, lifeType := range []proto.LifeType{proto.LifeType_LIFE_TYPE_Cooking, proto.LifeType_LIFE_TYPE_Making, proto.LifeType_LIFE_TYPE_Handicraft} {
 		for id, recipe := range cfg.Recipes[lifeType] {
 			if !recipe.IsShow {
 				continue
@@ -413,12 +413,12 @@ func TestLifeConfigIntegration(t *testing.T) {
 				if itemID == 0 {
 					continue
 				}
-				if _, status := lifeBaseItem(cfg, itemID); status != proto.StatusCode_StatusCode_Ok {
+				if _, status := lifeBaseItem(cfg, itemID); status != proto.StatusCode_StatusCode_OK {
 					t.Fatalf("配方物品配置非法 type=%v id=%d item=%d status=%v", lifeType, id, itemID, status)
 				}
 			}
 			for _, material := range recipe.Materials {
-				if _, status := lifeBaseItem(cfg, material.ItemID); status != proto.StatusCode_StatusCode_Ok {
+				if _, status := lifeBaseItem(cfg, material.ItemID); status != proto.StatusCode_StatusCode_OK {
 					t.Fatalf("配方材料配置非法 type=%v id=%d item=%d status=%v", lifeType, id, material.ItemID, status)
 				}
 			}
@@ -426,7 +426,7 @@ func TestLifeConfigIntegration(t *testing.T) {
 	}
 	for id, fish := range cfg.Fish {
 		if fish.IsShow {
-			if _, status := lifeBaseItem(cfg, fish.ItemID); status != proto.StatusCode_StatusCode_Ok {
+			if _, status := lifeBaseItem(cfg, fish.ItemID); status != proto.StatusCode_StatusCode_OK {
 				t.Fatalf("鱼类物品配置非法 id=%d item=%d status=%v", id, fish.ItemID, status)
 			}
 		}
@@ -440,14 +440,14 @@ func TestLifeConfigIntegration(t *testing.T) {
 			t.Fatalf("成就奖励配置缺失 id=%d reward=%d", id, achievement.RewardID)
 		}
 		for _, reward := range rewards {
-			if _, status := lifeBaseItem(cfg, reward.ItemID); status != proto.StatusCode_StatusCode_Ok || reward.Min <= 0 || reward.Max < reward.Min {
+			if _, status := lifeBaseItem(cfg, reward.ItemID); status != proto.StatusCode_StatusCode_OK || reward.Min <= 0 || reward.Max < reward.Min {
 				t.Fatalf("成就奖励非法 id=%d reward=%+v", id, reward)
 			}
 		}
 	}
 	for _, lifeType := range []proto.LifeType{
-		proto.LifeType_LifeType_Cooking, proto.LifeType_LifeType_Fishing,
-		proto.LifeType_LifeType_Making, proto.LifeType_LifeType_Handicraft,
+		proto.LifeType_LIFE_TYPE_Cooking, proto.LifeType_LIFE_TYPE_Fishing,
+		proto.LifeType_LIFE_TYPE_Making, proto.LifeType_LIFE_TYPE_Handicraft,
 	} {
 		skillIDs := make([]uint32, 0, len(cfg.Skills[lifeType]))
 		for id := range cfg.Skills[lifeType] {
@@ -468,7 +468,7 @@ func TestLifeConfigIntegration(t *testing.T) {
 		life.GetState(lifeType).Level = level.NeedLifeLevel
 		now := time.Now().Unix()
 		receipt := life.StudySkill(items, cfg, lifeType, skillID, false, "integration-skill", now)
-		if receipt.Status != proto.StatusCode_StatusCode_Ok {
+		if receipt.Status != proto.StatusCode_StatusCode_OK {
 			t.Fatalf("真实技能学习失败 type=%v skill=%d receipt=%+v", lifeType, skillID, receipt)
 		}
 		skill := life.GetState(lifeType).Skills[skillID]
@@ -486,9 +486,9 @@ func TestLifeConfigIntegration(t *testing.T) {
 		lifeType proto.LifeType
 		recipeID uint32
 	}{
-		{proto.LifeType_LifeType_Cooking, 5012001},
-		{proto.LifeType_LifeType_Making, 5041001},
-		{proto.LifeType_LifeType_Handicraft, 5052001},
+		{proto.LifeType_LIFE_TYPE_Cooking, 5012001},
+		{proto.LifeType_LIFE_TYPE_Making, 5041001},
+		{proto.LifeType_LIFE_TYPE_Handicraft, 5052001},
 	} {
 		items := &ItemModel{ItemBaseInfo: make(map[uint32]*ItemBaseInfo)}
 		recipe := cfg.Recipes[test.lifeType][test.recipeID]
@@ -509,7 +509,7 @@ func TestLifeConfigIntegration(t *testing.T) {
 		if recipe.FormulaItemID == recipe.OutputID {
 			expectedOutput = 2
 		}
-		if receipt.Status != proto.StatusCode_StatusCode_Ok || !receipt.Success || lifeNum(items, recipe.OutputID) != expectedOutput {
+		if receipt.Status != proto.StatusCode_StatusCode_OK || !receipt.Success || lifeNum(items, recipe.OutputID) != expectedOutput {
 			t.Fatalf("真实配方生产失败 type=%v id=%d receipt=%+v", test.lifeType, test.recipeID, receipt)
 		}
 	}
@@ -518,10 +518,10 @@ func TestLifeConfigIntegration(t *testing.T) {
 		t.Fatal("真实烹饪成就配置缺失")
 	}
 	rewardLife := DefaultLifeModel()
-	rewardLife.AddAchievement(proto.LifeType_LifeType_Cooking, achievement.ID, achievement.Target)
+	rewardLife.AddAchievement(proto.LifeType_LIFE_TYPE_Cooking, achievement.ID, achievement.Target)
 	rewardItems := &ItemModel{ItemBaseInfo: make(map[uint32]*ItemBaseInfo)}
-	rewardReceipt := rewardLife.ClaimAchievement(rewardItems, cfg, proto.LifeType_LifeType_Cooking, achievement.ID, "integration-reward", &lifeTestRNG{})
-	if rewardReceipt.Status != proto.StatusCode_StatusCode_Ok || len(rewardReceipt.ResultItems) == 0 {
+	rewardReceipt := rewardLife.ClaimAchievement(rewardItems, cfg, proto.LifeType_LIFE_TYPE_Cooking, achievement.ID, "integration-reward", &lifeTestRNG{})
+	if rewardReceipt.Status != proto.StatusCode_StatusCode_OK || len(rewardReceipt.ResultItems) == 0 {
 		t.Fatalf("真实成就领奖失败: %+v", rewardReceipt)
 	}
 	items := &ItemModel{ItemBaseInfo: make(map[uint32]*ItemBaseInfo)}
@@ -533,7 +533,7 @@ func TestLifeConfigIntegration(t *testing.T) {
 	receipt := DefaultLifeModel().Fish(items, cfg, FishingOptions{
 		Token: "integration-fish", Now: time.Now().Unix(), RNG: &lifeTestRNG{floats: []float64{0, 0, 0}}, PondID: 1, BoxID: 6021, RodInstanceID: 1,
 	})
-	if receipt.Status != proto.StatusCode_StatusCode_Ok || !receipt.Success || len(receipt.Fish) != 1 {
+	if receipt.Status != proto.StatusCode_StatusCode_OK || !receipt.Success || len(receipt.Fish) != 1 {
 		t.Fatalf("真实钓鱼配置生产失败: %+v", receipt)
 	}
 }
@@ -547,7 +547,7 @@ func addIntegrationItem(items *ItemModel, cfg *LifeConfig, id uint32, count int6
 		return
 	}
 	items.ItemBaseInfo[id] = &ItemBaseInfo{
-		ItemId: id, Num: count, ItemType: proto.EBagItemTag(conf.NewBagItemTag), PackType: proto.PackType_PackType_Inventory,
+		ItemId: id, Num: count, ItemType: proto.EBagItemTag(conf.NewBagItemTag), PackType: proto.ItemDetail_PackType_Inventory,
 	}
 }
 
@@ -557,25 +557,25 @@ func TestLifePersistenceFailureRollsBackAndAllowsRetry(t *testing.T) {
 		run  func(*LifeModel, *ItemModel, *LifeConfig, func() error) LifeReceipt
 	}{
 		{name: "produce", run: func(life *LifeModel, items *ItemModel, cfg *LifeConfig, save func() error) LifeReceipt {
-			return life.ProduceRecipe(items, cfg, proto.LifeType_LifeType_Cooking, 1, LifeProductionOptions{Token: "retry", Now: 100, RNG: &lifeTestRNG{}, Persist: save})
+			return life.ProduceRecipe(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1, LifeProductionOptions{Token: "retry", Now: 100, RNG: &lifeTestRNG{}, Persist: save})
 		}},
 		{name: "fish", run: func(life *LifeModel, items *ItemModel, cfg *LifeConfig, save func() error) LifeReceipt {
 			return life.Fish(items, cfg, FishingOptions{Token: "retry", Now: 100, PondID: 1, BoxID: 400, RodInstanceID: 7, RNG: &lifeTestRNG{}, Persist: save})
 		}},
 		{name: "level", run: func(life *LifeModel, items *ItemModel, cfg *LifeConfig, save func() error) LifeReceipt {
-			if life.GetState(proto.LifeType_LifeType_Cooking).Level == 1 {
-				life.GetState(proto.LifeType_LifeType_Cooking).Proficiency = 100
+			if life.GetState(proto.LifeType_LIFE_TYPE_Cooking).Level == 1 {
+				life.GetState(proto.LifeType_LIFE_TYPE_Cooking).Proficiency = 100
 			}
-			return life.LevelUp(items, cfg, proto.LifeType_LifeType_Cooking, "retry", save)
+			return life.LevelUp(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, "retry", save)
 		}},
 		{name: "study", run: func(life *LifeModel, items *ItemModel, cfg *LifeConfig, save func() error) LifeReceipt {
-			return life.StudySkill(items, cfg, proto.LifeType_LifeType_Cooking, 1000, false, "retry", 100, save)
+			return life.StudySkill(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1000, false, "retry", 100, save)
 		}},
 		{name: "achievement", run: func(life *LifeModel, items *ItemModel, cfg *LifeConfig, save func() error) LifeReceipt {
-			if life.GetState(proto.LifeType_LifeType_Cooking).Achievements[7] == nil {
-				life.AddAchievement(proto.LifeType_LifeType_Cooking, 7, 2)
+			if life.GetState(proto.LifeType_LIFE_TYPE_Cooking).Achievements[7] == nil {
+				life.AddAchievement(proto.LifeType_LIFE_TYPE_Cooking, 7, 2)
 			}
-			return life.ClaimAchievement(items, cfg, proto.LifeType_LifeType_Cooking, 7, "retry", &lifeTestRNG{}, save)
+			return life.ClaimAchievement(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 7, "retry", &lifeTestRNG{}, save)
 		}},
 	}
 	for _, test := range tests {
@@ -588,9 +588,9 @@ func TestLifePersistenceFailureRollsBackAndAllowsRetry(t *testing.T) {
 			life := DefaultLifeModel()
 			if test.name == "level" || test.name == "achievement" {
 				if test.name == "level" {
-					life.GetState(proto.LifeType_LifeType_Cooking).Proficiency = 100
+					life.GetState(proto.LifeType_LIFE_TYPE_Cooking).Proficiency = 100
 				} else {
-					life.AddAchievement(proto.LifeType_LifeType_Cooking, 7, 2)
+					life.AddAchievement(proto.LifeType_LIFE_TYPE_Cooking, 7, 2)
 				}
 			}
 			beforeLife := cloneLifeStates(life.States)
@@ -608,7 +608,7 @@ func TestLifePersistenceFailureRollsBackAndAllowsRetry(t *testing.T) {
 				return nil
 			}
 			receipt := test.run(life, items, cfg, save)
-			if receipt.Status != proto.StatusCode_StatusCode_SysErr || receipt.Success {
+			if receipt.Status != proto.StatusCode_StatusCode_SYS_ERR || receipt.Success {
 				t.Fatalf("保存失败未回报系统错误: %+v", receipt)
 			}
 			if !reflect.DeepEqual(life.States, beforeLife) || !reflect.DeepEqual(items.ItemBaseInfo, beforeItems) {
@@ -619,7 +619,7 @@ func TestLifePersistenceFailureRollsBackAndAllowsRetry(t *testing.T) {
 			}
 			fail = false
 			receipt = test.run(life, items, cfg, save)
-			if receipt.Status != proto.StatusCode_StatusCode_Ok {
+			if receipt.Status != proto.StatusCode_StatusCode_OK {
 				t.Fatalf("回滚后同一请求无法重试: %+v", receipt)
 			}
 			if saves != 2 {
@@ -628,7 +628,7 @@ func TestLifePersistenceFailureRollsBackAndAllowsRetry(t *testing.T) {
 			beforeItems = cloneLifeItemInfos(items.ItemBaseInfo)
 			beforeLife = cloneLifeStates(life.States)
 			receipt = test.run(life, items, cfg, save)
-			if receipt.Status != proto.StatusCode_StatusCode_Ok || saves != 2 ||
+			if receipt.Status != proto.StatusCode_StatusCode_OK || saves != 2 ||
 				!reflect.DeepEqual(life.States, beforeLife) || !reflect.DeepEqual(items.ItemBaseInfo, beforeItems) {
 				t.Fatal("重试成功后的并发重放未命中凭证")
 			}
@@ -638,13 +638,13 @@ func TestLifePersistenceFailureRollsBackAndAllowsRetry(t *testing.T) {
 
 func TestLifeFailedProductionStillPersistsSkillCompletion(t *testing.T) {
 	cfg := lifeTestConfig()
-	cfg.Recipes[proto.LifeType_LifeType_Cooking][1].Probability = 0
+	cfg.Recipes[proto.LifeType_LIFE_TYPE_Cooking][1].Probability = 0
 	items := lifeTestItems()
 	life := DefaultLifeModel()
 	skill := &LifeSkillState{StartStudyTime: 100, ReadyAt: 110}
-	life.GetState(proto.LifeType_LifeType_Cooking).Skills[1000] = skill
+	life.GetState(proto.LifeType_LIFE_TYPE_Cooking).Skills[1000] = skill
 	saves := 0
-	receipt := life.ProduceRecipe(items, cfg, proto.LifeType_LifeType_Cooking, 1, LifeProductionOptions{
+	receipt := life.ProduceRecipe(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1, LifeProductionOptions{
 		Token: "failed-with-skill", Now: 110, RNG: &lifeTestRNG{},
 		Persist: func() error {
 			saves++
@@ -654,7 +654,7 @@ func TestLifeFailedProductionStillPersistsSkillCompletion(t *testing.T) {
 			return nil
 		},
 	})
-	if receipt.Status != proto.StatusCode_StatusCode_Ok || receipt.Success || saves != 1 || skill.Lv != 1 ||
+	if receipt.Status != proto.StatusCode_StatusCode_OK || receipt.Success || saves != 1 || skill.Lv != 1 ||
 		lifeNum(items, 11) != 20 || lifeNum(items, 100) != 20 {
 		t.Fatalf("生产失败时的技能完成未正确保存: receipt=%+v saves=%d skill=%+v", receipt, saves, skill)
 	}
@@ -665,7 +665,7 @@ func TestLifeReceiptIsIncludedInPersistenceSnapshot(t *testing.T) {
 	items := lifeTestItems()
 	life := DefaultLifeModel()
 	var saved LifeModel
-	receipt := life.ProduceRecipe(items, cfg, proto.LifeType_LifeType_Cooking, 1, LifeProductionOptions{
+	receipt := life.ProduceRecipe(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1, LifeProductionOptions{
 		Token: "persisted", Now: 100, RNG: &lifeTestRNG{},
 		Persist: func() error {
 			data, err := sonic.Marshal(life)
@@ -675,15 +675,15 @@ func TestLifeReceiptIsIncludedInPersistenceSnapshot(t *testing.T) {
 			return sonic.Unmarshal(data, &saved)
 		},
 	})
-	if receipt.Status != proto.StatusCode_StatusCode_Ok || !receipt.Success {
+	if receipt.Status != proto.StatusCode_StatusCode_OK || !receipt.Success {
 		t.Fatalf("生产失败: %+v", receipt)
 	}
 	saves := 0
-	replay := saved.ProduceRecipe(items, cfg, proto.LifeType_LifeType_Cooking, 1, LifeProductionOptions{
+	replay := saved.ProduceRecipe(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1, LifeProductionOptions{
 		Token: "persisted", Now: 100, RNG: &lifeTestRNG{},
 		Persist: func() error { saves++; return nil },
 	})
-	if replay.Status != proto.StatusCode_StatusCode_Ok || !replay.Success || saves != 0 ||
+	if replay.Status != proto.StatusCode_StatusCode_OK || !replay.Success || saves != 0 ||
 		lifeNum(items, 11) != 18 || lifeNum(items, 100) != 17 || lifeNum(items, 200) != 1 {
 		t.Fatalf("落库凭证无法在重启后阻止重放: receipt=%+v saves=%d", replay, saves)
 	}
@@ -702,7 +702,7 @@ func TestLifeConcurrentReplayAndTokenGeneration(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			<-start
-			receipts <- life.ProduceRecipe(items, cfg, proto.LifeType_LifeType_Cooking, 1, LifeProductionOptions{
+			receipts <- life.ProduceRecipe(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1, LifeProductionOptions{
 				Token: "concurrent", Now: 100, RNG: &lifeTestRNG{},
 			})
 		}()
@@ -711,13 +711,13 @@ func TestLifeConcurrentReplayAndTokenGeneration(t *testing.T) {
 	wg.Wait()
 	close(receipts)
 	for receipt := range receipts {
-		if receipt.Status != proto.StatusCode_StatusCode_Ok || !receipt.Success {
+		if receipt.Status != proto.StatusCode_StatusCode_OK || !receipt.Success {
 			t.Fatalf("并发重放返回错误: %+v", receipt)
 		}
 	}
-	if lifeNum(items, 11) != 18 || lifeNum(items, 100) != 17 || lifeNum(items, 200) != 1 || life.GetState(proto.LifeType_LifeType_Cooking).Proficiency != 10 {
+	if lifeNum(items, 11) != 18 || lifeNum(items, 100) != 17 || lifeNum(items, 200) != 1 || life.GetState(proto.LifeType_LIFE_TYPE_Cooking).Proficiency != 10 {
 		t.Fatalf("并发重放重复扣除、产出或增加熟练度: energy=%d material=%d output=%d proficiency=%d receipts=%d",
-			lifeNum(items, 11), lifeNum(items, 100), lifeNum(items, 200), life.GetState(proto.LifeType_LifeType_Cooking).Proficiency, len(life.Receipts))
+			lifeNum(items, 11), lifeNum(items, 100), lifeNum(items, 200), life.GetState(proto.LifeType_LIFE_TYPE_Cooking).Proficiency, len(life.Receipts))
 	}
 
 	life = DefaultLifeModel()
@@ -744,15 +744,15 @@ func TestLifeSkillRefreshSaveFailureRollsBack(t *testing.T) {
 	cfg := lifeTestConfig()
 	life := DefaultLifeModel()
 	skill := &LifeSkillState{StartStudyTime: 100, ReadyAt: 110}
-	life.GetState(proto.LifeType_LifeType_Cooking).Skills[1000] = skill
-	changed, err := life.RefreshSkillsAndSave(proto.LifeType_LifeType_Cooking, cfg, 110, func() error {
+	life.GetState(proto.LifeType_LIFE_TYPE_Cooking).Skills[1000] = skill
+	changed, err := life.RefreshSkillsAndSave(proto.LifeType_LIFE_TYPE_Cooking, cfg, 110, func() error {
 		return errors.New("save failed")
 	})
-	skill = life.GetState(proto.LifeType_LifeType_Cooking).Skills[1000]
+	skill = life.GetState(proto.LifeType_LIFE_TYPE_Cooking).Skills[1000]
 	if err == nil || changed || skill.Lv != 0 || skill.StartStudyTime != 100 || skill.ReadyAt != 110 {
 		t.Fatalf("技能完成保存失败后未回滚: changed=%v err=%v skill=%+v", changed, err, skill)
 	}
-	changed, err = life.RefreshSkillsAndSave(proto.LifeType_LifeType_Cooking, cfg, 110, func() error { return nil })
+	changed, err = life.RefreshSkillsAndSave(proto.LifeType_LIFE_TYPE_Cooking, cfg, 110, func() error { return nil })
 	if err != nil || !changed || skill.Lv != 1 || skill.StartStudyTime != 0 || skill.ReadyAt != 0 {
 		t.Fatalf("技能完成重试失败: changed=%v err=%v skill=%+v", changed, err, skill)
 	}
@@ -761,19 +761,19 @@ func TestLifeSkillRefreshSaveFailureRollsBack(t *testing.T) {
 func TestLifeRejectsInvalidRewardAndProductionConfig(t *testing.T) {
 	t.Run("nan probability", func(t *testing.T) {
 		cfg := lifeTestConfig()
-		cfg.Recipes[proto.LifeType_LifeType_Cooking][1].Probability = float32(math.NaN())
+		cfg.Recipes[proto.LifeType_LIFE_TYPE_Cooking][1].Probability = float32(math.NaN())
 		items := lifeTestItems()
-		receipt := DefaultLifeModel().ProduceRecipe(items, cfg, proto.LifeType_LifeType_Cooking, 1, LifeProductionOptions{Now: 100, RNG: &lifeTestRNG{}})
-		if receipt.Status != proto.StatusCode_StatusCode_CfgNotFound || lifeNum(items, 11) != 20 || lifeNum(items, 100) != 20 {
+		receipt := DefaultLifeModel().ProduceRecipe(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1, LifeProductionOptions{Now: 100, RNG: &lifeTestRNG{}})
+		if receipt.Status != proto.StatusCode_StatusCode_CFG_NOT_FOUND || lifeNum(items, 11) != 20 || lifeNum(items, 100) != 20 {
 			t.Fatalf("非法概率未拒绝: %+v", receipt)
 		}
 	})
 	t.Run("invalid energy", func(t *testing.T) {
 		cfg := lifeTestConfig()
-		cfg.Recipes[proto.LifeType_LifeType_Cooking][1].EnergyCount = -1
+		cfg.Recipes[proto.LifeType_LIFE_TYPE_Cooking][1].EnergyCount = -1
 		items := lifeTestItems()
-		receipt := DefaultLifeModel().ProduceRecipe(items, cfg, proto.LifeType_LifeType_Cooking, 1, LifeProductionOptions{Now: 100, RNG: &lifeTestRNG{}})
-		if receipt.Status != proto.StatusCode_StatusCode_CfgNotFound || lifeNum(items, 100) != 20 {
+		receipt := DefaultLifeModel().ProduceRecipe(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1, LifeProductionOptions{Now: 100, RNG: &lifeTestRNG{}})
+		if receipt.Status != proto.StatusCode_StatusCode_CFG_NOT_FOUND || lifeNum(items, 100) != 20 {
 			t.Fatalf("非法精力配置未拒绝: %+v", receipt)
 		}
 	})
@@ -782,7 +782,7 @@ func TestLifeRejectsInvalidRewardAndProductionConfig(t *testing.T) {
 		cfg.Fish[300].MaxSize = 5
 		items := lifeTestItemsWithRod()
 		receipt := DefaultLifeModel().Fish(items, cfg, FishingOptions{Now: 100, PondID: 1, BoxID: 400, RodInstanceID: 7, RNG: &lifeTestRNG{}})
-		if receipt.Status != proto.StatusCode_StatusCode_CfgNotFound || lifeNum(items, 11) != 20 || lifeNum(items, 400) != 5 {
+		if receipt.Status != proto.StatusCode_StatusCode_CFG_NOT_FOUND || lifeNum(items, 11) != 20 || lifeNum(items, 400) != 5 {
 			t.Fatalf("非法鱼体型配置未拒绝: %+v", receipt)
 		}
 	})
@@ -791,9 +791,9 @@ func TestLifeRejectsInvalidRewardAndProductionConfig(t *testing.T) {
 		cfg.Rewards[70][0].Min = 0
 		items := lifeTestItems()
 		life := DefaultLifeModel()
-		life.AddAchievement(proto.LifeType_LifeType_Cooking, 7, 2)
-		receipt := life.ClaimAchievement(items, cfg, proto.LifeType_LifeType_Cooking, 7, "invalid-reward", &lifeTestRNG{})
-		if receipt.Status != proto.StatusCode_StatusCode_CfgNotFound || lifeNum(items, 600) != 0 || life.GetState(proto.LifeType_LifeType_Cooking).Achievements[7].Rewarded {
+		life.AddAchievement(proto.LifeType_LIFE_TYPE_Cooking, 7, 2)
+		receipt := life.ClaimAchievement(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 7, "invalid-reward", &lifeTestRNG{})
+		if receipt.Status != proto.StatusCode_StatusCode_CFG_NOT_FOUND || lifeNum(items, 600) != 0 || life.GetState(proto.LifeType_LIFE_TYPE_Cooking).Achievements[7].Rewarded {
 			t.Fatalf("非法奖励配置未拒绝: %+v", receipt)
 		}
 	})
@@ -803,8 +803,8 @@ func TestLifeOutputOverflowDoesNotConsume(t *testing.T) {
 	cfg := lifeTestConfig()
 	items := lifeTestItems()
 	items.ItemBaseInfo[200] = &ItemBaseInfo{ItemId: 200, Num: math.MaxInt64, ItemType: proto.EBagItemTag_EBagItemTag_Food}
-	receipt := DefaultLifeModel().ProduceRecipe(items, cfg, proto.LifeType_LifeType_Cooking, 1, LifeProductionOptions{Now: 100, RNG: &lifeTestRNG{}})
-	if receipt.Status != proto.StatusCode_StatusCode_SysErr || lifeNum(items, 11) != 20 || lifeNum(items, 100) != 20 || lifeNum(items, 200) != math.MaxInt64 {
+	receipt := DefaultLifeModel().ProduceRecipe(items, cfg, proto.LifeType_LIFE_TYPE_Cooking, 1, LifeProductionOptions{Now: 100, RNG: &lifeTestRNG{}})
+	if receipt.Status != proto.StatusCode_StatusCode_SYS_ERR || lifeNum(items, 11) != 20 || lifeNum(items, 100) != 20 || lifeNum(items, 200) != math.MaxInt64 {
 		t.Fatalf("产出溢出时未保持原子性: %+v", receipt)
 	}
 }
