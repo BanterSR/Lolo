@@ -50,7 +50,7 @@ type Config struct {
 	Sdk  string `json:"sdk"`  // SDK HTTP 基地址
 
 	Mode     string `json:"mode"`     // routine | endurance | profile
-	Scenario string `json:"scenario"` // login | steady | scene
+	Scenario string `json:"scenario"` // login | steady | scene | quest | life
 
 	CCU      int      `json:"ccu"`      // 目标并发 bot 数
 	Ramp     Duration `json:"ramp"`     // 爬坡时长
@@ -68,8 +68,9 @@ type Config struct {
 	Stages   []Stage  `json:"stages"`   // 显式阶段列表
 
 	// 账号
-	Prefix   string `json:"prefix"`   // 用户名前缀，账号 = prefix+id
-	Password string `json:"password"` // 账号密码
+	Prefix       string `json:"prefix"`       // 用户名前缀，账号 = prefix+id
+	Password     string `json:"password"`     // 账号密码
+	QuestStoryID uint32 `json:"questStoryId"` // 任务烟测可选：直接指定剧情ID
 
 	// 场景调优
 	Ping         Duration `json:"ping"`         // ping 间隔
@@ -99,17 +100,17 @@ func configCandidates(configPath string, explicit bool) []string {
 
 func defaultConfig() *Config {
 	return &Config{
-		Gate:     "127.0.0.1:11000",
-		Sdk:      "http://127.0.0.1:8080",
-		Mode:     "routine",
-		Scenario: "steady",
-		CCU:      100,
-		Ramp:     Duration(10 * time.Second),
-		Duration: Duration(60 * time.Second),
-		Base:     0,
-		Steps:    5,
-		Prefix:   "robot_",
-		Password: "robot123456",
+		Gate:         "127.0.0.1:11000",
+		Sdk:          "http://127.0.0.1:8080",
+		Mode:         "routine",
+		Scenario:     "steady",
+		CCU:          100,
+		Ramp:         Duration(10 * time.Second),
+		Duration:     Duration(60 * time.Second),
+		Base:         0,
+		Steps:        5,
+		Prefix:       "robot_",
+		Password:     "robot123456",
 		Ping:         Duration(15 * time.Second),
 		Action:       Duration(2 * time.Second),
 		Report:       Duration(1 * time.Second),
@@ -125,7 +126,7 @@ func LoadConfig() (*Config, error) {
 	gate := flag.String("gate", cfg.Gate, "网关 TCP 地址")
 	sdk := flag.String("sdk", cfg.Sdk, "SDK HTTP 基地址")
 	mode := flag.String("mode", cfg.Mode, "模式: routine|endurance|profile")
-	scenario := flag.String("scenario", cfg.Scenario, "场景: login|steady|scene")
+	scenario := flag.String("scenario", cfg.Scenario, "场景: login|steady|scene|quest|life")
 	ccu := flag.Int("ccu", cfg.CCU, "目标并发 bot 数")
 	ramp := flag.String("ramp", "", "爬坡时长, 如 30s")
 	duration := flag.String("duration", "", "保持时长, 如 5m")
@@ -139,6 +140,7 @@ func LoadConfig() (*Config, error) {
 	loop := flag.Bool("loop", cfg.Loop, "profile 是否循环")
 	prefix := flag.String("prefix", cfg.Prefix, "账号用户名前缀")
 	password := flag.String("password", cfg.Password, "账号密码")
+	questStoryID := flag.Uint("quest-story", uint(cfg.QuestStoryID), "任务烟测剧情ID(0=使用任务ID)")
 	ping := flag.String("ping", "", "ping 间隔, 如 15s")
 	action := flag.String("action", "", "场景动作间隔, 如 2s")
 	report := flag.String("report", "", "上报间隔, 如 1s")
@@ -214,6 +216,9 @@ func LoadConfig() (*Config, error) {
 	if set["password"] {
 		cfg.Password = *password
 	}
+	if set["quest-story"] {
+		cfg.QuestStoryID = uint32(*questStoryID)
+	}
 	if set["web"] {
 		cfg.Web = *web
 	}
@@ -255,9 +260,9 @@ func (c *Config) validate() error {
 		return fmt.Errorf("gate 与 sdk 地址不能为空")
 	}
 	switch c.Scenario {
-	case "login", "steady", "scene":
+	case "login", "steady", "scene", "quest", "life":
 	default:
-		return fmt.Errorf("未知 scenario: %q（login|steady|scene）", c.Scenario)
+		return fmt.Errorf("未知 scenario: %q（login|steady|scene|quest|life）", c.Scenario)
 	}
 	switch c.Mode {
 	case "routine", "endurance":

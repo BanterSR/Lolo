@@ -326,5 +326,6 @@ func ProxyGin(c *gin.Context, url string) {
 	if err != nil {
 		return
 	}
-	fmt.Sprintf(string(body))
+	// 响应体仅用于探测可用性，调用方不需要内容。
+	_ = body
 }

@@ -1,11 +1,13 @@
 package model
 
 import (
+	"math/rand/v2"
+	"reflect"
+	"sync/atomic"
+
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/protocol/proto"
-	"math/rand/v2"
-	"sync/atomic"
 )
 
 type TreasureBox struct {
@@ -42,14 +44,29 @@ type DropItem struct {
 }
 
 func (d *DropItem) PbDropItem() *proto.DropItem {
+	if d == nil {
+		return nil
+	}
 	info := &proto.DropItem{
 		Index: d.Index,
 		Items: make([]*proto.ItemDetail, len(d.Items)),
 	}
 	for i, item := range d.Items {
+		if nilBagItem(item) {
+			info.Items[i] = nil
+			continue
+		}
 		info.Items[i] = item.ItemDetail()
 	}
 	return info
+}
+
+func nilBagItem(item EBagItemTag) bool {
+	if item == nil {
+		return true
+	}
+	value := reflect.ValueOf(item)
+	return value.Kind() == reflect.Ptr && value.IsNil()
 }
 
 func newSceneTempPack() *SceneTempPack {
@@ -86,17 +103,65 @@ func (d *SceneTempPack) GenMonsterDead(s *Player, tag proto.EMonsterTag, cold bo
 	alg.AddLists(&info.Items, RandItemDetail(s.GetSceneModel().GetWorldLevel(), proto.EBagItemTag_EBagItemTag_Material))
 	alg.AddLists(&info.Items, RandItemDetail(s.GetSceneModel().GetWorldLevel(), proto.EBagItemTag_EBagItemTag_Weapon))
 	alg.AddLists(&info.Items, RandItemDetail(s.GetSceneModel().GetWorldLevel(), proto.EBagItemTag_EBagItemTag_Armor))
+	items := info.Items[:0]
+	for _, item := range info.Items {
+		if !nilBagItem(item) {
+			items = append(items, item)
+		}
+	}
+	info.Items = items
+	if len(info.Items) == 0 {
+		return nil
+	}
+	if d.TempAreaPack == nil {
+		d.TempAreaPack = make(map[uint32]*DropItem)
+	}
 
 	d.TempAreaPack[index] = info
 	return info
 }
 
+func NewSceneTempPack() *SceneTempPack {
+	return newSceneTempPack()
+}
+
+func (d *SceneTempPack) NewDrop(items []EBagItemTag) *DropItem {
+	if d == nil || len(items) == 0 {
+		return nil
+	}
+	filtered := make([]EBagItemTag, 0, len(items))
+	for _, item := range items {
+		if !nilBagItem(item) {
+			filtered = append(filtered, item)
+		}
+	}
+	if len(filtered) == 0 {
+		return nil
+	}
+	index := d.index.Add(1)
+	info := &DropItem{
+		Index: index,
+		Items: filtered,
+	}
+	if d.TempAreaPack == nil {
+		d.TempAreaPack = make(map[uint32]*DropItem)
+	}
+	d.TempAreaPack[index] = info
+	return info
+}
+
 func (d *SceneTempPack) GetTempAreaPack(index uint32) *DropItem {
+	if d == nil {
+		return nil
+	}
 	return d.TempAreaPack[index]
 }
 
 func RandItemDetail(worldLevel uint32, tag proto.EBagItemTag) EBagItemTag {
 	conf := gdconf.RandItemByNewBagItemTag(tag)
+	if conf == nil {
+		return nil
+	}
 	switch tag {
 	case proto.EBagItemTag_EBagItemTag_Material: // 材料
 		return &ItemBaseInfo{
@@ -120,14 +185,42 @@ func RandItemDetail(worldLevel uint32, tag proto.EBagItemTag) EBagItemTag {
 }
 
 func (d *SceneTempPack) Pickup(dropIndex uint32, pickIndex int32) []*proto.ItemDetail {
-	temp, ok := d.TempAreaPack[dropIndex]
-	if !ok {
+	if d == nil {
 		return nil
 	}
-	list := make([]*proto.ItemDetail, 0, len(temp.Items))
-	for _, i := range temp.Items {
-		i.SetPackType(proto.PackType_PackType_TempPack)
-		alg.AddLists(&list, i.ItemDetail())
+	temp := d.GetTempAreaPack(dropIndex)
+	if temp == nil || len(temp.Items) == 0 {
+		return nil
+	}
+	items := temp.Items
+	switch {
+	case pickIndex == -1:
+		items = append([]EBagItemTag(nil), items...)
+		temp.Items = nil
+		delete(d.TempAreaPack, dropIndex)
+	case pickIndex >= 1 && int(pickIndex) <= len(items):
+		position := int(pickIndex) - 1 // Protocol pickup indices are one-based.
+		selected := items[position]
+		if nilBagItem(selected) {
+			return nil
+		}
+		items = []EBagItemTag{selected}
+		copy(temp.Items[position:], temp.Items[position+1:])
+		temp.Items[len(temp.Items)-1] = nil
+		temp.Items = temp.Items[:len(temp.Items)-1]
+		if len(temp.Items) == 0 {
+			delete(d.TempAreaPack, dropIndex)
+		}
+	default:
+		return nil
+	}
+	list := make([]*proto.ItemDetail, 0, len(items))
+	for _, item := range items {
+		if nilBagItem(item) {
+			continue
+		}
+		item.SetPackType(proto.PackType_PackType_TempPack)
+		alg.AddLists(&list, item.ItemDetail())
 	}
 	return list
 }

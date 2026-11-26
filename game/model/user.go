@@ -11,27 +11,32 @@ import (
 )
 
 type Player struct {
-	Conn          ofnet.Conn      `json:"-"`
-	Online        bool            `json:"-"`
-	NetFreeze     bool            `json:"-"`
-	Created       time.Time       `json:"-"`                       // 创建时间
-	ActiveTime    time.Time       `json:"-"`                       // 上一次活跃时间
-	LastSaveTime  time.Time       `json:"-"`                       // 上一次数据保存时间
-	SaveLock      bool            `json:"-"`                       // 是否在db写入队列中
-	UserId        uint32          `json:"-"`                       // 玩家id
-	NickName      string          `json:"-"`                       // 玩家昵称
-	LoginUUID     string          `json:"-"`                       // 当前登录uuid
-	InstanceIndex uint32          `json:"instanceIndex,omitempty"` // 唯一索引生成
-	Item          *ItemModel      `json:"item,omitempty"`          // 背包
-	Character     *CharacterModel `json:"character,omitempty"`     // 角色
-	Team          *TeamModel      `json:"team,omitempty"`          // 队伍
-	Archive       *ArchiveModel   `json:"archive,omitempty"`       // 信息记录
-	Chat          *ChatModel      `json:"chat,omitempty"`          // 聊天
-	Gacha         *GachaModel     `json:"gacha,omitempty"`         // 卡池
-	Garden        *GardenModel    `json:"garden,omitempty"`        // 花园
-	Shop          *ShopModel      `json:"shop,omitempty"`          // 商店
-	Scene         *SceneModel     `json:"scene,omitempty"`         // 场景信息
-	Dungeon       *DungeonModel   `json:"dungeon,omitempty"`       // 副本
+	Conn          ofnet.Conn       `json:"-"`
+	Online        bool             `json:"-"`
+	NetFreeze     bool             `json:"-"`
+	Created       time.Time        `json:"-"`                       // 创建时间
+	ActiveTime    time.Time        `json:"-"`                       // 上一次活跃时间
+	LastSaveTime  time.Time        `json:"-"`                       // 上一次数据保存时间
+	SaveLock      bool             `json:"-"`                       // 是否在db写入队列中
+	UserId        uint32           `json:"-"`                       // 玩家id
+	NickName      string           `json:"-"`                       // 玩家昵称
+	LoginUUID     string           `json:"-"`                       // 当前登录uuid
+	InstanceIndex uint32           `json:"instanceIndex,omitempty"` // 唯一索引生成
+	Item          *ItemModel       `json:"item,omitempty"`          // 背包
+	Character     *CharacterModel  `json:"character,omitempty"`     // 角色
+	Team          *TeamModel       `json:"team,omitempty"`          // 队伍
+	Archive       *ArchiveModel    `json:"archive,omitempty"`       // 信息记录
+	Mail          *MailModel       `json:"mail,omitempty"`          // 邮件
+	Chat          *ChatModel       `json:"chat,omitempty"`          // 聊天
+	Gacha         *GachaModel      `json:"gacha,omitempty"`         // 卡池
+	Garden        *GardenModel     `json:"garden,omitempty"`        // 花园
+	Shop          *ShopModel       `json:"shop,omitempty"`          // 商店
+	Scene         *SceneModel      `json:"scene,omitempty"`         // 场景信息
+	Dungeon       *DungeonModel    `json:"dungeon,omitempty"`       // 副本
+	Quest         *QuestModel      `json:"quest,omitempty"`         // 任务
+	Restaurant    *RestaurantModel `json:"restaurant,omitempty"`    // 餐厅小游戏
+	Pet           *PetModel        `json:"pet,omitempty"`           // 宠物捕获/分解状态
+	Life          *LifeModel       `json:"life,omitempty"`          // 生活技能
 }
 
 // 将玩家状态重置成在线
@@ -83,6 +88,20 @@ func (s *Player) IsOffline() bool {
 		return true
 	}
 	return false
+}
+
+func (s *Player) SavePlayerNow() error {
+	bin, err := sonic.Marshal(s)
+	if err != nil {
+		return err
+	}
+	if err := db.PersistAndWait(s.UserId, func() error {
+		return db.SaveOFGameBin(s.UserId, bin)
+	}); err != nil {
+		return err
+	}
+	s.SetLastSaveTime()
+	return nil
 }
 
 func (s *Player) SavePlayer() error {

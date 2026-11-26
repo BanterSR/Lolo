@@ -133,14 +133,14 @@ func (s *Player) AddCharacter(characterId uint32) *CharacterInfo {
 	}
 	characterInfo := newCharacterInfo(characterId)
 	characterInfo.UpMaxLevel()
-	list[characterId] = characterInfo
-	// 初始化装备
-	preset := characterInfo.GetEquipmentPreset(characterInfo.InUseEquipmentPresetIndex)
 	itemWeapon := s.GetItemModel().AddItemWeapon(uint32(conf.CharacterInfo.DefaultWeaponID))
 	if itemWeapon == nil {
 		log.Game.Warnf("角色:%v,添加默认武器:%v失败", characterId, conf.CharacterInfo.DefaultWeaponID)
 		return nil
 	}
+	list[characterId] = characterInfo
+	// 初始化装备
+	preset := characterInfo.GetEquipmentPreset(characterInfo.InUseEquipmentPresetIndex)
 	itemWeapon.SetWearerId(characterId, preset.PresetIndex)
 	preset.WeaponInstanceId = itemWeapon.InstanceId
 	// 初始化外观

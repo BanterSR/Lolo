@@ -5,6 +5,7 @@ import (
 	"gucooing/lolo/pkg/cache"
 	"runtime"
 	"runtime/debug"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -34,6 +35,7 @@ type Game struct {
 	checkPlayerTimer    *time.Timer
 	gmChan              chan bool
 	doneChan            chan struct{}
+	closeOnce           sync.Once
 }
 
 type GateTask interface {
@@ -94,6 +96,7 @@ func NewGame(router *gin.Engine) *Game {
 	// 初始化场景配置
 	model.ChannelTick = time.Duration(alg.MaxInt(int(model.ChannelTick.Milliseconds()), gdconf.GetConstant().ChannelTick)) * time.Millisecond
 	model.OneSTickCount = int64(time.Second / model.ChannelTick)
+	g.checkPlayerTimer = time.NewTimer(3 * time.Minute)
 
 	go g.gameMainLoop()
 	return g
@@ -102,7 +105,6 @@ func NewGame(router *gin.Engine) *Game {
 // 游戏主线程
 func (g *Game) gameMainLoop() {
 	runtime.LockOSThread()
-	g.checkPlayerTimer = time.NewTimer(3 * time.Minute) // 3分钟检查一次玩家
 	syncWorldTimer := time.NewTimer(model.ChannelTick)
 	defer func() {
 		log.Game.Info("game主线程停止")
@@ -174,7 +176,9 @@ func (g *Game) GetUser(userId uint32) *model.Player {
 }
 
 func (g *Game) checkPlayer() {
-	defer g.checkPlayerTimer.Reset(3 * time.Minute)
+	if g.checkPlayerTimer != nil {
+		defer g.checkPlayerTimer.Reset(3 * time.Minute)
+	}
 	playerList := make([]*model.Player, 0)
 	for _, player := range g.userMap {
 		if player.IsOffline() {
@@ -222,6 +226,9 @@ func (g *Game) offlinePlayer(player *model.Player, reason proto.PlayerOfflineRea
 			ServerNextOpenTime: 0,
 		})
 	}
+	if err := player.SavePlayerNow(); err != nil {
+		log.Game.Errorf("玩家:%v 下线落库失败:%s", player.UserId, err.Error())
+	}
 	if player.Conn != nil {
 		player.Conn.Close()
 	}
@@ -240,6 +247,9 @@ func (g *Game) kickPlayer(player *model.Player) {
 		return
 	}
 	player.Online = false
+	if err := player.SavePlayerNow(); err != nil {
+		log.Game.Errorf("玩家:%v 离线落库失败:%s", player.UserId, err.Error())
+	}
 	// 退出世界
 	g.getWordInfo().killScenePlayer(player)
 	// 退出聊天频道
@@ -279,15 +289,20 @@ func (g *Game) InvokePlayerFunc(userId uint32, fn func(s *model.Player) (any, er
 }
 
 func (g *Game) Close() {
-	close(g.doneChan)
-	g.checkPlayer()
-	for _, player := range g.userMap {
-		g.send(player, 0, &proto.PlayerOfflineRsp{
-			Status:             proto.StatusCode_StatusCode_Ok,
-			Reason:             proto.PlayerOfflineReason_PlayerOfflineReason_ServerShutdown,
-			ServerNextOpenTime: 0,
-		})
-		g.kickPlayer(player)
-	}
-	log.Game.Infof("game退出完成")
+	g.closeOnce.Do(func() {
+		close(g.doneChan)
+		g.checkPlayer()
+		if g.checkPlayerTimer != nil {
+			g.checkPlayerTimer.Stop()
+		}
+		for _, player := range g.userMap {
+			g.send(player, 0, &proto.PlayerOfflineRsp{
+				Status:             proto.StatusCode_StatusCode_Ok,
+				Reason:             proto.PlayerOfflineReason_PlayerOfflineReason_ServerShutdown,
+				ServerNextOpenTime: 0,
+			})
+			g.kickPlayer(player)
+		}
+		log.Game.Infof("game退出完成")
+	})
 }

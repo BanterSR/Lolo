@@ -28,3 +28,17 @@ func (g *GameConfig) loadAbility() {
 func GetAbilityByItemId(itemId uint32) *excel.AbilityConfigure {
 	return cc.Excel.Ability.AbilityItemMap[itemId]
 }
+
+func GetAbilityConfigure(id uint32) *excel.AbilityConfigure {
+	if cc == nil || cc.Excel == nil || cc.Excel.Ability == nil {
+		return nil
+	}
+	return cc.Excel.Ability.AbilityMap[id]
+}
+
+func GetAbilityMap() map[uint32]*excel.AbilityConfigure {
+	if cc == nil || cc.Excel == nil || cc.Excel.Ability == nil {
+		return nil
+	}
+	return cc.Excel.Ability.AbilityMap
+}

@@ -52,6 +52,9 @@ func GetGrids(grid uint32) map[uint32]*excel.ShopGridConfigureItem {
 
 func GetGridsByShopId(shopId uint32) map[uint32]*excel.ShopGridConfigureItem {
 	info := GetShopInfo(shopId)
+	if info == nil {
+		return nil
+	}
 	return GetGrids(uint32(info.GetGridID()))
 }
 

@@ -1,6 +1,8 @@
 package game
 
 import (
+	"strconv"
+
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/pkg/alg"
@@ -14,7 +16,28 @@ func (g *Game) GetAllCharacterEquip(s *model.Player, msg *alg.GameMsg) {
 		Status: proto.StatusCode_StatusCode_Ok,
 		Items:  make([]*proto.ItemDetail, 0),
 	}
-	defer g.send(s, msg.PacketId, rsp)
+	items := s.GetItemModel()
+	for _, character := range s.GetCharacterModel().GetCharacterMap() {
+		if character == nil {
+			continue
+		}
+		preset := character.GetEquipmentPreset(character.InUseEquipmentPresetIndex)
+		if preset == nil {
+			continue
+		}
+		if weapon := items.GetItemWeaponInfo(preset.WeaponInstanceId); weapon != nil {
+			alg.AddList(&rsp.Items, weapon.ItemDetail())
+		}
+		for _, armor := range preset.Armors {
+			if armor == nil {
+				continue
+			}
+			if info := items.GetItemArmorInfo(armor.InstanceId); info != nil {
+				alg.AddList(&rsp.Items, info.ItemDetail())
+			}
+		}
+	}
+	g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) CharacterLevelUp(s *model.Player, msg *alg.GameMsg) {
@@ -203,50 +226,123 @@ func (g *Game) OutfitPresetSwitch(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) OutfitColorantSelect(s *model.Player, msg *alg.GameMsg) {
-	// req := msg.Body.(*proto.OutfitColorantSelectReq)
+	req, ok := msg.Body.(*proto.OutfitColorantSelectReq)
 	rsp := &proto.OutfitColorantSelectRsp{
 		Status: proto.StatusCode_StatusCode_Ok,
 		Param: &proto.OutfitDyeParam{
-			PictureId: 1,
-			Params:    make([]float64, 0),
-			Uvy:       0,
-			IsDye:     false,
+			Params: make([]float64, 0),
 		},
 	}
 	defer g.send(s, msg.PacketId, rsp)
+	if !ok || req == nil || req.OutfitId == 0 || req.ColorantItemId == 0 {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		return
+	}
+	if s.GetItemModel().GetItemFashionInfo(req.OutfitId) == nil {
+		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		return
+	}
+	s.GetArchive().SetArchiveMap(
+		"outfitColorant:"+strconv.Itoa(int(req.OutfitId)),
+		strconv.Itoa(int(req.ColorantItemId)),
+	)
+	rsp.Param.PictureId = req.ColorantItemId
+	rsp.Param.IsDye = true
 }
 
 func (g *Game) OutfitDye(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.OutfitDyeReq)
 	rsp := &proto.OutfitDyeRsp{
-		Status:   proto.StatusCode_StatusCode_Ok,
-		OutfitId: req.OutfitId,
-		PosColor: &proto.PosColor{
-			Pos:   req.Pos,
-			Red:   0,
-			Green: 0,
-			Blue:  0,
-		},
+		Status:               proto.StatusCode_StatusCode_Ok,
+		OutfitId:             req.OutfitId,
 		TotalGuaranteeDyeNum: 5,
 	}
 	defer g.send(s, msg.PacketId, rsp)
+
+	fashion := s.GetItemModel().GetItemFashionInfo(req.OutfitId)
+	if fashion == nil {
+		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		return
+	}
+	scheme := fashion.GetDyeScheme(req.SchemeIndex)
+	if scheme == nil {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		return
+	}
+
+	color := req.SpecifyColor
+	if color == nil {
+		// 没有指定颜色时用请求参数生成稳定颜色，保证同一操作重放结果一致。
+		seed := uint32(req.OutfitId*37 + req.Pos*17 + req.SchemeIndex*7 + req.AddRateColorIndex)
+		color = &proto.PosColor{
+			Pos:   req.Pos,
+			Red:   (seed * 73) % 256,
+			Green: (seed * 151) % 256,
+			Blue:  (seed * 199) % 256,
+		}
+	}
+	color.Pos = req.Pos
+	scheme.Colors = upsertOutfitDyeColor(scheme.Colors, color)
+	rsp.PosColor = &proto.PosColor{Pos: color.Pos, Red: color.Red, Green: color.Green, Blue: color.Blue}
 }
 
 func (g *Game) OutFitDyeSave(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.OutFitDyeSaveReq)
 	rsp := &proto.OutFitDyeSaveRsp{
-		Status:      proto.StatusCode_StatusCode_Ok,
-		SchemeIndex: req.SchemeIndex,
-		PosColor: &proto.PosColor{
-			Pos:   req.Pos,
-			Red:   0,
-			Green: 0,
-			Blue:  0,
-		},
+		Status:          proto.StatusCode_StatusCode_Ok,
+		SchemeIndex:     req.SchemeIndex,
 		Items:           make([]*proto.ItemDetail, 0),
 		IsSaveDyeResult: req.IsSaveDyeResult,
 	}
 	defer g.send(s, msg.PacketId, rsp)
+
+	fashion := s.GetItemModel().GetItemFashionInfo(req.OutfitId)
+	if fashion == nil {
+		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		return
+	}
+	scheme := fashion.GetDyeScheme(req.SchemeIndex)
+	if scheme == nil {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		return
+	}
+	if req.IsSaveDyeResult {
+		scheme.IsUnLock = true
+	}
+	color := findOutfitDyeColor(scheme.Colors, req.Pos)
+	if color == nil {
+		color = &model.PosColor{Pos: req.Pos}
+	}
+	rsp.PosColor = &proto.PosColor{Pos: color.Pos, Red: color.Red, Green: color.Green, Blue: color.Blue}
+}
+
+func upsertOutfitDyeColor(colors model.Colors, color *proto.PosColor) model.Colors {
+	if color == nil {
+		return colors
+	}
+	for _, exist := range colors {
+		if exist.Pos == color.Pos {
+			exist.Red = color.Red
+			exist.Green = color.Green
+			exist.Blue = color.Blue
+			return colors
+		}
+	}
+	return append(colors, &model.PosColor{
+		Pos:   color.Pos,
+		Red:   color.Red,
+		Green: color.Green,
+		Blue:  color.Blue,
+	})
+}
+
+func findOutfitDyeColor(colors model.Colors, pos uint32) *model.PosColor {
+	for _, color := range colors {
+		if color.Pos == pos {
+			return color
+		}
+	}
+	return nil
 }
 
 func (g *Game) CharacterEquipUpdate(s *model.Player, msg *alg.GameMsg) {
@@ -257,105 +353,10 @@ func (g *Game) CharacterEquipUpdate(s *model.Player, msg *alg.GameMsg) {
 		Items:     make([]*proto.ItemDetail, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
-
-	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharId)
-	if characterInfo == nil {
-		log.Game.Warnf("保存角色装备失败,角色%v不存在", req.CharId)
-		return
-	}
-	defer func() {
-		alg.AddList(&rsp.Character, characterInfo.Character())
-	}()
-
-	upCharacterList := make(map[uint32]struct{}, 2)
-	defer func() {
+	changedCharacterIds := applyCharacterEquipment(s, req, rsp)
+	if rsp.Status == proto.StatusCode_StatusCode_Ok {
 		g.SceneActionCharacterUpdate(
-			s, proto.SceneActionType_SceneActionType_UpdateEquip, alg.OrNum(upCharacterList)...)
-		upCharacterList[req.CharId] = struct{}{}
-	}()
-
-	equipmentPreset := characterInfo.GetEquipmentPreset(req.EquipmentPreset.PresetIndex)
-	// 更新武器
-	if req.EquipmentPreset.Weapon != equipmentPreset.WeaponInstanceId {
-		oldEquipmentInfo := s.GetItemModel().GetItemWeaponInfo(equipmentPreset.WeaponInstanceId)
-		newEquipmentInfo := s.GetItemModel().GetItemWeaponInfo(req.EquipmentPreset.Weapon)
-
-		if newEquipmentInfo != nil {
-			// 移除新装备上的角色
-			oldCharacterInfo := s.GetCharacterModel().GetCharacterInfo(newEquipmentInfo.WearerId)
-			if oldCharacterInfo != nil {
-				oldEquipmentPreset := oldCharacterInfo.GetEquipmentPreset(newEquipmentInfo.WearerIndex)
-				oldEquipmentPreset.WeaponInstanceId = 0
-				alg.AddList(&rsp.Character, oldCharacterInfo.Character())
-				upCharacterList[oldCharacterInfo.CharacterId] = struct{}{}
-			}
-			// 将新装备赋到目标角色上
-			equipmentPreset.WeaponInstanceId = newEquipmentInfo.InstanceId
-			newEquipmentInfo.SetWearerId(characterInfo.CharacterId, equipmentPreset.PresetIndex)
-			alg.AddList(&rsp.Items, newEquipmentInfo.ItemDetail())
-		}
-
-		// 将老装备取消装备
-		if oldEquipmentInfo != nil {
-			oldEquipmentInfo.SetWearerId(0, 0)
-			alg.AddList(&rsp.Items, oldEquipmentInfo.ItemDetail())
-		}
-	}
-	// 更新盔甲
-	for _, armor := range req.EquipmentPreset.Armors {
-		curArmor := equipmentPreset.GetArmor(armor.EquipType)
-		if curArmor.InstanceId != armor.ArmorId {
-			oldArmorInfo := s.GetItemModel().GetItemArmorInfo(curArmor.InstanceId)
-			newArmorInfo := s.GetItemModel().GetItemArmorInfo(armor.ArmorId)
-
-			if newArmorInfo != nil {
-				oldCharacterInfo := s.GetCharacterModel().GetCharacterInfo(newArmorInfo.WearerId)
-				if oldCharacterInfo != nil {
-					oldEquipmentPreset := oldCharacterInfo.GetEquipmentPreset(newArmorInfo.WearerIndex)
-					oldArmor := oldEquipmentPreset.GetArmor(armor.EquipType)
-					oldArmor.InstanceId = 0
-					upCharacterList[oldCharacterInfo.CharacterId] = struct{}{}
-				}
-				newArmorInfo.SetWearer(req.CharId, equipmentPreset.PresetIndex)
-				alg.AddList(&rsp.Items, newArmorInfo.ItemDetail())
-			}
-
-			if oldArmorInfo != nil {
-				oldArmorInfo.SetWearer(0, 0)
-				alg.AddList(&rsp.Items, oldArmorInfo.ItemDetail())
-			}
-
-			curArmor.InstanceId = armor.ArmorId
-		}
-	}
-
-	// 更新海报
-	for _, poster := range req.EquipmentPreset.Posters {
-		curPoster := equipmentPreset.GetPoster(poster.PosterIndex)
-		if curPoster.InstanceId != poster.PosterId {
-			oldPosterInfo := s.GetItemModel().GetItemArmorInfo(curPoster.InstanceId)
-			newPosterInfo := s.GetItemModel().GetItemPosterInfo(poster.PosterId)
-
-			if newPosterInfo != nil {
-				// 检查新海报上是否有角色
-				oldCharacterInfo := s.GetCharacterModel().GetCharacterInfo(newPosterInfo.WearerId)
-				if oldCharacterInfo != nil {
-					oldEquipmentPreset := oldCharacterInfo.GetEquipmentPreset(newPosterInfo.WearerIndex)
-					oldPoster := oldEquipmentPreset.GetPoster(poster.PosterIndex)
-					oldPoster.InstanceId = 0
-					upCharacterList[oldCharacterInfo.CharacterId] = struct{}{}
-				}
-				newPosterInfo.SetWearer(req.CharId, equipmentPreset.PresetIndex)
-				alg.AddList(&rsp.Items, newPosterInfo.ItemDetail())
-			}
-
-			// 检查目标位置是否有海报
-			if oldPosterInfo != nil {
-				oldPosterInfo.SetWearer(0, 0)
-				alg.AddList(&rsp.Items, oldPosterInfo.ItemDetail())
-			}
-			curPoster.InstanceId = poster.PosterId
-		}
+			s, proto.SceneActionType_SceneActionType_UpdateEquip, changedCharacterIds...)
 	}
 }
 
@@ -363,33 +364,36 @@ func (g *Game) UpdateCharacterAppearance(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.UpdateCharacterAppearanceReq)
 	rsp := &proto.UpdateCharacterAppearanceRsp{
 		Status:     proto.StatusCode_StatusCode_Ok,
-		CharId:     req.CharId,
+		CharId:     req.GetCharId(),
 		Appearance: nil,
 	}
+	updated := false
 	defer func() {
 		g.send(s, msg.PacketId, rsp)
-		g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UpdateAppearance, req.CharId)
+		if updated {
+			g.SceneActionCharacterUpdate(s, proto.SceneActionType_SceneActionType_UpdateAppearance, req.GetCharId())
+		}
 	}()
-	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharId)
-	if characterInfo == nil {
-		log.Game.Warnf("保存角色外观失败,角色%v不存在", req.CharId)
+	tx, err := s.GetItemModel().Begin()
+	if err != nil {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
 		return
 	}
-	alg.NoZero(&characterInfo.CharacterAppearance.Badge, req.Appearance.Badge)
-	alg.NoZero(&characterInfo.CharacterAppearance.UmbrellaId, req.Appearance.UmbrellaId)
-	alg.NoZero(&characterInfo.CharacterAppearance.InsectNetInstanceId, req.Appearance.InsectNetInstanceId)
-	alg.NoZero(&characterInfo.CharacterAppearance.LoggingAxeInstanceId, req.Appearance.LoggingAxeInstanceId)
-	alg.NoZero(&characterInfo.CharacterAppearance.WaterBottleInstanceId, req.Appearance.WaterBottleInstanceId)
-	alg.NoZero(&characterInfo.CharacterAppearance.MiningHammerInstanceId, req.Appearance.MiningHammerInstanceId)
-	alg.NoZero(&characterInfo.CharacterAppearance.CollectionGlovesInstanceId, req.Appearance.CollectionGlovesInstanceId)
-	alg.NoZero(&characterInfo.CharacterAppearance.FishingRodInstanceId, req.Appearance.FishingRodInstanceId)
-	alg.NoZero(&characterInfo.CharacterAppearance.VehicleInstanceId, req.Appearance.VehicleInstanceId)
-	alg.NoZero(&characterInfo.CharacterAppearance.ShovelInstanceId, req.Appearance.ShovelInstanceId)
-
+	defer tx.Rollback()
+	appearance, ok := validateCharacterAppearance(s, req)
+	if !ok {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		log.Game.Warnf("保存角色外观失败,角色%v或外观实例不合法", req.GetCharId())
+		return
+	}
+	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.GetCharId())
+	characterInfo.CharacterAppearance = appearance
 	rsp.Appearance = characterInfo.GetPbCharacterAppearance()
+	tx.Commit()
+	updated = true
 
 	// 更新基础信息
-	if req.CharId == s.GetTeamModel().GetTeamInfo().Char1 {
+	if team := s.GetTeamModel().GetTeamInfo(); team != nil && req.GetCharId() == team.Char1 {
 		if err := s.UpBasicByTeam(); err != nil {
 			log.Game.Errorf("UserId:%v UpBasicByTeam err:%s", s.UserId, err.Error())
 		}
@@ -401,23 +405,38 @@ func (g *Game) CharacterGatherWeaponUpdate(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.CharacterGatherWeaponUpdateRsp{
 		Status: proto.StatusCode_StatusCode_Ok,
 	}
+	updated := false
 	defer func() {
 		g.send(s, msg.PacketId, rsp)
-		g.SceneActionCharacterUpdate(
-			s, proto.SceneActionType_SceneActionType_UpdateEquip, req.CharacterId)
+		if updated {
+			g.SceneActionCharacterUpdate(
+				s, proto.SceneActionType_SceneActionType_UpdateEquip, req.GetCharacterId())
+		}
 	}()
-	itemInfo := s.GetItemModel().GetItemWeaponInfo(req.WeaponId)
-	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.CharacterId)
-	if characterInfo == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
-		log.Game.Warnf("玩家:%v 角色:%v 不存在", s.UserId, req.CharacterId)
+	tx, err := s.GetItemModel().Begin()
+	if err != nil {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
 		return
 	}
-	if itemInfo != nil {
-		characterInfo.GatherWeapon = itemInfo.WeaponId
-	} else {
-		characterInfo.GatherWeapon = 0
+	defer tx.Rollback()
+	characterInfo := s.GetCharacterModel().GetCharacterInfo(req.GetCharacterId())
+	if characterInfo == nil {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		log.Game.Warnf("玩家:%v 角色:%v 不存在", s.UserId, req.GetCharacterId())
+		return
 	}
+	itemInfo, ok := validGatherWeapon(s, req.GetWeaponId())
+	if !ok {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		return
+	}
+	if itemInfo == nil {
+		characterInfo.GatherWeapon = 0
+	} else {
+		characterInfo.GatherWeapon = itemInfo.WeaponId
+	}
+	tx.Commit()
+	updated = true
 }
 
 func (g *Game) CharacterStarUp(s *model.Player, msg *alg.GameMsg) {

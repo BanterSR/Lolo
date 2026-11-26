@@ -28,6 +28,7 @@ var (
 	logConnErrOnce     sync.Once
 	logLoginErrOnce    sync.Once
 	logSceneAnchorOnce sync.Once
+	logQuestOKOnce     sync.Once
 )
 
 func logOnce(o *sync.Once, format string, args ...any) {
@@ -121,7 +122,8 @@ func (b *Bot) readLoop() {
 		}
 
 		switch msg.Body.(type) {
-		case *proto.VerifyLoginTokenRsp, *proto.PlayerLoginRsp, *proto.PlayerMainDataRsp, *proto.SceneDataNotice:
+		case *proto.VerifyLoginTokenRsp, *proto.PlayerLoginRsp, *proto.PlayerMainDataRsp, *proto.SceneDataNotice,
+			*proto.TutorialRsp, *proto.ClaimQuestRewardRsp:
 			select {
 			case b.hsCh <- msg:
 			default:

@@ -1,7 +1,9 @@
 package game
 
 import (
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -22,8 +24,19 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg
 		IsReconnect:      req.IsReconnect,
 		ReconnectSuccess: req.IsReconnect, // 重新连接是否成功
 	}
+	var s *model.Player
+	defer func() {
+		if s != nil && s.Conn != nil {
+			g.send(s, msg.PacketId, rsp)
+		} else {
+			conn.Send(msg.PacketId, rsp)
+		}
+		if rsp.Status == proto.StatusCode_StatusCode_Ok && rsp.IsReconnect && s != nil {
+			g.loginGame(s)
+		}
+	}()
 	// 重复登录检查
-	s := g.GetUser(userId)
+	s = g.GetUser(userId)
 	if req.IsReconnect { // 是否重新连接 无玩家缓存时拒绝重新连接
 		rsp.IsReconnect = s != nil
 		rsp.ReconnectSuccess = s != nil
@@ -76,6 +89,10 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg
 				s.AddCharacter(characterId)
 			}
 			s.GetItemModel().InitItem()
+			s.AcceptFirstMainQuest()
+			if err := s.SavePlayerNow(); err != nil {
+				log.Game.Errorf("UserId:%v 新号初始化落库失败:%s", userId, err.Error())
+			}
 		}
 		g.userMap[userId] = s
 	}
@@ -88,13 +105,6 @@ login:
 		rsp.Status = proto.StatusCode_StatusCode_PlayerNotFound
 		return
 	}
-	defer func() {
-		g.send(s, msg.PacketId, rsp)
-		if rsp.IsReconnect {
-			g.loginGame(s)
-		}
-	}()
-	// s.AllItemModel()
 	// pack
 	{
 		rsp.ClientSeqId = msg.SeqId
@@ -153,10 +163,15 @@ func (g *Game) PlayerMainData(s *model.Player, msg *alg.GameMsg) {
 		rsp.Sign = basic.Sign
 		rsp.Exp = basic.Exp
 		rsp.Head = basic.Head
+		rsp.Sex = basic.Sex
 		rsp.CreateTime = uint32(s.Created.Unix())
 		rsp.Birthday = basic.Birthday
 		rsp.IsHideBirthday = basic.IsHideBirthday
 		rsp.PhoneBackground = basic.PhoneBackground
+		if profile := model.GetPlayerProfile(s); profile != nil {
+			rsp.PhoneCase = profile.PhoneCase
+			rsp.RewardLevels = profile.RewardedPlayerLevels()
+		}
 		rsp.Appearance = model.GetPlayerAppearance(s.UserId)
 		rsp.WorldLevel = s.GetSceneModel().GetWorldLevel()
 		rsp.MonthCardOverDueTime = 0
@@ -367,44 +382,87 @@ func (g *Game) GamePlayReward(s *model.Player, msg *alg.GameMsg) {
 	defer g.send(s, msg.PacketId, rsp)
 }
 
-func (g *Game) AcceptQuest(s *model.Player, msg *alg.GameMsg) {
-	req := msg.Body.(*proto.AcceptQuestReq)
-	rsp := &proto.AcceptQuestRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
-		Quest: &proto.Quest{
-			QuestId:       req.QuestId,
-			Conditions:    make([]*proto.Condition, 0),
-			Status:        proto.QuestStatus_QuestStatus_InProgress,
-			CompleteCount: 0,
-			BonusTimes:    0,
-			ActivityId:    0,
-		},
-	}
-	defer g.send(s, msg.PacketId, rsp)
-}
-
 func (g *Game) GetAchieveOneGroup(s *model.Player, msg *alg.GameMsg) {
-	// req := msg.Body.(*proto.GetAchieveOneGroupReq)
+	req := msg.Body.(*proto.GetAchieveOneGroupReq)
 	rsp := &proto.GetAchieveOneGroupRsp{
 		Status: proto.StatusCode_StatusCode_Ok,
 		CurrentGroupAchieveInfo: &proto.OneGroupAchieveInfo{
-			GroupId:              0,
+			GroupId:              req.GroupId,
 			RewardedAchieveIdLst: make([]uint32, 0),
 			AchieveLst:           make([]*proto.Achieve, 0),
 			FinishAchieveLst:     make([]*proto.FinishAchieveInfo, 0),
 		},
-		IsReward: false,
 	}
 	defer g.send(s, msg.PacketId, rsp)
+
+	group := gdconf.GetAchieveQuestGroup(req.GroupId)
+	if group == nil {
+		for _, candidate := range gdconf.GetAchieveQuestGroups() {
+			for _, item := range candidate.GetAchieveQuestGroupInfo() {
+				if item != nil && uint32(item.GetGroupID()) == req.GroupId {
+					group = candidate
+					break
+				}
+			}
+			if group != nil {
+				break
+			}
+		}
+	}
+	if group == nil || len(group.GetAchieveQuestGroupInfo()) == 0 {
+		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		return
+	}
+	profile, status := requirePlayerProfile(s)
+	if status != proto.StatusCode_StatusCode_Ok {
+		rsp.Status = status
+		return
+	}
+	archive := s.GetArchive()
+	for _, item := range group.GetAchieveQuestGroupInfo() {
+		if item == nil {
+			continue
+		}
+		achieveID := uint32(item.GetAchieveConditionID())
+		count := uint64(0)
+		if profile.CompletedAchievements[achieveID] {
+			count = 1
+			rsp.CurrentGroupAchieveInfo.FinishAchieveLst = append(
+				rsp.CurrentGroupAchieveInfo.FinishAchieveLst,
+				&proto.FinishAchieveInfo{AchieveId: achieveID},
+			)
+		}
+		rsp.CurrentGroupAchieveInfo.AchieveLst = append(
+			rsp.CurrentGroupAchieveInfo.AchieveLst,
+			&proto.Achieve{AchieveId: achieveID, Count: count},
+		)
+		if archive.GetArchiveValue("achieveQuestReward:"+strconv.Itoa(int(achieveID))) != "" {
+			rsp.CurrentGroupAchieveInfo.RewardedAchieveIdLst = append(
+				rsp.CurrentGroupAchieveInfo.RewardedAchieveIdLst, achieveID,
+			)
+		}
+	}
 }
 
 func (g *Game) GetAchieveGroupList(s *model.Player, msg *alg.GameMsg) {
-	// req := msg.Body.(*proto.GetAchieveGroupListReq)
 	rsp := &proto.GetAchieveGroupListRsp{
 		Status:             proto.StatusCode_StatusCode_Ok,
 		RewardedGroupIdLst: make([]uint32, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
+	const prefix = "achieveGroupReward:"
+	for key := range s.GetArchive().GetArchiveMap() {
+		if !strings.HasPrefix(key, prefix) {
+			continue
+		}
+		id, err := strconv.ParseUint(strings.TrimPrefix(key, prefix), 10, 32)
+		if err == nil {
+			rsp.RewardedGroupIdLst = append(rsp.RewardedGroupIdLst, uint32(id))
+		}
+	}
+	sort.Slice(rsp.RewardedGroupIdLst, func(i, j int) bool {
+		return rsp.RewardedGroupIdLst[i] < rsp.RewardedGroupIdLst[j]
+	})
 }
 
 func (g *Game) GenericGameA(s *model.Player, msg *alg.GameMsg) {
@@ -452,51 +510,117 @@ func (g *Game) ManualList(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) SelfIntervalInit(s *model.Player, msg *alg.GameMsg) {
-	// req := msg.Body.(*proto.SelfIntervalInitReq)
+	exploreID, finish := g.intervalStartTime(s)
 	rsp := &proto.SelfIntervalInitRsp{
 		Status:     proto.StatusCode_StatusCode_Ok,
-		IntervalId: 0,
-		EndTime:    0,
-		IsStart:    false,
+		IntervalId: exploreID,
+		EndTime:    finish,
+		IsStart:    finish > 0,
 		Interval: &proto.IntervalInfo{
-			IntervalId: 0,
-			FinishTime: 0,
+			IntervalId: exploreID,
+			FinishTime: finish,
 			PlayerId:   s.UserId,
 			CreateTime: 0,
 			Member:     make([]*proto.FriendIntervalInfo, 0),
 		},
 	}
+	if finish > 0 {
+		rsp.Interval.CreateTime = finish - int64(8*time.Hour/time.Second)
+		rsp.Interval.Member = append(rsp.Interval.Member, &proto.FriendIntervalInfo{
+			PlayerId: s.UserId,
+			NickName: s.NickName,
+			JoinTime: rsp.Interval.CreateTime,
+			IsReward: false,
+		})
+	}
 	defer g.send(s, msg.PacketId, rsp)
 }
 
 func (g *Game) BossRushInfo(s *model.Player, msg *alg.GameMsg) {
-	// req := msg.Body.(*proto.BossRushInfoReq)
-	rsp := &proto.BossRushInfoRsp{
-		Status: proto.StatusCode_StatusCode_Ok,
-		Info: &proto.BossRushInfo{
-			SeasonId:          1002,
-			BestTotalScore:    0,
-			TotalRankRatio:    0,
-			CurrentStageIndex: 0,
-			StageInfos:        make([]*proto.BossRushStageInfo, 0),
-			StartTime:         1762600320,
-			EndTime:           1762620320,
-			ShowRankTime:      0,
-			ChallengeEndTime:  0,
-			UsedCharacters:    make([]uint32, 0),
-		},
+	const seasonID uint32 = 1002
+	archive := s.GetArchive()
+	stageIndex := int32(0)
+	if value := archive.GetArchiveValue(g.bossRushKey(s, seasonID, "stage")); value != "" {
+		if parsed, err := strconv.ParseInt(value, 10, 32); err == nil {
+			stageIndex = int32(parsed)
+		}
 	}
-	defer g.send(s, msg.PacketId, rsp)
+	bestScore, _ := strconv.ParseUint(archive.GetArchiveValue(g.bossRushKey(s, seasonID, "best")), 10, 64)
+	startTime, _ := strconv.ParseInt(archive.GetArchiveValue(g.bossRushKey(s, seasonID, "start")), 10, 64)
+
+	info := &proto.BossRushInfo{
+		SeasonId:          seasonID,
+		BestTotalScore:    bestScore,
+		CurrentStageIndex: stageIndex,
+		StageInfos:        make([]*proto.BossRushStageInfo, 0),
+		StartTime:         startTime,
+		UsedCharacters:    make([]uint32, 0),
+	}
+	if startTime > 0 {
+		info.EndTime = startTime + int64(24*time.Hour/time.Second)
+	}
+	if value := archive.GetArchiveValue(g.bossRushKey(s, seasonID, "stage")); value != "" {
+		info.StageInfos = append(info.StageInfos, &proto.BossRushStageInfo{
+			StageIndex: stageIndex,
+			BestScore:  bestScore,
+			IsPassed:   bestScore > 0,
+		})
+	}
+	if team := s.GetTeamModel().GetTeamInfo(); team != nil {
+		for _, id := range []uint32{team.Char1, team.Char2, team.Char3} {
+			if id != 0 {
+				info.UsedCharacters = append(info.UsedCharacters, id)
+			}
+		}
+	}
+	g.send(s, msg.PacketId, &proto.BossRushInfoRsp{
+		Status: proto.StatusCode_StatusCode_Ok,
+		Info:   info,
+	})
 }
 
 func (g *Game) PlayerVitality(s *model.Player, msg *alg.GameMsg) {
-	// req := msg.Body.(*proto.PlayerVitalityReq)
 	rsp := &proto.PlayerVitalityRsp{
-		Status:         proto.StatusCode_StatusCode_Ok,
-		VitalityBuyNum: 0,
-		Items:          make([]*proto.ItemDetail, 0),
+		Status: proto.StatusCode_StatusCode_Ok,
+		Items:  make([]*proto.ItemDetail, 0),
 	}
-	defer g.send(s, msg.PacketId, rsp)
+	if value, err := strconv.ParseUint(s.GetArchive().GetArchiveValue("vitality:buy"), 10, 32); err == nil {
+		rsp.VitalityBuyNum = uint32(value)
+	}
+	for _, info := range s.GetItemModel().GetItemBaseMap() {
+		if info == nil {
+			continue
+		}
+		switch info.ItemType {
+		case proto.EBagItemTag_EBagItemTag_Vitality, proto.EBagItemTag_EBagItemTag_Energy:
+			alg.AddList(&rsp.Items, info.ItemDetail())
+		}
+	}
+	g.send(s, msg.PacketId, rsp)
+}
+
+type treasureIllustrationReward struct {
+	Type proto.EArchaeologyType
+	ID   uint32
+}
+
+// treasureIllustrationKey 解析 TreasureIllustrationReward 写入的
+// "treasureIllustration:<type>:<id>" 键。
+func treasureIllustrationKey(key string) (treasureIllustrationReward, bool) {
+	const prefix = "treasureIllustration:"
+	if !strings.HasPrefix(key, prefix) {
+		return treasureIllustrationReward{}, false
+	}
+	parts := strings.Split(strings.TrimPrefix(key, prefix), ":")
+	if len(parts) != 2 {
+		return treasureIllustrationReward{}, false
+	}
+	typ, err1 := strconv.ParseUint(parts[0], 10, 32)
+	id, err2 := strconv.ParseUint(parts[1], 10, 32)
+	if err1 != nil || err2 != nil || id == 0 {
+		return treasureIllustrationReward{}, false
+	}
+	return treasureIllustrationReward{Type: proto.EArchaeologyType(typ), ID: uint32(id)}, true
 }
 
 func (g *Game) TreasureIllustrationInfo(s *model.Player, msg *alg.GameMsg) {
@@ -508,5 +632,41 @@ func (g *Game) TreasureIllustrationInfo(s *model.Player, msg *alg.GameMsg) {
 		TreasureReward: make([]uint32, 0),
 		ShovelReward:   make([]uint32, 0),
 	}
-	defer g.send(s, msg.PacketId, rsp)
+	achieved := make(map[proto.EArchaeologyType][]uint32)
+	for key := range s.GetArchive().GetArchiveMap() {
+		rewarded, ok := treasureIllustrationKey(key)
+		if !ok {
+			continue
+		}
+		switch rewarded.Type {
+		case proto.EArchaeologyType_EArchaeologyType_Book:
+			rsp.BookReward = append(rsp.BookReward, rewarded.ID)
+		case proto.EArchaeologyType_EArchaeologyType_TreasureMap:
+			rsp.TreasureReward = append(rsp.TreasureReward, rewarded.ID)
+		case proto.EArchaeologyType_EArchaeologyType_Utensil:
+			rsp.UtensilReward = append(rsp.UtensilReward, rewarded.ID)
+		case proto.EArchaeologyType_EArchaeologyType_Shovel:
+			rsp.ShovelReward = append(rsp.ShovelReward, rewarded.ID)
+		default:
+			continue
+		}
+		achieved[rewarded.Type] = append(achieved[rewarded.Type], rewarded.ID)
+	}
+	sort.Slice(rsp.BookReward, func(i, j int) bool { return rsp.BookReward[i] < rsp.BookReward[j] })
+	sort.Slice(rsp.TreasureReward, func(i, j int) bool { return rsp.TreasureReward[i] < rsp.TreasureReward[j] })
+	sort.Slice(rsp.UtensilReward, func(i, j int) bool { return rsp.UtensilReward[i] < rsp.UtensilReward[j] })
+	sort.Slice(rsp.ShovelReward, func(i, j int) bool { return rsp.ShovelReward[i] < rsp.ShovelReward[j] })
+	for typ, ids := range achieved {
+		sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+		achieves := make([]*proto.Achieve, 0, len(ids))
+		for _, id := range ids {
+			achieves = append(achieves, &proto.Achieve{AchieveId: id, Count: 1})
+		}
+		rsp.Achieves = append(rsp.Achieves, &proto.TreasureAchieve{
+			AchieveType:                  typ,
+			TreasureAchieve_:             achieves,
+			RewardedTreasureAchieveIdLst: ids,
+		})
+	}
+	g.send(s, msg.PacketId, rsp)
 }

@@ -5,7 +5,6 @@ import (
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/protocol/proto"
-	"time"
 )
 
 func (g *Game) DungeonView(s *model.Player, msg *alg.GameMsg) {
@@ -17,6 +16,10 @@ func (g *Game) DungeonView(s *model.Player, msg *alg.GameMsg) {
 	}
 	defer g.send(s, msg.PacketId, rsp)
 
+	if _, status := authoritativeDungeons.config(req.DungeonId); status != proto.StatusCode_StatusCode_Ok {
+		rsp.Status = status
+		return
+	}
 	info := s.GetDungeonModel().GetDungeonInfo(req.DungeonId)
 	rsp.DungeonData = info.DungeonData()
 }
@@ -25,8 +28,8 @@ func (g *Game) DungeonEnter(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.DungeonEnterReq)
 	rsp := &proto.DungeonEnterRsp{
 		Status:               proto.StatusCode_StatusCode_Ok,
-		Team:                 nil, // OK
-		DungeonData:          nil, // OK
+		Team:                 nil,
+		DungeonData:          nil,
 		UpdateItem:           make([]*proto.ItemDetail, 0),
 		TreasureBoxes:        make([]*proto.TreasureBoxData, 0),
 		CurrentGatherGroupId: 0,
@@ -39,37 +42,37 @@ func (g *Game) DungeonEnter(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
 		return
 	}
-
-	scene := gdconf.GetDungeonSceneInfo(req.DungeonId)
-	if scene == nil {
-		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInDungeon
+	var active *model.SceneDungeon
+	if current, ok := scenePlayer.CurScene.(*model.SceneDungeon); ok {
+		active = current
+	}
+	team := model.TeamInfo{Char1: req.Char1, Char2: req.Char2, Char3: req.Char3}
+	runtime, status := authoritativeDungeons.enterDungeon(s, active, req.DungeonId, team)
+	if status != proto.StatusCode_StatusCode_Ok {
+		rsp.Status = status
 		return
 	}
 	dungeonInfo := s.GetDungeonModel().GetDungeonInfo(req.DungeonId)
-
-	// 写入坐标
-	dungeonInfo.Rot = req.Rot
 	dungeonInfo.Pos = req.Pos
-	// 写入角色
-	dungeonInfo.TeamInfo = model.TeamInfo{
-		Char1: req.Char1,
-		Char2: req.Char2,
-		Char3: req.Char3,
-	}
+	dungeonInfo.Rot = req.Rot
 
+	scene := gdconf.GetDungeonSceneInfo(req.DungeonId)
 	poss, rots := gdconf.GetSceneInfoRandomBorn(scene.Info.GetBorn())
 	pos := gdconf.ConfigVector3ToProtoVector3(poss)
 	rot := gdconf.ConfigVector4ToProtoVector3(rots)
-
 	newCurScene := model.NewScenePlayerInfo(s, new(uint32), &dungeonInfo.TeamInfo, pos, rot)
+	if newCurScene == nil {
+		rsp.Status = proto.StatusCode_StatusCode_CfgNotFound
+		return
+	}
 	g.toScene(scenePlayer, scenePlayer.ChannelId, &model.SceneDungeon{
 		ScenePlayerInfo: newCurScene,
 		Info:            dungeonInfo,
+		Runtime:         runtime,
 	})
 
 	rsp.Team = newCurScene.GetPbSceneTeam()
 	rsp.DungeonData = dungeonInfo.DungeonData()
-	// 写入宝箱
 	for _, tb := range dungeonInfo.GetTreasureBoxes() {
 		alg.AddLists(&rsp.TreasureBoxes, tb.TreasureBoxData())
 	}
@@ -89,29 +92,42 @@ func (g *Game) DungeonOperate(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
 		return
 	}
-	// 获取当前玩家用户状态
 	sd, ok := scenePlayer.CurScene.(*model.SceneDungeon)
 	if !ok {
 		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInDungeon
 		return
 	}
-	curTime := time.Now()
 	switch req.OperateType {
 	case proto.DungeonOperateType_DungeonOperateType_Start:
-		sd.Info.LastEnterTime = curTime.Unix()
+		rsp.Status = authoritativeDungeons.start(s, sd)
 	case proto.DungeonOperateType_DungeonOperateType_End:
-		sd.Info.LastFinishTime = curTime.Unix() - sd.Info.LastEnterTime
+		rsp.Status = authoritativeDungeons.end(s, sd)
+		if sd.Runtime != nil {
+			rsp.Star = sd.Runtime.Stars
+		}
+	default:
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		return
 	}
-
-	rsp.ConsumeTime = uint64(curTime.Unix() - sd.Info.LastEnterTime)
+	if rsp.Status != proto.StatusCode_StatusCode_Ok || sd.Runtime == nil {
+		return
+	}
+	end := sd.Runtime.StartedAt
+	if sd.Runtime.EndedAt > 0 {
+		end = sd.Runtime.EndedAt
+	} else {
+		end = authoritativeDungeons.now().Unix()
+	}
+	if end >= sd.Runtime.StartedAt {
+		rsp.ConsumeTime = uint64(end - sd.Runtime.StartedAt)
+	}
 }
 
 func (g *Game) DungeonFinish(s *model.Player, msg *alg.GameMsg) {
-	// req := msg.Body.(*proto.DungeonFinishReq)
 	rsp := &proto.DungeonFinishRsp{
 		Status:      proto.StatusCode_StatusCode_Ok,
-		SceneId:     0,   // ok
-		DungeonData: nil, // ok
+		SceneId:     0,
+		DungeonData: nil,
 		UpdateItems: make([]*proto.ItemDetail, 0),
 		Rewards:     make([]*proto.ItemDetail, 0),
 	}
@@ -122,15 +138,26 @@ func (g *Game) DungeonFinish(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
 		return
 	}
-	// 获取当前玩家用户状态
 	sd, ok := scenePlayer.CurScene.(*model.SceneDungeon)
-	if !ok {
+	if !ok || sd.Info == nil {
 		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInDungeon
 		return
 	}
-
 	rsp.DungeonData = sd.Info.DungeonData()
-	rsp.SceneId = scenePlayer.LastScene.GetSceneId()
+	if scenePlayer.LastScene != nil {
+		rsp.SceneId = scenePlayer.LastScene.GetSceneId()
+	}
+	items, status := authoritativeDungeons.finish(s, sd)
+	rsp.Status = status
+	rsp.DungeonData = sd.Info.DungeonData()
+	if status != proto.StatusCode_StatusCode_Ok {
+		return
+	}
+	rsp.Rewards = items
+	rsp.UpdateItems = items
+	if len(items) > 0 {
+		g.PackNoticeByItems(s, items)
+	}
 }
 
 func (g *Game) DungeonExit(s *model.Player, msg *alg.GameMsg) {
@@ -146,14 +173,21 @@ func (g *Game) DungeonExit(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInChannel
 		return
 	}
-	// 获取当前玩家用户状态
-	_, ok := scenePlayer.CurScene.(*model.SceneDungeon)
+	sd, ok := scenePlayer.CurScene.(*model.SceneDungeon)
 	if !ok {
 		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInDungeon
 		return
 	}
-	if req.IsForceExit {
-		rsp.SceneId = scenePlayer.LastScene.GetSceneId()
-		g.toScene(scenePlayer, scenePlayer.ChannelId, scenePlayer.LastScene) // 回到原来的场景中
+	if scenePlayer.LastScene == nil {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		return
 	}
+	if status := authoritativeDungeons.exit(s, sd); status != proto.StatusCode_StatusCode_Ok {
+		rsp.Status = status
+		return
+	}
+	// 是否强制退出只影响客户端确认流程；服务端一旦收到 Exit 就清理本轮权威状态。
+	_ = req.IsForceExit
+	rsp.SceneId = scenePlayer.LastScene.GetSceneId()
+	g.toScene(scenePlayer, scenePlayer.ChannelId, scenePlayer.LastScene)
 }

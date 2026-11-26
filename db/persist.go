@@ -58,6 +58,22 @@ func Persist(key uint32, fn func() error) {
 	p.shards[key%uint32(len(p.shards))] <- persistJob{key: key, fn: fn}
 }
 
+// PersistAndWait keeps the same per-player write order as Persist and blocks
+// until the snapshot is durable. Used for login, rewards and shutdown.
+func PersistAndWait(key uint32, fn func() error) error {
+	p := persist
+	if p == nil {
+		return fn()
+	}
+	done := make(chan error, 1)
+	p.shards[key%uint32(len(p.shards))] <- persistJob{key: key, fn: func() error {
+		err := fn()
+		done <- err
+		return err
+	}}
+	return <-done
+}
+
 // StopPersist 关闭并排空所有分片(关服调用,确保落盘不丢)。调用前应确保生产者已停止投递。
 func StopPersist() {
 	p := persist

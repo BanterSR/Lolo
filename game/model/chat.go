@@ -63,7 +63,7 @@ func (s *Player) GetPrivateChatOffline(private *db.OFChatPrivate) *proto.Private
 		PlayerId:    basic.UserId,
 		Name:        basic.NickName,
 		Head:        basic.Head,
-		IsNewMsg:    private.IsNewMsg,
+		IsNewMsg:    private.HasUnread(s.UserId),
 		AvatarFrame: basic.AvatarFrame,
 	}
 }

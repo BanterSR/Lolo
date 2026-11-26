@@ -3,6 +3,7 @@ package model
 import (
 	"errors"
 	"fmt"
+	"math"
 	"math/rand/v2"
 	"sync"
 	"time"
@@ -63,6 +64,9 @@ type AddItemCtx struct {
 }
 
 func (c *AddItemCtx) AddItemDetail() *proto.ItemDetail {
+	if c == nil || c.EBagItemTag == nil {
+		return nil
+	}
 	item := c.EBagItemTag.ItemDetail()
 	if item == nil {
 		return nil
@@ -76,6 +80,9 @@ func (c *AddItemCtx) AddItemDetail() *proto.ItemDetail {
 }
 
 func (s *Player) AddAllTypeItem(id uint32, num int64) *AddItemCtx {
+	if num <= 0 {
+		return nil
+	}
 	i := s.GetItemModel()
 	conf := gdconf.GetItemConfigure(id)
 	if conf == nil {
@@ -149,7 +156,7 @@ func (s *Player) AddAllTypeItem(id uint32, num int64) *AddItemCtx {
 		if gdconf.GetAbilityByItemId(uint32(conf.ID)) == nil {
 			return nil
 		}
-		i.AddItemBase(uint32(conf.ID), 1)
+		ctx.EBagItemTag = i.AddItemBase(uint32(conf.ID), 1)
 	case proto.EBagItemTag_EBagItemTag_Expression: // 表情
 		ctx.EBagItemTag = s.GetChatModel().AddUnExpression(id)
 	case proto.EBagItemTag_EBagItemTag_Weapon:
@@ -207,6 +214,9 @@ func (i *ItemModel) GetItemBaseInfo(itemId uint32) *ItemBaseInfo {
 }
 
 func (i *ItemModel) AddItemBase(itemId uint32, num int64) *ItemBaseInfo {
+	if num <= 0 {
+		return nil
+	}
 	conf := gdconf.GetItemConfigure(itemId)
 	list := i.GetItemBaseMap()
 	if conf == nil || list == nil {
@@ -222,6 +232,9 @@ func (i *ItemModel) AddItemBase(itemId uint32, num int64) *ItemBaseInfo {
 			PackType: proto.PackType_PackType_Inventory,
 		}
 		list[itemId] = info
+	}
+	if info.Num > math.MaxInt64-num {
+		return nil
 	}
 	info.Num += num
 	return info
@@ -490,6 +503,9 @@ func (i *ItemModel) GetItemFashionInfo(id uint32) *ItemFashionInfo {
 }
 
 func (i *ItemModel) AddItemFashion(fashionId uint32) *ItemFashionInfo {
+	if fashionId == 0 {
+		return nil
+	}
 	conf := gdconf.GetFashionAllInfo(fashionId)
 	list := i.GetItemFashionMap()
 	if conf == nil || list == nil {
@@ -1075,19 +1091,13 @@ type ItemTransaction struct {
 
 // 创建新的事务
 func (i *ItemModel) Begin() (*ItemTransaction, error) {
-	timer := time.NewTimer(time.Second * 1)
-	defer timer.Stop()
-	select {
-	case <-timer.C:
+	if !i.transactionLock.TryLock() {
 		return nil, errors.New("事务锁获取超时")
-	default:
-		i.transactionLock.Lock()
-		t := &ItemTransaction{
-			i:        i,
-			baseItem: make(map[uint32]int64),
-		}
-		return t, nil
 	}
+	return &ItemTransaction{
+		i:        i,
+		baseItem: make(map[uint32]int64),
+	}, nil
 }
 
 // 提交事务
@@ -1127,6 +1137,14 @@ func (t *ItemTransaction) Rollback() {
 }
 
 func (t *ItemTransaction) DelBaseItem(id uint32, num int64) (tx *ItemTransaction) {
+	if num <= 0 {
+		t.Error = fmt.Errorf("扣除物品:%v数量:%v 失败,原因:数量必须为正数", id, num)
+		return t
+	}
+	if t.baseItem[id] > math.MaxInt64-num {
+		t.Error = fmt.Errorf("扣除物品:%v数量溢出", id)
+		return t
+	}
 	t.baseItem[id] += num
 	info := t.i.GetItemBaseInfo(id)
 	if info == nil || info.Num < t.baseItem[id] {

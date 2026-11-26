@@ -22,6 +22,36 @@ func (g *Game) GatherSceneLimitRecoveryNotice(s *model.Player) {
 	}
 }
 
+func validSceneVector(v *proto.Vector3) bool {
+	if v == nil {
+		return true
+	}
+	return v.X >= -1_000_000 && v.X <= 1_000_000 &&
+		v.Y >= -1_000_000 && v.Y <= 1_000_000 &&
+		v.Z >= -1_000_000 && v.Z <= 1_000_000
+}
+
+func validSceneRecorderData(data *proto.PlayerRecorderData) bool {
+	if data == nil || len(data.CharRecorderDataLst) > 16 ||
+		len(data.PetRecordDataLst) > 16 || len(data.FrameData) > 1024 ||
+		len(data.NetworkEvent) > 1024 {
+		return false
+	}
+	for _, character := range data.CharRecorderDataLst {
+		if character == nil || len(character.DataLst) > 1024 ||
+			!validSceneVector(character.Pos) || !validSceneVector(character.Rot) {
+			return false
+		}
+	}
+	for _, pet := range data.PetRecordDataLst {
+		if pet == nil || len(pet.DataLst) > 1024 ||
+			!validSceneVector(pet.Pos) || !validSceneVector(pet.Rot) {
+			return false
+		}
+	}
+	return true
+}
+
 func (g *Game) PlayerSceneRecord(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.PlayerSceneRecordReq)
 	rsp := &proto.PlayerSceneRecordRsp{
@@ -35,12 +65,14 @@ func (g *Game) PlayerSceneRecord(s *model.Player, msg *alg.GameMsg) {
 		log.Game.Warnf("玩家:%v没有加入房间", s.UserId)
 		return
 	}
-	if charRecorderDataLst := req.Data.CharRecorderDataLst; charRecorderDataLst != nil {
-		for _, v := range charRecorderDataLst {
-			if v.Rot != nil && v.Pos != nil {
-				scenePlayer.CurScene.SetRot(v.Rot)
-				scenePlayer.CurScene.SetPos(v.Pos)
-			}
+	if !validSceneRecorderData(req.GetData()) {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		return
+	}
+	for _, v := range req.Data.CharRecorderDataLst {
+		if v.Rot != nil && v.Pos != nil {
+			scenePlayer.CurScene.SetRot(v.Rot)
+			scenePlayer.CurScene.SetPos(v.Pos)
 		}
 	}
 	if !scenePlayer.NetFreeze {
@@ -249,12 +281,19 @@ func (g *Game) GetGardenInfo(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) HandingFurniture(s *model.Player, msg *alg.GameMsg) {
-	// req := msg.Body.(*proto.HandingFurnitureReq)
+	req := msg.Body.(*proto.HandingFurnitureReq)
 	rsp := &proto.HandingFurnitureRsp{
 		Status:      proto.StatusCode_StatusCode_Ok,
 		FurnitureId: model.NextFurnitureId(),
 	}
 	defer g.send(s, msg.PacketId, rsp)
+	if req.ItemId == 0 {
+		rsp.Status = proto.StatusCode_StatusCode_BadReq
+		return
+	}
+	if !s.GetItemModel().CheckFurnitureItem(req.ItemId) {
+		rsp.Status = proto.StatusCode_StatusCode_FurnitureNumLimit
+	}
 }
 
 func (g *Game) PlaceFurniture(s *model.Player, msg *alg.GameMsg) {
