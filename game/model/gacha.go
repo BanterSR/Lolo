@@ -9,6 +9,7 @@ import (
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/pkg/log"
+	"gucooing/lolo/protocol/excel"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -48,10 +49,11 @@ type GachaModel struct {
 }
 
 type GachaInfo struct {
-	GachaId        uint32 `json:"gachaId,omitempty"`        // 卡池id
-	GachaTimes     uint32 `json:"gachaTimes,omitempty"`     // 已抽数
-	OptionalItemId uint32 `json:"optionalItemId,omitempty"` // 选择的保底物品
-	ChoosePoolId   uint32 `json:"choosePoolId,omitempty"`   // 自选的up
+	GachaId          uint32 `json:"gachaId,omitempty"`          // 卡池id
+	GachaTimes       uint32 `json:"gachaTimes,omitempty"`       // 已抽数
+	OptionalItemId   uint32 `json:"optionalItemId,omitempty"`   // 选择的保底物品
+	ChoosePoolId     uint32 `json:"choosePoolId,omitempty"`     // 自选的up
+	FullPickRewarded bool   `json:"fullPickRewarded,omitempty"` // 满奖是否已领取
 }
 
 type GachaTypeInfo struct {
@@ -109,18 +111,24 @@ func (g *GachaModel) GetGachaTypeInfo(t proto.EUIGachaType) *GachaTypeInfo {
 	return info
 }
 
+func fullPickAvailable(conf *excel.GachaInfoConfigure, info *GachaInfo) bool {
+	return conf != nil && info != nil && conf.OptionalNum > 0 &&
+		info.GachaTimes >= uint32(conf.OptionalNum) && !info.FullPickRewarded
+}
+
 func (g *GachaInfo) GachaInfo() *proto.GachaInfo {
 	conf := gdconf.GetGachaData(g.GachaId)
-	return &proto.GachaInfo{
+	result := &proto.GachaInfo{
 		GachaId:        g.GachaId,
 		GachaTimes:     g.GachaTimes,
-		HasFullPick:    false,
-		IsFree:         conf.Conf.IsFree,
 		OptionalUpItem: g.OptionalItemId,
-		OptionalValue:  0,
-		Guarantee:      0,
 		ChoosePoolId:   g.ChoosePoolId,
 	}
+	if conf != nil && conf.Conf != nil {
+		result.HasFullPick = fullPickAvailable(conf.Conf, g)
+		result.IsFree = conf.Conf.IsFree
+	}
+	return result
 }
 
 type GachaCtx struct {
@@ -128,6 +136,7 @@ type GachaCtx struct {
 	ItemTx      *ItemTransaction
 	req         *proto.GachaReq
 	conf        *gdconf.GachaData
+	rewardConf  *gdconf.GachaData
 	probability *gdconf.GachaProbability
 	gachaInfo   *GachaInfo
 	typeInfo    *GachaTypeInfo
@@ -136,43 +145,77 @@ type GachaCtx struct {
 	ItemDetails []*proto.ItemDetail
 }
 
-// 创建一个抽卡上下文
+func gachaChoiceConfigured(parent, child *excel.GachaInfoConfigure) bool {
+	if child.ID == parent.ID {
+		return false
+	}
+	for _, id := range parent.CardPoolRange {
+		if id > 0 && uint32(id) == uint32(child.ID) {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *Player) NewGachaCtx(req *proto.GachaReq) (*GachaCtx, error) {
+	if req == nil {
+		return nil, errors.New("gacha request is nil")
+	}
 	ctx := &GachaCtx{
 		player:    s,
 		req:       req,
 		conf:      gdconf.GetGachaData(req.GachaId),
 		gachaInfo: s.GetGachaModel().GetGachaInfo(req.GachaId),
 	}
-	if ctx.conf.IsOptional() {
-		ctx.conf = gdconf.GetGachaData(ctx.gachaInfo.ChoosePoolId)
-	}
-	if ctx.conf == nil {
+	if ctx.conf == nil || ctx.conf.Conf == nil {
 		return nil, errors.New("gacha conf is nil")
 	}
+	if ctx.conf.IsOptional() {
+		if ctx.gachaInfo.ChoosePoolId == 0 {
+			return nil, errors.New("optional gacha pool is not selected")
+		}
+		ctx.rewardConf = gdconf.GetGachaData(ctx.gachaInfo.ChoosePoolId)
+		if ctx.rewardConf == nil || ctx.rewardConf.Conf == nil || ctx.rewardConf.Conf.IsFree ||
+			ctx.rewardConf.Conf.NewUIGachaType != ctx.conf.Conf.NewUIGachaType ||
+			!gachaChoiceConfigured(ctx.conf.Conf, ctx.rewardConf.Conf) {
+			return nil, errors.New("selected gacha is not an allowed child pool")
+		}
+	} else {
+		ctx.rewardConf = ctx.conf
+	}
+	// 次数、消耗、概率与保底始终属于父池；子池只提供奖池。
 	ctx.probability = gdconf.GetGachaProbability(ctx.conf.Conf.NewUIGachaType)
 	if ctx.probability == nil {
 		return nil, errors.New("gacha probability is nil")
 	}
 	ctx.typeInfo = s.GetGachaModel().GetGachaTypeInfo(proto.EUIGachaType(ctx.conf.Conf.NewUIGachaType))
-	// 新建事务
 	itemTx, err := s.GetItemModel().Begin()
 	if err != nil {
 		return nil, err
 	}
-	// 抵扣物品
 	if req.IsSingle {
 		ctx.gachaNum = ctx.conf.Conf.Method1Count
-		itemTx.DelBaseItem(
-			uint32(ctx.conf.Conf.ConsumeItem1ID),
-			int64(ctx.conf.Conf.ConsumeItem1Num),
-		)
+		if ctx.gachaNum <= 0 || (!ctx.conf.Conf.IsFree && (ctx.conf.Conf.ConsumeItem1ID <= 0 || ctx.conf.Conf.ConsumeItem1Num <= 0)) {
+			itemTx.Rollback()
+			return nil, errors.New("invalid single gacha cost")
+		}
+		if !ctx.conf.Conf.IsFree {
+			itemTx.DelBaseItem(uint32(ctx.conf.Conf.ConsumeItem1ID), int64(ctx.conf.Conf.ConsumeItem1Num))
+		}
 	} else {
 		ctx.gachaNum = ctx.conf.Conf.Method2Count
-		itemTx.DelBaseItem(
-			uint32(ctx.conf.Conf.ConsumeItem2ID),
-			int64(ctx.conf.Conf.ConsumeItem2Num),
-		)
+		if ctx.gachaNum <= 0 || (!ctx.conf.Conf.IsFree && (ctx.conf.Conf.ConsumeItem2ID <= 0 || ctx.conf.Conf.ConsumeItem2Num <= 0)) {
+			itemTx.Rollback()
+			return nil, errors.New("invalid multi gacha cost")
+		}
+		if !ctx.conf.Conf.IsFree {
+			itemTx.DelBaseItem(uint32(ctx.conf.Conf.ConsumeItem2ID), int64(ctx.conf.Conf.ConsumeItem2Num))
+		}
+	}
+	if ctx.conf.Conf.MaxTimes > 0 && (ctx.gachaInfo.GachaTimes > uint32(ctx.conf.Conf.MaxTimes) ||
+		uint32(ctx.gachaNum) > uint32(ctx.conf.Conf.MaxTimes)-ctx.gachaInfo.GachaTimes) {
+		itemTx.Rollback()
+		return nil, errors.New("gacha max times reached")
 	}
 	if itemTx.Commit().Error != nil {
 		return nil, itemTx.Error
@@ -199,33 +242,40 @@ func (c *GachaCtx) Run() {
 		}
 		// 构造回复
 		itemInfo := c.player.AddAllTypeItem(uint32(itemId), 1)
-		if itemInfo == nil {
+		if itemInfo == nil || itemInfo.EBagItemTag == nil {
 			continue
 		}
 		itemDetail := itemInfo.AddItemDetail()
-
+		if itemDetail == nil {
+			continue
+		}
 		itemDetail.ExtraQuality = 3
 
+		var extraCount int64
 		switch itemType {
 		case characterSSR:
-			alg.AddList(&itemDetail.Extras,
-				c.player.AddAllTypeItem(107, 1500).AddItemDetail().MainItem)
-		case characterSR:
-			alg.AddList(&itemDetail.Extras,
-				c.player.AddAllTypeItem(107, 500).AddItemDetail().MainItem)
-		case posterSSR:
-			alg.AddList(&itemDetail.Extras,
-				c.player.AddAllTypeItem(107, 500).AddItemDetail().MainItem)
+			extraCount = 1500
+		case characterSR, posterSSR:
+			extraCount = 500
 		case posterSR:
-			alg.AddList(&itemDetail.Extras,
-				c.player.AddAllTypeItem(107, 50).AddItemDetail().MainItem)
-		default:
-
+			extraCount = 50
+		}
+		if extraCount > 0 {
+			if extra := c.player.AddAllTypeItem(107, extraCount); extra != nil && extra.EBagItemTag != nil {
+				if detail := extra.AddItemDetail(); detail != nil {
+					alg.AddList(&itemDetail.Extras, detail.MainItem)
+				}
+			}
 		}
 		alg.AddList(&c.ItemDetails, itemDetail)
 	}
-	// 写入db
-	err := db.CreateGachaRecords(c.records)
+	records := make([]*db.OFGachaRecord, 0, len(c.records))
+	for _, record := range c.records {
+		if record != nil {
+			records = append(records, record)
+		}
+	}
+	err := db.CreateGachaRecords(records)
 	if err != nil {
 		log.Game.Errorf("UserId:%v func db.CreateGachaRecords err:%v", c.player.UserId, err)
 	}
@@ -297,10 +347,10 @@ func (c *GachaCtx) probabilitySSR(up bool) int32 {
 		c.typeInfo.GuaranteeSSR = 0
 	}
 
-	if c.conf.BigPool != nil && (rand.Int32N(10000)+1 > 5000 || up) {
-		return alg.RandUn(c.conf.BigPool.Items).GetItemID()
+	if c.rewardConf.BigPool != nil && (rand.Int32N(10000)+1 > 5000 || up) {
+		return alg.RandUn(c.rewardConf.BigPool.Items).GetItemID()
 	} else {
-		return alg.RandUn(c.conf.Pools[ssrPoolID].GetItems()).GetItemID()
+		return alg.RandUn(c.rewardConf.Pools[ssrPoolID].GetItems()).GetItemID()
 	}
 }
 
@@ -309,17 +359,17 @@ func (c *GachaCtx) probabilitySR(up bool) int32 {
 	if up {
 		c.typeInfo.GuaranteeSR = 0
 	}
-	return alg.RandUn(c.conf.Pools[srPoolID].GetItems()).GetItemID()
+	return alg.RandUn(c.rewardConf.Pools[srPoolID].GetItems()).GetItemID()
 }
 
 // 概率落在ssr海报上
 func (c *GachaCtx) probabilityPosterSSR() int32 {
-	return alg.RandUn(c.conf.Pools[ssrPosterPoolID].GetItems()).GetItemID()
+	return alg.RandUn(c.rewardConf.Pools[ssrPosterPoolID].GetItems()).GetItemID()
 }
 
 // 概率落在sr海报上
 func (c *GachaCtx) probabilityPosterSR() int32 {
-	return alg.RandUn(c.conf.Pools[srPosterPoolID].GetItems()).GetItemID()
+	return alg.RandUn(c.rewardConf.Pools[srPosterPoolID].GetItems()).GetItemID()
 }
 
 // 概率落在服装上
@@ -327,27 +377,27 @@ func (c *GachaCtx) probabilityFashion(up bool) int32 {
 	if up {
 		c.typeInfo.GuaranteeFashion = 0
 	}
-	return alg.RandUn(c.conf.Pools[fashionPoolID].GetItems()).GetItemID()
+	return alg.RandUn(c.rewardConf.Pools[fashionPoolID].GetItems()).GetItemID()
 }
 
 // 概率落在家具上
 func (c *GachaCtx) probabilityFurniture() int32 {
-	return alg.RandUn(c.conf.Pools[furniturePoolID].GetItems()).GetItemID()
+	return alg.RandUn(c.rewardConf.Pools[furniturePoolID].GetItems()).GetItemID()
 }
 
 // 概率落在ssr武器上
 func (c *GachaCtx) probabilityWeaponSSR() int32 {
-	return alg.RandUn(c.conf.Pools[ssrWeaponPoolID].GetItems()).GetItemID()
+	return alg.RandUn(c.rewardConf.Pools[ssrWeaponPoolID].GetItems()).GetItemID()
 }
 
 // 概率落在sr武器上
 func (c *GachaCtx) probabilityWeaponSR() int32 {
-	return alg.RandUn(c.conf.Pools[srWeaponPoolID].GetItems()).GetItemID()
+	return alg.RandUn(c.rewardConf.Pools[srWeaponPoolID].GetItems()).GetItemID()
 }
 
 // 概率落在染色剂上
 func (c *GachaCtx) probabilityDyeStuff() int32 {
-	return alg.RandUn(c.conf.Pools[dyeStuffPoolID].GetItems()).GetItemID()
+	return alg.RandUn(c.rewardConf.Pools[dyeStuffPoolID].GetItems()).GetItemID()
 }
 
 // 概率落在愿望上

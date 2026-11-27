@@ -3,6 +3,7 @@ package model
 import (
 	"errors"
 	"fmt"
+	"math"
 	"math/rand/v2"
 	"sync"
 	"time"
@@ -63,6 +64,9 @@ type AddItemCtx struct {
 }
 
 func (c *AddItemCtx) AddItemDetail() *proto.ItemDetail {
+	if c == nil || c.EBagItemTag == nil {
+		return nil
+	}
 	item := c.EBagItemTag.ItemDetail()
 	if item == nil {
 		return nil
@@ -76,6 +80,9 @@ func (c *AddItemCtx) AddItemDetail() *proto.ItemDetail {
 }
 
 func (s *Player) AddAllTypeItem(id uint32, num int64) *AddItemCtx {
+	if num <= 0 {
+		return nil
+	}
 	i := s.GetItemModel()
 	conf := gdconf.GetItemConfigure(id)
 	if conf == nil {
@@ -149,7 +156,7 @@ func (s *Player) AddAllTypeItem(id uint32, num int64) *AddItemCtx {
 		if gdconf.GetAbilityByItemId(uint32(conf.ID)) == nil {
 			return nil
 		}
-		i.AddItemBase(uint32(conf.ID), 1)
+		ctx.EBagItemTag = i.AddItemBase(uint32(conf.ID), 1)
 	case proto.EBagItemTag_EBagItemTag_Expression: // 表情
 		ctx.EBagItemTag = s.GetChatModel().AddUnExpression(id)
 	case proto.EBagItemTag_EBagItemTag_Weapon:
@@ -207,6 +214,9 @@ func (i *ItemModel) GetItemBaseInfo(itemId uint32) *ItemBaseInfo {
 }
 
 func (i *ItemModel) AddItemBase(itemId uint32, num int64) *ItemBaseInfo {
+	if num <= 0 {
+		return nil
+	}
 	conf := gdconf.GetItemConfigure(itemId)
 	list := i.GetItemBaseMap()
 	if conf == nil || list == nil {
@@ -222,6 +232,9 @@ func (i *ItemModel) AddItemBase(itemId uint32, num int64) *ItemBaseInfo {
 			PackType: proto.ItemDetail_PackType_Inventory,
 		}
 		list[itemId] = info
+	}
+	if info.Num > math.MaxInt64-num {
+		return nil
 	}
 	info.Num += num
 	return info
@@ -490,6 +503,9 @@ func (i *ItemModel) GetItemFashionInfo(id uint32) *ItemFashionInfo {
 }
 
 func (i *ItemModel) AddItemFashion(fashionId uint32) *ItemFashionInfo {
+	if fashionId == 0 {
+		return nil
+	}
 	conf := gdconf.GetFashionAllInfo(fashionId)
 	list := i.GetItemFashionMap()
 	if conf == nil || list == nil {
@@ -782,6 +798,10 @@ func (i *ItemModel) GetItemInscriptionMap() map[uint32]*ItemInscriptionInfo {
 	return i.ItemInscriptionMap
 }
 
+func (i *ItemModel) GetItemInscriptionInfo(inscriptionId uint32) *ItemInscriptionInfo {
+	return i.GetItemInscriptionMap()[inscriptionId]
+}
+
 func (i *ItemModel) AddItemInscription(inscriptionId uint32) *ItemInscriptionInfo {
 	conf := gdconf.GetInscriptionAllInfo(inscriptionId)
 	list := i.GetItemInscriptionMap()
@@ -1070,24 +1090,259 @@ type ItemTransaction struct {
 	close      bool
 	i          *ItemModel
 	baseItem   map[uint32]int64
+	snapshot   ItemModelSnapshot
 	PackNotice *proto.PackNotice
+}
+
+// ItemModelSnapshot is a rollback snapshot for a synchronous reward operation.
+// It includes the instance allocator so a failed grant cannot consume IDs.
+type ItemModelSnapshot struct {
+	model *ItemModel
+	value itemModelState
+}
+
+type itemModelState struct {
+	InstanceIndex      uint32
+	ItemBaseInfo       map[uint32]*ItemBaseInfo
+	ItemWeaponMap      map[uint32]*ItemWeaponInfo
+	ItemFashionMap     map[uint32]*ItemFashionInfo
+	ItemArmorMap       map[uint32]*ItemArmorInfo
+	ItemPosterMap      map[uint32]*ItemPosterInfo
+	ItemInscriptionMap map[uint32]*ItemInscriptionInfo
+	ItemPetInfoMap     map[uint32]*ItemPetInfo
+	ItemHeadMap        map[uint32]*ItemHeadInfo
+	FurnitureItemMap   map[uint32]*FurnitureItemInfo
+}
+
+func SnapshotItemModel(items *ItemModel) ItemModelSnapshot {
+	if items == nil {
+		return ItemModelSnapshot{}
+	}
+	return ItemModelSnapshot{model: items, value: itemModelState{
+		InstanceIndex:      items.InstanceIndex,
+		ItemBaseInfo:       cloneItemBaseMap(items.ItemBaseInfo),
+		ItemWeaponMap:      cloneItemWeaponMap(items.ItemWeaponMap),
+		ItemFashionMap:     cloneItemFashionMap(items.ItemFashionMap),
+		ItemArmorMap:       cloneItemArmorMap(items.ItemArmorMap),
+		ItemPosterMap:      cloneItemPosterMap(items.ItemPosterMap),
+		ItemInscriptionMap: cloneItemInscriptionMap(items.ItemInscriptionMap),
+		ItemPetInfoMap:     cloneItemPetMap(items.ItemPetInfoMap),
+		ItemHeadMap:        cloneItemHeadMap(items.ItemHeadMap),
+		FurnitureItemMap:   cloneFurnitureMap(items.FurnitureItemMap),
+	}}
+}
+
+func (s ItemModelSnapshot) Restore() {
+	if s.model == nil {
+		return
+	}
+	s.model.InstanceIndex = s.value.InstanceIndex
+	s.model.ItemBaseInfo = s.value.ItemBaseInfo
+	s.model.ItemWeaponMap = s.value.ItemWeaponMap
+	s.model.ItemFashionMap = s.value.ItemFashionMap
+	s.model.ItemArmorMap = s.value.ItemArmorMap
+	s.model.ItemPosterMap = s.value.ItemPosterMap
+	s.model.ItemInscriptionMap = s.value.ItemInscriptionMap
+	s.model.ItemPetInfoMap = s.value.ItemPetInfoMap
+	s.model.ItemHeadMap = s.value.ItemHeadMap
+	s.model.FurnitureItemMap = s.value.FurnitureItemMap
+}
+
+// restoreLocked is used by ItemTransaction while its mutex is still held.
+func (s ItemModelSnapshot) restoreLocked() { s.Restore() }
+
+func cloneItemBaseMap(src map[uint32]*ItemBaseInfo) map[uint32]*ItemBaseInfo {
+	if src == nil {
+		return nil
+	}
+	dst := make(map[uint32]*ItemBaseInfo, len(src))
+	for id, item := range src {
+		if item == nil {
+			dst[id] = nil
+			continue
+		}
+		copy := *item
+		dst[id] = &copy
+	}
+	return dst
+}
+
+func cloneItemWeaponMap(src map[uint32]*ItemWeaponInfo) map[uint32]*ItemWeaponInfo {
+	if src == nil {
+		return nil
+	}
+	dst := make(map[uint32]*ItemWeaponInfo, len(src))
+	for id, item := range src {
+		if item == nil {
+			dst[id] = nil
+			continue
+		}
+		copy := *item
+		if item.ItemBaseInfo != nil {
+			base := *item.ItemBaseInfo
+			copy.ItemBaseInfo = &base
+		}
+		dst[id] = &copy
+	}
+	return dst
+}
+
+func cloneItemFashionMap(src map[uint32]*ItemFashionInfo) map[uint32]*ItemFashionInfo {
+	if src == nil {
+		return nil
+	}
+	dst := make(map[uint32]*ItemFashionInfo, len(src))
+	for id, item := range src {
+		if item == nil {
+			dst[id] = nil
+			continue
+		}
+		copy := *item
+		if item.ItemBaseInfo != nil {
+			base := *item.ItemBaseInfo
+			copy.ItemBaseInfo = &base
+		}
+		dst[id] = &copy
+	}
+	return dst
+}
+
+func cloneItemArmorMap(src map[uint32]*ItemArmorInfo) map[uint32]*ItemArmorInfo {
+	if src == nil {
+		return nil
+	}
+	dst := make(map[uint32]*ItemArmorInfo, len(src))
+	for id, item := range src {
+		if item == nil {
+			dst[id] = nil
+			continue
+		}
+		copy := *item
+		if item.ItemBaseInfo != nil {
+			base := *item.ItemBaseInfo
+			copy.ItemBaseInfo = &base
+		}
+		dst[id] = &copy
+	}
+	return dst
+}
+
+func cloneItemPosterMap(src map[uint32]*ItemPosterInfo) map[uint32]*ItemPosterInfo {
+	if src == nil {
+		return nil
+	}
+	dst := make(map[uint32]*ItemPosterInfo, len(src))
+	for id, item := range src {
+		if item == nil {
+			dst[id] = nil
+			continue
+		}
+		copy := *item
+		if item.ItemBaseInfo != nil {
+			base := *item.ItemBaseInfo
+			copy.ItemBaseInfo = &base
+		}
+		dst[id] = &copy
+	}
+	return dst
+}
+
+func cloneItemInscriptionMap(src map[uint32]*ItemInscriptionInfo) map[uint32]*ItemInscriptionInfo {
+	if src == nil {
+		return nil
+	}
+	dst := make(map[uint32]*ItemInscriptionInfo, len(src))
+	for id, item := range src {
+		if item == nil {
+			dst[id] = nil
+			continue
+		}
+		copy := *item
+		if item.ItemBaseInfo != nil {
+			base := *item.ItemBaseInfo
+			copy.ItemBaseInfo = &base
+		}
+		dst[id] = &copy
+	}
+	return dst
+}
+
+func cloneItemPetMap(src map[uint32]*ItemPetInfo) map[uint32]*ItemPetInfo {
+	if src == nil {
+		return nil
+	}
+	dst := make(map[uint32]*ItemPetInfo, len(src))
+	for id, item := range src {
+		if item == nil {
+			dst[id] = nil
+			continue
+		}
+		copy := *item
+		if item.ItemBaseInfo != nil {
+			base := *item.ItemBaseInfo
+			copy.ItemBaseInfo = &base
+		}
+		dst[id] = &copy
+	}
+	return dst
+}
+
+func cloneItemHeadMap(src map[uint32]*ItemHeadInfo) map[uint32]*ItemHeadInfo {
+	if src == nil {
+		return nil
+	}
+	dst := make(map[uint32]*ItemHeadInfo, len(src))
+	for id, item := range src {
+		if item == nil {
+			dst[id] = nil
+			continue
+		}
+		copy := *item
+		if item.ItemBaseInfo != nil {
+			base := *item.ItemBaseInfo
+			copy.ItemBaseInfo = &base
+		}
+		dst[id] = &copy
+	}
+	return dst
+}
+
+func cloneFurnitureMap(src map[uint32]*FurnitureItemInfo) map[uint32]*FurnitureItemInfo {
+	if src == nil {
+		return nil
+	}
+	dst := make(map[uint32]*FurnitureItemInfo, len(src))
+	for id, item := range src {
+		if item == nil {
+			dst[id] = nil
+			continue
+		}
+		copy := *item
+		dst[id] = &copy
+	}
+	return dst
 }
 
 // 创建新的事务
 func (i *ItemModel) Begin() (*ItemTransaction, error) {
-	timer := time.NewTimer(time.Second * 1)
-	defer timer.Stop()
-	select {
-	case <-timer.C:
+	if !i.transactionLock.TryLock() {
 		return nil, errors.New("事务锁获取超时")
-	default:
-		i.transactionLock.Lock()
-		t := &ItemTransaction{
-			i:        i,
-			baseItem: make(map[uint32]int64),
-		}
-		return t, nil
 	}
+	return &ItemTransaction{
+		i:        i,
+		baseItem: make(map[uint32]int64),
+	}, nil
+}
+
+// BeginAtomic opts a reward handler into rollback without changing the
+// historical immediate-mutation semantics of Begin used by other modules.
+func (i *ItemModel) BeginAtomic() (*ItemTransaction, error) {
+	tx, err := i.Begin()
+	if err != nil {
+		return nil, err
+	}
+	tx.snapshot = SnapshotItemModel(i)
+	return tx, nil
 }
 
 // 提交事务
@@ -1099,6 +1354,7 @@ func (t *ItemTransaction) Commit() (tx *ItemTransaction) {
 		}
 	}()
 	if t.Error != nil {
+		t.snapshot.restoreLocked()
 		return
 	}
 	t.PackNotice = &proto.PackNotice{
@@ -1118,15 +1374,27 @@ func (t *ItemTransaction) Commit() (tx *ItemTransaction) {
 
 // 撤销事务
 func (t *ItemTransaction) Rollback() {
+	if t.close {
+		return
+	}
 	defer func() {
 		if !t.close {
 			t.close = true
 			t.i.transactionLock.Unlock()
 		}
 	}()
+	t.snapshot.restoreLocked()
 }
 
 func (t *ItemTransaction) DelBaseItem(id uint32, num int64) (tx *ItemTransaction) {
+	if num <= 0 {
+		t.Error = fmt.Errorf("扣除物品:%v数量:%v 失败,原因:数量必须为正数", id, num)
+		return t
+	}
+	if t.baseItem[id] > math.MaxInt64-num {
+		t.Error = fmt.Errorf("扣除物品:%v数量溢出", id)
+		return t
+	}
 	t.baseItem[id] += num
 	info := t.i.GetItemBaseInfo(id)
 	if info == nil || info.Num < t.baseItem[id] {

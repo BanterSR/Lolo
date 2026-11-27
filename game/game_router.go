@@ -1,6 +1,8 @@
 package game
 
 import (
+	"runtime/debug"
+
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/pkg/log"
@@ -67,6 +69,7 @@ func (g *Game) newRouter() {
 		cmd.GachaReq:              g.Gacha,              // 抽卡，启动！
 		cmd.OptionalUpPoolItemReq: g.OptionalUpPoolItem, // 设置保底物品
 		cmd.ChooseGachaReq:        g.ChooseGacha,        // 设置自选物品
+		cmd.GachaFullPickReq:      g.GachaFullPick,      // 领取满奖
 		// 角色
 		cmd.CharacterLevelUpReq:             g.CharacterLevelUp,             // 角色升级
 		cmd.CharacterLevelBreakReq:          g.CharacterLevelBreak,          // 角色突破
@@ -76,6 +79,16 @@ func (g *Game) newRouter() {
 		cmd.OutfitDyeReq:                    g.OutfitDye,                    // 染色请求
 		cmd.OutFitDyeSaveReq:                g.OutFitDyeSave,                // 保存染色结果
 		cmd.CharacterEquipUpdateReq:         g.CharacterEquipUpdate,         // 角色更新装备
+		cmd.CharacterEquipPresetSwitchReq:   g.CharacterEquipPresetSwitch,   // 切换装备预设
+		cmd.PosterStarUpReq:                 g.PosterStarUp,                 // 海报升星
+		cmd.PosterIllustrationRewardReq:     g.PosterIllustrationReward,     // 海报插画奖励
+		cmd.LockEquipReq:                    g.LockEquip,                    // 装备锁定
+		cmd.WeaponInscriptionInlaidReq:      g.WeaponInscriptionInlaid,      // 武器铭刻
+		cmd.WeaponInscriptionRemoveReq:      g.WeaponInscriptionRemove,      // 移除铭刻
+		cmd.EquipDisassembleReq:             g.EquipDisassemble,             // 装备分解
+		cmd.ItemUseReq:                      g.ItemUse,                      // 物品使用
+		cmd.WeaponStrengthReq:               g.WeaponStrength,               // 武器强化
+		cmd.ArmorStrengthReq:                g.ArmorStrength,                // 防具强化
 		cmd.UpdateCharacterAppearanceReq:    g.UpdateCharacterAppearance,    // 更新角色外观
 		cmd.CharacterGatherWeaponUpdateReq:  g.CharacterGatherWeaponUpdate,  // 更新手持工具请求
 		cmd.CharacterStarUpReq:              g.CharacterStarUp,              // 角色升星请求
@@ -129,39 +142,234 @@ func (g *Game) newRouter() {
 		cmd.DungeonFinishReq:  g.DungeonFinish,  // 副本结算
 		cmd.DungeonExitReq:    g.DungeonExit,    // 退出副本
 		// 宠物
-		cmd.GetPetReq:    g.GetPetReq, // 获取宠物列表
-		cmd.ChangePetReq: g.ChangePet, // 宠物携带
+		cmd.GetPetReq:                    g.GetPetReq,                 // 获取宠物列表
+		cmd.ChangePetReq:                 g.ChangePet,                 // 宠物携带
+		cmd.PetCaptureReq:                g.PetCapture,                // 捕获宠物
+		cmd.PetRenameReq:                 g.PetRename,                 // 宠物重命名
+		cmd.PetDecomposeReq:              g.PetDecompose,              // 宠物分解
+		cmd.RestaurantGameInfoReq:        g.RestaurantGameInfo,        // 餐厅信息
+		cmd.RestaurantGameOperateReq:     g.RestaurantGameOperate,     // 餐厅经营
+		cmd.RestaurantGameEatReq:         g.RestaurantGameEat,         // 餐厅进食
+		cmd.RestaurantGameQuestRewardReq: g.RestaurantGameQuestReward, // 餐厅任务奖励
+		// 五子棋与崩溃
+		cmd.CollapseFailReq:                 g.CollapseFail,
+		cmd.GomokuSinglePlayerRewardReq:     g.GomokuSinglePlayerReward,
+		cmd.GomokuOnlinePlayerReadyReq:      g.GomokuOnlinePlayerReady,
+		cmd.GomokuOnlinePlayerStartPlayReq:  g.GomokuOnlinePlayerStartPlay,
+		cmd.GomokuOnlinePlayerPlaceStoneReq: g.GomokuOnlinePlayerPlaceStone,
+		cmd.GomokuOnlinePlayerLeaveReq:      g.GomokuOnlinePlayerLeave,
+		cmd.GomokuOnlinePlayerWatchReq:      g.GomokuOnlinePlayerWatch,
+		cmd.GetGomokuOnlineChessboardReq:    g.GetGomokuOnlineChessboard,
+		cmd.GmCodeReq:                       g.GmCode,
 
-		cmd.PlayerVitalityReq:           g.PlayerVitality,
-		cmd.BossRushInfoReq:             g.BossRushInfo,
-		cmd.FriendIntervalInitReq:       g.FriendIntervalInit,
-		cmd.SelfIntervalInitReq:         g.SelfIntervalInit,
-		cmd.ExploreInitReq:              g.ExploreInit,
-		cmd.NpcTalkReq:                  g.NpcTalk,  // npc对话
-		cmd.TutorialReq:                 g.Tutorial, // 开始教程
-		cmd.ChallengeFriendRankReq:      g.ChallengeFriendRank,
-		cmd.AbilityBadgeListReq:         g.AbilityBadgeList,
-		cmd.SceneProcessListReq:         g.SceneProcessList,
-		cmd.WishListByFriendIdReq:       g.WishListByFriendId,
-		cmd.GetLifeInfoReq:              g.GetLifeInfo,
-		cmd.GetAchieveOneGroupReq:       g.GetAchieveOneGroup,
-		cmd.GetAchieveGroupListReq:      g.GetAchieveGroupList,
-		cmd.GenericGameAReq:             g.GenericGameA,
-		cmd.GenericGameBReq:             g.GenericGameB,
-		cmd.ManualListReq:               g.ManualList,            // 获取手册列表
-		cmd.PlayerAbilityListReq:        g.PlayerAbilityList,     //
-		cmd.WorldLevelAchieveListReq:    g.WorldLevelAchieveList, //
-		cmd.SupplyBoxInfoReq:            g.SupplyBoxInfo,         //
-		cmd.GetAllCharacterEquipReq:     g.GetAllCharacterEquip,  //
-		cmd.GamePlayRewardReq:           g.GamePlayReward,        //
-		cmd.AcceptQuestReq:              g.AcceptQuest,           //
-		cmd.TreasureIllustrationInfoReq: g.TreasureIllustrationInfo,
+		cmd.PlayerVitalityReq:                   g.PlayerVitality,
+		cmd.BossRushInfoReq:                     g.BossRushInfo,
+		cmd.FriendIntervalInitReq:               g.FriendIntervalInit,
+		cmd.SelfIntervalInitReq:                 g.SelfIntervalInit,
+		cmd.ExploreInitReq:                      g.ExploreInit,
+		cmd.ExploreReq:                          g.Explore,
+		cmd.ExploreQuickFinishReq:               g.ExploreQuickFinish,
+		cmd.ExploreRewardReq:                    g.ExploreReward,
+		cmd.ExploreCancelReq:                    g.ExploreCancel,
+		cmd.ExploreCollectRewardReq:             g.ExploreCollectReward,
+		cmd.TempPackItemDropReq:                 g.TempPackItemDrop,
+		cmd.TempPackItemStoreReq:                g.TempPackItemStore,
+		cmd.TempPackSortReq:                     g.TempPackSort,
+		cmd.TempPackWearEquipReq:                g.TempPackWearEquip,
+		cmd.NpcTalkReq:                          g.NpcTalk,  // npc对话
+		cmd.TutorialReq:                         g.Tutorial, // 开始教程
+		cmd.ChallengeFriendRankReq:              g.ChallengeFriendRank,
+		cmd.AbilityBadgeListReq:                 g.AbilityBadgeList,
+		cmd.SceneProcessListReq:                 g.SceneProcessList,
+		cmd.WishListByFriendIdReq:               g.WishListByFriendId,
+		cmd.GetLifeInfoReq:                      g.GetLifeInfo,
+		cmd.GetLifeSkillReq:                     g.GetLifeSkill,
+		cmd.GetLifeAchieveReq:                   g.GetLifeAchieve,
+		cmd.LifeSkillLevelUpReq:                 g.LifeSkillLevelUp,
+		cmd.GetLifeAchievementRewardReq:         g.GetLifeAchievementReward,
+		cmd.LifeLeveUpReq:                       g.LifeLeveUp,
+		cmd.FishingReq:                          g.Fishing,
+		cmd.CookingFoodReq:                      g.CookingFood,
+		cmd.MakePropReq:                         g.MakeProp,
+		cmd.HandicraftReq:                       g.Handicraft,
+		cmd.GetAchieveOneGroupReq:               g.GetAchieveOneGroup,
+		cmd.GetAchieveGroupListReq:              g.GetAchieveGroupList,
+		cmd.GenericGameAReq:                     g.GenericGameA,
+		cmd.GenericGameBReq:                     g.GenericGameB,
+		cmd.ManualListReq:                       g.ManualList,                       // 获取手册列表
+		cmd.PlayerAbilityListReq:                g.PlayerAbilityList,                //
+		cmd.WorldLevelAchieveListReq:            g.WorldLevelAchieveList,            //
+		cmd.SupplyBoxInfoReq:                    g.SupplyBoxInfo,                    //
+		cmd.SupplyBoxRewardReq:                  g.SupplyBoxReward,                  //
+		cmd.ActivitySignInReq:                   g.ActivitySignIn,                   //
+		cmd.ActivityQuestRewardReq:              g.ActivityQuestReward,              //
+		cmd.ActivityRegularRewardReq:            g.ActivityRegularReward,            //
+		cmd.ActivityGiftRewardReq:               g.ActivityGiftReward,               //
+		cmd.ActivityBattlePassBuyExpReq:         g.ActivityBattlePassBuyExp,         //
+		cmd.GetActivityBattlePassLevelRewardReq: g.GetActivityBattlePassLevelReward, //
+		cmd.GetActivityBattlePassQuestRewardReq: g.GetActivityBattlePassQuestReward, //
+		cmd.MonthCardRewardReq:                  g.MonthCardReward,                  //
+		cmd.ActivityTurntableDrawReq:            g.ActivityTurntableDraw,            //
+		cmd.ActivityTurntableRecordReq:          g.ActivityTurntableRecord,          //
+		cmd.AbyssQuestRewardReq:                 g.AbyssQuestReward,                 //
+		cmd.GetAchieveGroupAwardReq:             g.GetAchieveGroupAward,             //
+		cmd.GetOneAchieveAwardReq:               g.GetOneAchieveAward,               //
+		cmd.GetAllCharacterEquipReq:             g.GetAllCharacterEquip,             //
+		cmd.GamePlayRewardReq:                   g.GamePlayReward,                   //
+		cmd.AcceptQuestReq:                      g.AcceptQuest,                      //
+		cmd.ClaimQuestRewardReq:                 g.ClaimQuestReward,                 //
+		cmd.TreasureIllustrationInfoReq:         g.TreasureIllustrationInfo,
+		// 已实现但此前未注册的玩家资料/动作请求。
+		cmd.ChangeHeadReq:        g.ChangeHead,
+		cmd.ChangePhoneCaseReq:   g.ChangePhoneCase,
+		cmd.ChangePlayerSexReq:   g.ChangePlayerSex,
+		cmd.ChangeWorldLevelReq:  g.ChangeWorldLevel,
+		cmd.ClapReq:              g.Clap,
+		cmd.OutfitHideSwitchReq:  g.OutfitHideSwitch,
+		cmd.PlayerEnergyBuyReq:   g.PlayerEnergyBuy,
+		cmd.PlayerEnergyInfoReq:  g.PlayerEnergyInfo,
+		cmd.PlayerLevelRewardReq: g.PlayerLevelReward,
+		cmd.PopEmojiReq:          g.PopEmoji,
+		cmd.ThrowDiceReq:         g.ThrowDice,
+		cmd.UnlockWorldLevelReq:  g.UnlockWorldLevel,
+		// 通用请求与活动/收集奖励确认。
+		cmd.PlayerOfflineReq:                        g.PlayerOffline,
+		cmd.AccountNameBindingCancelReq:             g.AccountNameBindingCancel,
+		cmd.ActionStudyReq:                          g.ActionStudy,
+		cmd.ClientLogAuthReq:                        g.ClientLogAuth,
+		cmd.ClientLogMessageReq:                     g.ClientLogMessage,
+		cmd.ReportReq:                               g.Report,
+		cmd.UnfreezePlayerActionReq:                 g.UnfreezePlayerAction,
+		cmd.MultipleActionAcceptReq:                 g.MultipleActionAccept,
+		cmd.GenericSceneAReq:                        g.GenericSceneA,
+		cmd.SPOperateReq:                            g.SPOperate,
+		cmd.DailyTaskExchangeReq:                    g.DailyTaskExchange,
+		cmd.DoLikesReq:                              g.DoLikes,
+		cmd.AreaLevelUpReq:                          g.AreaLevelUp,
+		cmd.ChallengeStateUpdateReq:                 g.ChallengeStateUpdate,
+		cmd.RiddleStateUpdateReq:                    g.RiddleStateUpdate,
+		cmd.SceneTransmitReq:                        g.SceneTransmit,
+		cmd.TransmitSceneReq:                        g.TransmitScene,
+		cmd.CollectCoinReq:                          g.CollectCoin,
+		cmd.CollectVoiceRegionReq:                   g.CollectVoiceRegion,
+		cmd.PlaceCampFireReq:                        g.PlaceCampFire,
+		cmd.RemoveCampFireReq:                       g.RemoveCampFire,
+		cmd.PlaceMoonSpotReq:                        g.PlaceMoonSpot,
+		cmd.EmotionMoonInteractReq:                  g.EmotionMoonInteract,
+		cmd.SetRoomDecorReq:                         g.SetRoomDecor,
+		cmd.CharacterDeadReq:                        g.CharacterDead,
+		cmd.CharacterReviveReq:                      g.CharacterRevive,
+		cmd.BuyGameCoinReq:                          g.BuyGameCoin,
+		cmd.UseRedemptionCodeReq:                    g.UseRedemptionCode,
+		cmd.InviteCodeUseReq:                        g.InviteCodeUse,
+		cmd.RecallCodeUseReq:                        g.RecallCodeUse,
+		cmd.InheritCodeUseReq:                       g.InheritCodeUse,
+		cmd.GetExpressAddressReq:                    g.GetExpressAddress,
+		cmd.UploadExpressAddressReq:                 g.UploadExpressAddress,
+		cmd.UploadFGBytesReq:                        g.UploadFGBytes,
+		cmd.PlayerVitalityBuyReq:                    g.PlayerVitalityBuy,
+		cmd.UseItemFriendIntimacyReq:                g.UseItemFriendIntimacy,
+		cmd.BlessTreeReq:                            g.BlessTree,
+		cmd.BlessTreeUnlockReq:                      g.BlessTreeUnlock,
+		cmd.ActivityUploadWishTxtReq:                g.ActivityUploadWishTxt,
+		cmd.ActivityInviteRewardClaimReq:            g.ActivityInviteRewardClaim,
+		cmd.ActivityRecallRewardClaimReq:            g.ActivityRecallRewardClaim,
+		cmd.ActivityKoiUseItemReq:                   g.ActivityKoiUseItem,
+		cmd.ActivitySandbagHitReq:                   g.ActivitySandbagHit,
+		cmd.ActivitySandbagRewardReq:                g.ActivitySandbagReward,
+		cmd.ManualFlagUnlockReq:                     g.ManualFlagUnlock,
+		cmd.ManualFlagRewardReq:                     g.ManualFlagReward,
+		cmd.PlayerAbilityLevelUpReq:                 g.PlayerAbilityLevelUp,
+		cmd.AbilityBadgeAchieveRewardReq:            g.AbilityBadgeAchieveReward,
+		cmd.AbilityBadgePageBoxActiveReq:            g.AbilityBadgePageBoxActive,
+		cmd.AbilityBadgePageRewardReq:               g.AbilityBadgePageReward,
+		cmd.GetCharacterAchievementBadgeAwardReq:    g.GetCharacterAchievementBadgeAward,
+		cmd.GetCharacterAchievementUnlockPaymentReq: g.GetCharacterAchievementUnlockPayment,
+		cmd.GetOneTypeLifePictorialBookCountReq:     g.GetOneTypeLifePictorialBookCount,
+		cmd.GetTreasureAchieveRewardReq:             g.GetTreasureAchieveReward,
+		cmd.TreasureIllustrationRewardReq:           g.TreasureIllustrationReward,
+		cmd.TreasureDigReq:                          g.TreasureDig,
+		cmd.SewingReq:                               g.Sewing,
+		cmd.ItemSweepReq:                            g.ItemSweep,
+		cmd.OutfitRandomColorReq:                    g.OutfitRandomColor,
+		cmd.OutfitDyeUnlockIndexReq:                 g.OutfitDyeUnlockIndex,
+		// 副本重复进入与奖励账本。
+		cmd.DungeonRepeatEnterReq:      g.DungeonRepeatEnter,
+		cmd.DungeonStarRewardReq:       g.DungeonStarReward,
+		cmd.DungeonSweepReq:            g.DungeonSweep,
+		cmd.DungeonTaskFinishRewardReq: g.DungeonTaskFinishReward,
+		// BossRush / 深渊赛季流程。
+		cmd.BossRushStartChallengeReq:     g.BossRushStartChallenge,
+		cmd.BossRushEnterStageReq:         g.BossRushEnterStage,
+		cmd.BossRushStartBattleReq:        g.BossRushStartBattle,
+		cmd.BossRushLeaveStageReq:         g.BossRushLeaveStage,
+		cmd.BossRushTerminateChallengeReq: g.BossRushTerminateChallenge,
+		cmd.BossRushFriendDetailReq:       g.BossRushFriendDetail,
+		cmd.BossRushFriendRankReq:         g.BossRushFriendRank,
+		cmd.BossRushQuestRewardReq:        g.BossRushQuestReward,
+		cmd.AbyssAllServerRankReq:         g.AbyssAllServerRank,
+		cmd.AbyssFriendRankReq:            g.AbyssFriendRank,
+		cmd.AbyssTeamSwitchReq:            g.AbyssTeamSwitch,
+		cmd.AbyssTeamUpdateReq:            g.AbyssTeamUpdate,
+		// 多人小队与游玩房间（单机环境按本地队伍应答）。
+		cmd.MPTeamCreateReq:         g.MPTeamCreate,
+		cmd.MPTeamInfoReq:           g.MPTeamInfo,
+		cmd.MPTeamJoinReq:           g.MPTeamJoin,
+		cmd.MPTeamRenameReq:         g.MPTeamRename,
+		cmd.MPTeamGameModeChangeReq: g.MPTeamGameModeChange,
+		cmd.MPTeamDismissReq:        g.MPTeamDismiss,
+		cmd.MPTeamQuitReq:           g.MPTeamQuit,
+		cmd.MPTeamInviteReq:         g.MPTeamInvite,
+		cmd.MPTeamKickMemberReq:     g.MPTeamKickMember,
+		cmd.MPGameStartReq:          g.MPGameStart,
+		cmd.MPPlayRoomReadyReq:      g.MPPlayRoomReady,
+		cmd.MPPlayRoomEventReq:      g.MPPlayRoomEvent,
+		cmd.MPPlayRoomExitReq:       g.MPPlayRoomExit,
+		cmd.MPPlayRoomRewardInfoReq: g.MPPlayRoomRewardInfo,
+		cmd.MPSwapCharacterReq:      g.MPSwapCharacter,
+		cmd.MPBeaconActionReq:       g.MPBeaconAction,
+		cmd.MPBeaconPlayerReadyReq:  g.MPBeaconPlayerReady,
+		// 照片墙与好友心愿单。
+		cmd.UploadPhotoShareReq:               g.UploadPhotoShare,
+		cmd.PhotoShareDetailReq:               g.PhotoShareDetail,
+		cmd.ChangePhotoShareTitleReq:          g.ChangePhotoShareTitle,
+		cmd.OperatePhotoShareReq:              g.OperatePhotoShare,
+		cmd.PhotoShareCopyFashionDyeReq:       g.PhotoShareCopyFashionDye,
+		cmd.PhotoSharePaymentAddUploadGridReq: g.PhotoSharePaymentAddUploadGrid,
+		cmd.WishListOperateReq:                g.WishListOperate,
+		cmd.WishListByShopIdReq:               g.WishListByShopId,
+		cmd.WishListBuyReq:                    g.WishListBuy,
+		// 限时探索。
+		cmd.IntervalStartReq:  g.IntervalStart,
+		cmd.IntervalJoinReq:   g.IntervalJoin,
+		cmd.IntervalQuickReq:  g.IntervalQuick,
+		cmd.IntervalRewardReq: g.IntervalReward,
 	}
 }
 
 func (g *Game) routeHandle(conn ofnet.Conn, userId uint32, uuid string, msg *alg.GameMsg) {
-	if msg.MsgId == cmd.PlayerLoginReq {
+	if msg == nil {
+		return
+	}
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			log.Game.Errorf("玩家:%v 请求:%v 触发 panic:%v\n%s", userId, msg.MsgId, recovered, debug.Stack())
+			if player := g.GetUser(userId); player != nil {
+				player.Online = false
+				player.NetFreeze = true
+				delete(g.userMap, userId)
+			}
+			if conn != nil {
+				conn.Close()
+			}
+		}
+	}()
+	switch msg.MsgId {
+	case cmd.PlayerLoginReq:
 		g.PlayerLogin(conn, userId, uuid, msg)
+		return
+	case cmd.VerifyLoginTokenReq:
+		g.VerifyLoginToken(conn, msg)
 		return
 	}
 	handlerFunc, ok := g.handlerFuncRouteMap[msg.MsgId]

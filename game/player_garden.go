@@ -2,6 +2,7 @@ package game
 
 import (
 	"maps"
+	"strconv"
 
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/pkg/alg"
@@ -28,12 +29,20 @@ func (g *Game) SwitchGardenStatus(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) GardenLikeRecord(s *model.Player, msg *alg.GameMsg) {
-	// req := msg.Body.(*proto.GardenLikeRecordReq)
 	rsp := &proto.GardenLikeRecordRsp{
 		Status: proto.StatusCode_StatusCode_OK,
 		Record: make([]*proto.GardenLikeRecordInfo, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
+	count, _ := strconv.ParseUint(s.GetArchive().GetArchiveValue("garden:likes"), 10, 32)
+	if count > 0 {
+		alg.AddList(&rsp.Record, &proto.GardenLikeRecordInfo{
+			PlayerId: s.UserId,
+			Name:     s.NickName,
+			LikeNum:  uint32(count),
+			Sign:     s.GetArchive().GetArchiveValue("sign"),
+		})
+	}
 }
 
 func (g *Game) GardenFurnitureScheme(s *model.Player, msg *alg.GameMsg) {
@@ -160,6 +169,7 @@ func (g *Game) GardenPlaceCharacter(s *model.Player, msg *alg.GameMsg) {
 		}
 	}
 	s.GetCharacterModel().SetPlacedCharacter(req.CharacterId, req.IsRemove)
+	garden.Save()
 	scenePlayer.channelInfo.gardenFurnitureChan <- &SceneGardenFurnitureCtx{
 		Remove:      req.IsRemove,
 		CharacterId: req.CharacterId,

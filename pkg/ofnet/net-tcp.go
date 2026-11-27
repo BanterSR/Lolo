@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"sync"
@@ -106,6 +107,15 @@ func (x *tcpConn) Read() (*alg.GameMsg, error) {
 			x.net.log.Errorf("Could not parse PacketHead proto Error:%s\n", err)
 			return nil, err
 		}
+		if head.MsgId == 0 {
+			return nil, fmt.Errorf("invalid msg_id %d", head.MsgId)
+		}
+		if head.Flag > 1 {
+			return nil, fmt.Errorf("unsupported packet flag %d", head.Flag)
+		}
+		if head.BodyLen > alg.PacketMaxLen {
+			return nil, fmt.Errorf("body_len %d exceeds max %d", head.BodyLen, alg.PacketMaxLen)
+		}
 
 		// body
 		bodyByte := make([]byte, head.BodyLen)
@@ -114,7 +124,10 @@ func (x *tcpConn) Read() (*alg.GameMsg, error) {
 			return nil, err
 		}
 		x.net.recordRecvBytes(alg.TcpHeadSize + int(headLen) + int(head.BodyLen))
-		bodyByte = alg.HandleFlag(head.Flag, bodyByte)
+		bodyByte, err = alg.HandleFlag(head.Flag, bodyByte)
+		if err != nil {
+			return nil, err
+		}
 		protoObj := cmd.Get().GetProtoObjByCmdId(head.MsgId)
 		if protoObj == nil {
 			x.net.log.Errorf("protoObj by cmdId:%d\n", head.MsgId)

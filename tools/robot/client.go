@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"net"
 	"sync"
@@ -102,6 +103,12 @@ func (x *Client) Recv() (*alg.GameMsg, error) {
 		if err := pb.Unmarshal(headByte, head); err != nil {
 			return nil, err
 		}
+		if head.Flag > 1 {
+			return nil, fmt.Errorf("unsupported packet flag %d", head.Flag)
+		}
+		if head.BodyLen > alg.PacketMaxLen {
+			return nil, fmt.Errorf("body_len %d exceeds max %d", head.BodyLen, alg.PacketMaxLen)
+		}
 
 		bodyByte := make([]byte, head.BodyLen)
 		if _, err := io.ReadFull(x.buf, bodyByte); err != nil {
@@ -111,7 +118,10 @@ func (x *Client) Recv() (*alg.GameMsg, error) {
 			atomic.AddInt64(&x.m.bytesRecv, int64(alg.TcpHeadSize+int(headLen)+int(head.BodyLen)))
 		}
 
-		bodyByte = alg.HandleFlag(head.Flag, bodyByte)
+		bodyByte, err := alg.HandleFlag(head.Flag, bodyByte)
+		if err != nil {
+			return nil, err
+		}
 		protoObj := cmd.Get().GetProtoObjByCmdId(head.MsgId)
 		if protoObj == nil {
 			// 未知消息，跳过继续读

@@ -23,9 +23,67 @@ func (b *Bot) runScenario(ctx context.Context) {
 		return
 	case "scene":
 		b.scenarioScene(ctx)
+	case "quest":
+		b.scenarioQuest(ctx)
+	case "life":
+		b.scenarioLife(ctx)
+	case "loot":
+		b.scenarioLoot(ctx)
 	default:
 		b.scenarioSteady(ctx)
 	}
+}
+
+func (b *Bot) scenarioQuest(ctx context.Context) {
+	if b.send(&proto.PlayerMainDataReq{}) != nil {
+		return
+	}
+	mainMsg, err := b.waitHS(func(m *alg.GameMsg) bool {
+		_, ok := m.Body.(*proto.PlayerMainDataRsp)
+		return ok
+	})
+	if err != nil {
+		logOnce(&logLoginErrOnce, "任务烟测获取主数据失败:%v", err)
+		return
+	}
+	mainData := mainMsg.Body.(*proto.PlayerMainDataRsp)
+	if mainData.GetQuestDetail() == nil || len(mainData.GetQuestDetail().GetQuests()) == 0 {
+		logOnce(&logLoginErrOnce, "任务烟测未找到已接取任务")
+		return
+	}
+	questId := mainData.GetQuestDetail().GetQuests()[0].GetQuestId()
+	if b.send(&proto.TutorialReq{TutorialName: "quest-smoke"}) != nil {
+		return
+	}
+	if _, err := b.waitHS(func(m *alg.GameMsg) bool {
+		_, ok := m.Body.(*proto.TutorialRsp)
+		return ok
+	}); err != nil {
+		logOnce(&logLoginErrOnce, "任务烟测教程确认失败:%v", err)
+		return
+	}
+	claimId := questId
+	questType := proto.EQuestType_EQuestType_None
+	if b.cfg.QuestStoryID > 0 {
+		claimId = b.cfg.QuestStoryID
+		questType = proto.EQuestType_EQuestType_MainQuest
+	}
+	if b.send(&proto.ClaimQuestRewardReq{QuestId: claimId, QuestType: questType}) != nil {
+		return
+	}
+	claim, err := b.waitHS(func(m *alg.GameMsg) bool {
+		_, ok := m.Body.(*proto.ClaimQuestRewardRsp)
+		return ok
+	})
+	if err != nil {
+		logOnce(&logLoginErrOnce, "任务烟测领奖失败:%v", err)
+		return
+	}
+	if claim.Body.(*proto.ClaimQuestRewardRsp).GetStatus() != proto.StatusCode_StatusCode_OK {
+		logOnce(&logLoginErrOnce, "任务烟测领奖被拒:%v", claim.Body.(*proto.ClaimQuestRewardRsp).GetStatus())
+		return
+	}
+	logOnce(&logQuestOKOnce, "任务烟测领奖成功 quest=%d items=%d", claimId, len(claim.Body.(*proto.ClaimQuestRewardRsp).GetItems()))
 }
 
 // scenarioSteady 定常运转：周期性 ping 保活 + 间歇性拉取主数据。

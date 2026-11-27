@@ -1,6 +1,7 @@
 package game
 
 import (
+	"errors"
 	"time"
 
 	"gucooing/lolo/db"
@@ -42,14 +43,7 @@ func (g *Game) PrivateChatMsgRecord(s *model.Player, msg *alg.GameMsg) {
 		MsgRecord: make([]*proto.ChatMsgData, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
-	// 好友判断
-	if count, err := db.GetIsFiend(s.UserId, req.TargetPlayerId); err != nil {
-		log.Game.Warnf("UserId:%v db.GetIsFiend err:%v", s.UserId, err)
-		return
-	} else if count == 0 {
-		return
-	}
-	// 获取聊天内容
+	// 历史只按会话双方鉴权，删除好友或拉黑后仍保留可查询的历史。
 	privateMsgs, err := db.GetAllChatPrivateMsg(s.UserId, req.TargetPlayerId)
 	if err != nil {
 		log.Game.Warnf("UserId:%v db.GetAllChatPrivateMsg err:%v", s.UserId, err)
@@ -110,19 +104,13 @@ func (g *Game) SendChatMsg(s *model.Player, msg *alg.GameMsg) {
 		}
 		chatChannel.channel.allSendMsgChan <- chatMsgData
 	case proto.ChatChannelType_ChatChannel_Private: // 私聊
-		// 好友判断
-		if count, err := db.GetIsFiend(s.UserId, req.PlayerId); err != nil {
-			log.Game.Warnf("UserId:%v db.GetIsFiend err:%v", s.UserId, err)
-			return
-		} else if count == 0 {
-			return
-		}
-		// 写入数据库
+		// 黑名单、双向好友、消息写入和接收者未读更新由数据库在一个事务内完成。
 		privateMsg := &db.OFChatPrivateMsg{
 			UserId:    s.UserId,
 			OFChatMsg: chatMsg,
 		}
 		if err := db.CreateChatPrivateMsg(req.PlayerId, privateMsg); err != nil {
+			rsp.Status = privateChatErrorStatus(err)
 			log.Game.Warnf("UserId:%v db.CreateChatPrivateMsg err:%v", s.UserId, err)
 			return
 		}
@@ -130,6 +118,17 @@ func (g *Game) SendChatMsg(s *model.Player, msg *alg.GameMsg) {
 		if user := g.GetUser(req.PlayerId); user != nil {
 			g.ChatPrivateMsgNotice(user, chatMsgData)
 		}
+	}
+}
+
+func privateChatErrorStatus(err error) proto.StatusCode {
+	switch {
+	case errors.Is(err, db.ErrPrivateChatBlocked):
+		return proto.StatusCode_StatusCode_FRIEND_BLACK
+	case errors.Is(err, db.ErrPrivateChatNotAllowed), errors.Is(err, db.ErrInvalidSocialTarget):
+		return proto.StatusCode_StatusCode_FRIEND_NOT_EXIST
+	default:
+		return proto.StatusCode_StatusCode_CHAT_CHANNEL_NOT_EXIST
 	}
 }
 

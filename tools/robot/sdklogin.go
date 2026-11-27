@@ -88,17 +88,27 @@ func sdkPost(fullURL string, body any, sign bool, out any) error {
 		form.Set("sign", alg.SingBytes(plain, singKey))
 	}
 
-	resp, err := httpClient.PostForm(fullURL, form)
-	if err != nil {
-		return err
+	for attempt := 0; attempt < 3; attempt++ {
+		resp, err := httpClient.PostForm(fullURL, form)
+		if err == nil {
+			data, readErr := io.ReadAll(resp.Body)
+			_ = resp.Body.Close()
+			if readErr == nil && resp.StatusCode < 500 {
+				if resp.StatusCode != http.StatusOK {
+					return fmt.Errorf("http %d: %s", resp.StatusCode, string(data))
+				}
+				return json.Unmarshal(data, out)
+			}
+			if readErr == nil && resp.StatusCode >= 500 {
+				err = fmt.Errorf("http %d: %s", resp.StatusCode, string(data))
+			} else {
+				err = readErr
+			}
+		}
+		if attempt == 2 {
+			return err
+		}
+		time.Sleep(time.Duration(attempt+1) * 50 * time.Millisecond)
 	}
-	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("http %d: %s", resp.StatusCode, string(data))
-	}
-	return json.Unmarshal(data, out)
+	return nil
 }

@@ -41,5 +41,8 @@ func (g *GameConfig) loadStory() {
 }
 
 func GetStoryChapters() map[uint32]*StoryChapter {
+	if cc == nil || cc.Excel == nil || cc.Excel.Story == nil {
+		return nil
+	}
 	return cc.Excel.Story.StoryChapters
 }

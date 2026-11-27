@@ -1,5 +1,14 @@
 package db
 
+import (
+	"errors"
+	"sync"
+
+	"gorm.io/gorm"
+)
+
+var accountCreateMu sync.Mutex
+
 // 快游戏sdk
 type OFQuick struct {
 	ID        uint32 `gorm:"primarykey;autoIncrement;index"`
@@ -26,15 +35,24 @@ func GetOFQuick(id uint32) (*OFQuick, error) {
 }
 
 func OrCreateOFQuick(username, password string) (*OFQuick, error) {
+	accountCreateMu.Lock()
+	defer accountCreateMu.Unlock()
+
 	q := &OFQuick{
 		Username: username,
 		Password: password,
 	}
-	err := db.Where("username = ?", username).FirstOrCreate(q).Error
-	if err != nil {
+	err := db.Where("username = ?", username).First(q).Error
+	if err == nil {
+		return q, nil
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
-	return q, err
+	if err = db.Create(q).Error; err != nil {
+		return nil, err
+	}
+	return q, nil
 }
 
 func UpOFQuick(q *OFQuick) error {

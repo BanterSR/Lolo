@@ -104,6 +104,12 @@ func (g *GameConfig) load() {
 	g.loadMake()
 	g.loadTreasureBox()
 	g.loadMonster()
+	g.loadBlessingTree()
+	g.loadActivityInvite()
+	g.loadInteractionActivity()
+	g.loadDyeStuff()
+	g.loadQuickObtaining()
+	g.loadAchieveQuest()
 
 	// config
 	g.loadSceneConfig()
@@ -146,7 +152,13 @@ type Excel struct {
 	HomeItem       *HomeItem
 	Make           *Make
 	TreasureBox    *TreasureBox
-	Monster        *Monster
+	Monster             *Monster
+	BlessingTree        *BlessingTree
+	ActivityInvite      *ActivityInvite
+	InteractionActivity *InteractionActivity
+	DyeStuff            *DyeStuff
+	QuickObtaining      *QuickObtaining
+	AchieveQuest        *AchieveQuest
 }
 
 type Config struct {

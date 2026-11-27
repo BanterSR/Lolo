@@ -1,5 +1,11 @@
 package db
 
+import (
+	"errors"
+
+	"gorm.io/gorm"
+)
+
 // 家园数据
 type OFHome struct {
 	ID                     uint64 `gorm:"primarykey;autoIncrement"`
@@ -18,12 +24,17 @@ type OFHome struct {
 
 // 获取/创建家园
 func GetOFHome(userId, sceneId uint32) (*OFHome, error) {
+	accountCreateMu.Lock()
+	defer accountCreateMu.Unlock()
+
 	h := &OFHome{
 		UserID:  userId,
 		SceneID: sceneId,
 	}
-	err := db.Where("user_id = ? AND scene_id = ?", userId, sceneId).
-		FirstOrCreate(&h).Error
+	err := db.Where("user_id = ? AND scene_id = ?", userId, sceneId).First(h).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		err = db.Create(h).Error
+	}
 	return h, err
 }
 

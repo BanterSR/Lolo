@@ -113,6 +113,8 @@ func (sm *SceneModel) GetSceneInfo(sceneId uint32) *SceneInfo {
 		}
 		list[sceneId] = info
 	}
+	// 新建和旧存档恢复都立即补齐规则上限；后续访问还会按服务器日刷新。
+	info.RefreshGatherLimits(GatherServerDay(time.Now()))
 	return info
 }
 
@@ -139,9 +141,7 @@ func (si *SceneInfo) GetAreaDatas() map[uint32]*AreaData {
 }
 
 func (si *SceneInfo) GetGatherLimits() map[uint32]*GatherLimit {
-	if si.GatherLimits == nil {
-		si.GatherLimits = make(map[uint32]*GatherLimit)
-	}
+	si.RefreshGatherLimits(GatherServerDay(time.Now()))
 	return si.GatherLimits
 }
 
@@ -232,6 +232,53 @@ type GatherLimit struct {
 	GatherNum           uint32 `json:"gatherNum,omitempty"`
 	GatherLimitNum      uint32 `json:"gatherLimitNum,omitempty"`
 	LuckyGatherLimitNum uint32 `json:"luckyGatherLimitNum,omitempty"`
+	LastGatherDay       int64  `json:"lastGatherDay,omitempty"` // 计数所属服务器日，0 表示尚未记录服务器日的旧存档
+}
+
+// GatherServerDay 与副本每日刷新一致，使用 UTC+8 服务器日。
+func GatherServerDay(t time.Time) int64 {
+	const serverOffset = int64(8 * 60 * 60)
+	return (t.Unix() + serverOffset) / (24 * 60 * 60)
+}
+
+// RefreshGatherLimits 用当前场景规则覆盖存档中的上限，并仅在新服务器日清零累计次数。
+// 旧存档没有 LastGatherDay 时只补记日期，保留累计次数，避免恢复存档时绕过收紧后的上限。
+func (si *SceneInfo) RefreshGatherLimits(day int64) {
+	if si == nil {
+		return
+	}
+	if si.GatherLimits == nil {
+		si.GatherLimits = make(map[uint32]*GatherLimit)
+	}
+	rule := gdconf.GetSceneGatherRuleConfigure(si.SceneId)
+	for gatherType := uint32(0); gatherType < gdconf.GatherTypeCount; gatherType++ {
+		normal, lucky, _ := gdconf.GatherRuleLimits(rule, gatherType)
+		limit := si.GatherLimits[gatherType]
+		if limit == nil {
+			limit = &GatherLimit{GatherType: gatherType, LastGatherDay: day}
+			si.GatherLimits[gatherType] = limit
+		}
+		limit.GatherLimitNum = normal
+		limit.LuckyGatherLimitNum = lucky
+		if limit.LastGatherDay == 0 {
+			limit.LastGatherDay = day
+		} else if limit.LastGatherDay != day {
+			limit.GatherNum = 0
+			limit.LastGatherDay = day
+		}
+	}
+	// 损坏或越界的旧条目也只保留计数展示，上限为 0，采集校验会拒绝。
+	for gatherType, limit := range si.GatherLimits {
+		if gatherType < gdconf.GatherTypeCount {
+			continue
+		}
+		if limit == nil {
+			limit = &GatherLimit{GatherType: gatherType, LastGatherDay: day}
+			si.GatherLimits[gatherType] = limit
+		}
+		limit.GatherLimitNum = 0
+		limit.LuckyGatherLimitNum = 0
+	}
 }
 
 func (g *GatherLimit) GatherLimit() *proto.GatherLimit {
@@ -259,12 +306,8 @@ func (si *SceneInfo) GetGatherLimit(t uint32) *GatherLimit {
 	list := si.GetGatherLimits()
 	info, ok := list[t]
 	if !ok {
-		info = &GatherLimit{
-			GatherType:          t,
-			GatherNum:           0,
-			GatherLimitNum:      0,
-			LuckyGatherLimitNum: 0,
-		}
+		// 类型越界时仍返回零上限，调用方不能将其视为无限。
+		info = &GatherLimit{GatherType: t, LastGatherDay: GatherServerDay(time.Now())}
 		list[t] = info
 	}
 	return info
@@ -278,6 +321,9 @@ type ScenePlayerInfo struct {
 	Team     *TeamInfo
 	SceneId  uint32
 	TempPack *SceneTempPack // 临时背包
+	// DeadMonsters is authoritative only for the current scene visit. A new
+	// visit gets a fresh round; client-supplied IDs cannot create entries.
+	DeadMonsters map[uint32]uint32 `json:"-"`
 }
 
 func (p *ScenePlayerInfo) GetScenePlayerInfo() *ScenePlayerInfo {
@@ -348,6 +394,11 @@ func NewScenePlayerInfo(p *Player, sceneID *uint32, team *TeamInfo, pos, rot *pr
 		SceneId:  *sceneID,
 		TempPack: newSceneTempPack(),
 	}
+	if restored, err := p.LoadTempPackArchive(); err == nil {
+		sp.TempPack = restored
+	} else {
+		log.Game.Errorf("玩家:%v 临时背包恢复失败:%s", p.UserId, err)
+	}
 	return sp
 }
 
@@ -361,6 +412,9 @@ func (p *ScenePlayerInfo) GetPbSceneTeam() (info *proto.SceneTeam) {
 }
 
 func (p *ScenePlayerInfo) GetPbSceneCharacter(characterId uint32) (info *proto.SceneCharacter) {
+	if characterId == 0 {
+		return nil
+	}
 	characterInfo := p.GetCharacterModel().GetCharacterInfo(characterId)
 	if characterInfo == nil {
 		log.Game.Debugf("玩家:%v队伍角色:%v不存在", p.UserId, characterId)

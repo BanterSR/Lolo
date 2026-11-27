@@ -28,13 +28,11 @@ func Close() {
 	}
 	if Gate != nil {
 		Gate.Close()
-		Gate.Close()
 	}
 	if Game != nil {
 		Game.Close()
 	}
 	if ClientLog != nil {
-		ClientLog.Close()
 		ClientLog.Close()
 	}
 	if Packet != nil {

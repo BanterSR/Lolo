@@ -12,7 +12,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	log2 "log"
 	"net/http"
 	"sort"
 	"strings"
@@ -42,18 +41,21 @@ type GameMsg struct {
 	Body pb.Message
 }
 
-func HandleFlag(flag uint32, body []byte) []byte {
+func HandleFlag(flag uint32, body []byte) ([]byte, error) {
 	switch flag {
 	case 0:
-		// 不处理
-		return body
+		return body, nil
 	case 1:
-		var dst []byte
-		dst, _ = snappy.Decode(nil, body)
-		return dst
+		decodedLen, err := snappy.DecodedLen(body)
+		if err != nil {
+			return nil, err
+		}
+		if decodedLen > PacketMaxLen {
+			return nil, fmt.Errorf("decoded body length %d exceeds max %d", decodedLen, PacketMaxLen)
+		}
+		return snappy.Decode(nil, body)
 	default:
-		log2.Printf("Unknown flag:%d\n", flag)
-		return body
+		return nil, fmt.Errorf("unsupported packet flag %d", flag)
 	}
 }
 
@@ -333,5 +335,6 @@ func ProxyGin(c *gin.Context, url string) {
 	if err != nil {
 		return
 	}
-	fmt.Sprintf(string(body))
+	// 响应体仅用于探测可用性，调用方不需要内容。
+	_ = body
 }

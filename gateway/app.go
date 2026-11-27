@@ -1,8 +1,10 @@
 package gateway
 
 import (
-	"gucooing/lolo/pkg/cache"
+	"sync"
 	"time"
+
+	"gucooing/lolo/pkg/cache"
 
 	"github.com/bytedance/sonic"
 	"github.com/gin-gonic/gin"
@@ -32,10 +34,42 @@ type Gateway struct {
 }
 
 type session struct {
-	userId uint32
-	uuid   string
-	conn   ofnet.Conn
-	done   chan struct{}
+	userId   uint32
+	uuid     string
+	conn     ofnet.Conn
+	done     chan struct{}
+	doneOnce sync.Once
+}
+
+func (s *session) stop() {
+	if s == nil {
+		return
+	}
+	s.doneOnce.Do(func() {
+		if s.done != nil {
+			close(s.done)
+		}
+	})
+}
+
+func (g *Gateway) activateSession(next *session) *session {
+	previous, ok := g.sessionMap.Get(next.userId)
+	if ok {
+		previous.stop()
+		g.sessionMap.Del(next.userId)
+	}
+	g.sessionMap.Set(next.userId, next)
+	return previous
+}
+
+func (g *Gateway) removeSessionIfCurrent(se *session) {
+	if se == nil {
+		return
+	}
+	current, ok := g.sessionMap.Get(se.userId)
+	if ok && current == se {
+		g.sessionMap.Del(se.userId)
+	}
 }
 
 func NewGateway(router *gin.Engine, gs *game.Game) *Gateway {
@@ -151,10 +185,7 @@ func (g *Gateway) receive(se *session) {
 			Reason:     proto.PlayerOfflineReason_PlayerOfflineReason_NONE,
 			KillPlayer: false,
 		}
-		ose, ok := g.sessionMap.Get(se.userId)
-		if ok && ose.uuid == se.uuid {
-			g.sessionMap.Del(se.userId)
-		}
+		g.removeSessionIfCurrent(se)
 		se.conn.Close()
 	}()
 	for {

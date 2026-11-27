@@ -7,6 +7,7 @@ import (
 type ArchiveModel struct {
 	ArchiveMap            map[string]string              `json:"archiveMap,omitempty"`
 	PosterIllustrationMap map[uint32]*PosterIllustration `json:"posterIllustrationMap,omitempty"`
+	Activity              *ActivityModel                 `json:"activity,omitempty"`
 }
 
 func (s *Player) GetArchive() *ArchiveModel {

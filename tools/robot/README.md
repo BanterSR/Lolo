@@ -16,6 +16,9 @@ snappy 压缩、无加密），协议消息复用 `protocol/proto` 与 `protocol
   - `login`   登录风暴：完成登录即断开重连，压登录/登出链路
   - `steady`  定常运转：周期 ping 保活 + 间歇拉取主数据
   - `scene`   场景同步：加入房间后循环上报角色移动 + 偶发动作（战斗为纯客户端，故压场景行为）
+  - `quest`   任务链：完成一段可配置任务并校验响应
+  - `life`    生活技能：覆盖四类生活技能的基础状态与生产响应
+  - `loot`    拾取链安全：伪造采集、重复伪造拾取和伪造副本宝箱必须被拒绝
 
 任意组合，如 `scene + endurance`、`steady + profile`。
 
@@ -30,6 +33,9 @@ go build -o robot.exe ./tools/robot/
 ```bash
 # 常规一次性快照：1000 并发，30s 爬坡，保持 5 分钟
 robot -mode routine  -scenario scene  -ccu 1000 -ramp 30s -duration 5m
+
+# 拾取链安全烟测：服务端必须拒绝伪造采集/拾取/宝箱请求
+robot -mode routine -scenario loot -ccu 1 -ramp 0s -duration 10s
 
 # 持久 soak：500 并发保持 6 小时，掉线自动重连
 robot -mode endurance -scenario steady -ccu 500 -duration 6h
@@ -50,7 +56,7 @@ robot -mode profile -pattern spike -base 100 -peak 3000 -spike 15s -step-hold 30
 | `-gate` | 网关 TCP 地址 | `127.0.0.1:11000` |
 | `-sdk` | SDK HTTP 基地址 | `http://127.0.0.1:8080` |
 | `-mode` | `routine\|endurance\|profile` | `routine` |
-| `-scenario` | `login\|steady\|scene` | `steady` |
+| `-scenario` | `login\|steady\|scene\|quest\|life\|loot` | `steady` |
 | `-ccu` | 目标并发 bot 数 | `100` |
 | `-ramp` / `-duration` | 爬坡 / 保持时长 | `10s` / `60s` |
 | `-pattern` | profile 内置曲线 `step\|wave\|spike` | 空 |
@@ -80,7 +86,7 @@ robot -mode profile -pattern spike -base 100 -peak 3000 -spike 15s -step-hold 30
 
   // ---- 测试模式 × 场景（两个正交维度）----
   "mode":     "routine",           // 模式: routine 常规 | endurance 持久 | profile 规则
-  "scenario": "scene",             // 场景: login 登录风暴 | steady 定常 | scene 场景同步
+  "scenario": "scene",             // 场景: login 登录风暴 | steady 定常 | scene 场景同步 | quest 任务 | life 生活 | loot 拾取安全
 
   // ---- routine / endurance 参数 ----
   "ccu":      200,                 // 目标并发 bot 数（峰值在线机器人数）

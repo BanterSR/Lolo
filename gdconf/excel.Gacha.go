@@ -124,3 +124,7 @@ func isOpenGacha(g *excel.GachaInfoConfigure) bool {
 func GetGachaData(gachaId uint32) *GachaData {
 	return cc.Excel.Gacha.GachaDatas[gachaId]
 }
+
+func GetGachaRewardPool(id int32) *excel.GachaRewardPoolConfigure {
+	return cc.Excel.Gacha.rewardPoolMap[id]
+}

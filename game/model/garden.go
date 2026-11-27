@@ -105,6 +105,13 @@ type SceneGardenData struct {
 	PlacedCharacterMap          []*proto.ScenePlacedCharacter    `json:"placedCharacterMap,omitempty"`     // 摆放的角色
 }
 
+func decodeGardenBlob(target interface{}, bin []byte) error {
+	if len(bin) == 0 {
+		return nil
+	}
+	return sonic.Unmarshal(bin, target)
+}
+
 func GetSceneGardenData(userId, sceneId uint32) *SceneGardenData {
 	if sceneId != 9999 {
 		return &SceneGardenData{
@@ -147,14 +154,20 @@ func GetSceneGardenData(userId, sceneId uint32) *SceneGardenData {
 				OtherPlayerFurnitureInfoMap: make(map[uint32]*FurnitureDetailsInfo),
 				PlacedCharacterMap:          make([]*proto.ScenePlacedCharacter, 0),
 			}
-			unmarshal := func(obf interface{}, bin []byte) {
-				if err := sonic.Unmarshal(bin, &obf); err != nil {
+			unmarshal := func(target interface{}, bin []byte) {
+				if err := decodeGardenBlob(target, bin); err != nil {
 					log.Game.Errorf("UserId:%v SceneId:%v SceneGardenData Unmarshal err:%v",
 						userId, sceneId, err)
 				}
 			}
 			unmarshal(&data.GardenFurnitureInfoMap, home.GardenFurnitureInfoMap)
 			unmarshal(&data.PlacedCharacterMap, home.PlacedCharacterMap)
+			if data.GardenFurnitureInfoMap == nil {
+				data.GardenFurnitureInfoMap = make(map[int64]*FurnitureDetailsInfo)
+			}
+			if data.PlacedCharacterMap == nil {
+				data.PlacedCharacterMap = make([]*proto.ScenePlacedCharacter, 0)
+			}
 
 			sceneGardenCache.Set(fmt.Sprintf("%v|%v", userId, sceneId), data)
 		}
@@ -185,11 +198,19 @@ func ToVector3(v *proto.Vector3) *Vector3 {
 }
 
 func (f *FurnitureDetailsInfo) FurnitureDetailsInfo() *proto.FurnitureDetailsInfo {
+	pos := f.Pos
+	if pos == nil {
+		pos = &Vector3{}
+	}
+	rotation := f.Rotation
+	if rotation == nil {
+		rotation = &Vector3{}
+	}
 	return &proto.FurnitureDetailsInfo{
 		FurnitureId:     f.FurnitureId,
 		FurnitureItemId: f.FurnitureItemId,
-		Pos:             f.Pos.Vector3(),
-		Rotation:        f.Rotation.Vector3(),
+		Pos:             pos.Vector3(),
+		Rotation:        rotation.Vector3(),
 		LayerNum:        f.LayerNum,
 	}
 }
@@ -306,11 +327,11 @@ func (s *SceneGardenData) GardenBaseInfo() *proto.GardenBaseInfo {
 	info := &proto.GardenBaseInfo{
 		LikesNum:           s.LikesNum,
 		AccessNum:          s.AccessPlayerNum,
-		FurnitureNum:       0, // 家具数量
+		FurnitureNum:       uint32(len(s.GardenFurnitureInfoMap)),
 		FurnitureLimitNum:  gdconf.GetConstant().FurnitureLimitNum,
 		IsOpen:             s.IsOpen,
 		Password:           s.Password,
-		PasswordExpireTime: 0,
+		PasswordExpireTime: s.PasswordExpireTime,
 	}
 	return info
 }

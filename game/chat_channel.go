@@ -140,6 +140,7 @@ type ChatChannel struct {
 func newChatChannel() *ChatChannel {
 	info := &ChatChannel{
 		msgList:        make([]*proto.ChatMsgData, 0, maxCapacity),
+		doneChan:       make(chan struct{}),
 		addUserChan:    make(chan *ChannelUser, 100),
 		allSendMsgChan: make(chan *proto.ChatMsgData, 100),
 		delUserChan:    make(chan uint32, 100),

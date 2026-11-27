@@ -283,13 +283,13 @@ func exportFullPrivateKeyToPEM(n, e, d, p, q *big.Int) (string, error) {
 }
 
 func main() {
-	fmt.Println("=== 使用FlyRSA的'e'值生成RSA密钥对 ===\n")
+	fmt.Println("=== 使用FlyRSA的'e'值生成RSA密钥对 ===")
 
 	// 1. 解析自定义的e值
 	e := new(big.Int)
 	e.SetString(customEHex, 16)
 
-	fmt.Printf("自定义e值:\n")
+	fmt.Println("自定义e值:")
 	fmt.Printf("十六进制长度: %d 字符\n", len(customEHex))
 	fmt.Printf("位长度: %d bits\n", e.BitLen())
 	fmt.Printf("值: %s\n\n", customEHex)

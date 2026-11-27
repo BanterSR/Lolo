@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/glebarez/sqlite"
@@ -84,7 +85,13 @@ func NewDB(option *Option) error {
 	}
 
 	time1 := time.Now()
-	err = d.db.AutoMigrate(
+	migrationDB := d.db.Clauses(dbresolver.Write)
+	// 必须先合并旧版反向/重复私聊会话，避免 AutoMigrate 添加唯一索引时丢失历史。
+	if err = prepareChatMigration(migrationDB); err != nil {
+		_ = sqlDB.Close()
+		return err
+	}
+	err = migrationDB.AutoMigrate(
 		&OFQuick{},
 		&OFUser{},
 		&OFQuickCheck{},
@@ -99,6 +106,16 @@ func NewDB(option *Option) error {
 		&OFGachaRecord{},
 		&OFHome{},
 	)
+	if err == nil {
+		err = migrateFriendData(migrationDB)
+	}
+	if err == nil {
+		err = migrateChatData(migrationDB)
+	}
+	if err != nil {
+		_ = sqlDB.Close()
+		return err
+	}
 
 	if time.Now().Sub(time1) >= 2*time.Second {
 		log.Printf("数据库迁移耗时过长: %s 建议更换本地数据库", time.Now().Sub(time1).String())
@@ -109,7 +126,7 @@ func NewDB(option *Option) error {
 	// 启动异步落库分片写池
 	StartPersist(resolveShardNum(d.option.PersistShardNum, d.option.MaxOpenConns), d.option.PersistBufSize)
 
-	return err
+	return nil
 }
 
 // Close 关闭数据库:先排空异步落库队列,再关闭连接。关服时调用。
@@ -186,12 +203,30 @@ func (d *Database) newSqlite() error {
 			return err
 		}
 	}
-	openDb, err := gorm.Open(sqlite.Open(d.option.Dsn), d.getGormConfig())
+	openDb, err := gorm.Open(sqlite.Open(sqliteDSN(d.option.Dsn)), d.getGormConfig())
 	if err != nil {
 		return err
 	}
 	d.db = openDb
 	return nil
+}
+
+func sqliteDSN(dsn string) string {
+	separator := "?"
+	if strings.Contains(dsn, "?") {
+		separator = "&"
+	}
+	for _, pragma := range []string{
+		"_pragma=busy_timeout(5000)",
+		"_pragma=journal_mode(WAL)",
+		"_pragma=synchronous(FULL)",
+	} {
+		if !strings.Contains(dsn, pragma) {
+			dsn += separator + pragma
+			separator = "&"
+		}
+	}
+	return dsn
 }
 
 func (d *Database) newPostgres() error {
