@@ -72,6 +72,13 @@ var authoritativeDungeons = &dungeonService{
 	now:                time.Now,
 }
 
+func (g *Game) dungeonRuntime() *dungeonService {
+	if g != nil && g.dungeons != nil {
+		return g.dungeons
+	}
+	return authoritativeDungeons
+}
+
 func loadDungeonConfig(dungeonID uint32) (cfg *dungeonConfig, err error) {
 	// gdconf 的旧 getter 在配置未完整初始化时会解引用 nil。这里把这种配置错误
 	// 转换成拒绝进入，而不是让请求 panic 后落入默认奖励逻辑。
@@ -940,7 +947,7 @@ func (g *Game) cleanupDungeonPlayer(s *model.Player) {
 		return
 	}
 	if sd, ok := scenePlayer.CurScene.(*model.SceneDungeon); ok {
-		authoritativeDungeons.abandon(s, sd)
+		g.dungeonRuntime().abandon(s, sd)
 	}
 }
 

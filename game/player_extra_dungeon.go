@@ -61,7 +61,7 @@ func (g *Game) DungeonStarReward(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.DungeonStarRewardReq)
 	rsp := &proto.DungeonStarRewardRsp{Status: proto.StatusCode_StatusCode_OK, Rewards: make([]*proto.ItemDetail, 0)}
 	defer g.send(s, msg.PacketId, rsp)
-	cfg, status := authoritativeDungeons.config(req.DungeonId)
+	cfg, status := g.dungeonRuntime().config(req.DungeonId)
 	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
@@ -76,12 +76,12 @@ func (g *Game) DungeonStarReward(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 		return
 	}
-	rewards, status := authoritativeDungeons.rewards(cfg.StarRewardID)
+	rewards, status := g.dungeonRuntime().rewards(cfg.StarRewardID)
 	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
-	items, status := authoritativeDungeons.grantRewards(s, rewards)
+	items, status := g.dungeonRuntime().grantRewards(s, rewards)
 	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
@@ -97,7 +97,7 @@ func (g *Game) DungeonTaskFinishReward(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.DungeonTaskFinishRewardReq)
 	rsp := &proto.DungeonTaskFinishRewardRsp{Status: proto.StatusCode_StatusCode_OK, Rewards: make([]*proto.ItemDetail, 0)}
 	defer g.send(s, msg.PacketId, rsp)
-	cfg, status := authoritativeDungeons.config(req.DungeonId)
+	cfg, status := g.dungeonRuntime().config(req.DungeonId)
 	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
@@ -111,12 +111,12 @@ func (g *Game) DungeonTaskFinishReward(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 		return
 	}
-	rewards, status := authoritativeDungeons.rewards(cfg.RewardID)
+	rewards, status := g.dungeonRuntime().rewards(cfg.RewardID)
 	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
-	items, status := authoritativeDungeons.grantRewards(s, rewards)
+	items, status := g.dungeonRuntime().grantRewards(s, rewards)
 	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
@@ -132,7 +132,7 @@ func (g *Game) DungeonSweep(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.DungeonSweepReq)
 	rsp := &proto.DungeonSweepRsp{Status: proto.StatusCode_StatusCode_OK, Rewards: make([]*proto.ItemDetail, 0)}
 	defer g.send(s, msg.PacketId, rsp)
-	cfg, status := authoritativeDungeons.config(req.DungeonId)
+	cfg, status := g.dungeonRuntime().config(req.DungeonId)
 	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
@@ -151,12 +151,12 @@ func (g *Game) DungeonSweep(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 		return
 	}
-	rewards, status := authoritativeDungeons.rewards(cfg.RewardID)
+	rewards, status := g.dungeonRuntime().rewards(cfg.RewardID)
 	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
-	items, status := authoritativeDungeons.grantRewards(s, rewards)
+	items, status := g.dungeonRuntime().grantRewards(s, rewards)
 	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return

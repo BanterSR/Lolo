@@ -1,0 +1,511 @@
+{
+  "schema": 1,
+  "functions": {
+    "Lolo/game/collect_authority.go::addItemRewards": {
+      "callCount": 1,
+      "calls": [
+        "AddAllTypeItem@260"
+      ],
+      "category": "collection",
+      "idempotency": "state-check",
+      "transaction": "item-lock-or-snapshot",
+      "durability": "save-player-now-or-autosave"
+    },
+    "Lolo/game/dungeon_runtime.go::addDungeonReward": {
+      "callCount": 1,
+      "calls": [
+        "AddAllTypeItem@261"
+      ],
+      "category": "dungeon",
+      "idempotency": "dungeon-token-and-claim-state",
+      "transaction": "inventory-snapshot-plus-save",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/model/character.go::AddCharacter": {
+      "callCount": 1,
+      "calls": [
+        "AddItemWeapon@136"
+      ],
+      "category": "character",
+      "idempotency": "caller-required",
+      "transaction": "caller-required",
+      "durability": "player-blob"
+    },
+    "Lolo/game/model/equipment_growth.go::UseItem": {
+      "callCount": 1,
+      "calls": [
+        "AddAllTypeItem@1461"
+      ],
+      "category": "item",
+      "idempotency": "caller-required",
+      "transaction": "caller-required",
+      "durability": "player-blob"
+    },
+    "Lolo/game/model/gacha.go::Run": {
+      "callCount": 2,
+      "calls": [
+        "AddAllTypeItem@227",
+        "AddAllTypeItem@247"
+      ],
+      "category": "gacha",
+      "idempotency": "gacha-counters-only-no-request-key",
+      "transaction": "cost-and-grant-split",
+      "durability": "autosave-only"
+    },
+    "Lolo/game/model/garden.go::AddFurniture": {
+      "callCount": 1,
+      "calls": [
+        "AddFurnitureItem@232"
+      ],
+      "category": "other",
+      "idempotency": "caller-required",
+      "transaction": "caller-required",
+      "durability": "player-blob"
+    },
+    "Lolo/game/model/item.go::AddAllTypeItem": {
+      "callCount": 10,
+      "calls": [
+        "AddHead@149",
+        "AddItemArmor@167",
+        "AddItemBase@143",
+        "AddItemBase@147",
+        "AddItemBase@154",
+        "AddItemBase@159",
+        "AddItemInscription@171",
+        "AddItemPet@173",
+        "AddItemPoster@169",
+        "AddItemWeapon@163"
+      ],
+      "category": "item",
+      "idempotency": "caller-required",
+      "transaction": "caller-required",
+      "durability": "player-blob"
+    },
+    "Lolo/game/model/item.go::AllItemModel": {
+      "callCount": 1,
+      "calls": [
+        "AddAllTypeItem@57"
+      ],
+      "category": "item",
+      "idempotency": "caller-required",
+      "transaction": "caller-required",
+      "durability": "player-blob"
+    },
+    "Lolo/game/model/item.go::InitItem": {
+      "callCount": 2,
+      "calls": [
+        "AddItemBase@43",
+        "AddItemBase@44"
+      ],
+      "category": "item",
+      "idempotency": "caller-required",
+      "transaction": "caller-required",
+      "durability": "player-blob"
+    },
+    "Lolo/game/model/life.go::ClaimAchievement": {
+      "callCount": 1,
+      "calls": [
+        "applyLifeAdditions@1257"
+      ],
+      "category": "other",
+      "idempotency": "caller-required",
+      "transaction": "caller-required",
+      "durability": "player-blob"
+    },
+    "Lolo/game/model/life.go::Fish": {
+      "callCount": 1,
+      "calls": [
+        "applyLifeAdditions@1060"
+      ],
+      "category": "other",
+      "idempotency": "caller-required",
+      "transaction": "caller-required",
+      "durability": "player-blob"
+    },
+    "Lolo/game/model/life.go::ProduceRecipe": {
+      "callCount": 1,
+      "calls": [
+        "applyLifeAdditions@944"
+      ],
+      "category": "other",
+      "idempotency": "caller-required",
+      "transaction": "caller-required",
+      "durability": "player-blob"
+    },
+    "Lolo/game/player_activity.go::abyssQuestReward": {
+      "callCount": 1,
+      "calls": [
+        "grantItems@2124"
+      ],
+      "category": "quest",
+      "idempotency": "activity-model-state",
+      "transaction": "activity-snapshot-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_activity.go::activityGiftReward": {
+      "callCount": 1,
+      "calls": [
+        "grantItems@1465"
+      ],
+      "category": "activity",
+      "idempotency": "activity-model-state",
+      "transaction": "activity-snapshot-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_activity.go::activityQuestReward": {
+      "callCount": 2,
+      "calls": [
+        "grantItems@1271",
+        "grantItems@1337"
+      ],
+      "category": "quest",
+      "idempotency": "activity-model-state",
+      "transaction": "activity-snapshot-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_activity.go::activityRegularReward": {
+      "callCount": 1,
+      "calls": [
+        "grantItems@1410"
+      ],
+      "category": "activity",
+      "idempotency": "activity-model-state",
+      "transaction": "activity-snapshot-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_activity.go::activityTurntableDraw": {
+      "callCount": 1,
+      "calls": [
+        "grantItems@2012"
+      ],
+      "category": "activity",
+      "idempotency": "activity-model-state",
+      "transaction": "activity-snapshot-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_activity.go::battlePassLevelReward": {
+      "callCount": 1,
+      "calls": [
+        "grantItems@1663"
+      ],
+      "category": "activity",
+      "idempotency": "activity-model-state",
+      "transaction": "activity-snapshot-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_activity.go::getAchieveGroupAward": {
+      "callCount": 1,
+      "calls": [
+        "grantItems@2201"
+      ],
+      "category": "activity",
+      "idempotency": "activity-model-state",
+      "transaction": "activity-snapshot-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_activity.go::getOneAchieveAward": {
+      "callCount": 1,
+      "calls": [
+        "grantItems@2161"
+      ],
+      "category": "activity",
+      "idempotency": "activity-model-state",
+      "transaction": "activity-snapshot-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_activity.go::grantItems": {
+      "callCount": 1,
+      "calls": [
+        "AddAllTypeItem@927"
+      ],
+      "category": "activity",
+      "idempotency": "activity-model-state",
+      "transaction": "activity-snapshot-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_activity.go::monthCardReward": {
+      "callCount": 1,
+      "calls": [
+        "grantItems@1789"
+      ],
+      "category": "activity",
+      "idempotency": "activity-model-state",
+      "transaction": "activity-snapshot-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_activity.go::signIn": {
+      "callCount": 1,
+      "calls": [
+        "grantItems@1194"
+      ],
+      "category": "activity",
+      "idempotency": "activity-model-state",
+      "transaction": "activity-snapshot-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_activity.go::supplyBoxReward": {
+      "callCount": 1,
+      "calls": [
+        "grantItems@1912"
+      ],
+      "category": "activity",
+      "idempotency": "activity-model-state",
+      "transaction": "activity-snapshot-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_character.go::GetCharacterAchievementAward": {
+      "callCount": 0,
+      "calls": [],
+      "category": "character",
+      "idempotency": "server-ledger-plus-snapshot",
+      "transaction": "player-snapshot-atomic-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_collect.go::CollectMoon": {
+      "callCount": 1,
+      "calls": [
+        "addItemRewards@418"
+      ],
+      "category": "collection",
+      "idempotency": "state-check",
+      "transaction": "item-lock-or-snapshot",
+      "durability": "save-player-now-or-autosave"
+    },
+    "Lolo/game/player_collect.go::Collecting": {
+      "callCount": 1,
+      "calls": [
+        "addItemRewards@99"
+      ],
+      "category": "collection",
+      "idempotency": "state-check",
+      "transaction": "item-lock-or-snapshot",
+      "durability": "save-player-now-or-autosave"
+    },
+    "Lolo/game/player_collect.go::CollectionReward": {
+      "callCount": 1,
+      "calls": [
+        "addItemRewards@160"
+      ],
+      "category": "collection",
+      "idempotency": "state-check",
+      "transaction": "item-lock-or-snapshot",
+      "durability": "save-player-now-or-autosave"
+    },
+    "Lolo/game/player_collect.go::Gather": {
+      "callCount": 1,
+      "calls": [
+        "addItemRewards@275"
+      ],
+      "category": "collection",
+      "idempotency": "state-check",
+      "transaction": "item-lock-or-snapshot",
+      "durability": "save-player-now-or-autosave"
+    },
+    "Lolo/game/player_explore.go::<module>": {
+      "callCount": 1,
+      "calls": [
+        "AddAllTypeItem@43"
+      ],
+      "category": "explore",
+      "idempotency": "state-check",
+      "transaction": "item-lock-or-snapshot",
+      "durability": "save-player-now-or-autosave"
+    },
+    "Lolo/game/player_extra_rewards.go::ActivityInviteRewardClaim": {
+      "callCount": 0,
+      "calls": [],
+      "category": "activity",
+      "idempotency": "server-ledger-plus-snapshot",
+      "transaction": "player-snapshot-atomic-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_extra_rewards.go::ActivityRecallRewardClaim": {
+      "callCount": 0,
+      "calls": [],
+      "category": "activity",
+      "idempotency": "server-ledger-plus-snapshot",
+      "transaction": "player-snapshot-atomic-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_extra_rewards.go::ActivitySandbagReward": {
+      "callCount": 0,
+      "calls": [],
+      "category": "activity",
+      "idempotency": "server-ledger-plus-snapshot",
+      "transaction": "player-snapshot-atomic-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_extra_rewards.go::BlessTreeUnlock": {
+      "callCount": 1,
+      "calls": [
+        "AddAllTypeItem@115"
+      ],
+      "category": "reward",
+      "idempotency": "archive-or-activity-state",
+      "transaction": "cost-and-grant-split",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_extra_rewards.go::ItemSweep": {
+      "callCount": 0,
+      "calls": [],
+      "category": "reward",
+      "idempotency": "server-ledger-plus-snapshot",
+      "transaction": "player-snapshot-atomic-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_extra_rewards.go::PlayerAbilityLevelUp": {
+      "callCount": 1,
+      "calls": [
+        "AddAllTypeItem@484"
+      ],
+      "category": "reward",
+      "idempotency": "archive-or-activity-state",
+      "transaction": "cost-and-grant-split",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_extra_rewards.go::grantRewardItemPool": {
+      "callCount": 0,
+      "calls": [],
+      "category": "reward",
+      "idempotency": "server-ledger-plus-snapshot",
+      "transaction": "player-snapshot-atomic-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_gacha.go::ChooseGacha": {
+      "callCount": 0,
+      "calls": [],
+      "category": "gacha",
+      "idempotency": "none-client-selects-pool",
+      "transaction": "none",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_gacha.go::Gacha": {
+      "callCount": 0,
+      "calls": [],
+      "category": "gacha",
+      "idempotency": "gacha-counters-only-no-request-key",
+      "transaction": "cost-and-grant-split",
+      "durability": "autosave-only"
+    },
+    "Lolo/game/player_gacha.go::GachaFullPick": {
+      "callCount": 1,
+      "calls": [
+        "AddAllTypeItem@153"
+      ],
+      "category": "gacha",
+      "idempotency": "gacha-state-no-request-key",
+      "transaction": "none",
+      "durability": "autosave-only"
+    },
+    "Lolo/game/player_gomoku.go::GmCode": {
+      "callCount": 1,
+      "calls": [
+        "AddAllTypeItem@320"
+      ],
+      "category": "other",
+      "idempotency": "state-check",
+      "transaction": "item-lock-or-snapshot",
+      "durability": "save-player-now-or-autosave"
+    },
+    "Lolo/game/player_mail.go::<module>": {
+      "callCount": 0,
+      "calls": [],
+      "category": "mail",
+      "idempotency": "server-ledger-plus-snapshot",
+      "transaction": "player-snapshot-atomic-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_mail.go::claimMail": {
+      "callCount": 0,
+      "calls": [],
+      "category": "mail",
+      "idempotency": "persistent-mail-claimed-flag",
+      "transaction": "preflight-plus-player-snapshot-atomic-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_mail.go::grantMailAttachments": {
+      "callCount": 0,
+      "calls": [],
+      "category": "mail",
+      "idempotency": "server-ledger-plus-snapshot",
+      "transaction": "player-snapshot-atomic-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_profile.go::PlayerEnergyBuy": {
+      "callCount": 1,
+      "calls": [
+        "grantProfileBaseRewards@357"
+      ],
+      "category": "other",
+      "idempotency": "state-check",
+      "transaction": "item-lock-or-snapshot",
+      "durability": "save-player-now-or-autosave"
+    },
+    "Lolo/game/player_profile.go::grantPlayerLevelReward": {
+      "callCount": 1,
+      "calls": [
+        "grantProfileBaseRewards@475"
+      ],
+      "category": "reward",
+      "idempotency": "state-check",
+      "transaction": "item-lock-or-snapshot",
+      "durability": "save-player-now-or-autosave"
+    },
+    "Lolo/game/player_quest.go::ClaimQuestReward": {
+      "callCount": 0,
+      "calls": [],
+      "category": "quest",
+      "idempotency": "server-ledger-plus-snapshot",
+      "transaction": "player-snapshot-atomic-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_quest.go::grantQuestRewards": {
+      "callCount": 0,
+      "calls": [],
+      "category": "quest",
+      "idempotency": "server-ledger-plus-snapshot",
+      "transaction": "player-snapshot-atomic-commit",
+      "durability": "save-player-now"
+    },
+    "Lolo/game/player_restaurant.go::<module>": {
+      "callCount": 1,
+      "calls": [
+        "AddAllTypeItem@35"
+      ],
+      "category": "other",
+      "idempotency": "state-check",
+      "transaction": "item-lock-or-snapshot",
+      "durability": "save-player-now-or-autosave"
+    },
+    "Lolo/game/player_shop.go::ShopBuy": {
+      "callCount": 1,
+      "calls": [
+        "AddAllTypeItem@135"
+      ],
+      "category": "shop",
+      "idempotency": "purchase-limit-only-no-request-key",
+      "transaction": "item-lock-cost-then-grant",
+      "durability": "autosave-only"
+    },
+    "Lolo/game/player_temp_pack.go::configuredMonsterDrop": {
+      "callCount": 1,
+      "calls": [
+        "AddAllTypeItem@529"
+      ],
+      "category": "drop",
+      "idempotency": "state-check",
+      "transaction": "item-lock-or-snapshot",
+      "durability": "save-player-now-or-autosave"
+    },
+    "Lolo/game/player_basic.go::grantPreparedRewards": {
+      "callCount": 1,
+      "calls": [
+        "AddAllTypeItem@269"
+      ],
+      "category": "item",
+      "idempotency": "caller-required",
+      "transaction": "caller-snapshot-required",
+      "durability": "caller-save-player-now"
+    }
+  }
+}

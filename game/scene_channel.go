@@ -1,9 +1,13 @@
 package game
 
 import (
+	"container/heap"
+	"math"
+	"sort"
+	"time"
+
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/protocol/cmd"
-	"time"
 
 	"github.com/bytedance/sonic"
 	pb "google.golang.org/protobuf/proto"
@@ -15,17 +19,25 @@ import (
 	"gucooing/lolo/protocol/proto"
 )
 
+const (
+	sceneInterestCellSize     = 50.0
+	sceneInterestRange        = 100.0
+	sceneInterestMaxPlayers   = 64
+	sceneInterestChannelLimit = 64
+)
+
 type ChannelInfo struct {
 	game             *Game
-	channelType      int                                   // 房间类型
-	SceneInfo        *SceneInfo                            // 所属场景
-	ChannelId        uint32                                // 房间号
-	allPlayer        map[uint32]*ScenePlayer               // 当前房间的全部玩家
-	playerNum        int64                                 // 玩家数
-	weatherType      proto.WeatherType                     // 天气
-	todSeq           int64                                 // 时间段
-	doneChan         chan struct{}                         // done
-	sceneSyncDatas   []*proto.SceneSyncData                // 一个tick中待同步的内容
+	channelType      int                             // 房间类型
+	SceneInfo        *SceneInfo                      // 所属场景
+	ChannelId        uint32                          // 房间号
+	allPlayer        map[uint32]*ScenePlayer         // 当前房间的全部玩家
+	playerNum        int64                           // 玩家数
+	weatherType      proto.WeatherType               // 天气
+	todSeq           int64                           // 时间段
+	doneChan         chan struct{}                   // done
+	sceneSyncLatest  map[uint32]*proto.SceneSyncData // 一个tick中每个玩家的最新同步内容
+	sceneSyncTick    uint64
 	sceneServerDatas map[uint32]*proto.ServerSceneSyncData // 一个tick中玩家变动内容
 	chatChannel      *ChatChannel                          // 当前场景的聊天房间
 	sceneGardenData  *model.SceneGardenData                // 花园信息
@@ -57,7 +69,7 @@ func (s *SceneInfo) newChannelInfo(channelId uint32, channelType int) *ChannelIn
 		addScenePlayerChan:   make(chan *ScenePlayer, 10),
 		delScenePlayerChan:   make(chan *ScenePlayer, 10),
 		addSceneSyncDataChan: make(chan *proto.SceneSyncData, 100),
-		sceneSyncDatas:       make([]*proto.SceneSyncData, 100),
+		sceneSyncLatest:      make(map[uint32]*proto.SceneSyncData),
 		sceneServerDatas:     make(map[uint32]*proto.ServerSceneSyncData),
 		serverSceneSyncChan:  make(chan *ServerSceneSyncCtx, 100),
 		actionSyncChan:       make(chan *ActionSyncCtx, 100),
@@ -126,7 +138,9 @@ func (c *ChannelInfo) channelMainLoop() {
 		case scenePlayer := <-c.delScenePlayerChan: // 玩家退出
 			c.delPlayer(scenePlayer)
 		case syncData := <-c.addSceneSyncDataChan: // 添加同步内容
-			alg.AddList(&c.sceneSyncDatas, syncData)
+			if syncData != nil {
+				c.sceneSyncLatest[syncData.PlayerId] = syncData
+			}
 		case ctx := <-c.serverSceneSyncChan: // 服务场景同步
 			c.serverSceneSync(ctx)
 		case ctx := <-c.actionSyncChan: // action同步
@@ -144,6 +158,7 @@ func (c *ChannelInfo) channelMainLoop() {
 }
 
 func (c *ChannelInfo) channelTick() {
+	c.sceneSyncTick++
 	// 天气更新 按小时更新
 	if weather := c.game.worldTask.Weather(); weather != c.weatherType {
 		c.weatherType = weather
@@ -159,26 +174,211 @@ func (c *ChannelInfo) channelTick() {
 
 	// 场景自动化更新
 	// 场景变化同步
-	if len(c.sceneSyncDatas) > 0 {
-		notice := &proto.PlayerSceneSyncDataNotice{
-			Status: proto.StatusCode_StatusCode_OK,
-			Data:   c.sceneSyncDatas,
-		}
-		c.sendAllPlayer(0, notice)
-		c.sceneSyncDatas = make([]*proto.SceneSyncData, 0)
+	if len(c.sceneSyncLatest) > 0 && (!c.useInterestManagement() || c.sceneSyncTick%2 == 0) {
+		c.sendSceneSyncData()
 	}
 	// 玩家变化同步
 	if len(c.sceneServerDatas) > 0 {
+		c.sendServerSceneSyncData()
+	}
+}
+
+func (c *ChannelInfo) useInterestManagement() bool {
+	return c.playerNum > sceneInterestChannelLimit
+}
+
+func (c *ChannelInfo) sendSceneSyncData() {
+	defer func() { c.sceneSyncLatest = make(map[uint32]*proto.SceneSyncData) }()
+	players := c.getAllPlayer()
+	if !c.useInterestManagement() {
+		notice := &proto.PlayerSceneSyncDataNotice{
+			Status: proto.StatusCode_StatusCode_OK,
+			Data:   make([]*proto.SceneSyncData, 0, len(c.sceneSyncLatest)),
+		}
+		for _, data := range c.sceneSyncLatest {
+			notice.Data = append(notice.Data, data)
+		}
+		sort.Slice(notice.Data, func(i, j int) bool { return notice.Data[i].PlayerId < notice.Data[j].PlayerId })
+		c.sendAllPlayer(0, notice)
+		return
+	}
+
+	grid := newSceneInterestGrid(players)
+	for _, receiver := range players {
+		if receiver.NetFreeze {
+			continue
+		}
+		nearby := nearbyScenePlayers(receiver, grid)
+		notice := &proto.PlayerSceneSyncDataNotice{
+			Status: proto.StatusCode_StatusCode_OK,
+			Data:   make([]*proto.SceneSyncData, 0, len(nearby)),
+		}
+		for _, player := range nearby {
+			if data := c.sceneSyncLatest[player.UserId]; data != nil {
+				notice.Data = append(notice.Data, data)
+			}
+		}
+		if len(notice.Data) == 0 {
+			continue
+		}
+		sort.Slice(notice.Data, func(i, j int) bool { return notice.Data[i].PlayerId < notice.Data[j].PlayerId })
+		c.sendPlayer(receiver, 0, notice)
+	}
+}
+
+func (c *ChannelInfo) sendServerSceneSyncData() {
+	defer func() { c.sceneServerDatas = make(map[uint32]*proto.ServerSceneSyncData) }()
+	players := c.getAllPlayer()
+	if !c.useInterestManagement() {
 		notice := &proto.ServerSceneSyncDataNotice{
 			Status: proto.StatusCode_StatusCode_OK,
-			Data:   make([]*proto.ServerSceneSyncData, 0),
+			Data:   make([]*proto.ServerSceneSyncData, 0, len(c.sceneServerDatas)),
 		}
 		for _, data := range c.sceneServerDatas {
-			alg.AddList(&notice.Data, data)
+			notice.Data = append(notice.Data, data)
 		}
+		sort.Slice(notice.Data, func(i, j int) bool { return notice.Data[i].PlayerId < notice.Data[j].PlayerId })
 		c.sendAllPlayer(0, notice)
-		c.sceneServerDatas = make(map[uint32]*proto.ServerSceneSyncData)
+		return
 	}
+
+	grid := newSceneInterestGrid(players)
+	for _, receiver := range players {
+		if receiver.NetFreeze {
+			continue
+		}
+		nearby := nearbyScenePlayerSet(receiver, grid)
+		notice := &proto.ServerSceneSyncDataNotice{
+			Status: proto.StatusCode_StatusCode_OK,
+			Data:   make([]*proto.ServerSceneSyncData, 0, len(c.sceneServerDatas)),
+		}
+		for playerID, data := range c.sceneServerDatas {
+			if playerID == 0 || playerID == receiver.UserId {
+				notice.Data = append(notice.Data, data)
+				continue
+			}
+			if _, ok := nearby[playerID]; ok {
+				notice.Data = append(notice.Data, data)
+			}
+		}
+		if len(notice.Data) == 0 {
+			continue
+		}
+		sort.Slice(notice.Data, func(i, j int) bool { return notice.Data[i].PlayerId < notice.Data[j].PlayerId })
+		c.sendPlayer(receiver, 0, notice)
+	}
+}
+
+type sceneInterestCell struct {
+	x int64
+	y int64
+}
+
+type sceneInterestGrid map[sceneInterestCell][]*ScenePlayer
+
+type sceneDistanceCandidate struct {
+	player   *ScenePlayer
+	distance float64
+}
+
+type sceneFarthestHeap []sceneDistanceCandidate
+
+func (h sceneFarthestHeap) Len() int { return len(h) }
+func (h sceneFarthestHeap) Less(i, j int) bool {
+	if h[i].distance == h[j].distance {
+		return h[i].player.UserId > h[j].player.UserId
+	}
+	return h[i].distance > h[j].distance
+}
+func (h sceneFarthestHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
+func (h *sceneFarthestHeap) Push(value any) {
+	*h = append(*h, value.(sceneDistanceCandidate))
+}
+func (h *sceneFarthestHeap) Pop() any {
+	old := *h
+	last := old[len(old)-1]
+	*h = old[:len(old)-1]
+	return last
+}
+
+func sceneInterestPosition(player *ScenePlayer) (float64, float64, float64, bool) {
+	if player == nil || player.CurScene == nil {
+		return 0, 0, 0, false
+	}
+	pos := player.CurScene.GetPos()
+	if pos == nil {
+		return 0, 0, 0, false
+	}
+	scale := math.Pow10(int(pos.GetDecimalPlaces()))
+	return float64(pos.GetX()) / scale, float64(pos.GetY()) / scale, float64(pos.GetZ()) / scale, true
+}
+
+func newSceneInterestGrid(players map[uint32]*ScenePlayer) sceneInterestGrid {
+	grid := make(sceneInterestGrid)
+	for _, player := range players {
+		x, y, _, ok := sceneInterestPosition(player)
+		if !ok {
+			continue
+		}
+		cell := sceneInterestCell{x: int64(math.Floor(x / sceneInterestCellSize)), y: int64(math.Floor(y / sceneInterestCellSize))}
+		grid[cell] = append(grid[cell], player)
+	}
+	return grid
+}
+
+func allSceneGridPlayers(grid sceneInterestGrid) []*ScenePlayer {
+	players := make([]*ScenePlayer, 0)
+	for _, cellPlayers := range grid {
+		players = append(players, cellPlayers...)
+	}
+	sort.Slice(players, func(i, j int) bool { return players[i].UserId < players[j].UserId })
+	return players
+}
+
+func nearbyScenePlayers(receiver *ScenePlayer, grid sceneInterestGrid) []*ScenePlayer {
+	x, y, _, ok := sceneInterestPosition(receiver)
+	if !ok {
+		return allSceneGridPlayers(grid)
+	}
+	cellX := int64(math.Floor(x / sceneInterestCellSize))
+	cellY := int64(math.Floor(y / sceneInterestCellSize))
+	nearest := &sceneFarthestHeap{}
+	for dx := int64(-1); dx <= 1; dx++ {
+		for dy := int64(-1); dy <= 1; dy++ {
+			for _, candidate := range grid[sceneInterestCell{x: cellX + dx, y: cellY + dy}] {
+				cx, cy, _, candidateOK := sceneInterestPosition(candidate)
+				if !candidateOK {
+					continue
+				}
+				distance := (cx-x)*(cx-x) + (cy-y)*(cy-y)
+				if distance > sceneInterestRange*sceneInterestRange {
+					continue
+				}
+				item := sceneDistanceCandidate{player: candidate, distance: distance}
+				if nearest.Len() < sceneInterestMaxPlayers {
+					heap.Push(nearest, item)
+				} else if item.distance < (*nearest)[0].distance ||
+					(item.distance == (*nearest)[0].distance && item.player.UserId < (*nearest)[0].player.UserId) {
+					(*nearest)[0] = item
+					heap.Fix(nearest, 0)
+				}
+			}
+		}
+	}
+	players := make([]*ScenePlayer, 0, nearest.Len())
+	for _, item := range *nearest {
+		players = append(players, item.player)
+	}
+	sort.Slice(players, func(i, j int) bool { return players[i].UserId < players[j].UserId })
+	return players
+}
+
+func nearbyScenePlayerSet(receiver *ScenePlayer, grid sceneInterestGrid) map[uint32]struct{} {
+	result := make(map[uint32]struct{})
+	for _, player := range nearbyScenePlayers(receiver, grid) {
+		result[player.UserId] = struct{}{}
+	}
+	return result
 }
 
 func (c *ChannelInfo) addPlayer(scenePlayer *ScenePlayer) bool {
@@ -434,6 +634,30 @@ type ActionSyncCtx struct {
 	ActionId    uint32
 }
 
+func (c *ChannelInfo) sendNearbyPlayer(origin *ScenePlayer, packetId uint32, payloadMsg pb.Message) {
+	cmdID := cmd.Get().GetCmdIdByProtoObj(payloadMsg)
+	bodyByte, err := pb.Marshal(payloadMsg)
+	if err != nil {
+		log.Gate.Errorf("sendNearbyPlayer marshal data err: %v\n", err)
+		return
+	}
+	players := c.getAllPlayer()
+	if !c.useInterestManagement() {
+		for _, player := range players {
+			if !player.NetFreeze {
+				player.Conn.SendBin(packetId, cmdID, bodyByte)
+			}
+		}
+		return
+	}
+	grid := newSceneInterestGrid(players)
+	for _, player := range nearbyScenePlayers(origin, grid) {
+		if !player.NetFreeze {
+			player.Conn.SendBin(packetId, cmdID, bodyByte)
+		}
+	}
+}
+
 func (c *ChannelInfo) SendActionNotice(ctx *ActionSyncCtx) {
 	notice := &proto.SendActionNotice{
 		Status:            proto.StatusCode_StatusCode_OK,
@@ -444,7 +668,7 @@ func (c *ChannelInfo) SendActionNotice(ctx *ActionSyncCtx) {
 		EndTime:           0,
 		MultipleNeedCount: 0,
 	}
-	c.sendAllPlayer(0, notice)
+	c.sendNearbyPlayer(ctx.ScenePlayer, 0, notice)
 }
 
 type InterActionCtx struct {
@@ -460,7 +684,7 @@ func (c *ChannelInfo) SceneInterActionPlayStatusNotice(ctx *InterActionCtx) {
 		PushType:     ctx.PushType,
 		PlayerId:     ctx.ScenePlayer.UserId,
 	}
-	c.sendAllPlayer(0, notice)
+	c.sendNearbyPlayer(ctx.ScenePlayer, 0, notice)
 }
 
 func (c *ChannelInfo) GetPbSceneData(scenePlayer *ScenePlayer) (info *proto.SceneData) {
@@ -521,7 +745,17 @@ func (c *ChannelInfo) GetPbSceneData(scenePlayer *ScenePlayer) (info *proto.Scen
 		alg.AddList(&info.TreasureBoxes, treasur.TreasureBoxData())
 	}
 	// 添加场景中的玩家
-	for _, player := range c.getAllPlayer() {
+	players := c.getAllPlayer()
+	var visiblePlayers []*ScenePlayer
+	if c.useInterestManagement() {
+		visiblePlayers = nearbyScenePlayers(scenePlayer, newSceneInterestGrid(players))
+	} else {
+		visiblePlayers = make([]*ScenePlayer, 0, len(players))
+		for _, player := range players {
+			visiblePlayers = append(visiblePlayers, player)
+		}
+	}
+	for _, player := range visiblePlayers {
 		alg.AddList(&info.Players, c.GetPbScenePlayer(player))
 	}
 	// 添加座位信息

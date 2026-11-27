@@ -321,6 +321,9 @@ type ScenePlayerInfo struct {
 	Team     *TeamInfo
 	SceneId  uint32
 	TempPack *SceneTempPack // 临时背包
+	// DeadMonsters is authoritative only for the current scene visit. A new
+	// visit gets a fresh round; client-supplied IDs cannot create entries.
+	DeadMonsters map[uint32]uint32 `json:"-"`
 }
 
 func (p *ScenePlayerInfo) GetScenePlayerInfo() *ScenePlayerInfo {
@@ -390,6 +393,11 @@ func NewScenePlayerInfo(p *Player, sceneID *uint32, team *TeamInfo, pos, rot *pr
 		Team:     team,
 		SceneId:  *sceneID,
 		TempPack: newSceneTempPack(),
+	}
+	if restored, err := p.LoadTempPackArchive(); err == nil {
+		sp.TempPack = restored
+	} else {
+		log.Game.Errorf("玩家:%v 临时背包恢复失败:%s", p.UserId, err)
 	}
 	return sp
 }

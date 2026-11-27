@@ -63,23 +63,18 @@ func TestGetMailsReturnsBuiltinTemplates(t *testing.T) {
 	}
 }
 
+func stubRewardSave(t *testing.T) {
+	t.Helper()
+	oldSave := rewardSavePlayer
+	rewardSavePlayer = func(*model.Player) error { return nil }
+	t.Cleanup(func() { rewardSavePlayer = oldSave })
+}
+
 func TestClaimMailGrantsAttachmentsOnce(t *testing.T) {
-	oldGrant := mailGrantItem
-	mailGrantItem = func(s *model.Player, itemID uint32, num int64) *proto.ItemDetail {
-		bag := s.GetItemModel().GetItemBaseMap()
-		info := bag[itemID]
-		if info == nil {
-			info = &model.ItemBaseInfo{
-				ItemId:   itemID,
-				ItemType: proto.EBagItemTag_EBagItemTag_Currency,
-				PackType: proto.ItemDetail_PackType_Inventory,
-			}
-			bag[itemID] = info
-		}
-		info.Num += num
-		return info.ItemDetail()
-	}
-	defer func() { mailGrantItem = oldGrant }()
+	stubRewardSave(t)
+	oldMail := model.TestMails[1]
+	model.TestMails[1] = &proto.MailBriefData{MailId: 1, Items: []*proto.BaseItem{{ItemId: 5001, Num: 2}, {ItemId: 5001, Num: 3}}}
+	t.Cleanup(func() { model.TestMails[1] = oldMail })
 
 	conn := &lifeTestConn{}
 	player := newMailPlayer(conn)
@@ -95,11 +90,11 @@ func TestClaimMailGrantsAttachmentsOnce(t *testing.T) {
 	if len(rsp.GetClaimResult()) != 2 {
 		t.Fatalf("领取结果数量错误: %d", len(rsp.GetClaimResult()))
 	}
-	if got := player.GetItemModel().GetItemBaseInfo(102); got == nil || got.Num != 700 {
-		t.Fatalf("星石发放错误: %+v", got)
+	if got := player.GetItemModel().GetItemBaseInfo(5001); got == nil || got.Num != 5 {
+		t.Fatalf("附件一发放错误: %+v", got)
 	}
-	if got := player.GetItemModel().GetItemBaseInfo(110); got == nil || got.Num != 10 {
-		t.Fatalf("限定券发放错误: %+v", got)
+	if got := player.GetItemModel().GetItemBaseInfo(5001); got == nil || got.Num != 5 {
+		t.Fatalf("附件二发放错误: %+v", got)
 	}
 
 	state := player.GetMailModel().GetState(1)
@@ -122,7 +117,7 @@ func TestClaimMailGrantsAttachmentsOnce(t *testing.T) {
 	if again.GetStatus() != proto.StatusCode_StatusCode_REPEAT_GET_REWARD {
 		t.Fatalf("重复领取未被拒绝: %v", again.GetStatus())
 	}
-	if got := player.GetItemModel().GetItemBaseInfo(102); got == nil || got.Num != 700 {
+	if got := player.GetItemModel().GetItemBaseInfo(5001); got == nil || got.Num != 5 {
 		t.Fatalf("重复领取重复发货: %+v", got)
 	}
 }
@@ -167,22 +162,10 @@ func TestReadAndDeleteMail(t *testing.T) {
 }
 
 func TestClaimAllSkipsClaimedMail(t *testing.T) {
-	oldGrant := mailGrantItem
-	mailGrantItem = func(s *model.Player, itemID uint32, num int64) *proto.ItemDetail {
-		bag := s.GetItemModel().GetItemBaseMap()
-		info := bag[itemID]
-		if info == nil {
-			info = &model.ItemBaseInfo{
-				ItemId:   itemID,
-				ItemType: proto.EBagItemTag_EBagItemTag_Currency,
-				PackType: proto.ItemDetail_PackType_Inventory,
-			}
-			bag[itemID] = info
-		}
-		info.Num += num
-		return info.ItemDetail()
-	}
-	defer func() { mailGrantItem = oldGrant }()
+	stubRewardSave(t)
+	oldMail := model.TestMails[1]
+	model.TestMails[1] = &proto.MailBriefData{MailId: 1, Items: []*proto.BaseItem{{ItemId: 5001, Num: 2}, {ItemId: 5001, Num: 3}}}
+	t.Cleanup(func() { model.TestMails[1] = oldMail })
 
 	conn := &lifeTestConn{}
 	player := newMailPlayer(conn)
@@ -202,7 +185,7 @@ func TestClaimAllSkipsClaimedMail(t *testing.T) {
 	if second.GetStatus() != proto.StatusCode_StatusCode_MAIL_NO_REWARD {
 		t.Fatalf("无邮件可领时状态错误: %v", second.GetStatus())
 	}
-	if got := player.GetItemModel().GetItemBaseInfo(102); got == nil || got.Num != 700 {
+	if got := player.GetItemModel().GetItemBaseInfo(5001); got == nil || got.Num != 5 {
 		t.Fatalf("一键领取重复发货: %+v", got)
 	}
 }

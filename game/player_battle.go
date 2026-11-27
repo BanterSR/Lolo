@@ -4,6 +4,7 @@ import (
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/pkg/alg"
+	"gucooing/lolo/protocol/config"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -22,7 +23,7 @@ func (g *Game) BattleEncounterInfo(s *model.Player, msg *alg.GameMsg) {
 	}
 	if sd, ok := scenePlayer.CurScene.(*model.SceneDungeon); ok {
 		for _, encounterID := range req.EncounterIds {
-			state, status := authoritativeDungeons.encounterState(s, sd, encounterID)
+			state, status := g.dungeonRuntime().encounterState(s, sd, encounterID)
 			if status != proto.StatusCode_StatusCode_OK {
 				rsp.Status = status
 				return
@@ -64,11 +65,11 @@ func (g *Game) BattleEncounterStateUpdate(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInDungeon
 		return
 	}
-	if status := authoritativeDungeons.updateEncounter(s, sd, req.EncounterId, req.BattleState); status != proto.StatusCode_StatusCode_OK {
+	if status := g.dungeonRuntime().updateEncounter(s, sd, req.EncounterId, req.BattleState); status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
-	state, status := authoritativeDungeons.encounterState(s, sd, req.EncounterId)
+	state, status := g.dungeonRuntime().encounterState(s, sd, req.EncounterId)
 	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
@@ -103,6 +104,8 @@ func (g *Game) FlagBattleStateUpdate(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) MonsterDead(s *model.Player, msg *alg.GameMsg) {
+	tempPackMu.Lock()
+	defer tempPackMu.Unlock()
 	req := msg.Body.(*proto.MonsterDeadReq)
 	rsp := &proto.MonsterDeadRsp{
 		Status:       proto.StatusCode_StatusCode_OK,
@@ -118,20 +121,13 @@ func (g *Game) MonsterDead(s *model.Player, msg *alg.GameMsg) {
 	}
 	switch scene := scenePlayer.CurScene.(type) {
 	case *model.ScenePlayerInfo:
-		if scene == nil {
-			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
-			return
-		}
-		cfg := gdconf.GetMonsterCharacterConfigure(req.MonsterId)
-		if cfg == nil {
-			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
-			return
-		}
-		if drop := scene.GetTempPack().GenMonsterDead(s, proto.EMonsterTag(cfg.NewTag), true); drop != nil {
+		drop, status := ordinaryMonsterDead(s, scene, scene.GetSceneId(), req.MonsterId, req.MonsterIndex)
+		rsp.Status = status
+		if drop != nil {
 			rsp.DropItem = drop.PbDropItem()
 		}
 	case *model.SceneDungeon:
-		drop, status := authoritativeDungeons.monsterDead(s, scene, req.MonsterId, req.MonsterIndex)
+		drop, status := g.dungeonRuntime().monsterDead(s, scene, req.MonsterId, req.MonsterIndex)
 		rsp.Status = status
 		if drop != nil {
 			rsp.DropItem = drop.PbDropItem()
@@ -141,7 +137,55 @@ func (g *Game) MonsterDead(s *model.Player, msg *alg.GameMsg) {
 	}
 }
 
+var ordinaryMonsterPlayerLevel = dungeonPlayerLevel
+
+// ordinaryMonsterDead accepts a death notification only when the scene export
+// contains that exact index/unit pair. No scene configuration means no drop.
+func ordinaryMonsterDead(s *model.Player, scene *model.ScenePlayerInfo, sceneID, monsterID, monsterIndex uint32) (*model.DropItem, proto.StatusCode) {
+	if s == nil || scene == nil || scene.Player != s || scene.GetTempPack() == nil {
+		return nil, proto.StatusCode_StatusCode_PLAYER_NOT_IN_CHANNEL
+	}
+	sceneConf := gdconf.GetSceneInfo(sceneID)
+	if sceneConf == nil || sceneConf.Info == nil {
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
+	}
+	var configured *config.DungeonMonsterInfo
+	for _, monster := range sceneConf.Info.GetMonsterInfos() {
+		if monster != nil && monster.Index >= 0 && uint32(monster.Index) == monsterIndex {
+			configured = monster
+			break
+		}
+	}
+	if configured == nil || configured.UnitID <= 0 || uint32(configured.UnitID) != monsterID {
+		return nil, proto.StatusCode_StatusCode_DungeonCheat
+	}
+	if _, duplicate := scene.DeadMonsters[monsterIndex]; duplicate {
+		return nil, proto.StatusCode_StatusCode_DungeonCheat
+	}
+	level, ok := ordinaryMonsterPlayerLevel(s)
+	if !ok {
+		return nil, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
+	}
+	drop, err := configuredMonsterDrop(s, scene.GetTempPack(), monsterID, level)
+	if err != nil {
+		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
+	}
+	if err := s.SaveTempPackArchive(scene.GetTempPack()); err != nil {
+		if drop != nil {
+			delete(scene.GetTempPack().TempAreaPack, drop.Index)
+		}
+		return nil, proto.StatusCode_StatusCode_SYS_ERR
+	}
+	if scene.DeadMonsters == nil {
+		scene.DeadMonsters = make(map[uint32]uint32)
+	}
+	scene.DeadMonsters[monsterIndex] = monsterID
+	return drop, proto.StatusCode_StatusCode_OK
+}
+
 func (g *Game) Pickup(s *model.Player, msg *alg.GameMsg) {
+	tempPackMu.Lock()
+	defer tempPackMu.Unlock()
 	req := msg.Body.(*proto.PickupReq)
 	rsp := &proto.PickupRsp{
 		Status: proto.StatusCode_StatusCode_OK,
@@ -159,7 +203,23 @@ func (g *Game) Pickup(s *model.Player, msg *alg.GameMsg) {
 		return
 	}
 	if sd, ok := scenePlayer.CurScene.(*model.SceneDungeon); ok {
-		items, status := authoritativeDungeons.pickup(s, sd, req.DropItemIndex, req.PickIndex)
+		inventory := model.SnapshotItemModel(s.GetItemModel())
+		drop := sd.GetTempPack().GetTempAreaPack(req.DropItemIndex)
+		var before []model.EBagItemTag
+		if drop != nil {
+			before = append([]model.EBagItemTag(nil), drop.Items...)
+		}
+		items, status := g.dungeonRuntime().pickup(s, sd, req.DropItemIndex, req.PickIndex)
+		if status == proto.StatusCode_StatusCode_OK && s.Online {
+			if err := tempPackSavePlayer(s); err != nil {
+				inventory.Restore()
+				if drop != nil {
+					drop.Items = before
+				}
+				status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
+				items = nil
+			}
+		}
 		rsp.Status = status
 		rsp.Items = items
 		if status == proto.StatusCode_StatusCode_OK {

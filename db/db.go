@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/glebarez/sqlite"
@@ -202,12 +203,30 @@ func (d *Database) newSqlite() error {
 			return err
 		}
 	}
-	openDb, err := gorm.Open(sqlite.Open(d.option.Dsn), d.getGormConfig())
+	openDb, err := gorm.Open(sqlite.Open(sqliteDSN(d.option.Dsn)), d.getGormConfig())
 	if err != nil {
 		return err
 	}
 	d.db = openDb
 	return nil
+}
+
+func sqliteDSN(dsn string) string {
+	separator := "?"
+	if strings.Contains(dsn, "?") {
+		separator = "&"
+	}
+	for _, pragma := range []string{
+		"_pragma=busy_timeout(5000)",
+		"_pragma=journal_mode(WAL)",
+		"_pragma=synchronous(FULL)",
+	} {
+		if !strings.Contains(dsn, pragma) {
+			dsn += separator + pragma
+			separator = "&"
+		}
+	}
+	return dsn
 }
 
 func (d *Database) newPostgres() error {

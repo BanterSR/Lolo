@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"gorm.io/gorm"
 	"gucooing/lolo/pkg/cache"
 	"gucooing/lolo/protocol/proto"
 )
@@ -38,10 +39,16 @@ func GetGameBasicOrCreate(userId uint32) (*OFGameBasic, error) {
 	if basic, ok := basicCache.Get(userId); ok {
 		return basic, nil
 	}
+	accountCreateMu.Lock()
+	defer accountCreateMu.Unlock()
+
 	basic := &OFGameBasic{
 		UserId: userId,
 	}
-	err := db.FirstOrCreate(basic).Error
+	err := db.First(basic).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		err = db.Create(basic).Error
+	}
 	if err != nil {
 		return nil, err
 	}

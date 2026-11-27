@@ -18,6 +18,17 @@ var lifeConfigCache struct {
 	err error
 }
 
+// Persistence and configuration boundaries are replaceable so protocol-level
+// fault tests can exercise the real production transaction without a database.
+var (
+	lifeConfigLoader = getLifeConfig
+	lifeSavePlayer   = (*model.Player).SavePlayerNow
+)
+
+func loadLifeConfig() (*model.LifeConfig, error) {
+	return lifeConfigLoader()
+}
+
 func getLifeConfig() (*model.LifeConfig, error) {
 	lifeConfigCache.Do(func() {
 		lifeConfigCache.cfg, lifeConfigCache.err = model.LoadLifeConfig(config.GetResources().GetResourcePath())
@@ -33,7 +44,7 @@ func lifeRequestToken(s *model.Player, msg *alg.GameMsg, operation string, id ui
 }
 
 func saveLifePlayer(s *model.Player) error {
-	if err := s.SavePlayerNow(); err != nil {
+	if err := lifeSavePlayer(s); err != nil {
 		log.Game.Errorf("UserId:%v 生活技能落库失败:%s", s.UserId, err.Error())
 		return err
 	}
@@ -44,7 +55,7 @@ func prepareLifeRead(s *model.Player, lifeType proto.LifeType, now int64) (*mode
 	if !model.ValidLifeType(lifeType) {
 		return nil, nil, proto.StatusCode_StatusCode_BAD_REQ, false
 	}
-	cfg, err := getLifeConfig()
+	cfg, err := loadLifeConfig()
 	if err != nil {
 		log.Game.Errorf("UserId:%v 生活技能配置加载失败:%s", s.UserId, err.Error())
 		return nil, nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND, false
@@ -104,7 +115,7 @@ func (g *Game) GetLifeAchieve(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) produceLifeRecipe(s *model.Player, msg *alg.GameMsg, lifeType proto.LifeType, recipeID uint32, hasCampFire bool) model.LifeReceipt {
-	cfg, err := getLifeConfig()
+	cfg, err := loadLifeConfig()
 	if err != nil {
 		return model.LifeReceipt{Status: proto.StatusCode_StatusCode_CFG_NOT_FOUND, LifeType: lifeType}
 	}
@@ -155,7 +166,7 @@ func (g *Game) Fishing(s *model.Player, msg *alg.GameMsg) {
 	if req.IsCancel {
 		return
 	}
-	cfg, err := getLifeConfig()
+	cfg, err := loadLifeConfig()
 	if err != nil {
 		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
@@ -182,7 +193,7 @@ func (g *Game) Fishing(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) LifeLeveUp(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.LifeLeveUpReq)
-	cfg, err := getLifeConfig()
+	cfg, err := loadLifeConfig()
 	rsp := &proto.LifeLeveUpRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	if err != nil {
@@ -201,7 +212,7 @@ func (g *Game) LifeLeveUp(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) LifeSkillLevelUp(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.LifeSkillLevelUpReq)
-	cfg, err := getLifeConfig()
+	cfg, err := loadLifeConfig()
 	rsp := &proto.LifeSkillLevelUpRsp{Status: proto.StatusCode_StatusCode_OK, IsForceStudy: req.IsForceStudy}
 	defer g.send(s, msg.PacketId, rsp)
 	if err != nil {
@@ -225,7 +236,7 @@ func (g *Game) LifeSkillLevelUp(s *model.Player, msg *alg.GameMsg) {
 
 func (g *Game) GetLifeAchievementReward(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.GetLifeAchievementRewardReq)
-	cfg, err := getLifeConfig()
+	cfg, err := loadLifeConfig()
 	rsp := &proto.GetLifeAchievementRewardRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	if err != nil {
@@ -305,7 +316,7 @@ func (g *Game) sendLifeProductionNotices(s *model.Player, receipt model.LifeRece
 		},
 	})
 	if len(receipt.AchieveIDs) > 0 {
-		cfg, err := getLifeConfig()
+		cfg, err := loadLifeConfig()
 		if err == nil {
 			g.send(s, 0, &proto.LifeAchieveNotice{
 				Status:       proto.StatusCode_StatusCode_OK,

@@ -136,6 +136,7 @@ type GachaCtx struct {
 	ItemTx      *ItemTransaction
 	req         *proto.GachaReq
 	conf        *gdconf.GachaData
+	rewardConf  *gdconf.GachaData
 	probability *gdconf.GachaProbability
 	gachaInfo   *GachaInfo
 	typeInfo    *GachaTypeInfo
@@ -144,7 +145,18 @@ type GachaCtx struct {
 	ItemDetails []*proto.ItemDetail
 }
 
-// 创建一个抽卡上下文
+func gachaChoiceConfigured(parent, child *excel.GachaInfoConfigure) bool {
+	if child.ID == parent.ID {
+		return false
+	}
+	for _, id := range parent.CardPoolRange {
+		if id > 0 && uint32(id) == uint32(child.ID) {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *Player) NewGachaCtx(req *proto.GachaReq) (*GachaCtx, error) {
 	if req == nil {
 		return nil, errors.New("gacha request is nil")
@@ -162,11 +174,16 @@ func (s *Player) NewGachaCtx(req *proto.GachaReq) (*GachaCtx, error) {
 		if ctx.gachaInfo.ChoosePoolId == 0 {
 			return nil, errors.New("optional gacha pool is not selected")
 		}
-		ctx.conf = gdconf.GetGachaData(ctx.gachaInfo.ChoosePoolId)
-		if ctx.conf == nil || ctx.conf.Conf == nil {
-			return nil, errors.New("selected gacha conf is nil")
+		ctx.rewardConf = gdconf.GetGachaData(ctx.gachaInfo.ChoosePoolId)
+		if ctx.rewardConf == nil || ctx.rewardConf.Conf == nil || ctx.rewardConf.Conf.IsFree ||
+			ctx.rewardConf.Conf.NewUIGachaType != ctx.conf.Conf.NewUIGachaType ||
+			!gachaChoiceConfigured(ctx.conf.Conf, ctx.rewardConf.Conf) {
+			return nil, errors.New("selected gacha is not an allowed child pool")
 		}
+	} else {
+		ctx.rewardConf = ctx.conf
 	}
+	// 次数、消耗、概率与保底始终属于父池；子池只提供奖池。
 	ctx.probability = gdconf.GetGachaProbability(ctx.conf.Conf.NewUIGachaType)
 	if ctx.probability == nil {
 		return nil, errors.New("gacha probability is nil")
@@ -330,10 +347,10 @@ func (c *GachaCtx) probabilitySSR(up bool) int32 {
 		c.typeInfo.GuaranteeSSR = 0
 	}
 
-	if c.conf.BigPool != nil && (rand.Int32N(10000)+1 > 5000 || up) {
-		return alg.RandUn(c.conf.BigPool.Items).GetItemID()
+	if c.rewardConf.BigPool != nil && (rand.Int32N(10000)+1 > 5000 || up) {
+		return alg.RandUn(c.rewardConf.BigPool.Items).GetItemID()
 	} else {
-		return alg.RandUn(c.conf.Pools[ssrPoolID].GetItems()).GetItemID()
+		return alg.RandUn(c.rewardConf.Pools[ssrPoolID].GetItems()).GetItemID()
 	}
 }
 
@@ -342,17 +359,17 @@ func (c *GachaCtx) probabilitySR(up bool) int32 {
 	if up {
 		c.typeInfo.GuaranteeSR = 0
 	}
-	return alg.RandUn(c.conf.Pools[srPoolID].GetItems()).GetItemID()
+	return alg.RandUn(c.rewardConf.Pools[srPoolID].GetItems()).GetItemID()
 }
 
 // 概率落在ssr海报上
 func (c *GachaCtx) probabilityPosterSSR() int32 {
-	return alg.RandUn(c.conf.Pools[ssrPosterPoolID].GetItems()).GetItemID()
+	return alg.RandUn(c.rewardConf.Pools[ssrPosterPoolID].GetItems()).GetItemID()
 }
 
 // 概率落在sr海报上
 func (c *GachaCtx) probabilityPosterSR() int32 {
-	return alg.RandUn(c.conf.Pools[srPosterPoolID].GetItems()).GetItemID()
+	return alg.RandUn(c.rewardConf.Pools[srPosterPoolID].GetItems()).GetItemID()
 }
 
 // 概率落在服装上
@@ -360,27 +377,27 @@ func (c *GachaCtx) probabilityFashion(up bool) int32 {
 	if up {
 		c.typeInfo.GuaranteeFashion = 0
 	}
-	return alg.RandUn(c.conf.Pools[fashionPoolID].GetItems()).GetItemID()
+	return alg.RandUn(c.rewardConf.Pools[fashionPoolID].GetItems()).GetItemID()
 }
 
 // 概率落在家具上
 func (c *GachaCtx) probabilityFurniture() int32 {
-	return alg.RandUn(c.conf.Pools[furniturePoolID].GetItems()).GetItemID()
+	return alg.RandUn(c.rewardConf.Pools[furniturePoolID].GetItems()).GetItemID()
 }
 
 // 概率落在ssr武器上
 func (c *GachaCtx) probabilityWeaponSSR() int32 {
-	return alg.RandUn(c.conf.Pools[ssrWeaponPoolID].GetItems()).GetItemID()
+	return alg.RandUn(c.rewardConf.Pools[ssrWeaponPoolID].GetItems()).GetItemID()
 }
 
 // 概率落在sr武器上
 func (c *GachaCtx) probabilityWeaponSR() int32 {
-	return alg.RandUn(c.conf.Pools[srWeaponPoolID].GetItems()).GetItemID()
+	return alg.RandUn(c.rewardConf.Pools[srWeaponPoolID].GetItems()).GetItemID()
 }
 
 // 概率落在染色剂上
 func (c *GachaCtx) probabilityDyeStuff() int32 {
-	return alg.RandUn(c.conf.Pools[dyeStuffPoolID].GetItems()).GetItemID()
+	return alg.RandUn(c.rewardConf.Pools[dyeStuffPoolID].GetItems()).GetItemID()
 }
 
 // 概率落在愿望上

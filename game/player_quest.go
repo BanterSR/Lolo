@@ -10,28 +10,35 @@ import (
 	"gucooing/lolo/protocol/proto"
 )
 
-func grantQuestRewards(s *model.Player, rewardId int32) []*proto.ItemDetail {
-	items := make([]*proto.ItemDetail, 0)
-	if rewardId == 0 {
-		return items
-	}
-	for _, reward := range gdconf.GetRewardItemPoolByRewardId(uint32(rewardId)) {
-		if reward == nil || reward.ItemID == 0 {
+func questRewards(s *model.Player, rewardIds ...int32) ([]rewardItem, bool) {
+	rewards := make([]rewardItem, 0)
+	for _, rewardId := range rewardIds {
+		if rewardId == 0 {
 			continue
 		}
-		count := int64(reward.ItemMaxCount)
-		if count <= 0 {
-			count = 1
-		}
-		if reward.ItemMinCount > 0 && reward.ItemMaxCount > reward.ItemMinCount {
-			count = int64(reward.ItemMinCount) + rand.Int63n(int64(reward.ItemMaxCount-reward.ItemMinCount)+1)
-		}
-		if ctx := s.AddAllTypeItem(uint32(reward.ItemID), count); ctx != nil {
-			if item := ctx.AddItemDetail(); item != nil {
-				items = append(items, item)
+		for _, reward := range gdconf.GetRewardItemPoolByRewardId(uint32(rewardId)) {
+			if reward == nil || reward.ItemID == 0 {
+				return nil, false
 			}
+			count := int64(reward.ItemMaxCount)
+			if count <= 0 {
+				count = 1
+			}
+			if reward.ItemMinCount > 0 && reward.ItemMaxCount > reward.ItemMinCount {
+				count = int64(reward.ItemMinCount) + rand.Int63n(int64(reward.ItemMaxCount-reward.ItemMinCount)+1)
+			}
+			rewards = append(rewards, rewardItem{id: uint32(reward.ItemID), num: count})
 		}
 	}
+	return rewards, true
+}
+
+func grantQuestRewards(s *model.Player, rewardId int32) []*proto.ItemDetail {
+	rewards, ok := questRewards(s, rewardId)
+	if !ok {
+		return nil
+	}
+	items, _ := grantPreparedRewards(s, rewards)
 	return items
 }
 
@@ -102,13 +109,16 @@ func (g *Game) ClaimQuestReward(s *model.Player, msg *alg.GameMsg) {
 		return
 	}
 	rsp.Quest = quest
+	rewards := make([]rewardItem, 0)
 	if storyId != 0 {
 		for _, chapter := range gdconf.GetStoryChapters() {
 			if story := chapter.StoryList[storyId]; story != nil {
-				rsp.Items = append(rsp.Items, grantQuestRewards(s, story.Reward)...)
-				questModel.RewardStory(storyId)
-				quest.Status = proto.QuestStatus_QuestStatus_Finish
-				s.AcceptNextMainQuest(storyId)
+				var ok bool
+				rewards, ok = questRewards(s, story.Reward)
+				if !ok {
+					rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
+					return
+				}
 				break
 			}
 		}
@@ -122,16 +132,44 @@ func (g *Game) ClaimQuestReward(s *model.Player, msg *alg.GameMsg) {
 			rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 			return
 		}
-		rsp.Items = append(rsp.Items, grantQuestRewards(s, info.Config.Reward)...)
+		ids := []int32{info.Config.Reward}
 		if quest.CompleteCount == 0 {
-			rsp.Items = append(rsp.Items, grantQuestRewards(s, info.Config.FirstReward)...)
+			ids = append(ids, info.Config.FirstReward)
 		}
-		quest.CompleteCount++
-		quest.Status = proto.QuestStatus_QuestStatus_Finish
+		var ok bool
+		rewards, ok = questRewards(s, ids...)
+		if !ok {
+			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
+			return
+		}
 	}
-	if err := s.SavePlayerNow(); err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
-		log.Game.Errorf("UserId:%v 任务奖励落库失败:%s", s.UserId, err.Error())
+	if status := prepareRewardItems(s, rewards); status != proto.StatusCode_StatusCode_OK {
+		rsp.Status = status
+		return
+	}
+	rsp.Status = commitPlayerReward(s, func() proto.StatusCode {
+		items, status := grantPreparedRewards(s, rewards)
+		if status != proto.StatusCode_StatusCode_OK {
+			return status
+		}
+		rsp.Items = items
+		if storyId != 0 {
+			for _, chapter := range gdconf.GetStoryChapters() {
+				if story := chapter.StoryList[storyId]; story != nil {
+					questModel.RewardStory(storyId)
+					quest.Status = proto.QuestStatus_QuestStatus_Finish
+					s.AcceptNextMainQuest(storyId)
+					break
+				}
+			}
+		} else {
+			quest.CompleteCount++
+			quest.Status = proto.QuestStatus_QuestStatus_Finish
+		}
+		return proto.StatusCode_StatusCode_OK
+	})
+	if rsp.Status != proto.StatusCode_StatusCode_OK {
+		rsp.Items = nil
 		return
 	}
 	if len(rsp.Items) > 0 {

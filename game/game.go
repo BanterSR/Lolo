@@ -24,6 +24,8 @@ import (
 
 var (
 	playerNum int64 = 0
+	// sessionSavePlayer isolates persistence in disconnect/reconnect tests.
+	sessionSavePlayer = (*model.Player).SavePlayerNow
 )
 
 type Game struct {
@@ -34,6 +36,7 @@ type Game struct {
 	wordInfo            *WordInfo
 	worldTask           *model.WorldTask
 	chatInfo            *ChatInfo
+	dungeons            *dungeonService
 	checkPlayerTimer    *time.Timer
 	doneChan            chan struct{}
 	closeOnce           sync.Once
@@ -220,7 +223,7 @@ func (g *Game) offlinePlayer(player *model.Player, reason proto.PlayerOfflineRea
 			ServerNextOpenTime: 0,
 		})
 	}
-	if err := player.SavePlayerNow(); err != nil {
+	if err := sessionSavePlayer(player); err != nil {
 		log.Game.Errorf("玩家:%v 下线落库失败:%s", player.UserId, err.Error())
 	}
 	if player.Conn != nil {
@@ -241,7 +244,7 @@ func (g *Game) kickPlayer(player *model.Player) {
 		return
 	}
 	player.Online = false
-	if err := player.SavePlayerNow(); err != nil {
+	if err := sessionSavePlayer(player); err != nil {
 		log.Game.Errorf("玩家:%v 离线落库失败:%s", player.UserId, err.Error())
 	}
 	// 退出世界

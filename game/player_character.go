@@ -568,22 +568,40 @@ func (g *Game) GetCharacterAchievementAward(s *model.Player, msg *alg.GameMsg) {
 		CharacterId:      req.CharacterId,
 	}
 	defer g.send(s, msg.PacketId, rsp)
+	character := s.GetCharacterModel().GetCharacterInfo(req.CharacterId)
+	if character == nil {
+		rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
+		return
+	}
 	conf := gdconf.GetAchieveRewardInfo(req.CharacterId, req.RewardIndex)
-	achievement := s.GetCharacterModel().GetCharacterInfo(req.CharacterId).GetCharacterAchievement()
+	achievement := character.GetCharacterAchievement()
 	if conf == nil || achievement == nil {
 		rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
 		log.Game.Warnf("获取角色成就列表失败,角色%v不存在", req.CharacterId)
 		return
 	}
-	if int64(conf.UnlockItemCount) > s.GetItemModel().GetItemBaseInfo(uint32(conf.UnlockItemID)).Num {
+	for _, index := range achievement.RewardedIndexLst {
+		if index == req.RewardIndex {
+			rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
+			return
+		}
+	}
+	unlockItem := s.GetItemModel().GetItemBaseInfo(uint32(conf.UnlockItemID))
+	if unlockItem == nil || int64(conf.UnlockItemCount) > unlockItem.Num {
 		rsp.Status = proto.StatusCode_StatusCode_CHARACTER_PLACED
 		return
 	}
-	// 领取奖励
-	item := s.AddAllTypeItem(uint32(conf.RewardItemID), int64(conf.RewardItemCount))
-	if item != nil {
-		alg.AddList(&rsp.Items, item.AddItemDetail())
+	// 领取奖励与已领取索引同成，保存失败恢复完整快照。
+	status := commitPlayerReward(s, func() proto.StatusCode {
+		rewards := []rewardItem{{id: uint32(conf.RewardItemID), num: int64(conf.RewardItemCount)}}
+		items, status := grantPreparedRewards(s, rewards)
+		if status != proto.StatusCode_StatusCode_OK {
+			return status
+		}
+		alg.AddList(&rsp.Items, items...)
 		alg.AddSlice(&achievement.RewardedIndexLst, req.RewardIndex)
-	}
-	rsp.RewardedIndexLst = achievement.RewardedIndexLst
+		return proto.StatusCode_StatusCode_OK
+	})
+	rsp.Status = status
+	rsp.RewardedIndexLst = append([]uint32(nil), s.GetCharacterModel().GetCharacterInfo(req.CharacterId).GetCharacterAchievement().RewardedIndexLst...)
 }

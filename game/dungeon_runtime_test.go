@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"gucooing/lolo/game/model"
+	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -714,5 +715,75 @@ func TestDungeonFinishGrantFailureRollsBackProgress(t *testing.T) {
 	f.service.addReward = addReward
 	if _, status := f.service.finish(f.player, sd); status != proto.StatusCode_StatusCode_OK {
 		t.Fatalf("finish retry status = %v", status)
+	}
+}
+
+func TestDungeonProtocolCompletionAcceptance(t *testing.T) {
+	f := newDungeonTestFixture()
+	sd, runtime := f.enter(t)
+	conn := &lifeTestConn{}
+	f.player.Conn = conn
+	f.player.Online = true
+	lastScene := &model.ScenePlayerInfo{Player: f.player, SceneId: 1, Team: &model.TeamInfo{Char1: 1}, TempPack: model.NewSceneTempPack()}
+	game := &Game{dungeons: f.service, userMap: map[uint32]*model.Player{f.player.UserId: f.player}}
+	game.getWordInfo().allScenePlayer.Store(f.player.UserId, &ScenePlayer{Player: f.player, CurScene: sd, LastScene: lastScene, ChannelId: 1})
+	game.getWordInfo().getAllSceneInfo()[1] = &SceneInfo{SceneId: 1, allChannel: map[uint32]*ChannelInfo{
+		1: {ChannelId: 1, addScenePlayerChan: make(chan *ScenePlayer, 1), delScenePlayerChan: make(chan *ScenePlayer, 1)},
+	}}
+	saves := 0
+	f.service.save = func(*model.Player) error { saves++; return nil }
+
+	game.DungeonOperate(f.player, &alg.GameMsg{
+		PacketHead: &proto.PacketHead{PacketId: 10, MsgId: 1, SeqId: 1},
+		Body:       &proto.DungeonOperateReq{OperateType: proto.DungeonOperateReq_START},
+	})
+	if rsp, ok := conn.sent[len(conn.sent)-1].(*proto.DungeonOperateRsp); !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_OK || runtime.State != model.DungeonRuntimeRunning {
+		t.Fatalf("protocol start failed: response=%+v runtime=%+v", conn.sent[len(conn.sent)-1], runtime)
+	}
+
+	f.now = f.now.Add(5 * time.Second)
+	game.MonsterDead(f.player, &alg.GameMsg{
+		PacketHead: &proto.PacketHead{PacketId: 11, MsgId: 2, SeqId: 2},
+		Body:       &proto.MonsterDeadReq{MonsterId: 100, MonsterIndex: 7},
+	})
+	if rsp, ok := conn.sent[len(conn.sent)-1].(*proto.MonsterDeadRsp); !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_OK || rsp.GetDropItem() == nil {
+		t.Fatalf("protocol monster death failed: response=%+v", conn.sent[len(conn.sent)-1])
+	}
+
+	game.DungeonOperate(f.player, &alg.GameMsg{
+		PacketHead: &proto.PacketHead{PacketId: 12, MsgId: 3, SeqId: 3},
+		Body:       &proto.DungeonOperateReq{OperateType: proto.DungeonOperateReq_END},
+	})
+	if rsp, ok := conn.sent[len(conn.sent)-1].(*proto.DungeonOperateRsp); !ok || rsp.GetStatus() != proto.StatusCode_StatusCode_OK || rsp.GetStar() != 3 || runtime.State != model.DungeonRuntimeFinished {
+		t.Fatalf("protocol end failed: response=%+v runtime=%+v", conn.sent[len(conn.sent)-1], runtime)
+	}
+
+	game.DungeonFinish(f.player, &alg.GameMsg{
+		PacketHead: &proto.PacketHead{PacketId: 13, MsgId: 4, SeqId: 4},
+		Body:       &proto.DungeonFinishReq{},
+	})
+	finish, ok := conn.sent[len(conn.sent)-1].(*proto.DungeonFinishRsp)
+	if !ok || finish.GetStatus() != proto.StatusCode_StatusCode_OK || len(finish.GetRewards()) != 2 || len(finish.GetUpdateItems()) != 2 ||
+		finish.GetDungeonData().GetFinishTimes() != 1 || saves != 1 || runtime.State != model.DungeonRuntimeClaimed || len(f.grants) != 2 {
+		t.Fatalf("protocol finish failed: response=%+v saves=%d grants=%d runtime=%+v", finish, saves, len(f.grants), runtime)
+	}
+	game.DungeonFinish(f.player, &alg.GameMsg{
+		PacketHead: &proto.PacketHead{PacketId: 14, MsgId: 5, SeqId: 5},
+		Body:       &proto.DungeonFinishReq{},
+	})
+	duplicate, ok := conn.sent[len(conn.sent)-1].(*proto.DungeonFinishRsp)
+	if !ok || duplicate.GetStatus() != proto.StatusCode_StatusCode_REPEAT_GET_REWARD || saves != 1 || len(f.grants) != 2 {
+		t.Fatalf("duplicate protocol finish was not idempotent: response=%+v saves=%d grants=%d", duplicate, saves, len(f.grants))
+	}
+
+	game.DungeonExit(f.player, &alg.GameMsg{
+		PacketHead: &proto.PacketHead{PacketId: 15, MsgId: 6, SeqId: 6},
+		Body:       &proto.DungeonExitReq{IsForceExit: true},
+	})
+	exit, ok := conn.sent[len(conn.sent)-1].(*proto.DungeonExitRsp)
+	scenePlayer := game.getWordInfo().getScenePlayer(f.player)
+	if !ok || exit.GetStatus() != proto.StatusCode_StatusCode_OK || exit.GetSceneId() != 1 || sd.Runtime != nil || scenePlayer.CurScene != lastScene ||
+		sd.Info.ExitTimes != 1 {
+		t.Fatalf("protocol exit failed: response=%+v scene=%+v info=%+v", exit, scenePlayer.CurScene, sd.Info)
 	}
 }

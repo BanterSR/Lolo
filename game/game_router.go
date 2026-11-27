@@ -1,6 +1,8 @@
 package game
 
 import (
+	"runtime/debug"
+
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/pkg/log"
@@ -346,6 +348,22 @@ func (g *Game) newRouter() {
 }
 
 func (g *Game) routeHandle(conn ofnet.Conn, userId uint32, uuid string, msg *alg.GameMsg) {
+	if msg == nil {
+		return
+	}
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			log.Game.Errorf("玩家:%v 请求:%v 触发 panic:%v\n%s", userId, msg.MsgId, recovered, debug.Stack())
+			if player := g.GetUser(userId); player != nil {
+				player.Online = false
+				player.NetFreeze = true
+				delete(g.userMap, userId)
+			}
+			if conn != nil {
+				conn.Close()
+			}
+		}
+	}()
 	switch msg.MsgId {
 	case cmd.PlayerLoginReq:
 		g.PlayerLogin(conn, userId, uuid, msg)

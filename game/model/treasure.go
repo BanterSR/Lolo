@@ -1,6 +1,9 @@
 package model
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
 	"math/rand/v2"
 	"reflect"
 	"sync/atomic"
@@ -67,6 +70,178 @@ func nilBagItem(item EBagItemTag) bool {
 	}
 	value := reflect.ValueOf(item)
 	return value.Kind() == reflect.Ptr && value.IsNil()
+}
+
+const tempPackArchiveKey = "scene_temp_pack_v1"
+
+type tempPackArchive struct {
+	NextIndex uint32                `json:"nextIndex,omitempty"`
+	Items     []tempPackArchiveItem `json:"items,omitempty"`
+	Drops     []tempPackArchiveDrop `json:"drops,omitempty"`
+}
+
+type tempPackArchiveItem struct {
+	Type string          `json:"type"`
+	Data json.RawMessage `json:"data"`
+}
+
+type tempPackArchiveDrop struct {
+	Index uint32                `json:"index"`
+	Items []tempPackArchiveItem `json:"items"`
+}
+
+func archiveTempPackItem(item EBagItemTag) (tempPackArchiveItem, error) {
+	if nilBagItem(item) {
+		return tempPackArchiveItem{}, errors.New("nil temporary item")
+	}
+	var name string
+	switch item.(type) {
+	case *ItemBaseInfo:
+		name = "base"
+	case *ItemWeaponInfo:
+		name = "weapon"
+	case *ItemArmorInfo:
+		name = "armor"
+	case *ItemPosterInfo:
+		name = "poster"
+	case *ItemFashionInfo:
+		name = "fashion"
+	case *ItemInscriptionInfo:
+		name = "inscription"
+	case *ItemPetInfo:
+		name = "pet"
+	default:
+		return tempPackArchiveItem{}, fmt.Errorf("unsupported temporary item %T", item)
+	}
+	data, err := json.Marshal(item)
+	return tempPackArchiveItem{Type: name, Data: data}, err
+}
+
+func restoreTempPackItem(item tempPackArchiveItem) (result EBagItemTag, err error) {
+	defer func() {
+		if recover() != nil {
+			result, err = nil, errors.New("temporary item is invalid")
+		}
+	}()
+	if len(item.Data) == 0 {
+		return nil, errors.New("temporary item data is missing")
+	}
+	switch item.Type {
+	case "base":
+		result = new(ItemBaseInfo)
+	case "weapon":
+		result = new(ItemWeaponInfo)
+	case "armor":
+		result = new(ItemArmorInfo)
+	case "poster":
+		result = new(ItemPosterInfo)
+	case "fashion":
+		result = new(ItemFashionInfo)
+	case "inscription":
+		result = new(ItemInscriptionInfo)
+	case "pet":
+		result = new(ItemPetInfo)
+	default:
+		return nil, errors.New("temporary item type is invalid")
+	}
+	if err := json.Unmarshal(item.Data, result); err != nil {
+		return nil, err
+	}
+	if nilBagItem(result) || result.ItemDetail() == nil || result.ItemDetail().MainItem == nil {
+		return nil, errors.New("temporary item is invalid")
+	}
+	return result, nil
+}
+
+// SaveTempPackArchive stores scene-owned drops in the player's existing
+// archive so a reconnect or ordinary scene transition cannot lose them.
+func (s *Player) SaveTempPackArchive(pack *SceneTempPack) error {
+	if s == nil {
+		return errors.New("player is missing")
+	}
+	archive := tempPackArchive{}
+	if pack != nil {
+		for _, item := range pack.TempPack {
+			encoded, err := archiveTempPackItem(item)
+			if err != nil {
+				return err
+			}
+			archive.Items = append(archive.Items, encoded)
+		}
+		for _, drop := range pack.TempAreaPack {
+			if drop == nil || drop.Index == 0 {
+				return errors.New("temporary drop is invalid")
+			}
+			encoded := tempPackArchiveDrop{Index: drop.Index}
+			for _, item := range drop.Items {
+				itemData, err := archiveTempPackItem(item)
+				if err != nil {
+					return err
+				}
+				encoded.Items = append(encoded.Items, itemData)
+			}
+			archive.Drops = append(archive.Drops, encoded)
+		}
+		archive.NextIndex = pack.index.Load()
+	}
+	data, err := json.Marshal(archive)
+	if err != nil {
+		return err
+	}
+	s.GetArchive().SetArchiveMap(tempPackArchiveKey, string(data))
+	return nil
+}
+
+func (s *Player) LoadTempPackArchive() (*SceneTempPack, error) {
+	if s == nil {
+		return nil, errors.New("player is missing")
+	}
+	raw := s.GetArchive().GetArchiveValue(tempPackArchiveKey)
+	pack := newSceneTempPack()
+	if raw == "" {
+		return pack, nil
+	}
+	var archive tempPackArchive
+	if err := json.Unmarshal([]byte(raw), &archive); err != nil {
+		return nil, err
+	}
+	seen := make(map[EBagItemTag]bool)
+	for _, encoded := range archive.Items {
+		item, err := restoreTempPackItem(encoded)
+		if err != nil {
+			return nil, err
+		}
+		if seen[item] {
+			return nil, errors.New("duplicate temporary item")
+		}
+		seen[item] = true
+		item.SetPackType(proto.ItemDetail_PackType_TempPack)
+		pack.TempPack = append(pack.TempPack, item)
+	}
+	for _, encoded := range archive.Drops {
+		if encoded.Index == 0 || pack.TempAreaPack[encoded.Index] != nil {
+			return nil, errors.New("duplicate temporary drop index")
+		}
+		drop := &DropItem{Index: encoded.Index}
+		for _, itemData := range encoded.Items {
+			item, err := restoreTempPackItem(itemData)
+			if err != nil {
+				return nil, err
+			}
+			if seen[item] {
+				return nil, errors.New("duplicate temporary drop object")
+			}
+			seen[item] = true
+			item.SetPackType(proto.ItemDetail_PackType_TempStorageArea)
+			drop.Items = append(drop.Items, item)
+		}
+		pack.TempAreaPack[encoded.Index] = drop
+		if encoded.Index > archive.NextIndex {
+			archive.NextIndex = encoded.Index
+		}
+	}
+	pack.index.Store(archive.NextIndex)
+	return pack, nil
 }
 
 func newSceneTempPack() *SceneTempPack {

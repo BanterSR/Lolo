@@ -8,19 +8,6 @@ import (
 	"gucooing/lolo/protocol/proto"
 )
 
-// mailGrantItem 将邮件附件发放到玩家背包。单独抽出便于在无配置表的
-// 单元测试中替换为内存发放。
-var mailGrantItem = func(s *model.Player, itemID uint32, num int64) *proto.ItemDetail {
-	if s == nil || itemID == 0 || num <= 0 {
-		return nil
-	}
-	ctx := s.AddAllTypeItem(itemID, num)
-	if ctx == nil {
-		return nil
-	}
-	return ctx.AddItemDetail()
-}
-
 func (g *Game) GetMails(s *model.Player, msg *alg.GameMsg) {
 	rsp := &proto.GetMailsRsp{
 		Status: proto.StatusCode_StatusCode_OK,
@@ -50,13 +37,23 @@ func (g *Game) OperateMails(s *model.Player, msg *alg.GameMsg) {
 	case proto.MailOperateType_MailOperateType_DELETE_ALL_READED:
 		rsp.DeletedMailIds = deleteReadMails(s)
 	case proto.MailOperateType_MailOperateType_CLAIM:
-		items, status := claimMail(s, req.MailId)
-		rsp.Status = status
-		rsp.ClaimResult = items
+		rsp.Status = commitPlayerReward(s, func() proto.StatusCode {
+			items, status := claimMail(s, req.MailId)
+			rsp.ClaimResult = items
+			return status
+		})
+		if rsp.Status != proto.StatusCode_StatusCode_OK {
+			rsp.ClaimResult = nil
+		}
 	case proto.MailOperateType_MailOperateType_CLAIM_ALL:
-		items, status := claimAllMails(s)
-		rsp.Status = status
-		rsp.ClaimResult = items
+		rsp.Status = commitPlayerReward(s, func() proto.StatusCode {
+			items, status := claimAllMails(s)
+			rsp.ClaimResult = items
+			return status
+		})
+		if rsp.Status != proto.StatusCode_StatusCode_OK {
+			rsp.ClaimResult = nil
+		}
 	case proto.MailOperateType_MailOperateType_COLLECT:
 		if !validMail(s, req.MailId) {
 			rsp.Status = proto.StatusCode_StatusCode_MAIL_NOT_EXIST
@@ -99,7 +96,14 @@ func claimMail(s *model.Player, mailId uint32) ([]*proto.ItemDetail, proto.Statu
 	if state.Claimed {
 		return nil, proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 	}
-	items, status := grantMailAttachments(s, model.TestMails[mailId])
+	rewards, status := mailAttachments(model.TestMails[mailId])
+	if status != proto.StatusCode_StatusCode_OK {
+		return nil, status
+	}
+	if status = prepareRewardItems(s, rewards); status != proto.StatusCode_StatusCode_OK {
+		return nil, status
+	}
+	items, status := grantPreparedRewards(s, rewards)
 	if status != proto.StatusCode_StatusCode_OK {
 		return nil, status
 	}
@@ -136,42 +140,42 @@ func claimAllMails(s *model.Player) ([]*proto.ItemDetail, proto.StatusCode) {
 	return items, proto.StatusCode_StatusCode_OK
 }
 
-func grantMailAttachments(s *model.Player, mail *proto.MailBriefData) ([]*proto.ItemDetail, proto.StatusCode) {
+func mailAttachments(mail *proto.MailBriefData) ([]rewardItem, proto.StatusCode) {
 	if mail == nil {
 		return nil, proto.StatusCode_StatusCode_MAIL_NOT_EXIST
 	}
-	items := make([]*proto.ItemDetail, 0, len(mail.Items)+len(mail.Reward))
+	rewards := make([]rewardItem, 0, len(mail.Items)+len(mail.Reward))
 	if len(mail.Items) > 0 {
 		for _, attachment := range mail.Items {
 			if attachment == nil || attachment.ItemId == 0 || attachment.Num <= 0 {
-				continue
-			}
-			item := mailGrantItem(s, attachment.ItemId, attachment.Num)
-			if item == nil {
 				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
-			items = append(items, item)
+			rewards = append(rewards, rewardItem{id: attachment.ItemId, num: attachment.Num})
 		}
 	} else {
 		for _, reward := range mail.Reward {
 			if reward == nil || reward.MainItem == nil || reward.MainItem.ItemId == 0 {
-				continue
+				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			}
 			num := int64(1)
 			if base := reward.MainItem.GetBaseItem(); base != nil && base.Num > 0 {
 				num = base.Num
 			}
-			item := mailGrantItem(s, reward.MainItem.ItemId, num)
-			if item == nil {
-				return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
-			}
-			items = append(items, item)
+			rewards = append(rewards, rewardItem{id: reward.MainItem.ItemId, num: num})
 		}
 	}
-	if len(items) == 0 {
+	if len(rewards) == 0 {
 		return nil, proto.StatusCode_StatusCode_MAIL_NO_REWARD
 	}
-	return items, proto.StatusCode_StatusCode_OK
+	return rewards, proto.StatusCode_StatusCode_OK
+}
+
+func grantMailAttachments(s *model.Player, mail *proto.MailBriefData) ([]*proto.ItemDetail, proto.StatusCode) {
+	rewards, status := mailAttachments(mail)
+	if status != proto.StatusCode_StatusCode_OK {
+		return nil, status
+	}
+	return grantPreparedRewards(s, rewards)
 }
 
 func deleteReadMails(s *model.Player) []uint32 {

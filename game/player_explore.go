@@ -3,13 +3,14 @@ package game
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"math"
+	"sync"
 	"time"
 
 	"gucooing/lolo/db"
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/pkg/alg"
-	"gucooing/lolo/pkg/log"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -19,9 +20,17 @@ type exploreDeps struct {
 	hasItem     func(*model.Player, uint32, int64) bool
 	consumeItem func(*model.Player, uint32, int64) (*proto.ItemDetail, bool)
 	grantItem   func(*model.Player, uint32, int64) *proto.ItemDetail
+	save        func(*model.Player) error
+	now         func() time.Time
+	mu          *sync.Mutex
 }
 
 var productionExploreDeps = exploreDeps{
+	mu: new(sync.Mutex),
+	save: func(s *model.Player) error {
+		return s.SavePlayerNow()
+	},
+	now:        time.Now,
 	loadConfig: model.LoadExploreConfig,
 	itemExists: configuredExploreItem,
 	hasItem: func(s *model.Player, id uint32, count int64) bool {
@@ -112,7 +121,7 @@ func configuredExploreItem(id uint32) (ok bool) {
 }
 
 func consumeExploreItem(s *model.Player, id uint32, count int64) (*proto.ItemDetail, bool) {
-	tx, err := s.GetItemModel().Begin()
+	tx, err := s.GetItemModel().BeginAtomic()
 	if err != nil {
 		return nil, false
 	}
@@ -126,6 +135,57 @@ func consumeExploreItem(s *model.Player, id uint32, count int64) (*proto.ItemDet
 		return nil, false
 	}
 	return tx.PackNotice.Items[0], true
+}
+
+const exploreStateArchiveKey = "explore_state_v1"
+
+func (d exploreDeps) lock() func() {
+	if d.mu == nil {
+		return func() {}
+	}
+	d.mu.Lock()
+	return d.mu.Unlock
+}
+
+type exploreSnapshot struct {
+	inventory model.ItemModelSnapshot
+	archive   *model.ArchiveModel
+	raw       string
+	present   bool
+}
+
+func snapshotExplore(s *model.Player) exploreSnapshot {
+	archive := s.GetArchive()
+	raw, present := archive.GetArchiveMap()[exploreStateArchiveKey]
+	return exploreSnapshot{
+		inventory: model.SnapshotItemModel(s.GetItemModel()),
+		archive:   archive, raw: raw, present: present,
+	}
+}
+
+func (s exploreSnapshot) restore() {
+	s.inventory.Restore()
+	if !s.present {
+		delete(s.archive.GetArchiveMap(), exploreStateArchiveKey)
+		return
+	}
+	s.archive.SetArchiveMap(exploreStateArchiveKey, s.raw)
+}
+
+// commitExplore serializes the changed inventory and explore state together.
+// A failed save restores both, leaving the round claimable and uncharged.
+func commitExplore(s *model.Player, deps exploreDeps, state *model.ExploreModel, before exploreSnapshot) proto.StatusCode {
+	if err := s.SaveExploreModel(state); err != nil {
+		before.restore()
+		return proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
+	}
+	if deps.save != nil {
+		if err := deps.save(s); err != nil {
+			before.restore()
+			return proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
+		}
+	}
+	return proto.StatusCode_StatusCode_OK
 }
 
 func exploreDefinition(cfg *model.ExploreConfig, id uint32, activity bool) (model.ExploreDefinition, bool) {
@@ -199,6 +259,7 @@ func newExploreToken() (string, error) {
 
 func startExplore(s *model.Player, deps exploreDeps, id uint32, activity bool,
 	sceneID, playerLevel uint32, team [3]uint32, now time.Time) (*proto.PlayerExploreInfo, proto.StatusCode) {
+	defer deps.lock()()
 	cfg, err := deps.loadConfig()
 	if err != nil {
 		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
@@ -249,8 +310,19 @@ func startExplore(s *model.Player, deps exploreDeps, id uint32, activity bool,
 	if err != nil {
 		return nil, proto.StatusCode_StatusCode_BAD_REQ
 	}
+	before := snapshotExplore(s)
+	if def.NeedItemID != 0 {
+		if _, ok := deps.consumeItem(s, def.NeedItemID, def.NeedItemCount); !ok {
+			before.restore()
+			return nil, proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
+		}
+	}
 	current = state.Ensure(id, activity)
 	if activity {
+		if current.Times == math.MaxUint32 {
+			before.restore()
+			return nil, proto.StatusCode_StatusCode_SYS_ERR
+		}
 		current.Times++
 	}
 	current.StartTime = now.UnixMilli()
@@ -258,13 +330,14 @@ func startExplore(s *model.Player, deps exploreDeps, id uint32, activity bool,
 	current.Token = token
 	current.QuickFinish = false
 	current.CollectItemIDs = append([]uint32(nil), def.RewardItemIDs...)
-	if err := s.SaveExploreModel(state); err != nil {
-		return nil, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
+	if status := commitExplore(s, deps, state, before); status != proto.StatusCode_StatusCode_OK {
+		return nil, status
 	}
 	return current.PB(def), proto.StatusCode_StatusCode_OK
 }
 
 func quickFinishExplore(s *model.Player, deps exploreDeps, id uint32, activity bool) (*proto.PlayerExploreInfo, *proto.ItemDetail, proto.StatusCode) {
+	defer deps.lock()()
 	cfg, err := deps.loadConfig()
 	if err != nil {
 		return nil, nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
@@ -287,13 +360,15 @@ func quickFinishExplore(s *model.Player, deps exploreDeps, id uint32, activity b
 	if def.QuickItemID == 0 || def.QuickItemCount <= 0 || !deps.itemExists(def.QuickItemID) {
 		return nil, nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
+	before := snapshotExplore(s)
 	item, ok := deps.consumeItem(s, def.QuickItemID, def.QuickItemCount)
 	if !ok {
+		before.restore()
 		return current.PB(def), nil, proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
 	}
 	current.QuickFinish = true
-	if err := s.SaveExploreModel(state); err != nil {
-		return current.PB(def), item, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
+	if status := commitExplore(s, deps, state, before); status != proto.StatusCode_StatusCode_OK {
+		return current.PB(def), nil, status
 	}
 	return current.PB(def), item, proto.StatusCode_StatusCode_OK
 }
@@ -320,6 +395,7 @@ func grantExploreItems(s *model.Player, deps exploreDeps, ids []uint32) ([]*prot
 
 func claimExploreReward(s *model.Player, deps exploreDeps, id uint32, activity bool,
 	now time.Time) (*proto.PlayerExploreInfo, []*proto.ItemDetail, proto.StatusCode) {
+	defer deps.lock()()
 	cfg, err := deps.loadConfig()
 	if err != nil {
 		return nil, nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
@@ -342,22 +418,29 @@ func claimExploreReward(s *model.Player, deps exploreDeps, id uint32, activity b
 	if !validateExploreItems(deps, def) {
 		return nil, nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
+	if current.CompletedTimes == math.MaxUint32 || (!activity && current.Times == math.MaxUint32) {
+		return current.PB(def), nil, proto.StatusCode_StatusCode_SYS_ERR
+	}
+	before := snapshotExplore(s)
 	items, ok := grantExploreDefinition(s, deps, def)
 	if !ok {
+		before.restore()
 		return current.PB(def), nil, proto.StatusCode_StatusCode_Item_Get_Fail
 	}
 	current.StartTime, current.EndTime, current.Token, current.QuickFinish = 0, 0, "", false
 	current.CompletedTimes++
+	current.CollectReward = false
 	if !activity {
 		current.Times++
 	}
-	if err := s.SaveExploreModel(state); err != nil {
-		return current.PB(def), items, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
+	if status := commitExplore(s, deps, state, before); status != proto.StatusCode_StatusCode_OK {
+		return current.PB(def), nil, status
 	}
 	return current.PB(def), items, proto.StatusCode_StatusCode_OK
 }
 
 func claimExploreCollectReward(s *model.Player, deps exploreDeps, id uint32, activity bool) (*proto.PlayerExploreInfo, []*proto.ItemDetail, proto.StatusCode) {
+	defer deps.lock()()
 	cfg, err := deps.loadConfig()
 	if err != nil {
 		return nil, nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
@@ -380,18 +463,21 @@ func claimExploreCollectReward(s *model.Player, deps exploreDeps, id uint32, act
 	if !validateExploreItems(deps, def) {
 		return nil, nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
 	}
+	before := snapshotExplore(s)
 	items, ok := grantExploreItems(s, deps, def.RewardItemIDs)
 	if !ok {
+		before.restore()
 		return current.PB(def), nil, proto.StatusCode_StatusCode_Item_Get_Fail
 	}
 	current.CollectReward = true
-	if err := s.SaveExploreModel(state); err != nil {
-		return current.PB(def), items, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
+	if status := commitExplore(s, deps, state, before); status != proto.StatusCode_StatusCode_OK {
+		return current.PB(def), nil, status
 	}
 	return current.PB(def), items, proto.StatusCode_StatusCode_OK
 }
 
-func cancelExplore(s *model.Player, id uint32, activity bool) (*proto.PlayerExploreInfo, proto.StatusCode) {
+func cancelExplore(s *model.Player, deps exploreDeps, id uint32, activity bool) (*proto.PlayerExploreInfo, proto.StatusCode) {
+	defer deps.lock()()
 	state, err := s.LoadExploreModel()
 	if err != nil {
 		return nil, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
@@ -400,9 +486,10 @@ func cancelExplore(s *model.Player, id uint32, activity bool) (*proto.PlayerExpl
 	if current == nil || current.StartTime == 0 {
 		return nil, proto.StatusCode_StatusCode_EXPLORE_NOT_EXISTS
 	}
+	before := snapshotExplore(s)
 	current.StartTime, current.EndTime, current.Token, current.QuickFinish = 0, 0, "", false
-	if err := s.SaveExploreModel(state); err != nil {
-		return nil, proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
+	if status := commitExplore(s, deps, state, before); status != proto.StatusCode_StatusCode_OK {
+		return nil, status
 	}
 	return &proto.PlayerExploreInfo{
 		ExploreId: id, Times: current.Times, CollectItemId: append([]uint32(nil), current.CollectItemIDs...),
@@ -486,12 +573,6 @@ func (g *Game) Explore(s *model.Player, msg *alg.GameMsg) {
 	info, status := startExplore(s, productionExploreDeps, req.ExploreId, req.IsActivity, sceneID, level, team, time.Now())
 	rsp.Status = status
 	rsp.Explore = info
-	if status == proto.StatusCode_StatusCode_OK {
-		if err := s.SavePlayerNow(); err != nil {
-			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
-			log.Game.Errorf("UserId:%v 探索开始落库失败:%s", s.UserId, err)
-		}
-	}
 }
 
 func (g *Game) ExploreQuickFinish(s *model.Player, msg *alg.GameMsg) {
@@ -502,12 +583,6 @@ func (g *Game) ExploreQuickFinish(s *model.Player, msg *alg.GameMsg) {
 	rsp.Status, rsp.Explore = status, info
 	if item != nil {
 		g.PackNoticeByItems(s, []*proto.ItemDetail{item})
-	}
-	if status == proto.StatusCode_StatusCode_OK {
-		if err := s.SavePlayerNow(); err != nil {
-			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
-			log.Game.Errorf("UserId:%v 探索加速落库失败:%s", s.UserId, err)
-		}
 	}
 }
 
@@ -523,26 +598,14 @@ func (g *Game) ExploreReward(s *model.Player, msg *alg.GameMsg) {
 	if len(items) > 0 {
 		g.PackNoticeByItems(s, items)
 	}
-	if status == proto.StatusCode_StatusCode_OK {
-		if err := s.SavePlayerNow(); err != nil {
-			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
-			log.Game.Errorf("UserId:%v 探索领奖落库失败:%s", s.UserId, err)
-		}
-	}
 }
 
 func (g *Game) ExploreCancel(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ExploreCancelReq)
 	rsp := &proto.ExploreCancelRsp{Status: proto.StatusCode_StatusCode_OK, ExploreId: req.ExploreId, IsActivity: req.IsActivity}
 	defer g.send(s, msg.PacketId, rsp)
-	info, status := cancelExplore(s, req.ExploreId, req.IsActivity)
+	info, status := cancelExplore(s, productionExploreDeps, req.ExploreId, req.IsActivity)
 	rsp.Status, rsp.Explore = status, info
-	if status == proto.StatusCode_StatusCode_OK {
-		if err := s.SavePlayerNow(); err != nil {
-			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
-			log.Game.Errorf("UserId:%v 取消探索落库失败:%s", s.UserId, err)
-		}
-	}
 }
 
 func (g *Game) ExploreCollectReward(s *model.Player, msg *alg.GameMsg) {
@@ -556,11 +619,5 @@ func (g *Game) ExploreCollectReward(s *model.Player, msg *alg.GameMsg) {
 	rsp.Status, rsp.Explore, rsp.RewardItem = status, info, items
 	if len(items) > 0 {
 		g.PackNoticeByItems(s, items)
-	}
-	if status == proto.StatusCode_StatusCode_OK {
-		if err := s.SavePlayerNow(); err != nil {
-			rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
-			log.Game.Errorf("UserId:%v 探索收集奖励落库失败:%s", s.UserId, err)
-		}
 	}
 }

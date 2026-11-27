@@ -169,7 +169,19 @@ func (s *Player) GetQuestDetail() *proto.QuestDetail {
 		}
 		info.Chapters = append(info.Chapters, chapter)
 	}
-	for _, quest := range questModel.GetQuestMap() {
+	for questId, quest := range questModel.GetQuestMap() {
+		if questId == 0 || quest == nil || quest.QuestId == 0 ||
+			gdconf.GetQuestInfos()[questId] == nil {
+			delete(questModel.GetQuestMap(), questId)
+			continue
+		}
+		if quest.QuestId != questId {
+			delete(questModel.GetQuestMap(), questId)
+			continue
+		}
+		if quest.Conditions == nil {
+			quest.Conditions = make([]*proto.Condition, 0)
+		}
 		info.Quests = append(info.Quests, quest)
 	}
 	return info

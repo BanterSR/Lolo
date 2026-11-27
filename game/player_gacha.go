@@ -122,17 +122,34 @@ func (g *Game) ChooseGacha(s *model.Player, msg *alg.GameMsg) {
 		GachaId: req.GachaId,
 	}
 	defer g.send(s, msg.PacketId, rsp)
+	parent := gdconf.GetGachaData(req.GachaId)
 	selected := gdconf.GetGachaData(req.ChooseGachaPool)
-	if selected == nil || selected.Conf == nil || req.ChooseGachaPool == req.GachaId {
+	if parent == nil || parent.Conf == nil || !parent.IsOptional() || selected == nil || selected.Conf == nil ||
+		req.ChooseGachaPool == req.GachaId || !validChooseGachaPool(parent, selected) {
 		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	info := s.GetGachaModel().GetGachaInfo(req.GachaId)
+	old := info.ChoosePoolId
 	info.ChoosePoolId = req.ChooseGachaPool
 	rsp.ChooseGachaPool = info.ChoosePoolId
 	if err := s.SavePlayerNow(); err != nil {
+		info.ChoosePoolId = old
+		rsp.ChooseGachaPool = old
 		rsp.Status = proto.StatusCode_StatusCode_SYS_ERR
 	}
+}
+
+func validChooseGachaPool(parent, selected *gdconf.GachaData) bool {
+	if selected.Conf.IsFree || selected.Conf.NewUIGachaType != parent.Conf.NewUIGachaType {
+		return false
+	}
+	for _, candidate := range parent.Conf.CardPoolRange {
+		if candidate > 0 && uint32(candidate) == uint32(selected.Conf.ID) {
+			return true
+		}
+	}
+	return false
 }
 
 func (g *Game) GachaFullPick(s *model.Player, msg *alg.GameMsg) {

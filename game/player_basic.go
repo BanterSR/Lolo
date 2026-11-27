@@ -1,6 +1,8 @@
 package game
 
 import (
+	"fmt"
+	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -80,6 +82,11 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg
 				log.Game.Warnf("玩家:%v数据序列化失败:%s", userId, err.Error())
 				return
 			}
+			if err := ValidatePlayerEconomy(s); err != nil {
+				rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
+				log.Game.Warnf("玩家:%v经济数据校验失败,拒绝登录:%s", userId, err.Error())
+				return
+			}
 		} else {
 			// newPlayer
 			characterInfo := s.AddCharacter(101001)
@@ -91,9 +98,6 @@ func (g *Game) PlayerLogin(conn ofnet.Conn, userId uint32, uuid string, msg *alg
 			}
 			s.GetItemModel().InitItem()
 			s.AcceptFirstMainQuest()
-			if err := s.SavePlayerNow(); err != nil {
-				log.Game.Errorf("UserId:%v 新号初始化落库失败:%s", userId, err.Error())
-			}
 		}
 		atomic.AddInt64(&playerNum, 1)
 		g.userMap[userId] = s
@@ -140,6 +144,225 @@ login:
 	}
 	log.Game.Infof("UserId:%v Name:%s IP:%s 设备:%s 系统:%s 登录成功!",
 		s.UserId, rsp.PlayerName, req.Ip, req.DeviceModel, req.OsVer)
+}
+
+// rewardSavePlayer is replaceable in transaction tests.
+var rewardSavePlayer = (*model.Player).SavePlayerNow
+
+type rewardItem struct {
+	id  uint32
+	num int64
+}
+
+// prepareRewardItems validates the whole batch before any inventory mutation.
+// Stack balances are accumulated so duplicate entries cannot bypass overflow checks.
+func prepareRewardItems(s *model.Player, rewards []rewardItem) proto.StatusCode {
+	if s == nil {
+		return proto.StatusCode_StatusCode_CFG_NOT_FOUND
+	}
+	stack := make(map[uint32]int64)
+	unique := make(map[uint32]bool)
+	for _, reward := range rewards {
+		conf := gdconf.GetItemConfigure(reward.id)
+		if conf == nil || reward.num <= 0 {
+			return proto.StatusCode_StatusCode_CFG_NOT_FOUND
+		}
+		tag := proto.EBagItemTag(conf.NewBagItemTag)
+		switch tag {
+		case proto.EBagItemTag_EBagItemTag_Weapon:
+			if gdconf.GetWeaponAllInfo(reward.id) == nil {
+				return proto.StatusCode_StatusCode_CFG_NOT_FOUND
+			}
+		case proto.EBagItemTag_EBagItemTag_Armor:
+			if gdconf.GetArmorAllInfo(reward.id) == nil {
+				return proto.StatusCode_StatusCode_CFG_NOT_FOUND
+			}
+		case proto.EBagItemTag_EBagItemTag_Poster:
+			if gdconf.GetPosterAllInfo(reward.id) == nil {
+				return proto.StatusCode_StatusCode_CFG_NOT_FOUND
+			}
+		case proto.EBagItemTag_EBagItemTag_Fashion:
+			if gdconf.GetFashionAllInfo(reward.id) == nil {
+				return proto.StatusCode_StatusCode_CFG_NOT_FOUND
+			}
+		case proto.EBagItemTag_EBagItemTag_Inscription:
+			if gdconf.GetInscriptionAllInfo(reward.id) == nil || unique[reward.id] || s.GetItemModel().GetItemInscriptionInfo(reward.id) != nil {
+				return proto.StatusCode_StatusCode_CFG_NOT_FOUND
+			}
+			unique[reward.id] = true
+		case proto.EBagItemTag_EBagItemTag_Card:
+			if gdconf.GetCharacterAll(reward.id) == nil {
+				return proto.StatusCode_StatusCode_CFG_NOT_FOUND
+			}
+		default:
+			if old := stack[reward.id]; old > math.MaxInt64-reward.num {
+				return proto.StatusCode_StatusCode_CFG_NOT_FOUND
+			}
+			stack[reward.id] += reward.num
+		}
+	}
+	for id, count := range stack {
+		base := s.GetItemModel().GetItemBaseInfo(id)
+		if base != nil && (base.Num < 0 || base.Num > math.MaxInt64-count) {
+			return proto.StatusCode_StatusCode_CFG_NOT_FOUND
+		}
+	}
+	return proto.StatusCode_StatusCode_OK
+}
+
+func grantPreparedRewards(s *model.Player, rewards []rewardItem) ([]*proto.ItemDetail, proto.StatusCode) {
+	if status := prepareRewardItems(s, rewards); status != proto.StatusCode_StatusCode_OK {
+		return nil, status
+	}
+	items := make([]*proto.ItemDetail, 0, len(rewards))
+	for _, reward := range rewards {
+		ctx := s.AddAllTypeItem(reward.id, reward.num)
+		if ctx == nil {
+			return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
+		}
+		detail := ctx.AddItemDetail()
+		if detail == nil {
+			return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
+		}
+		items = append(items, detail)
+	}
+	return items, proto.StatusCode_StatusCode_OK
+}
+
+// commitPlayerReward applies a synchronous state change and persists the exact
+// same player snapshot. Any grant or save failure restores the prior snapshot.
+func commitPlayerReward(s *model.Player, change func() proto.StatusCode) proto.StatusCode {
+	snapshot, err := sonic.Marshal(s)
+	if err != nil {
+		return proto.StatusCode_StatusCode_SYS_ERR
+	}
+	if status := change(); status != proto.StatusCode_StatusCode_OK {
+		restorePlayerRewardSnapshot(s, snapshot)
+		return status
+	}
+	if err := rewardSavePlayer(s); err != nil {
+		restorePlayerRewardSnapshot(s, snapshot)
+		return proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
+	}
+	return proto.StatusCode_StatusCode_OK
+}
+
+func restorePlayerRewardSnapshot(s *model.Player, snapshot []byte) {
+	var restored model.Player
+	if err := sonic.Unmarshal(snapshot, &restored); err != nil {
+		log.Game.Errorf("UserId:%v 奖励事务快照恢复失败:%v", s.UserId, err)
+		return
+	}
+	restored.Conn = s.Conn
+	restored.Online = s.Online
+	restored.NetFreeze = s.NetFreeze
+	restored.Created = s.Created
+	restored.ActiveTime = s.ActiveTime
+	restored.LastSaveTime = s.LastSaveTime
+	restored.SaveLock = s.SaveLock
+	restored.UserId = s.UserId
+	restored.NickName = s.NickName
+	restored.LoginUUID = s.LoginUUID
+	*s = restored
+}
+
+// ValidatePlayerEconomy rejects corrupted/imported inventory instead of loading
+// it into the live game. Instance IDs share one allocator across item kinds.
+func ValidatePlayerEconomy(s *model.Player) error {
+	if s == nil || s.Item == nil {
+		return fmt.Errorf("missing inventory")
+	}
+	items := s.Item
+	validateBase := func(id uint32, base *model.ItemBaseInfo) error {
+		conf := gdconf.GetItemConfigure(id)
+		if conf == nil || base == nil || base.ItemId != id || base.Num < 0 ||
+			base.ItemType != proto.EBagItemTag(conf.NewBagItemTag) {
+			return fmt.Errorf("invalid item %d", id)
+		}
+		return nil
+	}
+	for id, base := range items.ItemBaseInfo {
+		if err := validateBase(id, base); err != nil {
+			return err
+		}
+	}
+	instances := make(map[uint32]bool)
+	validateInstance := func(id uint32, base *model.ItemBaseInfo) error {
+		if base == nil {
+			return fmt.Errorf("missing instance item %d", id)
+		}
+		if id == 0 || id > items.InstanceIndex || instances[id] {
+			return fmt.Errorf("invalid or duplicate instance %d", id)
+		}
+		instances[id] = true
+		return validateBase(base.ItemId, base)
+	}
+	for id, item := range items.ItemWeaponMap {
+		if item == nil || item.InstanceId != id || item.WeaponId == 0 || gdconf.GetWeaponAllInfo(item.WeaponId) == nil {
+			return fmt.Errorf("invalid weapon %d", id)
+		}
+		if err := validateInstance(id, item.ItemBaseInfo); err != nil {
+			return err
+		}
+	}
+	for id, item := range items.ItemArmorMap {
+		if item == nil || item.InstanceId != id || item.ArmorId == 0 || gdconf.GetArmorAllInfo(item.ArmorId) == nil {
+			return fmt.Errorf("invalid armor %d", id)
+		}
+		if err := validateInstance(id, item.ItemBaseInfo); err != nil {
+			return err
+		}
+	}
+	for id, item := range items.ItemPosterMap {
+		if item == nil || item.InstanceId != id || item.PosterId == 0 || gdconf.GetPosterAllInfo(item.PosterId) == nil {
+			return fmt.Errorf("invalid poster %d", id)
+		}
+		if err := validateInstance(id, item.ItemBaseInfo); err != nil {
+			return err
+		}
+	}
+	for id, item := range items.ItemPetInfoMap {
+		if item == nil || item.InstanceId != id {
+			return fmt.Errorf("invalid pet %d", id)
+		}
+		if err := validateInstance(id, item.ItemBaseInfo); err != nil {
+			return err
+		}
+	}
+	for id, item := range items.ItemInscriptionMap {
+		if item == nil || id != item.InscriptionId || gdconf.GetInscriptionAllInfo(id) == nil {
+			return fmt.Errorf("invalid inscription %d", id)
+		}
+		if err := validateBase(item.ItemId, item.ItemBaseInfo); err != nil {
+			return err
+		}
+	}
+	for id, item := range items.ItemFashionMap {
+		if item == nil || gdconf.GetFashionAllInfo(id) == nil {
+			return fmt.Errorf("invalid fashion %d", id)
+		}
+		if err := validateBase(item.ItemId, item.ItemBaseInfo); err != nil {
+			return err
+		}
+	}
+	for id, item := range items.ItemHeadMap {
+		if item == nil || id != item.HeadId {
+			return fmt.Errorf("invalid head %d", id)
+		}
+		if err := validateBase(item.ItemId, item.ItemBaseInfo); err != nil {
+			return err
+		}
+	}
+	for id, item := range items.FurnitureItemMap {
+		if item == nil || id != item.ItemId || item.Num < 0 {
+			return fmt.Errorf("invalid furniture %d", id)
+		}
+		conf := gdconf.GetItemConfigure(id)
+		if conf == nil || proto.EBagItemTag(conf.NewBagItemTag) != proto.EBagItemTag_EBagItemTag_Furniture {
+			return fmt.Errorf("invalid furniture item %d", id)
+		}
+	}
+	return nil
 }
 
 func (g *Game) PlayerMainData(s *model.Player, msg *alg.GameMsg) {
@@ -667,7 +890,7 @@ func (g *Game) TreasureIllustrationInfo(s *model.Player, msg *alg.GameMsg) {
 		}
 		rsp.Achieves = append(rsp.Achieves, &proto.TreasureAchieve{
 			AchieveType:                  typ,
-			TreasureAchieve:             achieves,
+			TreasureAchieve:              achieves,
 			RewardedTreasureAchieveIdLst: ids,
 		})
 	}

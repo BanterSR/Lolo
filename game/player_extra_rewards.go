@@ -1,6 +1,7 @@
 package game
 
 import (
+	"math"
 	"math/rand/v2"
 	"sort"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/pkg/alg"
+	"gucooing/lolo/protocol/excel"
 	"gucooing/lolo/protocol/proto"
 )
 
@@ -146,6 +148,11 @@ func (g *Game) ActivityUploadWishTxt(s *model.Player, msg *alg.GameMsg) {
 	})
 }
 
+func serverAchievementComplete(s *model.Player, conditionID uint32) bool {
+	target, ok := defaultActivityService().achievementTarget(conditionID)
+	return ok && s.GetActivityModel().AchievementProgress(conditionID) >= target
+}
+
 func (g *Game) ActivityInviteRewardClaim(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.ActivityInviteRewardClaimReq)
 	rsp := &proto.ActivityInviteRewardClaimRsp{
@@ -162,39 +169,38 @@ func (g *Game) ActivityInviteRewardClaim(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 		return
 	}
+	if !serverAchievementComplete(s, req.ConditionId) {
+		rsp.Status = proto.StatusCode_StatusCode_Quest_Not_Finish
+		return
+	}
 	entries := gdconf.GetActivityInviteQuestReward(req.ConditionId)
 	if len(entries) == 0 {
 		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
+	rewards := make([]rewardItem, 0, len(entries))
 	for _, entry := range entries {
 		if entry == nil || entry.GetItemID() <= 0 || entry.GetItemNum() <= 0 {
-			continue
-		}
-		if gdconf.GetItemConfigure(uint32(entry.GetItemID())) == nil {
 			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return
 		}
+		rewards = append(rewards, rewardItem{id: uint32(entry.GetItemID()), num: int64(entry.GetItemNum())})
 	}
-	for _, entry := range entries {
-		if entry == nil || entry.GetItemID() <= 0 || entry.GetItemNum() <= 0 {
-			continue
+	rsp.Status = commitPlayerReward(s, func() proto.StatusCode {
+		items, status := grantPreparedRewards(s, rewards)
+		if status != proto.StatusCode_StatusCode_OK {
+			return status
 		}
-		ctx := s.AddAllTypeItem(uint32(entry.GetItemID()), int64(entry.GetItemNum()))
-		if ctx == nil {
-			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
-			return
-		}
-		if detail := ctx.AddItemDetail(); detail != nil {
-			rsp.Rewards = append(rsp.Rewards, detail)
-		}
+		rsp.Rewards = items
+		rewarded[req.ConditionId] = true
+		return proto.StatusCode_StatusCode_OK
+	})
+	if rsp.Status != proto.StatusCode_StatusCode_OK {
+		rsp.Rewards = nil
+		return
 	}
-	rewarded[req.ConditionId] = true
 	if len(rsp.Rewards) > 0 {
 		g.PackNoticeByItems(s, rsp.Rewards)
-	}
-	if err := s.SavePlayerNow(); err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
 }
 
@@ -212,39 +218,38 @@ func (g *Game) ActivityRecallRewardClaim(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
 		return
 	}
+	if !serverAchievementComplete(s, req.ConditionId) {
+		rsp.Status = proto.StatusCode_StatusCode_Quest_Not_Finish
+		return
+	}
 	entries := gdconf.GetRecallActivityReward(req.ConditionId)
 	if len(entries) == 0 {
 		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
+	rewards := make([]rewardItem, 0, len(entries))
 	for _, entry := range entries {
 		if entry == nil || entry.GetItemID() <= 0 || entry.GetItemNum() <= 0 {
-			continue
-		}
-		if gdconf.GetItemConfigure(uint32(entry.GetItemID())) == nil {
 			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return
 		}
+		rewards = append(rewards, rewardItem{id: uint32(entry.GetItemID()), num: int64(entry.GetItemNum())})
 	}
-	for _, entry := range entries {
-		if entry == nil || entry.GetItemID() <= 0 || entry.GetItemNum() <= 0 {
-			continue
+	rsp.Status = commitPlayerReward(s, func() proto.StatusCode {
+		items, status := grantPreparedRewards(s, rewards)
+		if status != proto.StatusCode_StatusCode_OK {
+			return status
 		}
-		ctx := s.AddAllTypeItem(uint32(entry.GetItemID()), int64(entry.GetItemNum()))
-		if ctx == nil {
-			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
-			return
-		}
-		if detail := ctx.AddItemDetail(); detail != nil {
-			rsp.Rewards = append(rsp.Rewards, detail)
-		}
+		rsp.Rewards = items
+		s.GetArchive().SetArchiveMap(key, "1")
+		return proto.StatusCode_StatusCode_OK
+	})
+	if rsp.Status != proto.StatusCode_StatusCode_OK {
+		rsp.Rewards = nil
+		return
 	}
-	s.GetArchive().SetArchiveMap(key, "1")
 	if len(rsp.Rewards) > 0 {
 		g.PackNoticeByItems(s, rsp.Rewards)
-	}
-	if err := s.SavePlayerNow(); err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
 	}
 }
 
@@ -266,15 +271,23 @@ func (g *Game) ActivitySandbagHit(s *model.Player, msg *alg.GameMsg) {
 		ActivityId: req.ActivityId,
 	}
 	defer g.send(s, msg.PacketId, rsp)
-	if req.ActivityId == 0 || req.NpcId == 0 || req.HitCount == 0 {
+	if req.ActivityId == 0 || req.NpcId == 0 || req.HitCount == 0 || req.HitCount > 100 {
 		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	key := "sandbagHit:" + strconv.Itoa(int(req.ActivityId)) + ":" + strconv.Itoa(int(req.NpcId))
 	archive := s.GetArchive()
 	count, _ := strconv.ParseUint(archive.GetArchiveValue(key), 10, 64)
+	if ^uint64(0)-count < uint64(req.HitCount) {
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
+		return
+	}
 	count += uint64(req.HitCount)
 	archive.SetArchiveMap(key, strconv.FormatUint(count, 10))
+	if err := s.SavePlayerNow(); err != nil {
+		archive.SetArchiveMap(key, strconv.FormatUint(count-uint64(req.HitCount), 10))
+		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
+	}
 }
 
 func (g *Game) ActivitySandbagReward(s *model.Player, msg *alg.GameMsg) {
@@ -293,54 +306,106 @@ func (g *Game) ActivitySandbagReward(s *model.Player, msg *alg.GameMsg) {
 		return
 	}
 	level := defaultActivityService().playerLevel(s)
+	hits := sandbagHitCount(s, req.ActivityId)
+	seen := make(map[uint32]bool)
+	rewards := make([]rewardItem, 0)
+	claimKeys := make([]string, 0)
 	for _, seq := range req.SeqList {
+		if seq == 0 || seen[seq] {
+			rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
+			return
+		}
+		seen[seq] = true
+		var item *excel.ActivityInteractionItems
+		for _, candidate := range conf.GetActivityInteractionItem() {
+			if candidate != nil && uint32(candidate.GetIndex()) == seq {
+				item = candidate
+				break
+			}
+		}
+		if item == nil || item.GetRewardPoolGroupID() <= 0 {
+			rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
+			return
+		}
+		threshold := item.GetOutputCeiling()
+		if threshold <= 0 {
+			threshold = item.GetIndex()
+		}
+		if threshold <= 0 || hits < uint64(threshold) {
+			rsp.Status = proto.StatusCode_StatusCode_Quest_Not_Finish
+			return
+		}
 		key := "sandbag:" + strconv.Itoa(int(req.ActivityId)) + ":" +
 			strconv.Itoa(int(req.RewardType)) + ":" + strconv.Itoa(int(seq))
 		if s.GetArchive().GetArchiveValue(key) != "" {
 			continue
 		}
-		var poolID uint32
-		for _, item := range conf.GetActivityInteractionItem() {
-			if item != nil && uint32(item.GetIndex()) == seq {
-				poolID = uint32(item.GetRewardPoolGroupID())
-				break
-			}
-		}
-		if poolID == 0 {
-			continue
-		}
-		items, status := grantRewardItemPool(s, poolID, level)
-		if status != proto.StatusCode_StatusCode_OK {
-			rsp.Status = status
+		poolRewards, ok := prepareRewardItemPool(item.GetRewardPoolGroupID(), level)
+		if !ok {
+			rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 			return
 		}
-		s.GetArchive().SetArchiveMap(key, "1")
+		rewards = append(rewards, poolRewards...)
+		claimKeys = append(claimKeys, key)
 		rsp.SeqList = append(rsp.SeqList, seq)
-		rsp.Rewards = append(rsp.Rewards, items...)
 	}
-	if len(rsp.SeqList) == 0 {
-		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
+	if len(claimKeys) == 0 {
+		rsp.Status = proto.StatusCode_StatusCode_REPEAT_GET_REWARD
+		return
+	}
+	if status := prepareRewardItems(s, rewards); status != proto.StatusCode_StatusCode_OK {
+		rsp.Status = status
+		rsp.SeqList = nil
+		return
+	}
+	rsp.Status = commitPlayerReward(s, func() proto.StatusCode {
+		items, status := grantPreparedRewards(s, rewards)
+		if status != proto.StatusCode_StatusCode_OK {
+			return status
+		}
+		for _, key := range claimKeys {
+			s.GetArchive().SetArchiveMap(key, "1")
+		}
+		rsp.Rewards = items
+		return proto.StatusCode_StatusCode_OK
+	})
+	if rsp.Status != proto.StatusCode_StatusCode_OK {
+		rsp.SeqList = nil
+		rsp.Rewards = nil
 		return
 	}
 	if len(rsp.Rewards) > 0 {
 		g.PackNoticeByItems(s, rsp.Rewards)
 	}
-	if err := s.SavePlayerNow(); err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
-	}
 }
 
 // grantRewardItemPool 从 RewardItemPool 直接发放一组奖励，用于交互活动等
 // 只引用物品池而非完整 RewardPool 的配置。
-func grantRewardItemPool(s *model.Player, poolID uint32, level uint32) ([]*proto.ItemDetail, proto.StatusCode) {
-	pool := gdconf.GetRewardItemPool(poolID)
-	if pool == nil || len(pool.GetRewardItemPoolGroup()) == 0 {
-		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
+func sandbagHitCount(s *model.Player, activityID uint32) uint64 {
+	const prefix = "sandbagHit:"
+	var total uint64
+	for key, value := range s.GetArchive().GetArchiveMap() {
+		if !strings.HasPrefix(key, prefix+strconv.Itoa(int(activityID))+":") {
+			continue
+		}
+		count, _ := strconv.ParseUint(value, 10, 64)
+		if ^uint64(0)-total < count {
+			return ^uint64(0)
+		}
+		total += count
 	}
-	items := make([]*proto.ItemDetail, 0)
+	return total
+}
+
+func prepareRewardItemPool(poolID int32, level uint32) ([]rewardItem, bool) {
+	pool := gdconf.GetRewardItemPool(uint32(poolID))
+	if pool == nil || len(pool.GetRewardItemPoolGroup()) == 0 {
+		return nil, false
+	}
+	rewards := make([]rewardItem, 0, len(pool.GetRewardItemPoolGroup()))
 	for _, entry := range pool.GetRewardItemPoolGroup() {
 		if entry == nil || entry.GetItemID() <= 0 {
-			continue
+			return nil, false
 		}
 		if entry.GetMinLevelLimit() > 0 && level < uint32(entry.GetMinLevelLimit()) {
 			continue
@@ -358,23 +423,11 @@ func grantRewardItemPool(s *model.Player, poolID uint32, level uint32) ([]*proto
 		}
 		count := minCount
 		if maxCount > minCount {
-			count += int64(rand.IntN(int(maxCount-minCount+1)))
+			count += int64(rand.IntN(int(maxCount - minCount + 1)))
 		}
-		if gdconf.GetItemConfigure(uint32(entry.GetItemID())) == nil {
-			return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
-		}
-		ctx := s.AddAllTypeItem(uint32(entry.GetItemID()), count)
-		if ctx == nil {
-			return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
-		}
-		if detail := ctx.AddItemDetail(); detail != nil {
-			items = append(items, detail)
-		}
+		rewards = append(rewards, rewardItem{id: uint32(entry.GetItemID()), num: count})
 	}
-	if len(items) == 0 {
-		return nil, proto.StatusCode_StatusCode_CFG_NOT_FOUND
-	}
-	return items, proto.StatusCode_StatusCode_OK
+	return rewards, len(rewards) > 0
 }
 
 func (g *Game) ManualFlagUnlock(s *model.Player, msg *alg.GameMsg) {
@@ -412,12 +465,12 @@ func (g *Game) ManualFlagReward(s *model.Player, msg *alg.GameMsg) {
 	if rewardID == 0 {
 		rewardID = uint32(conf.GetUnLockRewardID())
 	}
-	rewards, status := authoritativeDungeons.rewards(rewardID)
+	rewards, status := g.dungeonRuntime().rewards(rewardID)
 	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
-	items, status := authoritativeDungeons.grantRewards(s, rewards)
+	items, status := g.dungeonRuntime().grantRewards(s, rewards)
 	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
@@ -435,9 +488,9 @@ func (g *Game) ManualFlagReward(s *model.Player, msg *alg.GameMsg) {
 func (g *Game) PlayerAbilityLevelUp(s *model.Player, msg *alg.GameMsg) {
 	req := msg.Body.(*proto.PlayerAbilityLevelUpReq)
 	rsp := &proto.PlayerAbilityLevelUpRsp{
-		Status:   proto.StatusCode_StatusCode_OK,
-		Items:    make([]*proto.ItemDetail, 0),
-		Ability:  &proto.PlayerAbility{AbilityId: req.AbilityId},
+		Status:  proto.StatusCode_StatusCode_OK,
+		Items:   make([]*proto.ItemDetail, 0),
+		Ability: &proto.PlayerAbility{AbilityId: req.AbilityId},
 	}
 	defer g.send(s, msg.PacketId, rsp)
 
@@ -671,14 +724,11 @@ func (g *Game) ItemSweep(s *model.Player, msg *alg.GameMsg) {
 		Rewards: make([]*proto.ItemDetail, 0),
 	}
 	defer g.send(s, msg.PacketId, rsp)
-	if req.ItemId == 0 {
+	if req.ItemId == 0 || req.Count == 0 || req.Count > 10000 {
 		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
 	count := int64(req.Count)
-	if count <= 0 {
-		count = 1
-	}
 	conf := gdconf.GetQuickObtainingConfigure(req.ItemId)
 	if conf == nil || gdconf.GetItemConfigure(req.ItemId) == nil {
 		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
@@ -703,8 +753,25 @@ func (g *Game) ItemSweep(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
 		return
 	}
-	needVitality := int64(selected.needVitality) * count
-	needSpecial := int64(selected.needSpecialCurrency) * count
+	needVitality, ok := checkedRewardMul(int64(selected.needVitality), count)
+	if !ok {
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
+		return
+	}
+	needSpecial, ok := checkedRewardMul(int64(selected.needSpecialCurrency), count)
+	if !ok {
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
+		return
+	}
+	amount, ok := checkedRewardMul(int64(selected.num), count)
+	if !ok {
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
+		return
+	}
+	if status := prepareRewardItems(s, []rewardItem{{id: req.ItemId, num: amount}}); status != proto.StatusCode_StatusCode_OK {
+		rsp.Status = status
+		return
+	}
 
 	var vitalityItemID uint32
 	if needVitality > 0 {
@@ -726,38 +793,44 @@ func (g *Game) ItemSweep(s *model.Player, msg *alg.GameMsg) {
 			return
 		}
 	}
-	if needVitality > 0 || needSpecial > 0 {
-		tx, err := s.GetItemModel().Begin()
-		if err != nil {
-			rsp.Status = proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
-			return
+	rsp.Status = commitPlayerReward(s, func() proto.StatusCode {
+		if needVitality > 0 || needSpecial > 0 {
+			tx, err := s.GetItemModel().Begin()
+			if err != nil {
+				return proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
+			}
+			defer tx.Rollback()
+			if needVitality > 0 {
+				tx.DelBaseItem(vitalityItemID, needVitality)
+			}
+			if needSpecial > 0 {
+				tx.DelBaseItem(103, needSpecial)
+			}
+			if tx.Error != nil {
+				return proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
+			}
+			if tx.Commit().Error != nil {
+				return proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
+			}
 		}
-		defer tx.Rollback()
-		if needVitality > 0 {
-			tx.DelBaseItem(vitalityItemID, needVitality)
+		items, status := grantPreparedRewards(s, []rewardItem{{id: req.ItemId, num: amount}})
+		if status != proto.StatusCode_StatusCode_OK {
+			return status
 		}
-		if needSpecial > 0 {
-			tx.DelBaseItem(103, needSpecial)
-		}
-		if tx.Error != nil {
-			rsp.Status = proto.StatusCode_StatusCode_ITEM_NOT_ENOUGH
-			return
-		}
-		tx.Commit()
-	}
-	amount := int64(selected.num) * count
-	ctx := s.AddAllTypeItem(req.ItemId, amount)
-	if ctx == nil {
-		rsp.Status = proto.StatusCode_StatusCode_CFG_NOT_FOUND
+		rsp.Rewards = items
+		return proto.StatusCode_StatusCode_OK
+	})
+	if rsp.Status != proto.StatusCode_StatusCode_OK {
+		rsp.Rewards = nil
 		return
 	}
-	if detail := ctx.AddItemDetail(); detail != nil {
-		rsp.Rewards = append(rsp.Rewards, detail)
-		g.PackNoticeByItems(s, rsp.Rewards)
+}
+
+func checkedRewardMul(value, count int64) (int64, bool) {
+	if value < 0 || count <= 0 || (value != 0 && value > math.MaxInt64/count) {
+		return 0, false
 	}
-	if err := s.SavePlayerNow(); err != nil {
-		rsp.Status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
-	}
+	return value * count, true
 }
 
 type excelQuickObtainingItem struct {

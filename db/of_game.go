@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"gorm.io/gorm"
 	"gucooing/lolo/pkg/alg"
 	"time"
 )
@@ -40,10 +41,16 @@ func (g GzipBin) Value() (driver.Value, error) {
 
 // GetOFGameByUserId 使用UserId拉取数据 如果不存在就添加
 func GetOFGameByUserId(userId uint32) (*OFGame, error) {
+	accountCreateMu.Lock()
+	defer accountCreateMu.Unlock()
+
 	user := &OFGame{
 		UserId: userId,
 	}
-	err := db.FirstOrCreate(&user).Error
+	err := db.First(user).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		err = db.Create(user).Error
+	}
 	return user, err
 }
 

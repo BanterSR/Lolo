@@ -431,6 +431,66 @@ func TestActivityDefaultGranterUsesConfiguredStackableItem(t *testing.T) {
 	}
 }
 
+func TestActivityPeriodBoundariesAreInclusive(t *testing.T) {
+	h := newActivityTestHarness(t)
+	open := time.Date(2026, 11, 20, 0, 0, 0, 0, time.UTC).Unix()
+	close := open + 3600
+	h.service.conf.Activities[1] = activityConfigRow{
+		ID: 1, ActivityID: 10, NewActivityType: int32(proto.EActivityType_EActivityType_SevenDaySign),
+		OpeningTime: "2026-11-20 00:00:00", ClosingTime: "2026-11-20 01:00:00", openUnix: open, closeUnix: close,
+	}
+	for _, test := range []struct {
+		name string
+		now  int64
+		want proto.StatusCode
+	}{
+		{name: "before-open", now: open - 1, want: proto.StatusCode_StatusCode_Activity_Close},
+		{name: "at-open", now: open, want: proto.StatusCode_StatusCode_OK},
+		{name: "at-close", now: close, want: proto.StatusCode_StatusCode_OK},
+		{name: "after-close", now: close + 1, want: proto.StatusCode_StatusCode_Activity_Close},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			_, status := h.service.conf.resolveActivity(1, proto.EActivityType_EActivityType_SevenDaySign, test.now)
+			if status != test.want {
+				t.Fatalf("boundary status=%v want=%v", status, test.want)
+			}
+		})
+	}
+	if got := activityOpenDay(h.service.conf.Activities[1], open+86400-1); got != 1 {
+		t.Fatalf("last second of activity day=%d want=1", got)
+	}
+	if got := activityOpenDay(h.service.conf.Activities[1], open+86400); got != 2 {
+		t.Fatalf("first second of next activity day=%d want=2", got)
+	}
+}
+
+func TestActivitySignInServerDayBoundary(t *testing.T) {
+	h := newActivityTestHarness(t)
+	h.service.location = time.FixedZone("CST", 8*60*60)
+	open := time.Date(2026, 11, 20, 15, 0, 0, 0, time.UTC).Unix() // CST 23:00.
+	h.addActivity(1, 10, proto.EActivityType_EActivityType_SevenDaySign, open)
+	h.service.conf.Signs[10] = activitySignConfig{ID: 10, Items: []activitySignDayConfig{
+		{Day: 1, Rewards: []activitySignReward{{ItemID: 200, ItemNum: 1}}},
+		{Day: 2, Rewards: []activitySignReward{{ItemID: 200, ItemNum: 2}}},
+	}}
+	h.now = time.Date(2026, 11, 20, 15, 59, 59, 0, time.UTC).Unix()
+	if err := h.service.touchActivityLogin(h.player, h.now); err != nil {
+		t.Fatal(err)
+	}
+	rsp, _ := h.service.signIn(h.player, &proto.ActivitySignInReq{ActivityId: 1, Day: 1})
+	if rsp.Status != proto.StatusCode_StatusCode_OK || h.itemCount(200) != 1 {
+		t.Fatalf("day-one sign-in failed: status=%v count=%d", rsp.Status, h.itemCount(200))
+	}
+	h.now++
+	if err := h.service.touchActivityLogin(h.player, h.now); err != nil {
+		t.Fatal(err)
+	}
+	rsp, _ = h.service.signIn(h.player, &proto.ActivitySignInReq{ActivityId: 1, Day: 2})
+	if rsp.Status != proto.StatusCode_StatusCode_OK || h.itemCount(200) != 3 {
+		t.Fatalf("server-day rollover did not unlock day two: status=%v count=%d", rsp.Status, h.itemCount(200))
+	}
+}
+
 func TestLoadActivityConfigsUsesAuthoritativeSnakeCaseSchema(t *testing.T) {
 	dir := t.TempDir()
 	activity := `{"activity":{"datas":[{"i_d":900,"activity_i_d":10,"new_activity_type":1,"opening_time":"2026-11-20 00:00:00","closing_time":"2026-11-21 00:00:00"}]}}`

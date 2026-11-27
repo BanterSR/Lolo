@@ -1,10 +1,12 @@
 package game
 
 import (
+	"encoding/json"
 	"errors"
 	"math"
 	"reflect"
 	"sort"
+	"sync"
 
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/gdconf"
@@ -16,6 +18,9 @@ import (
 const tempPackMaxSize = 30
 
 var (
+	tempPackMu         sync.Mutex
+	tempPackSavePlayer = func(s *model.Player) error { return s.SavePlayerNow() }
+
 	errTempPackFull  = errors.New("temporary pack is full")
 	errTempPackIndex = errors.New("invalid temporary pack index")
 	errTempPackType  = errors.New("invalid temporary pack item type")
@@ -72,6 +77,93 @@ func tempPackErrorStatus(err error) proto.StatusCode {
 	default:
 		return proto.StatusCode_StatusCode_Item_Get_Fail
 	}
+}
+
+type tempPackStateSnapshot struct {
+	pack       *model.SceneTempPack
+	items      []model.EBagItemTag
+	drops      map[uint32]*model.DropItem
+	archive    *model.ArchiveModel
+	archiveRaw string
+	archiveSet bool
+}
+
+func snapshotTempPack(pack *model.SceneTempPack) tempPackStateSnapshot {
+	snapshot := tempPackStateSnapshot{pack: pack}
+	if pack == nil {
+		return snapshot
+	}
+	snapshot.items = append([]model.EBagItemTag(nil), pack.TempPack...)
+	snapshot.drops = make(map[uint32]*model.DropItem, len(pack.TempAreaPack))
+	for index, drop := range pack.TempAreaPack {
+		if drop == nil {
+			snapshot.drops[index] = nil
+			continue
+		}
+		copy := *drop
+		copy.Items = append([]model.EBagItemTag(nil), drop.Items...)
+		snapshot.drops[index] = &copy
+	}
+	return snapshot
+}
+
+func (s tempPackStateSnapshot) restore() {
+	if s.pack == nil {
+		return
+	}
+	s.pack.TempPack = s.items
+	s.pack.TempAreaPack = s.drops
+}
+
+func cloneTempPackCharacters(source *model.CharacterModel) *model.CharacterModel {
+	if source == nil {
+		return nil
+	}
+	data, err := json.Marshal(source)
+	if err != nil {
+		return nil
+	}
+	var clone model.CharacterModel
+	if json.Unmarshal(data, &clone) != nil {
+		return nil
+	}
+	return &clone
+}
+
+func (s tempPackStateSnapshot) restoreArchive() {
+	if s.archive == nil {
+		return
+	}
+	if !s.archiveSet {
+		delete(s.archive.GetArchiveMap(), "scene_temp_pack_v1")
+		return
+	}
+	s.archive.SetArchiveMap("scene_temp_pack_v1", s.archiveRaw)
+}
+
+func snapshotTempPackPlayer(s *model.Player, pack *model.SceneTempPack) tempPackStateSnapshot {
+	snapshot := snapshotTempPack(pack)
+	snapshot.archive = s.GetArchive()
+	snapshot.archiveRaw, snapshot.archiveSet = snapshot.archive.GetArchiveMap()["scene_temp_pack_v1"]
+	return snapshot
+}
+
+func persistTempPack(s *model.Player, inventory model.ItemModelSnapshot, pack tempPackStateSnapshot) error {
+	if err := s.SaveTempPackArchive(pack.pack); err != nil {
+		inventory.Restore()
+		pack.restore()
+		pack.restoreArchive()
+		return err
+	}
+	if s.Online {
+		if err := tempPackSavePlayer(s); err != nil {
+			inventory.Restore()
+			pack.restore()
+			pack.restoreArchive()
+			return err
+		}
+	}
+	return nil
 }
 
 func (g *Game) currentTempPack(s *model.Player) (*model.SceneTempPack, error) {
@@ -508,7 +600,12 @@ func wearTempPackItem(s *model.Player, pack *model.SceneTempPack, ownerID, index
 	return snapshot, changed, nil
 }
 
-func configuredMonsterDrop(s *model.Player, pack *model.SceneTempPack, monsterID, playerLevel uint32) (*model.DropItem, error) {
+func configuredMonsterDrop(s *model.Player, pack *model.SceneTempPack, monsterID, playerLevel uint32) (drop *model.DropItem, err error) {
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			drop, err = nil, errors.New("monster drop configuration is invalid")
+		}
+	}()
 	monster, ok := safeMonsterConfigure(monsterID)
 	if !ok {
 		return nil, errors.New("monster configuration is missing")
@@ -571,8 +668,12 @@ func (g *Game) pickupTempPack(s *model.Player, req *proto.PickupReq) (proto.Stat
 	if err != nil {
 		return tempPackErrorStatus(err), nil
 	}
+	before := snapshotTempPackPlayer(s, pack)
 	items, err := pickupTempPackItems(pack, req.DropItemIndex, req.PickIndex)
 	if err != nil {
+		return tempPackErrorStatus(err), nil
+	}
+	if err := persistTempPack(s, model.SnapshotItemModel(nil), before); err != nil {
 		return tempPackErrorStatus(err), nil
 	}
 	if len(items) > 0 {
@@ -582,12 +683,18 @@ func (g *Game) pickupTempPack(s *model.Player, req *proto.PickupReq) (proto.Stat
 }
 
 func (g *Game) TempPackItemDrop(s *model.Player, msg *alg.GameMsg) {
+	tempPackMu.Lock()
+	defer tempPackMu.Unlock()
 	req := msg.Body.(*proto.TempPackItemDropReq)
 	rsp := &proto.TempPackItemDropRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	pack, err := g.currentTempPack(s)
 	if err == nil {
+		before := snapshotTempPackPlayer(s, pack)
 		rsp.TempPack, err = dropTempPackItem(pack, req.Index)
+		if err == nil {
+			err = persistTempPack(s, model.SnapshotItemModel(nil), before)
+		}
 	}
 	if err != nil {
 		rsp.Status = tempPackErrorStatus(err)
@@ -595,11 +702,20 @@ func (g *Game) TempPackItemDrop(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) TempPackItemStore(s *model.Player, msg *alg.GameMsg) {
+	tempPackMu.Lock()
+	defer tempPackMu.Unlock()
 	rsp := &proto.TempPackItemStoreRsp{Status: proto.StatusCode_StatusCode_OK, Items: make([]*proto.ItemDetail, 0)}
 	defer g.send(s, msg.PacketId, rsp)
 	pack, err := g.currentTempPack(s)
+	if err != nil {
+		rsp.Status = tempPackErrorStatus(err)
+		return
+	}
+	inventory := model.SnapshotItemModel(s.GetItemModel())
+	before := snapshotTempPackPlayer(s, pack)
+	rsp.Items, err = storeTempPackItems(s, pack, s.UserId)
 	if err == nil {
-		rsp.Items, err = storeTempPackItems(s, pack, s.UserId)
+		err = persistTempPack(s, inventory, before)
 	}
 	if err != nil {
 		rsp.Status = tempPackErrorStatus(err)
@@ -611,11 +727,17 @@ func (g *Game) TempPackItemStore(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) TempPackSort(s *model.Player, msg *alg.GameMsg) {
+	tempPackMu.Lock()
+	defer tempPackMu.Unlock()
 	rsp := &proto.TempPackSortRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	pack, err := g.currentTempPack(s)
 	if err == nil {
+		before := snapshotTempPackPlayer(s, pack)
 		rsp.TempPack, err = sortTempPack(pack)
+		if err == nil {
+			err = persistTempPack(s, model.SnapshotItemModel(nil), before)
+		}
 	}
 	if err != nil {
 		rsp.Status = tempPackErrorStatus(err)
@@ -623,13 +745,26 @@ func (g *Game) TempPackSort(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) TempPackWearEquip(s *model.Player, msg *alg.GameMsg) {
+	tempPackMu.Lock()
+	defer tempPackMu.Unlock()
 	req := msg.Body.(*proto.TempPackWearEquipReq)
 	rsp := &proto.TempPackWearEquipRsp{Status: proto.StatusCode_StatusCode_OK}
 	defer g.send(s, msg.PacketId, rsp)
 	pack, err := g.currentTempPack(s)
+	if err != nil {
+		rsp.Status = tempPackErrorStatus(err)
+		return
+	}
+	inventory := model.SnapshotItemModel(s.GetItemModel())
+	before := snapshotTempPackPlayer(s, pack)
+	characterBefore := cloneTempPackCharacters(s.GetCharacterModel())
 	var items []*proto.ItemDetail
+	rsp.TempPack, items, err = wearTempPackItem(s, pack, s.UserId, req.Index, req.CharId, productionTempPackDeps)
 	if err == nil {
-		rsp.TempPack, items, err = wearTempPackItem(s, pack, s.UserId, req.Index, req.CharId, productionTempPackDeps)
+		if saveErr := persistTempPack(s, inventory, before); saveErr != nil {
+			s.Character = characterBefore
+			err = saveErr
+		}
 	}
 	if err != nil {
 		rsp.Status = tempPackErrorStatus(err)

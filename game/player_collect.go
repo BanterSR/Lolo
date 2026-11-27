@@ -3,12 +3,29 @@ package game
 import (
 	"math/rand/v2"
 	"slices"
+	"sync"
 
 	"gucooing/lolo/game/model"
 	"gucooing/lolo/gdconf"
 	"gucooing/lolo/pkg/alg"
 	"gucooing/lolo/protocol/proto"
 )
+
+var (
+	collectMu         sync.Mutex
+	collectSavePlayer = func(s *model.Player) error { return s.SavePlayerNow() }
+)
+
+func persistCollectReward(s *model.Player, before model.ItemModelSnapshot) bool {
+	if !s.Online {
+		return true
+	}
+	if err := collectSavePlayer(s); err != nil {
+		before.Restore()
+		return false
+	}
+	return true
+}
 
 func (g *Game) GetCollectItemIds(s *model.Player, msg *alg.GameMsg) {
 	// req := msg.Body.(*proto.GetCollectItemIdsReq)
@@ -35,6 +52,8 @@ func (g *Game) GetCollectItemIds(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) Collecting(s *model.Player, msg *alg.GameMsg) {
+	collectMu.Lock()
+	defer collectMu.Unlock()
 	req := msg.Body.(*proto.CollectingReq)
 	rsp := &proto.CollectingRsp{
 		Status:      proto.StatusCode_StatusCode_OK,
@@ -59,7 +78,8 @@ func (g *Game) Collecting(s *model.Player, msg *alg.GameMsg) {
 		return
 	}
 
-	tx, err := s.GetItemModel().Begin()
+	inventory := model.SnapshotItemModel(s.GetItemModel())
+	tx, err := s.GetItemModel().BeginAtomic()
 	if err != nil {
 		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
@@ -88,10 +108,15 @@ func (g *Game) Collecting(s *model.Player, msg *alg.GameMsg) {
 	}
 	rsp.Collections = append(rsp.Collections, info.CollectionData())
 	rsp.Items = append(rsp.Items, items...)
-	tx.Commit()
+	if tx.Commit() == nil || !persistCollectReward(s, inventory) {
+		delete(info.ItemMap, req.GetItemId())
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
+	}
 }
 
 func (g *Game) CollectionReward(s *model.Player, msg *alg.GameMsg) {
+	collectMu.Lock()
+	defer collectMu.Unlock()
 	req := msg.Body.(*proto.CollectionRewardReq)
 	rsp := &proto.CollectionRewardRsp{
 		Status:               proto.StatusCode_StatusCode_OK,
@@ -116,7 +141,8 @@ func (g *Game) CollectionReward(s *model.Player, msg *alg.GameMsg) {
 		return
 	}
 
-	tx, err := s.GetItemModel().Begin()
+	inventory := model.SnapshotItemModel(s.GetItemModel())
+	tx, err := s.GetItemModel().BeginAtomic()
 	if err != nil {
 		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
@@ -141,10 +167,15 @@ func (g *Game) CollectionReward(s *model.Player, msg *alg.GameMsg) {
 	itemInfo.Status = proto.RewardStatus_Reward
 	rsp.CollectionRewardData = itemInfo.PBCollectionRewardData()
 	rsp.Items = append(rsp.Items, items...)
-	tx.Commit()
+	if tx.Commit() == nil || !persistCollectReward(s, inventory) {
+		itemInfo.Status = proto.RewardStatus_NotReward
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
+	}
 }
 
 func (g *Game) Gather(s *model.Player, msg *alg.GameMsg) {
+	collectMu.Lock()
+	defer collectMu.Unlock()
 	req := msg.Body.(*proto.GatherReq)
 	rsp := &proto.GatherRsp{
 		Status:           proto.StatusCode_StatusCode_OK,
@@ -174,6 +205,10 @@ func (g *Game) Gather(s *model.Player, msg *alg.GameMsg) {
 		return
 	}
 	gatherConf := gdconf.GetGatherConfigure(uint32(point.GetGatherID()))
+	if gatherConf == nil || gatherConf.ID <= 0 || uint32(gatherConf.ID) != uint32(point.GetGatherID()) {
+		badReq()
+		return
+	}
 	group, matched := findGatherGroup(gatherConf, req.GetGatherItem().GetReward())
 	if !matched || group.GetNewGatherType() < 0 || group.GetNewWeaponType() < 0 {
 		badReq()
@@ -208,7 +243,8 @@ func (g *Game) Gather(s *model.Player, msg *alg.GameMsg) {
 		return
 	}
 
-	tx, err := s.GetItemModel().Begin()
+	inventory := model.SnapshotItemModel(s.GetItemModel())
+	tx, err := s.GetItemModel().BeginAtomic()
 	if err != nil {
 		badReq()
 		return
@@ -244,15 +280,22 @@ func (g *Game) Gather(s *model.Player, msg *alg.GameMsg) {
 		badReq()
 		return
 	}
+	previousCount := limit.GatherNum
 	limit.GatherNum++
 	rsp.Items = append(rsp.Items, items...)
 	rsp.SceneGatherLimit = sceneInfo.SceneGatherLimit()
 	rsp.GroupGatherLimit.GatherLimit = limit.GatherLimit()
-	tx.Commit()
+	if tx.Commit() == nil || !persistCollectReward(s, inventory) {
+		limit.GatherNum = previousCount
+		badReq()
+		return
+	}
 	g.PackNoticeByItems(s, items)
 }
 
 func (g *Game) TreasureBoxOpen(s *model.Player, msg *alg.GameMsg) {
+	tempPackMu.Lock()
+	defer tempPackMu.Unlock()
 	req := msg.Body.(*proto.TreasureBoxOpenReq)
 	rsp := &proto.TreasureBoxOpenRsp{
 		Status:          proto.StatusCode_StatusCode_OK,
@@ -275,7 +318,33 @@ func (g *Game) TreasureBoxOpen(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInDungeon
 		return
 	}
-	items, status := authoritativeDungeons.openTreasure(s, dungeon, req.TreasureBoxIndex)
+	if dungeon.Info == nil {
+		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInDungeon
+		return
+	}
+	box := dungeon.Info.GetTreasureBoxes()[req.TreasureBoxIndex]
+	stateBefore := proto.TreasureBoxState_TreasureBoxState_Close
+	if box != nil {
+		stateBefore = box.State
+	}
+	var opened *model.DungeonTreasureRuntime
+	items, status := g.dungeonRuntime().openTreasure(s, dungeon, req.TreasureBoxIndex)
+	if status == proto.StatusCode_StatusCode_OK && s.Online {
+		if err := tempPackSavePlayer(s); err != nil {
+			if box != nil {
+				box.State = stateBefore
+			}
+			if dungeon.Runtime != nil {
+				opened = dungeon.Runtime.Treasures[req.TreasureBoxIndex]
+				delete(dungeon.Runtime.Treasures, req.TreasureBoxIndex)
+				if opened != nil && opened.Drop != nil {
+					delete(dungeon.GetTempPack().TempAreaPack, opened.Drop.Index)
+				}
+			}
+			status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
+			items = nil
+		}
+	}
 	rsp.Status = status
 	rsp.Items = items
 	if box := dungeon.Info.GetTreasureBoxes()[req.TreasureBoxIndex]; box != nil {
@@ -284,6 +353,8 @@ func (g *Game) TreasureBoxOpen(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) TreasureBoxPickup(s *model.Player, msg *alg.GameMsg) {
+	tempPackMu.Lock()
+	defer tempPackMu.Unlock()
 	req := msg.Body.(*proto.TreasureBoxPickupReq)
 	rsp := &proto.TreasureBoxPickupRsp{
 		Status: proto.StatusCode_StatusCode_OK,
@@ -305,7 +376,34 @@ func (g *Game) TreasureBoxPickup(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_PlayerNotInDungeon
 		return
 	}
-	items, status := authoritativeDungeons.pickupTreasure(s, dungeon, req.BoxIndex, req.PickIndex)
+	inventory := model.SnapshotItemModel(s.GetItemModel())
+	var drop *model.DropItem
+	var before []model.EBagItemTag
+	var treasure *model.DungeonTreasureRuntime
+	if dungeon.Runtime != nil {
+		treasure = dungeon.Runtime.Treasures[req.BoxIndex]
+	}
+	if treasure != nil {
+		drop = treasure.Drop
+		if drop != nil {
+			before = append([]model.EBagItemTag(nil), drop.Items...)
+		}
+	}
+	pickedBefore := treasure != nil && treasure.Picked
+	items, status := g.dungeonRuntime().pickupTreasure(s, dungeon, req.BoxIndex, req.PickIndex)
+	if status == proto.StatusCode_StatusCode_OK && s.Online {
+		if err := tempPackSavePlayer(s); err != nil {
+			inventory.Restore()
+			if drop != nil {
+				drop.Items = before
+			}
+			if treasure != nil {
+				treasure.Picked = pickedBefore
+			}
+			status = proto.StatusCode_StatusCode_PLAYER_NOT_FOUND
+			items = nil
+		}
+	}
 	rsp.Status = status
 	rsp.Items = items
 	if status == proto.StatusCode_StatusCode_OK && len(items) > 0 {
@@ -336,6 +434,8 @@ func (g *Game) GetCollectMoonInfo(s *model.Player, msg *alg.GameMsg) {
 }
 
 func (g *Game) CollectMoon(s *model.Player, msg *alg.GameMsg) {
+	collectMu.Lock()
+	defer collectMu.Unlock()
 	req := msg.Body.(*proto.CollectMoonReq)
 	rsp := &proto.CollectMoonRsp{
 		Status:  proto.StatusCode_StatusCode_OK,
@@ -350,7 +450,7 @@ func (g *Game) CollectMoon(s *model.Player, msg *alg.GameMsg) {
 	}
 	conf := gdconf.GetCollectionItem(req.GetMoonId())
 	sceneInfo := playerSceneInfo(s, sceneId)
-	if conf == nil || sceneInfo == nil {
+	if conf == nil || sceneInfo == nil || conf.NewCollectionType != int32(proto.ECollectionType_ECollectionType_CollectMoonPiece) {
 		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
@@ -359,7 +459,8 @@ func (g *Game) CollectMoon(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
-	tx, err := s.GetItemModel().Begin()
+	inventory := model.SnapshotItemModel(s.GetItemModel())
+	tx, err := s.GetItemModel().BeginAtomic()
 	if err != nil {
 		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
@@ -370,8 +471,8 @@ func (g *Game) CollectMoon(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
-	rewards := []itemReward{{itemId: 124, count: 5}}
-	if !validateItemRewards(s, rewards) {
+	rewards, ok := collectionRewards(s, conf)
+	if !ok {
 		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
@@ -380,8 +481,13 @@ func (g *Game) CollectMoon(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
+	previous := append([]uint32(nil), info.CollectedMoonIds...)
 	alg.AddSlice(&info.CollectedMoonIds, req.MoonId)
 	rsp.Rewards = append(rsp.Rewards, items...)
-	tx.Commit()
+	if tx.Commit() == nil || !persistCollectReward(s, inventory) {
+		info.CollectedMoonIds = previous
+		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
+		return
+	}
 	g.PackNoticeByItems(s, items)
 }

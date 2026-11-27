@@ -50,7 +50,7 @@ type Config struct {
 	Sdk  string `json:"sdk"`  // SDK HTTP 基地址
 
 	Mode     string `json:"mode"`     // routine | endurance | profile
-	Scenario string `json:"scenario"` // login | steady | scene | quest | life
+	Scenario string `json:"scenario"` // login | steady | scene | quest | life | loot
 
 	CCU      int      `json:"ccu"`      // 目标并发 bot 数
 	Ramp     Duration `json:"ramp"`     // 爬坡时长
@@ -126,7 +126,7 @@ func LoadConfig() (*Config, error) {
 	gate := flag.String("gate", cfg.Gate, "网关 TCP 地址")
 	sdk := flag.String("sdk", cfg.Sdk, "SDK HTTP 基地址")
 	mode := flag.String("mode", cfg.Mode, "模式: routine|endurance|profile")
-	scenario := flag.String("scenario", cfg.Scenario, "场景: login|steady|scene|quest|life")
+	scenario := flag.String("scenario", cfg.Scenario, "场景: login|steady|scene|quest|life|loot")
 	ccu := flag.Int("ccu", cfg.CCU, "目标并发 bot 数")
 	ramp := flag.String("ramp", "", "爬坡时长, 如 30s")
 	duration := flag.String("duration", "", "保持时长, 如 5m")
@@ -260,9 +260,9 @@ func (c *Config) validate() error {
 		return fmt.Errorf("gate 与 sdk 地址不能为空")
 	}
 	switch c.Scenario {
-	case "login", "steady", "scene", "quest", "life":
+	case "login", "steady", "scene", "quest", "life", "loot":
 	default:
-		return fmt.Errorf("未知 scenario: %q（login|steady|scene|quest|life）", c.Scenario)
+		return fmt.Errorf("未知 scenario: %q（login|steady|scene|quest|life|loot）", c.Scenario)
 	}
 	switch c.Mode {
 	case "routine", "endurance":

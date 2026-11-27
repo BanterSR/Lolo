@@ -16,7 +16,7 @@ func (g *Game) DungeonView(s *model.Player, msg *alg.GameMsg) {
 	}
 	defer g.send(s, msg.PacketId, rsp)
 
-	if _, status := authoritativeDungeons.config(req.DungeonId); status != proto.StatusCode_StatusCode_OK {
+	if _, status := g.dungeonRuntime().config(req.DungeonId); status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}
@@ -47,7 +47,7 @@ func (g *Game) DungeonEnter(s *model.Player, msg *alg.GameMsg) {
 		active = current
 	}
 	team := model.TeamInfo{Char1: req.Char1, Char2: req.Char2, Char3: req.Char3}
-	runtime, status := authoritativeDungeons.enterDungeon(s, active, req.DungeonId, team)
+	runtime, status := g.dungeonRuntime().enterDungeon(s, active, req.DungeonId, team)
 	if status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
@@ -99,9 +99,9 @@ func (g *Game) DungeonOperate(s *model.Player, msg *alg.GameMsg) {
 	}
 	switch req.OperateType {
 	case proto.DungeonOperateReq_START:
-		rsp.Status = authoritativeDungeons.start(s, sd)
+		rsp.Status = g.dungeonRuntime().start(s, sd)
 	case proto.DungeonOperateReq_END:
-		rsp.Status = authoritativeDungeons.end(s, sd)
+		rsp.Status = g.dungeonRuntime().end(s, sd)
 		if sd.Runtime != nil {
 			rsp.Star = sd.Runtime.Stars
 		}
@@ -116,7 +116,7 @@ func (g *Game) DungeonOperate(s *model.Player, msg *alg.GameMsg) {
 	if sd.Runtime.EndedAt > 0 {
 		end = sd.Runtime.EndedAt
 	} else {
-		end = authoritativeDungeons.now().Unix()
+		end = g.dungeonRuntime().now().Unix()
 	}
 	if end >= sd.Runtime.StartedAt {
 		rsp.ConsumeTime = uint64(end - sd.Runtime.StartedAt)
@@ -147,7 +147,7 @@ func (g *Game) DungeonFinish(s *model.Player, msg *alg.GameMsg) {
 	if scenePlayer.LastScene != nil {
 		rsp.SceneId = scenePlayer.LastScene.GetSceneId()
 	}
-	items, status := authoritativeDungeons.finish(s, sd)
+	items, status := g.dungeonRuntime().finish(s, sd)
 	rsp.Status = status
 	rsp.DungeonData = sd.Info.DungeonData()
 	if status != proto.StatusCode_StatusCode_OK {
@@ -182,7 +182,7 @@ func (g *Game) DungeonExit(s *model.Player, msg *alg.GameMsg) {
 		rsp.Status = proto.StatusCode_StatusCode_BAD_REQ
 		return
 	}
-	if status := authoritativeDungeons.exit(s, sd); status != proto.StatusCode_StatusCode_OK {
+	if status := g.dungeonRuntime().exit(s, sd); status != proto.StatusCode_StatusCode_OK {
 		rsp.Status = status
 		return
 	}

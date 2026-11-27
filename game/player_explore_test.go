@@ -123,7 +123,7 @@ func TestExploreCancelPreventsAllRewards(t *testing.T) {
 	if _, status := startExplore(player, deps, 10101, false, 1, 2, [3]uint32{1, 2, 0}, now); status != proto.StatusCode_StatusCode_OK {
 		t.Fatal(status)
 	}
-	if _, status := cancelExplore(player, 10101, false); status != proto.StatusCode_StatusCode_OK {
+	if _, status := cancelExplore(player, deps, 10101, false); status != proto.StatusCode_StatusCode_OK {
 		t.Fatal(status)
 	}
 	if _, _, status := claimExploreReward(player, deps, 10101, false, now.Add(time.Hour)); status != proto.StatusCode_StatusCode_EXPLORE_NOT_FINISH {
@@ -151,8 +151,9 @@ func TestExploreQuickFinishChargesOnlyOnce(t *testing.T) {
 	if _, item, status := quickFinishExplore(player, deps, 10101, false); status != proto.StatusCode_StatusCode_OK || item != nil {
 		t.Fatalf("repeat quick status=%v item=%v", status, item)
 	}
-	if *consumptions != 1 || player.GetItemModel().GetItemBaseInfo(102).Num != 4 {
-		t.Fatalf("consumptions=%d balance=%d", *consumptions, player.GetItemModel().GetItemBaseInfo(102).Num)
+	if *consumptions != 2 || player.GetItemModel().GetItemBaseInfo(102).Num != 4 || player.GetItemModel().GetItemBaseInfo(50).Num != 0 {
+		t.Fatalf("consumptions=%d quick=%d entry=%d", *consumptions,
+			player.GetItemModel().GetItemBaseInfo(102).Num, player.GetItemModel().GetItemBaseInfo(50).Num)
 	}
 
 	other := newExploreTestPlayer()
@@ -255,7 +256,7 @@ func TestExploreLimitsConcurrentAndActivityAttempts(t *testing.T) {
 	if _, status := startExplore(player, deps, 901, true, 1, 2, [3]uint32{1}, now); status != proto.StatusCode_StatusCode_OK {
 		t.Fatal(status)
 	}
-	if _, status := cancelExplore(player, 901, true); status != proto.StatusCode_StatusCode_OK {
+	if _, status := cancelExplore(player, deps, 901, true); status != proto.StatusCode_StatusCode_OK {
 		t.Fatal(status)
 	}
 	if _, status := startExplore(player, deps, 901, true, 1, 2, [3]uint32{1}, now); status != proto.StatusCode_StatusCode_EXPLORE_MAX_TIMES {

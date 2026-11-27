@@ -89,24 +89,20 @@ func (g *Gateway) VerifyLoginToken(login *LoginInfo) {
 	log.Gate.Infof("UserId:%v platform:%s verify success, logging in...", ofUser.UserId, proto.AccountType(login.AccountType).String())
 
 	verified = true
-	se, ok := g.sessionMap.Get(ofUser.UserId)
-	if ok {
-		g.game.GetGateTask() <- &game.KillPlayer{
-			UserId:     se.userId,
-			UUID:       se.uuid,
-			Reason:     proto.PlayerOfflineReason_PlayerOfflineReason_ANOTHER_LOGIN,
-			KillPlayer: false,
-		}
-		close(se.done)
-		g.sessionMap.Del(ofUser.UserId)
-	}
-	se = &session{
+	next := &session{
 		userId: ofUser.UserId,
 		uuid:   login.uuid,
 		conn:   login.conn,
 		done:   make(chan struct{}),
 	}
-	g.sessionMap.Set(se.userId, se)
+	if previous := g.activateSession(next); previous != nil {
+		g.game.GetGateTask() <- &game.KillPlayer{
+			UserId:     previous.userId,
+			UUID:       previous.uuid,
+			Reason:     proto.PlayerOfflineReason_PlayerOfflineReason_ANOTHER_LOGIN,
+			KillPlayer: false,
+		}
+	}
 
-	go g.receive(se)
+	go g.receive(next)
 }

@@ -123,7 +123,9 @@ func (b *Bot) readLoop() {
 
 		switch msg.Body.(type) {
 		case *proto.VerifyLoginTokenRsp, *proto.PlayerLoginRsp, *proto.PlayerMainDataRsp, *proto.SceneDataNotice,
-			*proto.TutorialRsp, *proto.ClaimQuestRewardRsp:
+			*proto.TutorialRsp, *proto.ClaimQuestRewardRsp,
+			*proto.GetLifeInfoRsp, *proto.GetLifeSkillRsp, *proto.GetLifeAchieveRsp,
+			*proto.GatherRsp, *proto.PickupRsp, *proto.TreasureBoxOpenRsp:
 			select {
 			case b.hsCh <- msg:
 			default:

@@ -25,6 +25,10 @@ func (b *Bot) runScenario(ctx context.Context) {
 		b.scenarioScene(ctx)
 	case "quest":
 		b.scenarioQuest(ctx)
+	case "life":
+		b.scenarioLife(ctx)
+	case "loot":
+		b.scenarioLoot(ctx)
 	default:
 		b.scenarioSteady(ctx)
 	}
